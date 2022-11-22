@@ -7,6 +7,7 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static class Each
 {
+#if !NET6_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -86,6 +87,7 @@ static class Each
 
         return upper;
     }
+#endif
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -340,4 +342,94 @@ static class Each
         [InstantHandle] Converter<int, TResult> func
     ) =>
         Enumerable.Repeat(func, upper).Select((x, i) => x(i));
+
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            action();
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            action(i);
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Action<TExternal> action
+    )
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            action(external);
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Action<T, TExternal> action
+    )
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            action(i, external);
+
+        return upper;
+    }
+#endif
 }
