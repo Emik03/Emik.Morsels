@@ -97,6 +97,7 @@
         <ReferencePathWithRefAssemblies Update="\home\emik\.nuget\packages\microsoft.netframework.referenceassemblies.net45\1.0.2\build\.NETFramework\v4.5\Facades\System.Runtime.dll" />
     </ItemGroup>
     <ItemGroup>
+        <WeaverFiles Include="$(Absence)Absence.Fody.dll" />
         <AdditionalFiles Include="$(SharedPath)global.json" />
         <AdditionalFiles Include="$(SharedPath)stylecop.json" />
         <Content Include="$(SharedPath)Directory.Build.props" />
@@ -174,8 +175,5 @@
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.1.2" PrivateAssets="all" />
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all" />
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
-    </ItemGroup>
-    <ItemGroup>
-        <WeaverFiles Include="$(Absence)Absence.Fody.dll" />
     </ItemGroup>
 </Project>
