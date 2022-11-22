@@ -60,5 +60,4 @@ static class NullableItemEnumerables
     [return: NotNullIfNotNull(nameof(set))]
     internal static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
 #pragma warning restore CS8619
-
 }
