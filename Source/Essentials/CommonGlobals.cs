@@ -77,6 +77,7 @@ global using Emik.Results.Extensions;
 global using Emik.Unions;
 global using Emik.Unions.Disjoints;
 global using Emik.Unions.Tagged;
+global using InlineIL;
 global using InlineMethod;
 global using JetBrains.Annotations; /*
 global using Microsoft;

@@ -35,6 +35,8 @@ namespace Emik.Unions.Disjoints { }
 
 namespace Emik.Unions.Tagged { }
 
+namespace InlineIL { }
+
 namespace InlineMethod { }
 
 namespace Microsoft.CodeAnalysis { }
