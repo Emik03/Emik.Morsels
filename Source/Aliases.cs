@@ -22,6 +22,7 @@ global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImpli
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
 global using NotifyPropertyChangedInvocatorAttribute =
     unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
+global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;

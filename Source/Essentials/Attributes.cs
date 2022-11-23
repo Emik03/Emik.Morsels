@@ -2,14 +2,16 @@
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
 // ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective
-#pragma warning disable CA1019, MA0047, MA0048, SA1216, SA1402, SA1403, SA1649, GlobalUsingsAnalyzer
+#pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1216, SA1402, SA1403, SA1649
+#if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+#endif
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 using static System.AttributeTargets;
 
 namespace System.Diagnostics.CodeAnalysis
 {
-#if NET40_OR_GREATER || (NETSTANDARD && !NETSTANDARD2_1)
+#if NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_1
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
     [AttributeUsage(Field | Parameter | Property)]
     sealed class AllowNullAttribute : Attribute { }
@@ -194,7 +196,9 @@ namespace System.Diagnostics.Contracts
 {
 #if NET35
     /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
-    [AttributeUsage(Class | Constructor | AttributeTargets.Delegate | Event | Parameter | Method | Property)]
+    [AttributeUsage(
+        Class | Constructor | AttributeTargets.Delegate | AttributeTargets.Event | Parameter | Method | Property
+    )]
     sealed class PureAttribute : Attribute { }
 #endif
 }
