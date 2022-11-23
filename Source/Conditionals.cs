@@ -41,7 +41,7 @@ static class Conditionals
         [AssertionCondition(AssertionConditionType.IS_FALSE)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
-        that ? that : throw new UnreachableException(exThat);
+        that ? throw new UnreachableException(exThat) : false;
 
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="that">The value that must be <see langword="true"/>.</param>
@@ -52,7 +52,7 @@ static class Conditionals
         [AssertionCondition(AssertionConditionType.IS_TRUE)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
-        that ? that : throw new UnreachableException(exThat);
+        that ? true : throw new UnreachableException(exThat);
 
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="value">The value to check.</param>
