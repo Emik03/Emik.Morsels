@@ -44,3 +44,7 @@ namespace Microsoft.CodeAnalysis { }
 namespace RemoveReference { }
 
 namespace UnitGenerator { }
+
+namespace UnityEditor { }
+
+namespace UnityEngine { }

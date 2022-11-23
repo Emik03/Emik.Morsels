@@ -88,3 +88,5 @@ global using Microsoft.Win32;
 global using Microsoft.Win32.SafeHandles; */
 global using RemoveReference;
 global using UnitGenerator;
+global using UnityEditor;
+global using UnityEngine;
