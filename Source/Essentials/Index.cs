@@ -4,7 +4,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
 #if !NET35 && !NETSTANDARD2_1 && !NETCOREAPP
 #pragma warning disable MA0008, SA1515, SA1611, SA1615, SA1623, SA1642
 namespace System;
