@@ -5,7 +5,8 @@
         <Unity>/home/emik/Unity/Hub/Editor/2017.4.22f1/Editor/</Unity>
         <Destination>/mnt/d/Emik's Modules/Assets/Plugins/</Destination>
         <Absence>/home/emik/RiderProjects/Absence.Fody/bin/netstandard2.0/</Absence>
-        <Game>/home/emik/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Game>
+        <Ktane>/home/emik/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
+        <Celeste>/home/emik/.steam/steam/steamapps/common/Celeste/</Celeste>
         <ComparisonGenerator>/home/emik/ComparisonGenerator/src/Aetos.ComparisonGenerator/bin/Release/netstandard2.0/</ComparisonGenerator>
     </PropertyGroup>
     <PropertyGroup>
@@ -92,9 +93,14 @@
         <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all" />
         <PackageReference Include="ConfigureAwait.Fody" Version="3.3.1" PrivateAssets="all" />
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
+        <Reference Include="FNA" HintPath="$(Celeste)FNA.dll" Private="false" />
+        <Reference Include="Celeste" HintPath="$(Celeste)Celeste.exe" Private="false" />
+        <Reference Include="DotNetZip" HintPath="$(Celeste)DotNetZip.dll" Private="false" />
         <PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all" />
-        <ReferencePathWithRefAssemblies Update="\home\emik\.nuget\packages\microsoft.netframework.referenceassemblies.net45\1.0.2\build\.NETFramework\v4.5\Facades\System.Runtime.dll" />
+        <Reference Include="YamlDotNet" HintPath="$(Celeste)YamlDotNet.dll" Private="false" />
+        <Reference Include="MonoMod.Utils" HintPath="$(Celeste)MonoMod.Utils.dll" Private="false" />
+        <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)MMHOOK_Celeste.dll" Private="false" />
     </ItemGroup>
     <ItemGroup>
         <WeaverFiles Include="$(Absence)Absence.Fody.dll" />
