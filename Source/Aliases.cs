@@ -11,7 +11,9 @@ global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMe
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
 global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations.CannotApplyEqualityOperatorAttribute;
+global using Component = unity::UnityEngine.Component;
 global using ContractAnnotationAttribute = unity::JetBrains.Annotations.ContractAnnotationAttribute;
+global using Debug = unity::UnityEngine.Debug;
 global using ImplicitUseKindFlags = unity::JetBrains.Annotations.ImplicitUseKindFlags;
 global using ImplicitUseTargetFlags = unity::JetBrains.Annotations.ImplicitUseTargetFlags;
 global using InstantHandleAttribute = unity::JetBrains.Annotations.InstantHandleAttribute;
@@ -23,6 +25,7 @@ global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumeration
 global using NotifyPropertyChangedInvocatorAttribute =
     unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
+global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
