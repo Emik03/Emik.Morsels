@@ -66,6 +66,6 @@ static class RandomizedGetters
 #if NET6_0_OR_GREATER
         Random.Shared.Next;
 #else
-        new Random().Next;
+        new System.Random().Next;
 #endif
 }

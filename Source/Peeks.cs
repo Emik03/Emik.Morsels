@@ -14,7 +14,7 @@ static class Peeks
     internal static void Write(this string message)
     {
         Console.WriteLine(message);
-        Debug.WriteLine(message);
+        System.Diagnostics.Debug.WriteLine(message);
         Trace.WriteLine(message);
     }
 
