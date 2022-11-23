@@ -1,4 +1,4 @@
-// <copyright file="NullableItemEnumerables.cs" company="Emik">
+// <copyright file="NullableItems.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
 // ReSharper disable UnusedMember.Local
@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 
 #pragma warning disable CA1508
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
-static class NullableItemEnumerables
+static class NullableItems
 {
 #pragma warning disable CS8619
     /// <summary>Adds nullability for the generic.</summary>
