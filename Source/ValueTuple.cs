@@ -1,7 +1,7 @@
 ﻿// <copyright file="ValueTuple.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
-// ReSharper disable ArrangeAttributes SuspiciousTypeConversion.Global
+// ReSharper disable ArrangeAttributes FunctionComplexityOverflow SuspiciousTypeConversion.Global
 // Shamelessly stolen from https://raw.githubusercontent.com/igor-tkachev/Portable.System.ValueTuple/master/Portable.System.ValueTuple.cs
 // and creatively reworked.
 //
