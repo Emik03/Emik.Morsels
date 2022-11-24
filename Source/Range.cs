@@ -4,10 +4,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-#pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642
-#if !NET35 && !NETSTANDARD2_1 && !NETCOREAPP
 namespace System;
 
+#pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642
+#if !NET35 && !NETSTANDARD2_1 && !NETCOREAPP
 /// <summary>Represent a range has start and end indexes.</summary>
 /// <remarks><para>
 /// Range is used by the C# compiler to support the range syntax.
