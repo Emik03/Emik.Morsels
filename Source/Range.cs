@@ -64,6 +64,7 @@ readonly struct Range : IEquatable<Range>
     [Pure]
     public override string ToString() => $"{Start}..{End}";
 }
+#endif
 
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
 static class RangeMethodsWithoutValueTuples
@@ -97,4 +98,3 @@ static class RangeMethodsWithoutValueTuples
         outLength = end - start;
     }
 }
-#endif
