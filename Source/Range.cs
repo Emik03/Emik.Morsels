@@ -69,6 +69,7 @@ readonly struct Range : IEquatable<Range>
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
 static class RangeMethodsWithoutValueTuples
 {
+#pragma warning disable CS1574
     /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
     /// <remarks><para>
     /// For performance reasons, we don't validate the input length parameter against negative values.
@@ -83,7 +84,8 @@ static class RangeMethodsWithoutValueTuples
     /// <param name="outOffset">The resulting offset.</param>
     /// <param name="outLength">The resulting length.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static void GetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
+#pragma warning restore CS1574
+    public static void GetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
     {
         var startIndex = range.Start;
         var start = startIndex.IsFromEnd ? length - startIndex.Value : startIndex.Value;
