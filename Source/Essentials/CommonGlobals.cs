@@ -86,6 +86,7 @@ global using Microsoft.CSharp;
 global using Microsoft.VisualBasic;
 global using Microsoft.Win32;
 global using Microsoft.Win32.SafeHandles; */
+global using NullGuard;
 global using RemoveReference;
 global using UnitGenerator;
 global using UnityEditor;

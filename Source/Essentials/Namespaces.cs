@@ -41,6 +41,8 @@ namespace InlineMethod { }
 
 namespace Microsoft.CodeAnalysis { }
 
+namespace NullGuard { }
+
 namespace RemoveReference { }
 
 namespace UnitGenerator { }
