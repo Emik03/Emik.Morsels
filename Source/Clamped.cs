@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 /// <summary>Extension methods to clamp numbers.</summary>
 static class Clamped
 {
-#if !NET6_0_OR_GREATER
+#if !NET7_0_OR_GREATER
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <param name="number">The number to clip.</param>
     /// <param name="min">If specified, the smallest number to return.</param>
