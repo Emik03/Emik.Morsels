@@ -66,6 +66,7 @@ static class RandomizedGetters
 #if NET6_0_OR_GREATER
         Random.Shared.Next;
 #else
+        // ReSharper disable once RedundantNameQualifier
         new System.Random().Next;
 #endif
 }

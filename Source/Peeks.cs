@@ -13,7 +13,7 @@ static class Peeks
     /// <param name="message">The value to send a message.</param>
     internal static void Write(this string message)
     {
-        Console.WriteLine(message);
+        Console.WriteLine(message); // ReSharper disable once RedundantNameQualifier
         System.Diagnostics.Debug.WriteLine(message);
         Trace.WriteLine(message);
     }
