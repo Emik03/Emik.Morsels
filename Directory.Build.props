@@ -113,12 +113,12 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Type.cs" Link="Source/References/Type.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Aliases.cs" Link="Source/References/Aliases.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Range.cs" Link="Source/References/System/Range.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Each.cs" Link="Source/References/Emik/Linq/Each.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Heap.cs" Link="Source/References/Emik/Runtime/Heap.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Span.cs" Link="Source/References/Emik/Buffers/Span.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs" />
@@ -128,7 +128,6 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Conditionals.cs" Link="Source/References/Emik/Conditionals.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Force.cs" Link="Source/References/Emik/Linq/Force.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Namespaces.cs" Link="Source/References/Namespaces.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs" />
@@ -139,6 +138,7 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Unforgiving.cs" Link="Source/References/Emik/Diagnostics/Unforgiving.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/NullableItems.cs" Link="Source/References/Emik/Collections/NullableItems.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/RuntimeHelpers.cs" Link="Source/References/System/Runtime/RuntimeHelpers.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/NegatedEnumerable.cs" Link="Source/References/Emik/Linq/NegatedEnumerable.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
