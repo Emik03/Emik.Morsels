@@ -122,35 +122,64 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Clamped.cs" Link="Source/References/Emik/Numerics/Clamped.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Index.cs" Link="Source/References/System/Index.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Collected.cs" Link="Source/References/Emik/Linq/Collected.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Conditionals.cs" Link="Source/References/Emik/Conditionals.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Force.cs" Link="Source/References/Emik/Linq/Force.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Namespaces.cs" Link="Source/References/Namespaces.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/CommonGlobals.cs" Link="Source/References/CommonGlobals.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/IReadOnly.cs" Link="Source/References/System/Collections/IReadOnly.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Unforgiving.cs" Link="Source/References/Emik/Diagnostics/Unforgiving.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/NullableItems.cs" Link="Source/References/Emik/Collections/NullableItems.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/RuntimeHelpers.cs" Link="Source/References/System/Runtime/RuntimeHelpers.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/NegatedEnumerable.cs" Link="Source/References/Emik/Linq/NegatedEnumerable.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Split.cs" Link="Source/References/Emik/Collections/Specialized/Split.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/RandomizedGetters.cs" Link="Source/References/Emik/Collections/RandomizedGetters.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/ReadOnlyList.cs" Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/MethodImplOptions.cs" Link="Source/References/System/Diagnostics/MethodImplOptions.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/RemoveReferenceAttribute.cs" Link="Source/References/Fody/RemoveReferenceAttribute.cs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/UnreachableException.cs" Link="Source/References/System/Diagnostics/UnreachableException.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Clamped.cs"
+                 Link="Source/References/Emik/Numerics/Clamped.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Index.cs"
+                 Link="Source/References/System/Index.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Collected.cs"
+                 Link="Source/References/Emik/Linq/Collected.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Conditionals.cs"
+                 Link="Source/References/Emik/Conditionals.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Force.cs"
+                 Link="Source/References/Emik/Linq/Force.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Namespaces.cs"
+                 Link="Source/References/Namespaces.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Yes.cs"
+                 Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/CLSCompliant.cs"
+                 Link="Source/References/CLSCompliant.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/InlineAttribute.cs"
+                 Link="Source/References/Fody/InlineAttribute.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/MethodGroupings.cs"
+                 Link="Source/References/Emik/MethodGroupings.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Once.cs"
+                 Link="Source/References/Emik/Collections/Immutable/Once.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/CommonGlobals.cs"
+                 Link="Source/References/CommonGlobals.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/IReadOnly.cs"
+                 Link="Source/References/System/Collections/IReadOnly.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Unforgiving.cs"
+                 Link="Source/References/Emik/Diagnostics/Unforgiving.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/NullableItems.cs"
+                 Link="Source/References/Emik/Collections/NullableItems.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/RuntimeHelpers.cs"
+                 Link="Source/References/System/Runtime/RuntimeHelpers.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Stringifier.cs"
+                 Link="Source/References/Emik/Text/Stringifier.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/NegatedEnumerable.cs"
+                 Link="Source/References/Emik/Linq/NegatedEnumerable.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/PowerSetFactories.cs"
+                 Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/ClippedList.cs"
+                 Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/GuardedList.cs"
+                 Link="Source/References/Emik/Collections/Generics/GuardedList.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Attributes.cs"
+                 Link="Source/References/System/Diagnostics/Attributes.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/CircularList.cs"
+                 Link="Source/References/Emik/Collections/Generics/CircularList.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Split.cs"
+                 Link="Source/References/Emik/Collections/Specialized/Split.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/RandomizedGetters.cs"
+                 Link="Source/References/Emik/Collections/RandomizedGetters.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/ReadOnlyList.cs"
+                 Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/MethodImplOptions.cs"
+                 Link="Source/References/System/Diagnostics/MethodImplOptions.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/RemoveReferenceAttribute.cs"
+                 Link="Source/References/Fody/RemoveReferenceAttribute.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/UnreachableException.cs"
+                 Link="Source/References/System/Diagnostics/UnreachableException.cs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all" />
