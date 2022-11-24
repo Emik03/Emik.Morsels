@@ -3,18 +3,19 @@
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
     </PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
+        <Nullable>warnings</Nullable>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-        <Reference Include="System"/>
-        <Reference Include="System.Core"/>
-        <Reference Include="System.Data"/>
-        <Reference Include="System.Xml"/>
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Data" />
+        <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
-        <AdditionalFiles Include="$(SharedPath)FodyWeavers.xml"/>
-        <AdditionalFiles Include="$(SharedPath)Directory.Build.props"/>
-        <AdditionalFiles Include="$(SharedPath)Directory.Build.targets"/>
+        <AdditionalFiles Include="$(SharedPath)FodyWeavers.xml" />
+        <AdditionalFiles Include="$(SharedPath)Directory.Build.props" />
+        <AdditionalFiles Include="$(SharedPath)Directory.Build.targets" />
     </ItemGroup>
     <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
         <ItemGroup>
@@ -24,7 +25,7 @@
         </ItemGroup>
     </Target>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)' == 'net35'">
-        <Exec Command="$(Copy) $(Out) &quot;$(Destination)&quot;&#xA;$(Copy) &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;$(Copy) &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
+        <Exec Command="$(Copy) $(Out) &quot;$(Destination)&quot;&#xA;$(Copy) &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;$(Copy) &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" />
     </Target>
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
         <PropertyGroup>
