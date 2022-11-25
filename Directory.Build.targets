@@ -3,7 +3,6 @@
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
     </PropertyGroup>
     <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
-        <Nullable>warnings</Nullable>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
