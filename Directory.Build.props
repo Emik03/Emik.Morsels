@@ -4,9 +4,10 @@
         <SharedPath>/home/emik/RiderProjects/</SharedPath>
         <Unity>/home/emik/Unity/Hub/Editor/2017.4.22f1/Editor/</Unity>
         <Destination>/mnt/d/Emik's Modules/Assets/Plugins/</Destination>
+        <Celeste>/home/emik/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Absence>/home/emik/RiderProjects/Absence.Fody/bin/netstandard2.0/</Absence>
         <Ktane>/home/emik/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
-        <Celeste>/home/emik/.steam/steam/steamapps/common/Celeste/</Celeste>
+        <Divorce>/home/emik/RiderProjects/Divorce.Fody/bin/netstandard2.0/</Divorce>
         <ComparisonGenerator>/home/emik/ComparisonGenerator/src/Aetos.ComparisonGenerator/bin/Release/netstandard2.0/</ComparisonGenerator>
     </PropertyGroup>
     <PropertyGroup>
@@ -41,7 +42,7 @@
         <AssemblyOriginatorKeyFile>$(SharedPath)private.snk</AssemblyOriginatorKeyFile>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
-        <NoWarn>0253;1701;1702;8632;ASYNC0004;CS0436;CA1043;CA1062;CA1305;CA1307;CA1309;CA1310;CA1812;CA2007;CA2201;CA2225;MA0001;MA0004;MA0009;MA0011;MA0074;MA0076;SA1000;SA1008;SA1009;SA1010;SA1013;SA1101;SA1111;SA1118;SA1122;SA1132;SA1133;SA1134;SA1135;SA1200;SA1205;SA1308;SA1309;SA1311;SA1313;SA1400;SA1407;SA1408;SA1414;SA1501;SA1502;SA1503;SA1512;SA1513;SA1516;SA1519;SA1648;NU1701;RCS1123;RCS1194;RCS1213;RCS1247;UEA0006</NoWarn>
+        <NoWarn>0253;1701;1702;8632;ASYNC0004;CS0436;CA1043;CA1062;CA1305;CA1307;CA1309;CA1310;CA1812;CA2007;CA2201;CA2225;MA0001;MA0004;MA0009;MA0011;MA0074;MA0076;SA1000;SA1008;SA1009;SA1010;SA1013;SA1101;SA1111;SA1118;SA1122;SA1132;SA1133;SA1134;SA1135;SA1200;SA1205;SA1308;SA1309;SA1311;SA1313;SA1400;SA1407;SA1408;SA1414;SA1501;SA1502;SA1503;SA1512;SA1513;SA1516;SA1519;SA1648;NU1701;RCS1001;RCS1123;RCS1194;RCS1213;RCS1247;UEA0006</NoWarn>
         <WeaverConfiguration>
             <Weavers>
                 <Equals />
@@ -51,6 +52,7 @@
                 <NullGuard />
                 <Substitute />
                 <Virtuosity />
+                <Divorce />
                 <JetBrainsAnnotations />
                 <LocalsInit Default="false" />
                 <Caseless StringComparison="InvariantCulture" />
@@ -80,6 +82,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+        <WeaverFiles Include="$(Divorce)Divorce.Fody.dll" />
         <PackageReference Include="Theraot.Core" Version="3.2.11" />
         <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" />
         <PackageReference Include="Emik.Net20Records" Version="2.0.0" Alias="global, emik" />
@@ -108,7 +111,7 @@
         <AdditionalFiles Include="$(SharedPath)stylecop.json" />
         <Content Include="$(SharedPath)Directory.Build.props" />
         <Content Include="$(SharedPath)Directory.Build.targets" />
-        <Analyzer Include="$(ComparisonGenerator)Aetos.ComparisonGenerator.dll" />
+        <!-- <Analyzer Include="$(ComparisonGenerator)Aetos.ComparisonGenerator.dll" /> -->
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
@@ -119,6 +122,7 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Span.cs" Link="Source/References/Emik/Buffers/Span.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs" />
