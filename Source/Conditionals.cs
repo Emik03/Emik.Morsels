@@ -15,8 +15,7 @@ static class Conditionals
     /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate)
-        where T : class =>
+    internal static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate) =>
         value is not null && predicate(value);
 
     /// <summary>Determines whether the inner value of a nullable value matches a given predicate.</summary>
@@ -97,8 +96,7 @@ static class Conditionals
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>([InstantHandle] this IEnumerable<T?> iterable)
-        where T : class =>
+    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?> iterable) =>
 #pragma warning disable CS8619
         iterable.Where(x => x is not null);
 #pragma warning restore CS8619
@@ -113,28 +111,6 @@ static class Conditionals
 #pragma warning disable CS8629
         iterable.Where(x => x.HasValue).Select(x => x.Value);
 #pragma warning restore CS8629
-
-    /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="item">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="item"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(this T? item, Converter<T, IEnumerable<TResult>?> map)
-        where T : class =>
-        item is not null && map(item) is { } iterable ? iterable : Enumerable.Empty<TResult>();
-
-    /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="item">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="item"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(this T? item, Converter<T, IEnumerable<TResult>?> map)
-        where T : struct =>
-        item.HasValue && map(item.Value) is { } iterable ? iterable : Enumerable.Empty<TResult>();
 
     /// <summary>Gives an optional value based on a condition.</summary>
     /// <remarks><para>The parameter is eagerly evaluated.</para></remarks>

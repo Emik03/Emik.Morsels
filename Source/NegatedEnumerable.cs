@@ -12,11 +12,8 @@ static class NegatedEnumerable
     /// the input sequence that do not satisfy the condition.
     /// </returns>
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, MustUseReturnValue]
-    internal static IEnumerable<T> TakeUntil<T>(
-        [InstantHandle] this IEnumerable<T> source,
-        [InstantHandle] Func<T, bool> predicate
-    ) =>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.TakeWhile(Not1(predicate));
 
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -25,10 +22,10 @@ static class NegatedEnumerable
     /// the input sequence that do not satisfy the condition.
     /// </returns>
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, MustUseReturnValue]
+    [LinqTunnel, Pure]
     internal static IEnumerable<T> TakeUntil<T>(
-        [InstantHandle] this IEnumerable<T> source,
-        [InstantHandle] Func<T, int, bool> predicate
+        [NoEnumeration] this IEnumerable<T> source,
+        Func<T, int, bool> predicate
     ) =>
         source.TakeWhile(Not2(predicate));
 
@@ -38,11 +35,8 @@ static class NegatedEnumerable
     /// the input sequence that do not satisfy the condition.
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [LinqTunnel, MustUseReturnValue]
-    internal static IEnumerable<T> WhereNot<T>(
-        [InstantHandle] this IEnumerable<T> source,
-        [InstantHandle] Func<T, bool> predicate
-    ) =>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> WhereNot<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.Where(Not1(predicate));
 
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -51,10 +45,10 @@ static class NegatedEnumerable
     /// the input sequence that do not satisfy the condition.
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, MustUseReturnValue]
+    [LinqTunnel, Pure]
     internal static IEnumerable<T> WhereNot<T>(
-        [InstantHandle] this IEnumerable<T> source,
-        [InstantHandle] Func<T, int, bool> predicate
+        [NoEnumeration] this IEnumerable<T> source,
+        Func<T, int, bool> predicate
     ) =>
         source.Where(Not2(predicate));
 }

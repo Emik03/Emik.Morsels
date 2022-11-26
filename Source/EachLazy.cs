@@ -15,6 +15,7 @@ static class EachLazy
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
     internal static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
         new Enumerable<T, object?>(iterable, null, action);
 
@@ -29,6 +30,7 @@ static class EachLazy
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
     internal static IEnumerable<T> Lazily<T, TExternal>(
         [NoEnumeration] this IEnumerable<T> iterable,
         TExternal external,
@@ -45,6 +47,7 @@ static class EachLazy
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
     internal static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
         new Enumerable<T, object?>(iterable, null, action);
 
@@ -59,10 +62,11 @@ static class EachLazy
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
     internal static IEnumerable<T> Lazily<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
+        [NoEnumeration] this IEnumerable<T> iterable,
         TExternal external,
-        [InstantHandle] Action<T, int, TExternal> action
+        Action<T, int, TExternal> action
     ) =>
         new Enumerable<T, TExternal>(iterable, external, action);
 }
@@ -112,9 +116,11 @@ sealed class Enumerable<T, TExternal> : IEnumerable<T>
     }
 
     /// <inheritdoc />
+    [CollectionAccess(CollectionAccessType.Read), Pure]
     public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
 
     /// <inheritdoc />
+    [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     sealed class Enumerator : IEnumerator<T>
