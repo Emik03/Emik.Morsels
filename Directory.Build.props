@@ -124,6 +124,7 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Aliases.cs" Link="Source/References/Aliases.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/ManyQueries.cs" Link="Source/References/Emik/ManyQueries.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Clamped.cs"
