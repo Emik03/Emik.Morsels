@@ -96,9 +96,9 @@ static class Conditionals
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?> iterable) =>
+    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
 #pragma warning disable CS8619
-        iterable.Where(x => x is not null);
+        iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
 #pragma warning restore CS8619
 
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
@@ -106,10 +106,10 @@ static class Conditionals
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>(this IEnumerable<T?> iterable)
+    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
         where T : struct =>
 #pragma warning disable CS8629
-        iterable.Where(x => x.HasValue).Select(x => x.Value);
+        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();
 #pragma warning restore CS8629
 
     /// <summary>Gives an optional value based on a condition.</summary>
