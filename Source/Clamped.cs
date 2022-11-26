@@ -32,6 +32,7 @@ static class Clamped
         number >= big ? big : number;
 #else
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <typeparam name="T">The type of numeric value for comparisons.</typeparam>
     /// <param name="number">The number to clip.</param>
     /// <param name="min">If specified, the smallest number to return.</param>
     /// <param name="max">If specified, the greatest number to return.</param>

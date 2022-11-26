@@ -67,7 +67,14 @@ static class EachLazy
         new Enumerable<T, TExternal>(iterable, external, action);
 }
 
+/// <summary>
+/// Defines an <see cref="IEnumerable{T}"/> with a <see cref="Delegate"/> that is invoked on iteration.
+/// </summary>
+/// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
+/// <typeparam name="TExternal">The context element to pass into the <see cref="Delegate"/>.</typeparam>
+#pragma warning disable MA0048
 sealed class Enumerable<T, TExternal> : IEnumerable<T>
+#pragma warning restore MA0048
 {
     readonly Delegate _action;
 
@@ -75,18 +82,28 @@ sealed class Enumerable<T, TExternal> : IEnumerable<T>
 
     readonly TExternal _external;
 
+    /// <inheritdoc />
     internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T> action)
         : this(enumerable, external, (Delegate)action) { }
 
+    /// <inheritdoc />
     internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
         : this(enumerable, external, (Delegate)action) { }
 
+    /// <inheritdoc />
     internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
+    /// <inheritdoc />
     internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
+    /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
+    /// <param name="enumerable">
+    /// The <see cref="IEnumerable{T}"/> to create an <see cref="IEnumerator{T}"/> from.
+    /// </param>
+    /// <param name="external">The context element.</param>
+    /// <param name="action">The <see cref="Delegate"/> to invoke on iteration.</param>
     Enumerable(IEnumerable<T> enumerable, TExternal external, Delegate action)
     {
         _enumerable = enumerable;
