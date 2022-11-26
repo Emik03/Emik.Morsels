@@ -153,7 +153,9 @@ sealed class Enumerable<T, TExternal> : IEnumerable<T>
         /// <inheritdoc />
         public bool MoveNext()
         {
-            var result = _enumerator.MoveNext();
+            if (!_enumerator.MoveNext())
+                return false;
+
             var current = Current;
 
             switch (_action)
@@ -172,10 +174,8 @@ sealed class Enumerable<T, TExternal> : IEnumerable<T>
                     break;
             }
 
-            if (result)
-                _index++;
-
-            return result;
+            _index++;
+            return true;
         }
     }
 }
