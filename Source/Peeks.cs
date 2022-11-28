@@ -35,7 +35,7 @@ static class Peeks
     /// <param name="member">Automatically filled by compilers; the member's name where this method was called.</param>
     /// <returns>The parameter <paramref name="value"/>.</returns>
     [return: NotNullIfNotNull(nameof(value))]
-    internal static T Peek<T>(
+    internal static T Debug<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
         [InstantHandle] Predicate<T>? filter = null,
