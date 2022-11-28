@@ -6,11 +6,11 @@
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-        <Reference Include="mscorlib" Aliases="global, ms" CopyLocal="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
-        <Reference Include="System" />
-        <Reference Include="System.Core" />
-        <Reference Include="System.Data" />
-        <Reference Include="System.Xml" />
+        <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
+        <Reference Include="System" Private="false" />
+        <Reference Include="System.Core" Private="false" />
+        <Reference Include="System.Data" Private="false" />
+        <Reference Include="System.Xml" Private="false" />
     </ItemGroup>
     <ItemGroup>
         <AdditionalFiles Include="$(SharedPath)FodyWeavers.xml" />

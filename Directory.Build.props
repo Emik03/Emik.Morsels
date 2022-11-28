@@ -84,12 +84,12 @@
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
         <WeaverFiles Include="$(Divorce)Divorce.Fody.dll" />
         <PackageReference Include="Theraot.Core" Version="3.2.11" />
-        <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" />
+        <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false" />
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
-        <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" />
-        <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" />
-        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" />
-        <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Aliases="global, unity" />
+        <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false" />
+        <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" Private="false" />
+        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false" />
+        <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net35'">
         <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all" />
