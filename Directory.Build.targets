@@ -6,7 +6,7 @@
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-        <Reference Include="mscorlib" Aliases="global, ms" CopyLocal="false" HintPath="$(SharedPath)/References/mscorlib.dll" />
+        <Reference Include="mscorlib" Aliases="global, ms" CopyLocal="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
         <Reference Include="System" />
         <Reference Include="System.Core" />
         <Reference Include="System.Data" />
