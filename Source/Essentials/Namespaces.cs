@@ -25,6 +25,8 @@ namespace Aetos.ComparisonGenerator { }
 
 namespace Emik { }
 
+namespace Emik.Morsels { }
+
 namespace Emik.Results { }
 
 namespace Emik.Results.Extensions { }

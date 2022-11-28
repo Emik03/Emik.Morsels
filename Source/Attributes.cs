@@ -5,8 +5,8 @@
 #pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1216, SA1402, SA1403, SA1649
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-#endif
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+#endif
 using static System.AttributeTargets;
 
 namespace System.Diagnostics.CodeAnalysis
