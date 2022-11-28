@@ -28,7 +28,18 @@ global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
-global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
+#endif
+global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+
+#if NET35
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
+
+namespace System.Diagnostics.Contracts;
+
+using static AttributeTargets;
+
+/// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
+[AttributeUsage(Class | Constructor | Delegate | Event | Parameter | Method | Property)]
+sealed class PureAttribute : Attribute { }
 #endif

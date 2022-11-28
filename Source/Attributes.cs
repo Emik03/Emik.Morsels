@@ -5,7 +5,6 @@
 #pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1216, SA1402, SA1403, SA1649
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
-global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
 using static System.AttributeTargets;
 
@@ -189,17 +188,6 @@ namespace System.Diagnostics.CodeAnalysis
     /// </summary>
     [AttributeUsage(Constructor)]
     sealed class SetsRequiredMembersAttribute : Attribute { }
-#endif
-}
-
-namespace System.Diagnostics.Contracts
-{
-#if NET35
-    /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
-    [AttributeUsage(
-        Class | Constructor | AttributeTargets.Delegate | AttributeTargets.Event | Parameter | Method | Property
-    )]
-    sealed class PureAttribute : Attribute { }
 #endif
 }
 
