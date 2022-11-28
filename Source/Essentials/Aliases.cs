@@ -41,5 +41,7 @@ using static AttributeTargets;
 
 /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
 [AttributeUsage(Class | Constructor | Delegate | Event | Parameter | Method | Property)]
+#pragma warning disable MA0048
 sealed class PureAttribute : Attribute { }
+#pragma warning restore MA0048
 #endif
