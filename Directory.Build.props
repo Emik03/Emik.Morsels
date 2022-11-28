@@ -6,8 +6,8 @@
         <Destination>/mnt/d/Emik's Modules/Assets/Plugins/</Destination>
         <Celeste>/home/emik/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Absence>/home/emik/RiderProjects/Absence.Fody/bin/netstandard2.0/</Absence>
-        <Ktane>/home/emik/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Divorce>/home/emik/RiderProjects/Divorce.Fody/bin/netstandard2.0/</Divorce>
+        <Ktane>/home/emik/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <ComparisonGenerator>/home/emik/ComparisonGenerator/src/Aetos.ComparisonGenerator/bin/Release/netstandard2.0/</ComparisonGenerator>
     </PropertyGroup>
     <PropertyGroup>
@@ -52,11 +52,11 @@
                 <NullGuard />
                 <Substitute />
                 <Virtuosity />
-                <Divorce />
                 <JetBrainsAnnotations />
                 <LocalsInit Default="false" />
                 <Caseless StringComparison="InvariantCulture" />
                 <InlineMethod />
+                <Divorce />
                 <Absence />
             </Weavers>
         </WeaverConfiguration>
@@ -85,7 +85,6 @@
         <WeaverFiles Include="$(Divorce)Divorce.Fody.dll" />
         <PackageReference Include="Theraot.Core" Version="3.2.11" />
         <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" />
-        <PackageReference Include="Emik.Net20Records" Version="2.0.0" Alias="global, emik" />
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
         <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" />
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" />
@@ -115,7 +114,6 @@
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Type.cs" Link="Source/References/Type.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Range.cs" Link="Source/References/System/Range.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Each.cs" Link="Source/References/Emik/Linq/Each.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Heap.cs" Link="Source/References/Emik/Runtime/Heap.cs" />
