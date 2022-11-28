@@ -141,12 +141,12 @@ static class Stringifier
         {
             null => Null,
             bool b => b ? True : False,
-            char c => isSurrounded ? $@"'{c}'" : $@"{c}",
+            char c => isSurrounded ? $"'{c}'" : $"{c}",
             string s => isSurrounded ? $@"""{s}""" : s,
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
-            IDictionary d => $@"{{ {d.DictionaryStringifier()} }}",
-            ICollection l => $@"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
-            IEnumerable e => $@"[{e.GetEnumerator().EnumeratorStringifier()}]",
+            IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
+            ICollection l => $"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
+            IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier()}]",
             _ => source.StringifyObject(isRecursive),
         };
 
@@ -213,7 +213,7 @@ static class Stringifier
         if (!s_stringifiers.ContainsKey(typeof(T)))
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
 
-        return $@"{typeof(T).Name} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
+        return $"{typeof(T).Name} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
     }
 
     [MustUseReturnValue]
@@ -245,7 +245,7 @@ static class Stringifier
     [MustUseReturnValue]
     static MethodCallExpression GetMethodCaller(PropertyInfo info, Expression param)
     {
-        var exConstant = Expression.Constant($@"{info.Name}{KeyValueSeparator}");
+        var exConstant = Expression.Constant($"{info.Name}{KeyValueSeparator}");
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (info.PropertyType.IsByRefLike)
