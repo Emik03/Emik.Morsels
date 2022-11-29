@@ -201,6 +201,33 @@ namespace System.Runtime.CompilerServices
     [ExcludeFromCodeCoverage, DebuggerNonUserCode]
     static class IsExternalInit { }
 #endif
+#if !NET5_0_OR_GREATER
+    /// <summary>
+    /// Used to indicate to the compiler that a method should be called in its containing module's initializer.
+    /// </summary>
+    /// <remarks><para>
+    /// When one or more valid methods with this attribute are found in a compilation,
+    /// the compiler will emit a module initializer that calls each of the attributed methods.<br />
+    /// Certain requirements are imposed on any method targeted with this attribute:
+    /// </para><list type="bullet">
+    /// <item><description>The method must be <see langword="static"/>.</description></item>
+    /// <item><description>
+    /// The method must be an ordinary member method, as opposed to a property accessor,
+    /// constructor, local function, and so on.
+    /// </description></item>
+    /// <item><description>The method must be parameterless..</description></item>
+    /// <item><description>The method must return <see langword="void"/>.</description></item>
+    /// <item><description>The method must not be generic or be contained in a generic type.</description></item>
+    /// <item><description>
+    /// The method's effective accessibility must be <see langword="internal"/> or <see langword="public"/>.
+    /// </description></item>
+    /// </list><para>
+    /// For more information, see
+    /// https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer.
+    /// </para></remarks>
+    [AttributeUsage(Method, Inherited = false)]
+    sealed class ModuleInitializerAttribute : Attribute { }
+#endif
 #if NET40
     /// <inheritdoc />
     [AttributeUsage(Parameter)]
