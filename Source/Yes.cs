@@ -72,6 +72,6 @@ static class YesFactory
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The <see cref="Yes{T}"/> instance that can be yielded forever.</returns>
-    [Inline, Pure]
+    [Pure]
     internal static Yes<T> Forever<T>(this T source) => source;
 }

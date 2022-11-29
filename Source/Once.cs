@@ -206,6 +206,6 @@ static class OnceFactory
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
-    [Inline, Pure]
+    [Pure]
     internal static Once<T> Yield<T>(this T source) => source;
 }

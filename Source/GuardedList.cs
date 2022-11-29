@@ -118,7 +118,7 @@ static class GuardedFactory
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="GuardedList{T}"/>.</param>
     /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Inline, Pure]
+    [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     internal static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
         iterable is null

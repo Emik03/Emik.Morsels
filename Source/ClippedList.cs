@@ -92,7 +92,7 @@ static class ClippedFactory
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="ClippedList{T}"/>.</param>
     /// <returns>A <see cref="ClippedList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Inline, Pure]
+    [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     internal static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
         iterable is null

@@ -32,7 +32,7 @@ static class NullableItems
     /// The parameter <paramref name="list"/> if all items are non-<see langword="null"/>,
     /// otherwise <see langword="null"/>.
     /// </returns>
-    [Inline, Pure]
+    [Pure]
     internal static IList<T>? ItemNotNull<T>(this IList<T?>? list) =>
         list is null || list.Any(x => x is null) ? null : list;
 

@@ -86,7 +86,7 @@ static class ReadOnlyFactory
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="IReadOnlyList{T}"/>.</param>
     /// <returns>A <see cref="IReadOnlyList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Inline, Pure]
+    [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     internal static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
         iterable is null

@@ -285,7 +285,7 @@ static class Each
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
     /// <param name="num">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
-    [Inline, LinqTunnel, Pure]
+    [LinqTunnel, Pure]
     internal static IEnumerable<int> For(this int num) =>
         Math.Abs(num) is var abs && num < 0
             ? Enumerable.Repeat(abs, abs).Select((x, i) => x - i - 1)
@@ -294,7 +294,7 @@ static class Each
     /// <summary>Gets an enumeration of a number.</summary>
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Inline, Pure]
+    [Pure]
     internal static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
 
     /// <summary>
@@ -306,7 +306,7 @@ static class Each
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
-    [Inline, LinqTunnel, Pure]
+    [LinqTunnel, Pure]
     internal static IEnumerable<TExternal> For<TExternal>([NonNegativeValue] this int upper, TExternal external) =>
         Enumerable.Repeat(external, upper);
 
