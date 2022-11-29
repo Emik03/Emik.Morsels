@@ -57,7 +57,7 @@ Anything span-related will not be supported prior to .NET Standard 2.1, and .NET
 
 ## Modified Standard Library
 
-Emik.Morsels also contains an IL-modified version of the .NET Framework 3.5 reference assembly. This is a reference assembly that has a weaved `System.Type.op_Equality`, allowing you to use record types without [Emik.Net20Records](https://github.com/Emik03/Emik.Net20Records)&larr;
+Emik.Morsels also contains an IL-modified version of the .NET Framework 3.5 reference assembly. This is a reference assembly that has a weaved `System.Type.op_Equality`, allowing you to use record types without [Emik.Net20Records](https://github.com/Emik03/Emik.Net20Records).
 
 This method is attributed with [`InlineAttribute`](https://github.com/oleg-st/InlineMethod.Fody) to ensure removal to the modified reference, changing it to a simple `ceq` (`(object)lh == rh`) instruction.
 
