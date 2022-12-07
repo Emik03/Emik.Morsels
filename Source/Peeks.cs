@@ -18,6 +18,7 @@ static class Peeks
 #endif
         Console.WriteLine;
 
+#pragma warning disable CS1574
     /// <summary>
     /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
     /// </summary>
@@ -26,6 +27,7 @@ static class Peeks
     /// and to allow the consumer to be able to remove this method to the same <see cref="OnWrite"/>.
     /// </remarks>
     /// <param name="message">The value to send a message.</param>
+#pragma warning restore CS1574
     internal static void Shout(string message)
     {
         System.Diagnostics.Debug.WriteLine(message);
