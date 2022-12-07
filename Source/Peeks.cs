@@ -10,6 +10,7 @@ static class Peeks
 #pragma warning restore MA0048
 {
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
+    // ReSharper disable once EventNeverSubscribedTo.Global
     internal static event Action<string> OnWrite =
         Shout +
 #if NET35
