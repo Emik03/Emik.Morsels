@@ -9,18 +9,44 @@ namespace Emik.Morsels;
 static class Peeks
 #pragma warning restore MA0048
 {
-    /// <summary>Quick and dirty debugging function.</summary>
+    /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
+    internal static event Action<string> OnWrite =
+        Shout +
+#if NET35
+        UnityEngine.Debug.Log +
+#endif
+        Console.WriteLine;
+
+    /// <summary>
+    /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
+    /// </summary>
+    /// <remarks>
+    /// This method exists to be able to hook both conditional methods in <see cref="OnWrite"/>,
+    /// and to allow the consumer to be able to remove this method to the same <see cref="OnWrite"/>.
+    /// </remarks>
     /// <param name="message">The value to send a message.</param>
-    internal static void Write(this string message)
+    internal static void Shout(string message)
     {
-        Console.WriteLine(message); // ReSharper disable once RedundantNameQualifier
         System.Diagnostics.Debug.WriteLine(message);
         Trace.WriteLine(message);
     }
 
-    /// <summary>Quick and dirty debugging function.</summary>
+    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
+    /// <param name="message">The value to send a message.</param>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
+    /// every callback has been manually removed as it is always valid by default.
+    /// </exception>
+    internal static void Write(this string message) =>
+        (OnWrite ?? throw new InvalidOperationException(message))(message);
+
+    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to stringify.</param>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
+    /// every callback has been manually removed as it is always valid by default.
+    /// </exception>
     internal static void Write<T>(T value) => Write(value.Stringify());
 
     /// <summary>Quick and dirty debugging function.</summary>
@@ -33,6 +59,10 @@ static class Peeks
     /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
     /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
     /// <param name="member">Automatically filled by compilers; the member's name where this method was called.</param>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
+    /// every callback has been manually removed as it is always valid by default.
+    /// </exception>
     /// <returns>The parameter <paramref name="value"/>.</returns>
     [return: NotNullIfNotNull(nameof(value))]
     internal static T Debug<T>(
