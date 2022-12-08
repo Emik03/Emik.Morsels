@@ -22,10 +22,10 @@ static class Peeks
     /// <summary>
     /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
     /// </summary>
-    /// <remarks>
+    /// <remarks><para>
     /// This method exists to be able to hook both conditional methods in <see cref="OnWrite"/>,
     /// and to allow the consumer to be able to remove this method to the same <see cref="OnWrite"/>.
-    /// </remarks>
+    /// </para></remarks>
     /// <param name="message">The value to send a message.</param>
 #pragma warning restore CS1574
     internal static void Shout(string message)
