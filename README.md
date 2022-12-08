@@ -20,13 +20,14 @@ Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project
 
 1. Download/clone the repository: `git clone https://github.com/Emik03/Emik.Morsels.git`
 2. Modify the first [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of [Directory.Build.props](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.props), which contains absolute paths that are system-dependent.
-3. Add symbolic links to [Directory.Build.props](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.props) and [Directory.Build.targets](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.targets) for each project that references [Emik.Morsels](https://github.com/Emik03/Emik.Morsels).
+3. Add symbolic links to [Directory.Build.props](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.props), [Directory.Build.targets](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.targets), and [stylecop.json](https://github.com/Emik03/Emik.Morsels/blob/main/stylecop.json) for each project that references [Emik.Morsels](https://github.com/Emik03/Emik.Morsels).
 
 * Windows:
 
 ```bat
 mklink Directory.Build.props <PROPS_PATH>
 mklink Directory.Build.targets <TARGETS_PATH>
+mklink stylecop.json <STYLECOP_PATH>
 ```
 
 * Mac/Linux:
@@ -34,6 +35,7 @@ mklink Directory.Build.targets <TARGETS_PATH>
 ```shell
 ln -s Directory.Build.props <PROPS_PATH>
 ln -s Directory.Build.targets <TARGETS_PATH>
+ln -s stylecop.json <STYLECOP_PATH>
 ```
 
 ## Tree Shaking
