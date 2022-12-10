@@ -8,7 +8,6 @@
         <Absence>/home/emik/RiderProjects/Absence.Fody/bin/netstandard2.0/</Absence>
         <Divorce>/home/emik/RiderProjects/Divorce.Fody/bin/netstandard2.0/</Divorce>
         <Ktane>/home/emik/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
-        <ComparisonGenerator>/home/emik/ComparisonGenerator/src/Aetos.ComparisonGenerator/bin/Release/netstandard2.0/</ComparisonGenerator>
     </PropertyGroup>
     <PropertyGroup>
         <Authors>Emik</Authors>
@@ -110,7 +109,6 @@
         <AdditionalFiles Include="$(SharedPath)stylecop.json" />
         <Content Include="$(SharedPath)Directory.Build.props" />
         <Content Include="$(SharedPath)Directory.Build.targets" />
-        <!-- <Analyzer Include="$(ComparisonGenerator)Aetos.ComparisonGenerator.dll" /> -->
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
     <ItemGroup>
