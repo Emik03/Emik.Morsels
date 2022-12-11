@@ -12,11 +12,11 @@ static class Peeks
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable once EventNeverSubscribedTo.Global
     internal static event Action<string> OnWrite =
-        Shout +
+        (Action<string>)Shout +
 #if NET35
-        UnityEngine.Debug.Log +
+        (Action<string>)UnityEngine.Debug.Log +
 #endif
-        Console.WriteLine;
+        (Action<string>)Console.WriteLine;
 
 #pragma warning disable CS1574
     /// <summary>

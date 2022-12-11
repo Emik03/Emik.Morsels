@@ -100,7 +100,7 @@ readonly struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other) =>
-        other.ToCollectionLazily() is var c && c.Count > 1 && Overlaps(c);
+        other.ToCollectionLazily() is { Count: > 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(Read), Pure]
@@ -113,7 +113,7 @@ readonly struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) =>
-        other.ToCollectionLazily() is var c && c.Count <= 1 && Overlaps(c);
+        other.ToCollectionLazily() is { Count: <= 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
