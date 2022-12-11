@@ -98,10 +98,13 @@
         <Reference Include="FNA" HintPath="$(Celeste)FNA.dll" Private="false" />
         <Reference Include="Celeste" HintPath="$(Celeste)Celeste.exe" Private="false" />
         <Reference Include="DotNetZip" HintPath="$(Celeste)DotNetZip.dll" Private="false" />
-        <PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all" />
         <Reference Include="YamlDotNet" HintPath="$(Celeste)YamlDotNet.dll" Private="false" />
+        <PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all" />
         <Reference Include="MonoMod.Utils" HintPath="$(Celeste)MonoMod.Utils.dll" Private="false" />
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)MMHOOK_Celeste.dll" Private="false" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+        <PackageReference Include="FodyHelpers" Version="6.6.4" />
     </ItemGroup>
     <ItemGroup>
         <WeaverFiles Include="$(Absence)Absence.Fody.dll" />
