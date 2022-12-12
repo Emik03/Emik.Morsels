@@ -55,6 +55,7 @@ static class Peeks
     /// <summary>Quick and dirty debugging function.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to stringify and return.</param>
+    /// <param name="shouldLogExpression">Determines whether <paramref name="expression"/> is logged.</param>
     /// <param name="map">The map callback.</param>
     /// <param name="filter">The filter callback.</param>
     /// <param name="logger">The logging callback.</param>
@@ -70,6 +71,7 @@ static class Peeks
     [return: NotNullIfNotNull(nameof(value))]
     internal static T Debug<T>(
         this T value,
+        bool shouldLogExpression = false,
         [InstantHandle] Converter<T, object?>? map = null,
         [InstantHandle] Predicate<T>? filter = null,
         [InstantHandle] Action<string>? logger = null,
@@ -81,8 +83,8 @@ static class Peeks
     {
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
-                @$"{(map ?? (x => x))(value).Stringify()}
-        of {expression}
+                @$"{(map ?? (x => x))(value).Stringify()}{(shouldLogExpression ? @$"
+        of {expression}" : "")}
         at {member} in {path}:line {line}"
             );
 
