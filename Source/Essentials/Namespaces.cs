@@ -35,6 +35,8 @@ namespace Emik.Unions { }
 
 namespace Emik.Unions.Disjoints { }
 
+namespace Emik.Unions.Mappings { }
+
 namespace Emik.Unions.Tagged { }
 
 namespace InlineIL { }

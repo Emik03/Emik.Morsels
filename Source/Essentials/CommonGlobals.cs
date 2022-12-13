@@ -76,6 +76,7 @@ global using Emik.Results;
 global using Emik.Results.Extensions;
 global using Emik.Unions;
 global using Emik.Unions.Disjoints;
+global using Emik.Unions.Mappings;
 global using Emik.Unions.Tagged;
 global using InlineIL;
 global using InlineMethod;
