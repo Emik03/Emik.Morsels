@@ -62,7 +62,26 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(TargetFramework)' != 'net35'">
+    <PropertyGroup Condition="'$(TargetFramework)' == 'net40'">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy />
+                <Equals />
+                <InfoOf />
+                <InlineIL />
+                <ToString />
+                <NullGuard />
+                <Substitute />
+                <Virtuosity />
+                <JetBrainsAnnotations />
+                <LocalsInit Default="false" />
+                <Caseless StringComparison="InvariantCulture" />
+                <InlineMethod />
+                <Absence />
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy />
@@ -94,6 +113,8 @@
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' != 'net35'">
         <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
         <PackageReference Include="ConfigureAwait.Fody" Version="3.3.1" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
