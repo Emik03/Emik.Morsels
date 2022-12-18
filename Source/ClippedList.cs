@@ -9,7 +9,7 @@ using static CollectionAccessType;
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-sealed class ClippedList<T> : IList<T>, IReadOnlyList<T>
+sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
 {
     [ProvidesContext]
     readonly IList<T> _list;
@@ -85,7 +85,7 @@ sealed class ClippedList<T> : IList<T>, IReadOnlyList<T>
 
 /// <summary>Extension methods that act as factories for <see cref="ClippedList{T}"/>.</summary>
 #pragma warning disable MA0048
-static class ClippedFactory
+static partial class ClippedFactory
 #pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClippedList{T}"/>.</summary>

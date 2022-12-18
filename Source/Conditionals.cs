@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for nullable types and booleans.</summary>
-static class Conditionals
+static partial class Conditionals
 {
     /// <summary>Determines whether the inner value of a nullable value matches a given predicate.</summary>
     /// <typeparam name="T">The type of value.</typeparam>

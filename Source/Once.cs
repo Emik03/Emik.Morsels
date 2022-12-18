@@ -9,7 +9,7 @@ using static CollectionAccessType;
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-readonly struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+readonly partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Once{T}"/> struct. Prepares enumeration of a single item forever.
@@ -152,7 +152,7 @@ readonly struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public struct Enumerator : IEnumerator<T>
+    public partial struct Enumerator : IEnumerator<T>
     {
         bool _hasMoved;
 
@@ -199,7 +199,7 @@ readonly struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
 /// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
 #pragma warning disable MA0048
-static class OnceFactory
+static partial class OnceFactory
 #pragma warning restore MA0048
 {
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>

@@ -9,7 +9,7 @@ namespace Emik.Morsels;
 
 /// <summary>Provides a reference for an <see cref="UnreachableException"/>.</summary>
 #pragma warning disable MA0048
-static class Unforgiving
+static partial class Unforgiving
 #pragma warning restore MA0048
 {
     /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>

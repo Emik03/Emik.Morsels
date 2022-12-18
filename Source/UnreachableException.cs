@@ -8,7 +8,7 @@ namespace System.Diagnostics;
 
 /// <summary>Exception thrown when the program executes an instruction that was thought to be unreachable.</summary>
 [Serializable]
-sealed class UnreachableException : Exception
+sealed partial class UnreachableException : Exception
 {
     const string Arg = "The program executed an instruction that was thought to be unreachable.";
 

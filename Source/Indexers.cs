@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-static class Indexers
+static partial class Indexers
 {
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified

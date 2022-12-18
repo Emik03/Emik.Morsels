@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Provides stringification methods.</summary>
-static class Stringifier
+static partial class Stringifier
 {
     const string
         Else = "th",

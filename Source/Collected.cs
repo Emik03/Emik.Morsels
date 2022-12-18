@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-static class Collected
+static partial class Collected
 {
     /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>

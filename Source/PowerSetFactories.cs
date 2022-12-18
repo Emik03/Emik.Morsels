@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to create power sets.</summary>
-static class PowerSetFactories
+static partial class PowerSetFactories
 {
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]

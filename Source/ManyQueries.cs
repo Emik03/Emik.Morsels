@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Methods that creates enumerations from individual items.</summary>
-static class ManyQueries
+static partial class ManyQueries
 {
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>

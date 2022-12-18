@@ -8,7 +8,7 @@ using static AttributeTargets;
 
 /// <summary>Method to inline.</summary>
 [AttributeUsage(Method)]
-sealed class InlineAttribute : Attribute
+sealed partial class InlineAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="InlineAttribute"/> class.</summary>
     /// <param name="remove">The value to set.</param>

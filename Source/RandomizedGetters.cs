@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for randomized getters.</summary>
-static class RandomizedGetters
+static partial class RandomizedGetters
 {
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>

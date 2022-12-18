@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
 /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-static class Span
+static partial class Span
 {
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
     /// <remarks><para>

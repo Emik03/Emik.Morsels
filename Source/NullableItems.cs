@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 
 #pragma warning disable CA1508
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
-static class NullableItems
+static partial class NullableItems
 {
 #pragma warning disable CS8619
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>

@@ -7,7 +7,7 @@ using static CollectionAccessType;
 
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
 /// <typeparam name="T">The type of element in the list.</typeparam>
-sealed class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
+sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 {
     [ProvidesContext]
     readonly IList<T> _list;
@@ -79,7 +79,7 @@ sealed class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
 /// <summary>Extension methods that act as factories for <see cref="IReadOnlyList{T}"/>.</summary>
 #pragma warning disable MA0048
-static class ReadOnlyFactory
+static partial class ReadOnlyFactory
 #pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="IReadOnlyList{T}"/>.</summary>

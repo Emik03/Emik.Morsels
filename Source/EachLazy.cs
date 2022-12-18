@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-static class EachLazy
+static partial class EachLazy
 {
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -77,7 +77,7 @@ static class EachLazy
 /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
 /// <typeparam name="TExternal">The context element to pass into the <see cref="Delegate"/>.</typeparam>
 #pragma warning disable MA0048
-sealed class Enumerable<T, TExternal> : IEnumerable<T>
+sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #pragma warning restore MA0048
 {
     readonly Delegate _action;

@@ -17,7 +17,7 @@ namespace System.Runtime.CompilerServices;
 /// You can specify multiple <see cref="MethodImplOptions"/> values by using the bitwise OR operator.
 /// </para></remarks>
 [ComVisible(true), Serializable]
-static class MethodImplOptions
+static partial class MethodImplOptions
 {
     /// <summary>The method is implemented in unmanaged code.</summary>
     internal const Options Unmanaged = (Options)(1 << 2);

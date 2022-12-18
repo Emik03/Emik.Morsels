@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to clamp numbers.</summary>
-static class Clamped
+static partial class Clamped
 {
 #if !NET7_0_OR_GREATER
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>

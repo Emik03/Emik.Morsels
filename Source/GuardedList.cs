@@ -10,7 +10,7 @@ using static CollectionAccessType;
 /// an out of range value will always give the <see langword="default"/> value.
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-sealed class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
+sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 {
     [ProvidesContext]
     readonly IList<T> _list;
@@ -111,7 +111,7 @@ sealed class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
 /// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
 #pragma warning disable MA0048
-static class GuardedFactory
+static partial class GuardedFactory
 #pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="GuardedList{T}"/>.</summary>

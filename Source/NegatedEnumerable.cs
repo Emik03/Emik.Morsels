@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
-static class NegatedEnumerable
+static partial class NegatedEnumerable
 {
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>

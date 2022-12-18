@@ -5,7 +5,10 @@ namespace Emik.Morsels;
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
 /// <typeparam name="T">The type of item in the collection.</typeparam>
-sealed class Split<T> : ICollection<T>, IDictionary<bool, T>, IReadOnlyCollection<T>, IReadOnlyDictionary<bool, T>
+sealed partial class Split<T> : ICollection<T>,
+    IDictionary<bool, T>,
+    IReadOnlyCollection<T>,
+    IReadOnlyDictionary<bool, T>
 {
     [ProvidesContext]
     static readonly bool[] s_booleans = { true, false };
@@ -186,7 +189,7 @@ sealed class Split<T> : ICollection<T>, IDictionary<bool, T>, IReadOnlyCollectio
 
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
 #pragma warning disable MA0048
-static class SplitFactory
+static partial class SplitFactory
 #pragma warning restore MA0048
 {
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>

@@ -10,7 +10,7 @@ using static CollectionAccessType;
 /// indices wrap around and will therefore never be out of range.
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-sealed class CircularList<T> : IList<T>, IReadOnlyList<T>
+sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
 {
     [ProvidesContext]
     readonly IList<T> _list;
@@ -86,7 +86,7 @@ sealed class CircularList<T> : IList<T>, IReadOnlyList<T>
 
 /// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
 #pragma warning disable MA0048
-static class CircularFactory
+static partial class CircularFactory
 #pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>

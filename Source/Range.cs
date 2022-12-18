@@ -16,7 +16,7 @@ namespace System;
 /// int[] subArray1 = someArray[0..2]; // { 1, 2 }
 /// int[] subArray2 = someArray[1..^0]; // { 2, 3, 4, 5 }
 /// </code></remarks>
-readonly struct Range : IEquatable<Range>
+readonly partial struct Range : IEquatable<Range>
 {
     /// <summary>Construct a Range object using the start and end indexes.</summary>
     /// <param name="start">Represent the inclusive start index of the range.</param>

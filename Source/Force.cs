@@ -6,7 +6,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to force full enumerations.</summary>
-static class Force
+static partial class Force
 {
     /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>

@@ -7,7 +7,7 @@ global using static Emik.Morsels.MethodGroupings;
 namespace Emik.Morsels;
 
 /// <summary>Methods to create methods.</summary>
-static class MethodGroupings
+static partial class MethodGroupings
 {
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>

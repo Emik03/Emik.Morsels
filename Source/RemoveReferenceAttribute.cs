@@ -10,7 +10,7 @@ namespace RemoveReference;
 /// <summary>Ensures that a reference be removed from the compiled binary.</summary>
 /// <remarks><para>Declared so as to prevent a hard dependency to RemoveReference.Fody.</para></remarks>
 [AttributeUsage(AttributeTargets.Assembly)]
-sealed class RemoveReferenceAttribute : Attribute
+sealed partial class RemoveReferenceAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="RemoveReferenceAttribute"/> class.</summary>
     /// <param name="fullName">The full name of an assembly to remove its reference.</param>

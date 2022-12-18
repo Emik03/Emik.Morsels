@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
-static class Peeks
+static partial class Peeks
 #pragma warning restore MA0048
 {
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>

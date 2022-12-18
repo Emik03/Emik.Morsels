@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to attempt to grab values from enumerables.</summary>
-static class TryTake
+static partial class TryTake
 {
     /// <summary>Attempts to determine the number of elements in a sequence without forcing an enumeration.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>

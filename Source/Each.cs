@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-static class Each
+static partial class Each
 {
 #if !NET6_0_OR_GREATER
     /// <summary>

@@ -7,7 +7,7 @@ namespace System.Collections.Generic;
 #if NET40
 /// <summary>Provides a read-only, covariant view of a generic list.</summary>
 /// <typeparam name="T">The type of item on the list.</typeparam>
-interface IReadOnlyCollection<out T> : IEnumerable<T>
+partial interface IReadOnlyCollection<out T> : IEnumerable<T>
 {
     /// <summary>Gets the amount of items on the list.</summary>
     int Count { get; }
@@ -15,7 +15,7 @@ interface IReadOnlyCollection<out T> : IEnumerable<T>
 
 /// <summary>Represents a read-only collection of elements that can be accessed by index.</summary>
 /// <typeparam name="T">The type of elements in the read-only list.</typeparam>
-interface IReadOnlyList<out T> : IReadOnlyCollection<T>
+partial interface IReadOnlyList<out T> : IReadOnlyCollection<T>
 {
     /// <summary>Performs an index operation on the list.</summary>
     /// <param name="index">The item to retrieve.</param>
@@ -25,7 +25,7 @@ interface IReadOnlyList<out T> : IReadOnlyCollection<T>
 #if !NET35 && !NET5_0_OR_GREATER
 /// <summary>Provides a readonly abstraction of a set.</summary>
 /// <typeparam name="T">The type of elements in the set.</typeparam>
-interface IReadOnlySet<T> : IReadOnlyCollection<T>
+partial interface IReadOnlySet<T> : IReadOnlyCollection<T>
 {
     /// <summary>Determines if the set contains a specific item.</summary>
     /// <param name="item">The item to check if the set contains.</param>

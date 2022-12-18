@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Provides methods for heap-allocation analysis.</summary>
-static class Heap
+static partial class Heap
 {
     /// <summary>
     /// A <see langword="string"/> to use in an <see cref="ObsoleteAttribute"/> to indicate that the API isn't meant

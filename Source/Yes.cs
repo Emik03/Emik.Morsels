@@ -8,7 +8,7 @@ using static CollectionAccessType;
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-readonly struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+readonly partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
@@ -65,7 +65,7 @@ readonly struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
 #pragma warning disable MA0048
-static class YesFactory
+static partial class YesFactory
 #pragma warning restore MA0048
 {
     /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
