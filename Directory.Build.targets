@@ -10,6 +10,7 @@
         <Reference Include="System.Xml" Private="false" />
         <Reference Include="System.Core" Private="false" />
         <Reference Include="System.Data" Private="false" />
+        <Reference Include="System.Numerics" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/System.Numerics.dll" />
         <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
     </ItemGroup>
     <ItemGroup>
