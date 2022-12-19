@@ -178,10 +178,10 @@
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all" />
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
     </ItemGroup>
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40' or '$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'net451' or '$(TargetFramework)' == 'net452'">
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40' or '$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'net451' or '$(TargetFramework)' == 'net452')">
         <PackageReference Update="FSharp.Core" Version="4.1.18" />
     </ItemGroup>
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net471' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net481'">
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net471' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net481')">
         <PackageReference Update="FSharp.Core" Version="4.7.2" />
     </ItemGroup>
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451' and '$(TargetFramework)' != 'net452' and '$(TargetFramework)' != 'net461' and '$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'net47' and '$(TargetFramework)' != 'net471' and '$(TargetFramework)' != 'net472' and '$(TargetFramework)' != 'net48' and '$(TargetFramework)' != 'net481'">
