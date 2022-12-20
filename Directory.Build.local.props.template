@@ -1,11 +1,11 @@
 <Project>
     <PropertyGroup>
-        <SharedPath>../</SharedPath>
-        <Unity>../</Unity>
-        <Destination>../</Destination>
-        <Celeste>../</Celeste>
-        <Absence>../</Absence>
-        <Divorce>../</Divorce>
         <Ktane>../</Ktane>
+        <Unity>../</Unity>
+        <Absence>../</Absence>
+        <Celeste>../</Celeste>
+        <Divorce>../</Divorce>
+        <SharedPath>../</SharedPath>
+        <Destination>../</Destination>
     </PropertyGroup>
 </Project>
