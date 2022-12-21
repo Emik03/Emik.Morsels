@@ -4,10 +4,10 @@
         <Authors>Emik</Authors>
         <Optimize>true</Optimize>
         <Nullable>enable</Nullable>
-        <FileVersion>1</FileVersion>
         <OutputPath>bin</OutputPath>
-        <WarningLevel>5</WarningLevel>
+        <FileVersion>1.0</FileVersion>
         <Title>$(AssemblyName)</Title>
+        <WarningLevel>5</WarningLevel>
         <AnalysisLevel>5</AnalysisLevel>
         <RunAnalyzers>true</RunAnalyzers>
         <SignAssembly>true</SignAssembly>
