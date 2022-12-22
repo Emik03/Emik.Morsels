@@ -1,6 +1,11 @@
+#region Emik.MPL
+
 // <copyright file="Span.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 #if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1
 namespace Emik.Morsels;
 
@@ -19,79 +24,6 @@ static partial class Span
     /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
     /// </para></remarks>
     internal const int Stackalloc = 1 << 10;
-
-    /// <summary>A callback for a span.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    internal delegate void SpanAction<TSpan>(Span<TSpan> span)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The parameter.</param>
-    internal delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    internal delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    internal delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    internal delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    internal delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
-        where TSpan : unmanaged;
-
-    /// <summary>
-    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
-    /// </summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    internal delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    internal delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        Span<TSpan> span,
-        ReadOnlySpan<TParam> param
-    )
-        where TSpan : unmanaged;
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -461,5 +393,78 @@ static partial class Span
 
         return result;
     }
+
+    /// <summary>A callback for a span.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    internal delegate void SpanAction<TSpan>(Span<TSpan> span)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The parameter.</param>
+    internal delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    internal delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    internal delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a return value.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    internal delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter with a return value.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    internal delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
+        where TSpan : unmanaged;
+
+    /// <summary>
+    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
+    /// </summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    internal delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    internal delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
+        Span<TSpan> span,
+        ReadOnlySpan<TParam> param
+    )
+        where TSpan : unmanaged;
 }
 #endif

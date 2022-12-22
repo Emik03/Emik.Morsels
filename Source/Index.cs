@@ -1,9 +1,11 @@
-﻿// <copyright file="Index.cs" company="Emik">
+﻿#region Emik.MPL
+
+// <copyright file="Index.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
+
+#endregion
+
 #if !NET35 && !NETSTANDARD2_1 && !NETCOREAPP
 #pragma warning disable MA0008, SA1515, SA1611, SA1615, SA1623, SA1642
 namespace System;

@@ -1,6 +1,11 @@
+#region Emik.MPL
+
 // <copyright file="Indexers.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
@@ -13,7 +18,7 @@ static partial class Indexers
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
     /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
-    [Inline, LinqTunnel, Pure]
+    [LinqTunnel, Pure]
     internal static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
 
     /// <summary>
@@ -23,7 +28,7 @@ static partial class Indexers
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
     /// <param name="range">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
-    [Inline, LinqTunnel, Pure]
+    [LinqTunnel, Pure]
     internal static IEnumerable<int> For(this Range range) =>
         range.Start.Value is var start &&
         range.End.Value is var end &&
@@ -66,13 +71,13 @@ static partial class Indexers
     /// <summary>Gets an enumeration of an index.</summary>
     /// <param name="index">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Inline, Pure]
+    [Pure]
     internal static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
 
     /// <summary>Gets an enumeration of a range.</summary>
     /// <param name="range">The range to iterate over.</param>
     /// <returns>An enumeration from the range's start to end.</returns>
-    [Inline, Pure]
+    [Pure]
     internal static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
 
     [Pure]

@@ -1,6 +1,11 @@
+#region Emik.MPL
+
 // <copyright file="Split.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 namespace Emik.Morsels;
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
@@ -35,6 +40,49 @@ sealed partial class Split<T> : ICollection<T>,
     [Pure]
     public T Truthy { get; set; }
 
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
+    [Pure]
+    bool ICollection<T>.IsReadOnly => false;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int ICollection<T>.Count => 2;
+
+    /// <inheritdoc />
+    public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+    {
+        array[arrayIndex] = Truthy;
+        array[arrayIndex + 1] = Falsy;
+    }
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Contains(T item) =>
+        EqualityComparer<T>.Default.Equals(Truthy, item) ||
+        EqualityComparer<T>.Default.Equals(Falsy, item);
+
+    /// <inheritdoc />
+    [Pure]
+    public IEnumerator<T> GetEnumerator()
+    {
+        yield return Truthy;
+        yield return Falsy;
+    }
+
+    /// <inheritdoc />
+    void ICollection<T>.Add(T item) { }
+
+    /// <inheritdoc cref="ICollection{T}.Clear" />
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [Pure]
+    bool ICollection<T>.Remove(T item) => false;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
     /// <inheritdoc />
     [Pure]
     public ICollection<T> Values => this;
@@ -43,37 +91,13 @@ sealed partial class Split<T> : ICollection<T>,
     [Pure]
     bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
 
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-    [Pure]
-    bool ICollection<T>.IsReadOnly => false;
-
     /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int ICollection<KeyValuePair<bool, T>>.Count => 2;
 
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int ICollection<T>.Count => 2;
-
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<T>.Count => 2;
-
     /// <inheritdoc />
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
@@ -90,33 +114,11 @@ sealed partial class Split<T> : ICollection<T>,
     public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? Truthy = item.Value : Falsy = item.Value;
 
     /// <inheritdoc />
-    public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-    {
-        array[arrayIndex] = Truthy;
-        array[arrayIndex + 1] = Falsy;
-    }
-
-    /// <inheritdoc />
     public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
     {
         array[arrayIndex] = new(true, Truthy);
         array[arrayIndex + 1] = new(false, Falsy);
     }
-
-    /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
-    /// <param name="truthy">The value to get assigned as <see cref="Truthy"/>.</param>
-    /// <param name="falsy">The value to get assigned as <see cref="Falsy"/>.</param>
-    public void Deconstruct(out T truthy, out T falsy)
-    {
-        truthy = Truthy;
-        falsy = Falsy;
-    }
-
-    /// <inheritdoc />
-    [Pure]
-    public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(Truthy, item) ||
-        EqualityComparer<T>.Default.Equals(Falsy, item);
 
     /// <inheritdoc />
     [Pure]
@@ -133,24 +135,6 @@ sealed partial class Split<T> : ICollection<T>,
         return true;
     }
 
-    /// <inheritdoc />
-    [Pure]
-    public override string ToString() => $"Split({Truthy}, {Falsy})";
-
-    /// <inheritdoc />
-    [Pure]
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return Truthy;
-        yield return Falsy;
-    }
-
-    /// <inheritdoc />
-    void ICollection<T>.Add(T item) { }
-
-    /// <inheritdoc cref="ICollection{T}.Clear" />
-    void ICollection<T>.Clear() { }
-
     /// <inheritdoc cref="ICollection{T}.Clear" />
     void ICollection<KeyValuePair<bool, T>>.Clear() { }
 
@@ -160,23 +144,11 @@ sealed partial class Split<T> : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    bool ICollection<T>.Remove(T item) => false;
-
-    /// <inheritdoc />
-    [Pure]
     bool IDictionary<bool, T>.Remove(bool key) => false;
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.ContainsKey" />
     [Pure]
     bool IDictionary<bool, T>.ContainsKey(bool key) => true;
-
-    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
-    [Pure]
-    bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [Pure]
@@ -185,6 +157,39 @@ sealed partial class Split<T> : ICollection<T>,
         yield return new(true, Truthy);
         yield return new(false, Falsy);
     }
+
+    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<T>.Count => 2;
+
+    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
+
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
+    [Pure]
+    bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
+
+    /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
+    /// <param name="truthy">The value to get assigned as <see cref="Truthy"/>.</param>
+    /// <param name="falsy">The value to get assigned as <see cref="Falsy"/>.</param>
+    public void Deconstruct(out T truthy, out T falsy)
+    {
+        truthy = Truthy;
+        falsy = Falsy;
+    }
+
+    /// <inheritdoc />
+    [Pure]
+    public override string ToString() => $"Split({Truthy}, {Falsy})";
 }
 
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>

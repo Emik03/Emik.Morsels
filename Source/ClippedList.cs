@@ -1,9 +1,18 @@
-﻿// <copyright file="ClippedList.cs" company="Emik">
+﻿#region Emik.MPL
+
+// <copyright file="ClippedList.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 namespace Emik.Morsels;
 
+#region
+
 using static CollectionAccessType;
+
+#endregion
 
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
@@ -67,10 +76,6 @@ sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T item) => _list.IndexOf(item);
 
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
@@ -78,6 +83,10 @@ sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
+    public override string? ToString() => _list.ToString();
 
     [NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;

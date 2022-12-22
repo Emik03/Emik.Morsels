@@ -1,12 +1,22 @@
+#region Emik.MPL
+
 // <copyright file="Attributes.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 // ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective
 #pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1216, SA1402, SA1403, SA1649
+
+#region
+
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
 using static System.AttributeTargets;
+
+#endregion
 
 namespace System.Diagnostics.CodeAnalysis
 {
@@ -269,7 +279,7 @@ namespace System.Runtime.CompilerServices
     /// not permitted on assemblies. Use at the module level instead to apply to multiple type declarations.
     /// </para></remarks>
     [AttributeUsage(
-        AttributeTargets.Module | Class | Struct | Interface | Constructor | Method | Property | AttributeTargets.Event,
+        AttributeTargets.Module | Class | Struct | Interface | Constructor | Method | Property | Event,
         Inherited = false
     )]
     sealed class SkipLocalsInitAttribute : Attribute { }

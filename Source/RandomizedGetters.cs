@@ -1,6 +1,17 @@
+#region Emik.MPL
+
 // <copyright file="RandomizedGetters.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
+#region
+
+using Random = UnityEngine.Random;
+
+#endregion
+
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for randomized getters.</summary>
@@ -63,10 +74,12 @@ static partial class RandomizedGetters
 
     [Pure]
     static Func<int, int, int> Rand() =>
-#if NET6_0_OR_GREATER
+#if NET35
+        Random.Range;
+#elif NET6_0_OR_GREATER
         Random.Shared.Next;
 #else
         // ReSharper disable once RedundantNameQualifier
-        new System.Random().Next;
+        new Random().Next;
 #endif
 }

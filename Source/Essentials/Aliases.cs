@@ -1,6 +1,13 @@
+#region Emik.MPL
+
 // <copyright file="Aliases.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
+#region
+
 // ReSharper disable RedundantUsingDirective.Global
 #pragma warning disable GlobalUsingsAnalyzer
 #if NET35
@@ -30,6 +37,8 @@ global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReference
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 #endif
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+
+#endregion
 
 #if NET35
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;

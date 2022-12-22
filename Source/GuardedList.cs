@@ -1,9 +1,18 @@
-﻿// <copyright file="GuardedList.cs" company="Emik">
+﻿#region Emik.MPL
+
+// <copyright file="GuardedList.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 namespace Emik.Morsels;
 
+#region
+
 using static CollectionAccessType;
+
+#endregion
 
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
@@ -90,10 +99,6 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T? item) => item is null ? -1 : _list.IndexOf(item);
 
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
 #if NET35 // Good job .NET 3.5 Nullable Analysis.
@@ -104,6 +109,10 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
+    public override string? ToString() => _list.ToString();
 
     [Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
