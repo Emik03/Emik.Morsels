@@ -279,7 +279,7 @@ namespace System.Runtime.CompilerServices
     /// not permitted on assemblies. Use at the module level instead to apply to multiple type declarations.
     /// </para></remarks>
     [AttributeUsage(
-        AttributeTargets.Module | Class | Struct | Interface | Constructor | Method | Property | Event,
+        AttributeTargets.Module | Class | Struct | Interface | Constructor | Method | Property | AttributeTargets.Event,
         Inherited = false
     )]
     sealed class SkipLocalsInitAttribute : Attribute { }

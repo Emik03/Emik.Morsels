@@ -6,12 +6,6 @@
 
 #endregion
 
-#region
-
-using Random = UnityEngine.Random;
-
-#endregion
-
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for randomized getters.</summary>
@@ -75,7 +69,7 @@ static partial class RandomizedGetters
     [Pure]
     static Func<int, int, int> Rand() =>
 #if NET35
-        Random.Range;
+        UnityEngine.Random.Range;
 #elif NET6_0_OR_GREATER
         Random.Shared.Next;
 #else

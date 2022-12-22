@@ -23,20 +23,14 @@ namespace System
     namespace Runtime.CompilerServices
 #pragma warning restore SA1403
     {
-        /// <summary>
-        /// This interface is required for types that want to be indexed into by dynamic patterns.
-        /// </summary>
+        /// <summary>This interface is required for types that want to be indexed into by dynamic patterns.</summary>
         interface ITuple
         {
-            /// <summary>
-            /// The number of positions in this data structure.
-            /// </summary>
+            /// <summary>The number of positions in this data structure.</summary>
             [NonNegativeValue, Pure]
             int Length { get; }
 
-            /// <summary>
-            /// Get the element at position <param name="index"/>.
-            /// </summary>
+            /// <summary>Get the element at position <paramref name="index"/>.</summary>
             [Pure]
             object? this[[NonNegativeValue] int index] { get; }
         }
@@ -65,17 +59,18 @@ namespace System
             /// construction, which <see cref="T:System.ValueTuple" /> occurrences are
             /// meant to carry element names.
             /// </param>
-            /// <remarks>
+            /// <remarks><para>
             /// This constructor is meant to be used on types that contain an
             /// instantiation of <see cref="T:System.ValueTuple" /> that contains
             /// element names.  For instance, if <c>C</c> is a generic type with
-            /// two type parameters, then a use of the constructed type <c>C{<see cref="T:System.ValueTuple`2" />, <see cref="T:System.ValueTuple`3" /></c> might be intended to
+            /// two type parameters, then a use of the constructed type <c>C{<see cref="T:System.ValueTuple`2" />,
+            /// <see cref="T:System.ValueTuple`3" /></c> might be intended to
             /// treat the first type argument as a tuple with element names and the
             /// second as a tuple without element names. In which case, the
             /// appropriate attribute specification should use a
-            /// <c>transformNames</c> value of <c>{ "name1", "name2", null, null,
+            /// <paramref name="transformNames"/> value of <c>{ "name1", "name2", null, null,
             /// null }</c>.
-            /// </remarks>
+            /// </para></remarks>
             public TupleElementNamesAttribute(string[] transformNames) =>
                 _transformNames = transformNames ?? throw new ArgumentNullException(nameof(transformNames));
 
@@ -112,7 +107,7 @@ namespace System
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
-    struct ValueTuple : IEquatable<ValueTuple>,
+    readonly struct ValueTuple : IEquatable<ValueTuple>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -431,7 +426,7 @@ namespace System
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
-    struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
+    readonly struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -591,7 +586,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
+    readonly struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -780,7 +775,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
+    readonly struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -989,7 +984,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
+    readonly struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1221,7 +1216,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
+    readonly struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1475,7 +1470,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
+    readonly struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1753,7 +1748,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
+    readonly struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -2061,7 +2056,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
+    readonly struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
         IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
