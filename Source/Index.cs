@@ -6,7 +6,7 @@
 
 #endregion
 
-#if !NET35 && !NETSTANDARD2_1 && !NETCOREAPP
+#if !NETSTANDARD2_1 && !NETCOREAPP
 #pragma warning disable MA0008, SA1515, SA1611, SA1615, SA1623, SA1642
 namespace System;
 

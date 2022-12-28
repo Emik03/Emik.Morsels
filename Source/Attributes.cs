@@ -20,7 +20,7 @@ using static System.AttributeTargets;
 
 namespace System.Diagnostics.CodeAnalysis
 {
-#if NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_1
+#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
     [AttributeUsage(Field | Parameter | Property)]
     sealed class AllowNullAttribute : Attribute { }
@@ -120,7 +120,7 @@ namespace System.Diagnostics.CodeAnalysis
         public bool ParameterValue { get; }
     }
 #endif
-#if NET40_OR_GREATER || NETSTANDARD
+#if NETFRAMEWORK || NETSTANDARD
     /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values.</summary>
     [AttributeUsage(Method | Property, Inherited = false, AllowMultiple = true)]
     sealed class MemberNotNullAttribute : Attribute
@@ -203,12 +203,16 @@ namespace System.Diagnostics.CodeAnalysis
 
 namespace System.Runtime.CompilerServices
 {
-#if !NET35
+#if !NET5_0_OR_GREATER
     /// <summary>
     /// Reserved to be used by the compiler for tracking metadata.
     /// This class should not be used by developers in source code.
     /// </summary>
-    [ExcludeFromCodeCoverage, DebuggerNonUserCode]
+    [
+#if !NETFRAMEWORK || NET40_OR_GREATER
+        ExcludeFromCodeCoverage,
+#endif
+        DebuggerNonUserCode]
     static class IsExternalInit { }
 #endif
 #if !NET5_0_OR_GREATER
@@ -238,7 +242,7 @@ namespace System.Runtime.CompilerServices
     [AttributeUsage(Method, Inherited = false)]
     sealed class ModuleInitializerAttribute : Attribute { }
 #endif
-#if NET40
+#if NETFRAMEWORK
     /// <inheritdoc />
     [AttributeUsage(Parameter)]
     sealed class CallerFilePathAttribute : Attribute { }
