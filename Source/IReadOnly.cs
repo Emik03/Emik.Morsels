@@ -135,6 +135,7 @@ partial interface IReadOnlySet<T> : IReadOnlyCollection<T>
 /// This interface provides methods for implementing sets,
 /// which are collections that have unique elements and specific operations.
 /// </para></remarks>
+/// <typeparam name="T">The type of elements in the set.</typeparam>
 partial interface ISet<T> : ICollection<T>
 {
     /// <summary>Removes all elements in the specified collection from the current set.</summary>
