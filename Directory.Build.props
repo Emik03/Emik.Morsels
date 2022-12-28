@@ -148,8 +148,8 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/UnreachableException.cs" Link="Source/References/System/Diagnostics/UnreachableException.cs" />
     </ItemGroup>
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Courier.fs" Link="Emik.Morsels/Courier.fs" />
         <Compile Include="**/*.fs" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/Courier.fs" Link="Source/References/Emik/Courier.fs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all" />
