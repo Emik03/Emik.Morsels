@@ -11,13 +11,6 @@
         <Reference Include="System.Numerics" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/System.Numerics.dll" />
         <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
     </ItemGroup>
-    <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
-        <ItemGroup>
-            <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
-                <Aliases>global, ms</Aliases>
-            </ReferencePath>
-        </ItemGroup>
-    </Target>
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
         <PropertyGroup>
             <AliasName>@(PackageReference->'%(Alias)')</AliasName>
@@ -28,6 +21,16 @@
                 <Aliases>$(AliasName)</Aliases>
             </ReferencePath>
         </ItemGroup>
+    </Target>
+    <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+        <ItemGroup>
+            <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
+                <Aliases>global, ms</Aliases>
+            </ReferencePath>
+        </ItemGroup>
+    </Target>
+    <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
+        <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true" />
     </Target>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35'">
         <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" />
