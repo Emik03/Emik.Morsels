@@ -38,7 +38,7 @@
         <TailCalls>true</TailCalls>
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net35'">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' == 'net35'">
         <WeaverConfiguration>
             <Weavers>
                 <Equals />
@@ -57,8 +57,8 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(TargetFramework)' == 'net40'">
-        <WeaverConfiguration>
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' == 'net40'">
             <Weavers>
                 <Lazy />
                 <Equals />
@@ -76,7 +76,7 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy />
@@ -88,6 +88,58 @@
                 <Substitute />
                 <Virtuosity />
                 <JetBrainsAnnotations />
+                <LocalsInit Default="false" />
+                <Caseless StringComparison="InvariantCulture" />
+                <ConfigureAwait ContinueOnCapturedContext="false" />
+                <InlineMethod />
+                <Absence />
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net35'">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals />
+                <InfoOf />
+                <InlineIL />
+                <ToString />
+                <Substitute />
+                <Virtuosity />
+                <LocalsInit Default="false" />
+                <Caseless StringComparison="InvariantCulture" />
+                <InlineMethod />
+                <Divorce />
+                <Absence />
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net40'">
+            <Weavers>
+                <Lazy />
+                <Equals />
+                <InfoOf />
+                <InlineIL />
+                <ToString />
+                <Substitute />
+                <Virtuosity />
+                <LocalsInit Default="false" />
+                <Caseless StringComparison="InvariantCulture" />
+                <InlineMethod />
+                <Absence />
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy />
+                <Equals />
+                <InfoOf />
+                <InlineIL />
+                <ToString />
+                <Substitute />
+                <Virtuosity />
                 <LocalsInit Default="false" />
                 <Caseless StringComparison="InvariantCulture" />
                 <ConfigureAwait ContinueOnCapturedContext="false" />
