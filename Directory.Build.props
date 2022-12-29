@@ -201,6 +201,7 @@
     </ItemGroup>
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Courier.fs" Link="Emik.Morsels/Courier.fs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Memoize.fs" Link="Emik.Morsels/Memoize.fs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/FunctionOperators.fs" Link="Emik.Morsels/FunctionOperators.fs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/TargetFrameworkAttribute.fs" Link="Emik.Morsels/TargetFrameworkAttribute.fs" />
         <Compile Include="**/*.fs" />
