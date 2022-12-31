@@ -5,25 +5,22 @@
         <Optimize>true</Optimize>
         <Nullable>enable</Nullable>
         <OutputPath>bin</OutputPath>
-        <FileVersion>1.0</FileVersion>
         <Title>$(AssemblyName)</Title>
         <WarningLevel>5</WarningLevel>
         <AnalysisLevel>5</AnalysisLevel>
+        <FileVersion>1.0.0</FileVersion>
         <RunAnalyzers>true</RunAnalyzers>
         <SignAssembly>true</SignAssembly>
-        <Version>$(FileVersion)</Version>
         <LangVersion>preview</LangVersion>
         <Deterministic>true</Deterministic>
         <RunCodeAnalysis>true</RunCodeAnalysis>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-        <AssemblyVersion>$(FileVersion)</AssemblyVersion>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
-        <InformationalVersion>$(FileVersion)</InformationalVersion>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
@@ -192,6 +189,7 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Matrix.cs" Link="Source/References/Emik/Collections/Generics/Matrix.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/RandomizedGetters.cs" Link="Source/References/Emik/Collections/RandomizedGetters.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/ReadOnlyList.cs" Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs" />

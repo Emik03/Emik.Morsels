@@ -1,6 +1,9 @@
 <Project>
     <PropertyGroup>
+        <Version>$(FileVersion)</Version>
+        <AssemblyVersion>$(FileVersion)</AssemblyVersion>
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
+        <InformationalVersion>$(FileVersion)</InformationalVersion>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
