@@ -28,7 +28,6 @@
         <AssemblyOriginatorKeyFile>$(SharedPath)private.snk</AssemblyOriginatorKeyFile>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
-        <ProjectPath>$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)')))</ProjectPath>
         <NoWarn>0253;1701;1702;8632;ASYNC0004;CS0436;CA1043;CA1062;CA1303;CA1305;CA1307;CA1309;CA1310;CA1812;CA2007;CA2201;CA2225;DOC203;IDE0052;MA0001;MA0004;MA0009;MA0011;MA0029;MA0046;MA0074;MA0076;SA1000;SA1008;SA1009;SA1010;SA1011;SA1013;SA1101;SA1111;SA1118;SA1122;SA1124;SA1132;SA1133;SA1134;SA1135;SA1200;SA1201;SA1202;SA1205;SA1206;SA1308;SA1309;SA1311;SA1313;SA1400;SA1407;SA1408;SA1414;SA1501;SA1502;SA1503;SA1512;SA1513;SA1516;SA1519;SA1633;SA1648;NU1701;RCS1001;RCS1080;RCS1084;RCS1123;RCS1169;RCS1194;RCS1213;RCS1247;UEA0006</NoWarn>
     </PropertyGroup>
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
