@@ -9,7 +9,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
-        <NoWarn>(NoWarn);CA1707;CS1591;CS1595;GlobalUsingsAnalyzer;MA0048;SA1600;SA1649</NoWarn>
+        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;GlobalUsingsAnalyzer;MA0048;SA1600;SA1649</NoWarn>
     </PropertyGroup>
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all" />
@@ -17,6 +17,7 @@
         <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" PrivateAssets="all" />
         <PackageReference Include="coverlet.collector" Version="3.1.2" PrivateAssets="all" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" PrivateAssets="all" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/NUnit/NUnitGlobals.cs" Link="Source/References/NUnitGlobals.cs" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
         <Reference Include="System" Private="false" />
