@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <OutputPath>bin</OutputPath>
         <WarningLevel>5</WarningLevel>
-        <AnalysisLevel>5</AnalysisLevel>
+        <AnalysisLevel>6</AnalysisLevel>
         <FileVersion>1.0.0</FileVersion>
         <RunAnalyzers>true</RunAnalyzers>
         <SignAssembly>true</SignAssembly>
