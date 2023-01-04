@@ -1,11 +1,23 @@
 <Project>
     <PropertyGroup>
+        <Title>$(AssemblyName)</Title>
         <Version>$(FileVersion)</Version>
         <AssemblyVersion>$(FileVersion)</AssemblyVersion>
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <IsPackable>false</IsPackable>
+        <TargetFramework>net7.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all" />
+        <PackageReference Include="NUnit.Analyzers" Version="3.3.0" PrivateAssets="all" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" PrivateAssets="all" />
+        <PackageReference Include="coverlet.collector" Version="3.1.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" PrivateAssets="all" />
+    </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
         <Reference Include="System" Private="false" />
         <Reference Include="System.Xml" Private="false" />
@@ -34,6 +46,9 @@
     </Target>
     <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true" />
+    </Target>
+    <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and $(!AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <Exec Command="doctest-csharp --input-output $(ProjectPath)" />
     </Target>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35'">
         <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" />
