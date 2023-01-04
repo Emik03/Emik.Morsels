@@ -72,7 +72,9 @@ sealed class Matrix<T> : IList<IList<T>>
 
     /// <summary>Gets the encapsulated list.</summary>
     [ProvidesContext, Pure] // ReSharper disable once AssignNullToNotNullAttribute
+#pragma warning disable CS8603 // Unreachable.
     public IList<T> List => _listLazy?.Invoke() ?? _listEager;
+#pragma warning restore CS8603
 
     /// <inheritdoc />
     [Pure]
@@ -108,7 +110,7 @@ sealed class Matrix<T> : IList<IList<T>>
     }
 
     /// <inheritdoc />
-    public void Insert([NonNegativeValue] int index, IList<T> item)
+    public void Insert([NonNegativeValue] int index, IList<T>? item)
     {
         if (item is not null)
             this[index] = item;
