@@ -17,7 +17,13 @@
         <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" PrivateAssets="all" />
         <PackageReference Include="coverlet.collector" Version="3.1.2" PrivateAssets="all" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <ProjectReference Include="..\*.csproj" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/NUnit/NUnitGlobals.cs" Link="Source/References/NUnitGlobals.cs" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <ProjectReference Include="..\*.fsproj" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
         <Reference Include="System" Private="false" />
