@@ -9,6 +9,7 @@
     </PropertyGroup>
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
+        <NoWarn>(NoWarn);CA1707;CS1591;CS1595;GlobalUsingsAnalyzer;MA0048;SA1600;SA1649</NoWarn>
     </PropertyGroup>
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all" />
