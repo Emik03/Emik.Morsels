@@ -19,6 +19,24 @@ let inline curry6 fn a b c d e f = fn (a, b, c, d, e, f)
 /// Converts the 7-tupled function with the curried equivalent.
 let inline curry7 fn a b c d e f g = fn (a, b, c, d, e, f, g)
 
+/// Maps the 2 arguments into a tuple.
+let inline tuple a b = (a, b)
+
+/// Maps the 3 arguments into a tuple.
+let inline tuple3 a b c = (a, b, c)
+
+/// Maps the 4 arguments into a tuple.
+let inline tuple4 a b c d = (a, b, c, d)
+
+/// Maps the 5 arguments into a tuple.
+let inline tuple5 a b c d e = (a, b, c, d, e)
+
+/// Maps the 6 arguments into a tuple.
+let inline tuple6 a b c d e f = (a, b, c, d, e, f)
+
+/// Maps the 7 arguments into a tuple.
+let inline tuple7 a b c d e f g = (a, b, c, d, e, f, g)
+
 /// Converts the 2-argument curried function with the tupled equivalent.
 let inline uncurry fn (a, b) = fn a b
 
@@ -39,6 +57,9 @@ let inline uncurry7 fn (a, b, c, d, e, f, g) = fn a b c d e f g
 
 /// Invokes the function.
 let inline invoke fn = fn ()
+
+/// Returns the argument.
+let inline id a = a
 
 /// Takes the first element of the tuple.
 let inline left (a, _) = a
