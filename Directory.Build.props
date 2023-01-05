@@ -198,12 +198,11 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/UnreachableException.cs" Link="Source/References/System/Diagnostics/UnreachableException.cs" />
     </ItemGroup>
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
-        <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Courier.fs" Link="Emik.Morsels/Courier.fs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Memoize.fs" Link="Emik.Morsels/Memoize.fs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Randomizer.fs" Link="Emik.Morsels/Randomizer.fs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/FunctionOperators.fs" Link="Emik.Morsels/FunctionOperators.fs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/TargetFrameworkAttribute.fs" Link="Emik.Morsels/TargetFrameworkAttribute.fs" />
-        <Compile Include="**/*.fs" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all" />
@@ -242,6 +241,9 @@
     </ItemGroup>
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451' and '$(TargetFramework)' != 'net452' and '$(TargetFramework)' != 'net461' and '$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'net47' and '$(TargetFramework)' != 'net471' and '$(TargetFramework)' != 'net472' and '$(TargetFramework)' != 'net48' and '$(TargetFramework)' != 'net481'">
         <PackageReference Include="FSharp.Core" Version="7.0.0" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451'">
+        <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
         <WeaverFiles Include="$(Divorce)Divorce.Fody.dll" />
