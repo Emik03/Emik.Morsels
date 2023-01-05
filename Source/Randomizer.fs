@@ -9,6 +9,9 @@ let shuffle fn xs = xs |> Seq.sortBy (fun _ -> fn Int32.MinValue Int32.MaxValue)
 /// Picks a random element from a sequence based on a function.
 let pick fn xs = xs |> shuffle fn |> Seq.nth 0
 
+/// Makes the boolean generator out of the number generator.
+let toBoolRng fn = (fun _ -> fn 0 2 = 0)
+
 /// Attempts to pick a random element from a sequence based on a function.
 /// Returns None if the sequence is empty.
 let tryPick fn xs =
