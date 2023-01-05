@@ -19,12 +19,6 @@ let inline curry6 fn a b c d e f = fn (a, b, c, d, e, f)
 /// Converts the 7-tupled function with the curried equivalent.
 let inline curry7 fn a b c d e f g = fn (a, b, c, d, e, f, g)
 
-/// Converts the 6-tupled function with the curried equivalent.
-let inline curry8 fn a b c d e f g h = fn (a, b, c, d, e, f, g, h)
-
-/// Converts the 7-tupled function with the curried equivalent.
-let inline curry9 fn a b c d e f g h i = fn (a, b, c, d, e, f, g, h, i)
-
 /// Converts the 2-argument curried function with the tupled equivalent.
 let inline uncurry fn (a, b) = fn a b
 
@@ -43,11 +37,20 @@ let inline uncurry6 fn (a, b, c, d, e, f) = fn a b c d e f
 /// Converts the 7-argument curried function with the tupled equivalent.
 let inline uncurry7 fn (a, b, c, d, e, f, g) = fn a b c d e f g
 
-/// Converts the 8-argument curried function with the tupled equivalent.
-let inline uncurry8 fn (a, b, c, d, e, f, g, h) = fn a b c d e f g h
-
-/// Converts the 9-argument curried function with the tupled equivalent.
-let inline uncurry9 fn (a, b, c, d, e, f, g, h, i) = fn a b c d e f g h i
-
 /// Invokes the function.
 let inline invoke fn = fn ()
+
+/// Takes the first element of the tuple.
+let inline left (a, _) = a
+
+/// Takes the second element of the tuple.
+let inline right (_, b) = b
+
+/// Drops the first element from the tuple.
+let inline dropLeft (_, b, c) = (b, c)
+
+/// Drops the second element from the tuple.
+let inline dropMiddle (a, _, c) = (a, c)
+
+/// Drops the third element from the tuple.
+let inline dropRight (a, b, _) = (a, b)
