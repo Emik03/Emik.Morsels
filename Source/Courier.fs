@@ -48,3 +48,6 @@ let inline uncurry8 fn (a, b, c, d, e, f, g, h) = fn a b c d e f g h
 
 /// Converts the 9-argument curried function with the tupled equivalent.
 let inline uncurry9 fn (a, b, c, d, e, f, g, h, i) = fn a b c d e f g h i
+
+/// Invokes the function.
+let inline invoke fn = fn ()
