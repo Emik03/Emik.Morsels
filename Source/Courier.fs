@@ -19,6 +19,12 @@ let inline curry6 fn a b c d e f = fn (a, b, c, d, e, f)
 /// Converts the 7-tupled function with the curried equivalent.
 let inline curry7 fn a b c d e f g = fn (a, b, c, d, e, f, g)
 
+/// Converts the 6-tupled function with the curried equivalent.
+let inline curry8 fn a b c d e f g h = fn (a, b, c, d, e, f, g, h)
+
+/// Converts the 7-tupled function with the curried equivalent.
+let inline curry9 fn a b c d e f g h i = fn (a, b, c, d, e, f, g, h, i)
+
 /// Converts the 2-argument curried function with the tupled equivalent.
 let inline uncurry fn (a, b) = fn a b
 
@@ -36,3 +42,9 @@ let inline uncurry6 fn (a, b, c, d, e, f) = fn a b c d e f
 
 /// Converts the 7-argument curried function with the tupled equivalent.
 let inline uncurry7 fn (a, b, c, d, e, f, g) = fn a b c d e f g
+
+/// Converts the 8-argument curried function with the tupled equivalent.
+let inline uncurry8 fn (a, b, c, d, e, f, g, h) = fn a b c d e f g h
+
+/// Converts the 9-argument curried function with the tupled equivalent.
+let inline uncurry9 fn (a, b, c, d, e, f, g, h, i) = fn a b c d e f g h i
