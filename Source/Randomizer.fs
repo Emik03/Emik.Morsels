@@ -3,11 +3,32 @@ module Emik.Morsels.Randomizer
 
 open System
 
-/// Shuffles a sequence based on a function.
+/// Shuffles the sequence based on the function.
 let shuffle fn xs = xs |> Seq.sortBy (fun _ -> fn Int32.MinValue Int32.MaxValue)
 
-/// Picks a random element from a sequence based on a function.
+/// Picks the random element from the sequence based on the function.
 let pick fn xs = xs |> shuffle fn |> Seq.nth 0
+
+/// Picks the random index from the sequence based on the function.
+let pickIndex fn (xs : _[]) = fn (xs.GetLowerBound 0) (xs.GetLength 0)
+
+/// Picks the random index from the sequence based on the function.
+let pickIndex2 fn (xs : _[,]) =
+    (fn (xs.GetLowerBound 0) (xs.GetLength 0),
+     fn (xs.GetLowerBound 1) (xs.GetLength 1))
+
+/// Picks the random index from the sequence based on the function.
+let pickIndex3 fn (xs : _[,,]) =
+    (fn (xs.GetLowerBound 0) (xs.GetLength 0),
+     fn (xs.GetLowerBound 1) (xs.GetLength 1),
+     fn (xs.GetLowerBound 2) (xs.GetLength 2))
+
+/// Picks the random index from the sequence based on the function.
+let pickIndex4 fn (xs : _[,,,]) =
+    (fn (xs.GetLowerBound 0) (xs.GetLength 0),
+     fn (xs.GetLowerBound 1) (xs.GetLength 1),
+     fn (xs.GetLowerBound 2) (xs.GetLength 2),
+     fn (xs.GetLowerBound 3) (xs.GetLength 3))
 
 /// Makes the boolean generator out of the number generator.
 let toBoolRng fn = (fun _ -> fn 0 2 = 0)
