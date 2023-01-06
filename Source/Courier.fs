@@ -58,15 +58,6 @@ let inline uncurry7 fn (a, b, c, d, e, f, g) = fn a b c d e f g
 /// Invokes the function.
 let inline invoke fn = fn ()
 
-/// Returns the argument.
-let inline id a = a
-
-/// Takes the first element of the tuple.
-let inline left (a, _) = a
-
-/// Takes the second element of the tuple.
-let inline right (_, b) = b
-
 /// Drops the first element from the tuple.
 let inline dropLeft (_, b, c) = (b, c)
 
