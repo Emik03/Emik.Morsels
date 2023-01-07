@@ -1,7 +1,8 @@
-/// Declares a simple memoize function.
-module Emik.Morsels.Memoize
+/// Declares higher-order functions that decorate pre-existing functions.
+module internal Emik.Morsels.FunctionWrappers
 
 open System.Collections.Generic
+open System.Diagnostics
 
 /// Wraps the function around a dictionary such that subsequent
 /// calls to the returned memoized function will retrieve a cached
@@ -19,3 +20,11 @@ let memoize f =
             temp
 
     fn
+
+/// Discards the result of the function and instead gives the execution time.
+let time f =
+    let watch = Stopwatch ()
+    watch.Start ()
+    let _ = f ()
+    watch.Stop ()
+    watch.Elapsed
