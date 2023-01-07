@@ -5,7 +5,7 @@ open System
 
 /// Identifies the version of .NET that a particular assembly was compiled against.
 [<AttributeUsage(AttributeTargets.Assembly); Sealed>]
-type TargetFrameworkAttribute (frameworkName : string) =
+type private TargetFrameworkAttribute (frameworkName : string) =
     inherit Attribute ()
     let mutable _frameworkDisplayName = null
     let _frameworkName = frameworkName

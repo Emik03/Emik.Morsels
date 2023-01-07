@@ -1,5 +1,5 @@
 /// Defines operators for functions.
-module Emik.Morsels.Randomizer
+module internal Emik.Morsels.Randomizer
 
 open System
 

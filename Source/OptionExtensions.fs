@@ -1,5 +1,5 @@
 /// Extension methods for option types.
-module Emik.Morsels.OptionExtensions
+module internal Emik.Morsels.OptionExtensions
 
 type Microsoft.FSharp.Core.Option<'a> with
 

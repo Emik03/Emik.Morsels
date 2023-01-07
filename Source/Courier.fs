@@ -1,5 +1,5 @@
 /// Provides functions to convert tupled functions into curried.
-module Emik.Morsels.Courier
+module internal Emik.Morsels.Courier
 
 /// Converts the 2-tupled function with the curried equivalent.
 let inline curry fn a b = fn (a, b)

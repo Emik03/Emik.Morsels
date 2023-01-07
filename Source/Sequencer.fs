@@ -1,5 +1,5 @@
 /// Defines functions for creating sequences.
-module Emik.Morsels.Sequencer
+module internal Emik.Morsels.Sequencer
 
 /// Determines whether the coordinates are in range for a 2D array.
 let inBounds x y a =
