@@ -1,5 +1,5 @@
-#if NETFRAMEWORK && !NET40_OR_GREATER
 namespace System.Runtime.Versioning
+#if NETFRAMEWORK && !NET40_OR_GREATER
 
 open System
 
