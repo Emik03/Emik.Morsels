@@ -5,14 +5,14 @@ module internal Emik.Morsels.Sequencer
 let contains i s = s |> Seq.exists ((=) i)
 
 /// Determines whether the coordinates are in range for a 2D array.
-let inBounds x y a =
+let inBounds y x a =
     Array2D.base1 a <= y
     && Array2D.base2 a <= x
     && y < Array2D.length1 a
     && x < Array2D.length2 a
 
 /// Determines whether the coordinates are in range for a 3D array.
-let inBounds3 x y z a =
+let inBounds3 z y x a =
     z < Array3D.length1 a
     && y < Array3D.length2 a
     && x < Array3D.length3 a
@@ -21,7 +21,7 @@ let inBounds3 x y z a =
     && a.GetLowerBound 2 <= x
 
 /// Determines whether the coordinates are in range for a 4D array.
-let inBounds4 x y z w a =
+let inBounds4 w z y x a =
     w < Array4D.length1 a
     && z < Array4D.length2 a
     && y < Array4D.length3 a
@@ -32,13 +32,13 @@ let inBounds4 x y z w a =
     && a.GetLowerBound 3 <= x
 
 /// Gets the jagged array from the 2D array.
-let toJagged<'a> (a : 'a[,]) : 'a[][] =
+let toJagged (a : _[,]) =
     [| for y in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
            yield
                [| for x in a.GetLowerBound 1 .. a.GetLength 1 - 1 -> a[y, x] |] |]
 
 /// Gets the jagged array from the 3D array.
-let toJagged3<'a> (a : 'a[,,]) : 'a[][][] =
+let toJagged3 (a : _[,,]) =
     [| for z in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
            yield
                [| for y in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -47,7 +47,7 @@ let toJagged3<'a> (a : 'a[,,]) : 'a[][][] =
                                  a[z, y, x] |] |] |]
 
 /// Gets the jagged array from the 4D array.
-let toJagged4<'a> (a : 'a[,,,]) : 'a[][][][] =
+let toJagged4 (a : _[,,,]) =
     [| for w in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
            yield
                [| for z in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -60,7 +60,7 @@ let toJagged4<'a> (a : 'a[,,,]) : 'a[][][][] =
                                             a[w, z, y, x] |] |] |] |]
 
 /// Gets the sequence from the 2D array.
-let toSeq (a : 'a[,]) =
+let toSeq (a : _[,]) =
     seq {
         for y in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
             for x in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -68,7 +68,7 @@ let toSeq (a : 'a[,]) =
     }
 
 /// Gets the sequence from the 3D array.
-let toSeq3 (a : 'a[,,]) =
+let toSeq3 (a : _[,,]) =
     seq {
         for z in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
             for y in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -77,7 +77,7 @@ let toSeq3 (a : 'a[,,]) =
     }
 
 /// Gets the sequence from the 4D array.
-let toSeq4 (a : 'a[,,,]) =
+let toSeq4 (a : _[,,,]) =
     seq {
         for w in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
             for z in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -87,11 +87,11 @@ let toSeq4 (a : 'a[,,,]) =
     }
 
 /// Returns the corresponding index if in range for a 2D array, else None.
-let tryGet x y a = if inBounds x y a then Some (a[y, x]) else None
+let tryGet y x a = if a |> inBounds y x then Some (a[y, x]) else None
 
 /// Returns the corresponding index if in range for a 3D array, else None.
-let tryGet3 x y z a = if inBounds3 x y z a then Some (a[z, y, x]) else None
+let tryGet3 z y x a = if a |> inBounds3 z y x then Some (a[z, y, x]) else None
 
 /// Returns the corresponding index if in range for a 4D array, else None.
-let tryGet4 x y z w a =
-    if inBounds4 x y z w a then Some (a[w, z, y, x]) else None
+let tryGet4 w z y x a =
+    if a |> inBounds4 w z y x then Some (a[w, z, y, x]) else None
