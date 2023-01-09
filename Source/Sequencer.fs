@@ -1,6 +1,9 @@
 /// Defines functions for creating sequences.
 module internal Emik.Morsels.Sequencer
 
+/// Determines whether any element in the sequence is equal to the argument.
+let contains i s = s |> Seq.exists ((=) i)
+
 /// Determines whether the coordinates are in range for a 2D array.
 let inBounds x y a =
     Array2D.base1 a <= y
@@ -27,6 +30,34 @@ let inBounds4 x y z w a =
     && a.GetLowerBound 1 <= z
     && a.GetLowerBound 2 <= y
     && a.GetLowerBound 3 <= x
+
+/// Gets the jagged array from the 2D array.
+let toJagged<'a> (a : 'a[,]) : 'a[][] =
+    [| for y in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
+           yield
+               [| for x in a.GetLowerBound 1 .. a.GetLength 1 - 1 -> a[y, x] |] |]
+
+/// Gets the jagged array from the 3D array.
+let toJagged3<'a> (a : 'a[,,]) : 'a[][][] =
+    [| for z in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
+           yield
+               [| for y in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
+                      yield
+                          [| for x in a.GetLowerBound 2 .. a.GetLength 2 - 1 ->
+                                 a[z, y, x] |] |] |]
+
+/// Gets the jagged array from the 4D array.
+let toJagged4<'a> (a : 'a[,,,]) : 'a[][][][] =
+    [| for w in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
+           yield
+               [| for z in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
+                      yield
+                          [| for y in a.GetLowerBound 2 .. a.GetLength 2 - 1 do
+                                 yield
+                                     [| for x in
+                                            a.GetLowerBound 3 .. a.GetLength 3
+                                                                 - 1 ->
+                                            a[w, z, y, x] |] |] |] |]
 
 /// Gets the sequence from the 2D array.
 let toSeq (a : 'a[,]) =
