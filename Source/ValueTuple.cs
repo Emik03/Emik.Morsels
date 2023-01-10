@@ -8,7 +8,7 @@
 
 // ReSharper disable ArrangeAttributes FunctionComplexityOverflow SuspiciousTypeConversion.Global
 // Shamelessly stolen from https://raw.githubusercontent.com/igor-tkachev/Portable.System.ValueTuple/master/Portable.System.ValueTuple.cs
-// and creatively reworked.
+// and creatively reworked. Which is...
 //
 // Shamelessly stolen from https://github.com/dotnet/roslyn/blob/master/src/Compilers/Test/Resources/Core/NetFX/ValueTuple/ValueTuple.cs
 // and creatively reworked.
