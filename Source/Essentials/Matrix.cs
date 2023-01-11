@@ -67,30 +67,40 @@ sealed class Matrix<T> : IList<IList<T>>
     }
 
     /// <summary>Gets the amount of items per list.</summary>
-    [Pure]
-    public int CountPerList => _countPerListLazy?.Invoke() ?? _countPerListEager;
+    public int CountPerList
+    {
+        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
+    }
 
     /// <summary>Gets the encapsulated list.</summary>
-    [ProvidesContext, Pure] // ReSharper disable once AssignNullToNotNullAttribute
+    [ProvidesContext]
 #pragma warning disable CS8603 // Unreachable.
-    public IList<T> List => _listLazy?.Invoke() ?? _listEager;
+    public IList<T> List
+    {
+        [Pure] // ReSharper disable once AssignNullToNotNullAttribute
+        get => _listLazy?.Invoke() ?? _listEager;
+    }
 #pragma warning restore CS8603
 
     /// <inheritdoc />
-    [Pure]
     public IList<T> this[[NonNegativeValue] int index]
     {
-        get => new Slice(this, index);
+        [Pure] get => new Slice(this, index);
         set => Add(value);
     }
 
     /// <inheritdoc />
-    [Pure]
-    public bool IsReadOnly => List.IsReadOnly;
+    public bool IsReadOnly
+    {
+        [Pure] get => List.IsReadOnly;
+    }
 
     /// <inheritdoc />
-    [NonNegativeValue, Pure]
-    public int Count => List.Count / CountPerList;
+    [NonNegativeValue]
+    public int Count
+    {
+        [Pure] get => List.Count / CountPerList;
+    }
 
     /// <inheritdoc />
     public void Add(IList<T>? item) => item?.ToList().ForEach(List.Add);
@@ -159,18 +169,21 @@ sealed class Matrix<T> : IList<IList<T>>
         }
 
         /// <inheritdoc />
-        [Pure]
-        public bool IsReadOnly => _matrix.List.IsReadOnly;
+        public bool IsReadOnly
+        {
+            [Pure] get => _matrix.List.IsReadOnly;
+        }
 
         /// <inheritdoc />
-        [Pure]
-        public int Count => _matrix.CountPerList;
+        public int Count
+        {
+            [Pure] get => _matrix.CountPerList;
+        }
 
         /// <inheritdoc />
-        [Pure]
         public T this[[NonNegativeValue] int index]
         {
-            get => _matrix.List[Count * _ordinal + index];
+            [Pure] get => _matrix.List[Count * _ordinal + index];
             set => _matrix.List[Count * _ordinal + index] = value;
         }
 
