@@ -8,7 +8,7 @@
 
 #region
 
-// ReSharper disable RedundantUsingDirective.Global
+// ReSharper disable MissingBlankLines RedundantUsingDirective.Global
 #pragma warning disable GlobalUsingsAnalyzer
 #if NET35
 extern alias unity;
@@ -29,23 +29,23 @@ global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttrib
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
-global using NotifyPropertyChangedInvocatorAttribute =
-    unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
+global using NotifyPropertyChangedInvocatorAttribute = unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 #endif
-global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
-
-#endregion
-
 #if NET35
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
-
+#if WAWA
+global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
+#else
+global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+#endif
+#endregion
+#if !WAWA
 namespace System.Diagnostics.Contracts;
-
 using static AttributeTargets;
 
 /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
@@ -53,4 +53,5 @@ using static AttributeTargets;
 #pragma warning disable MA0048
 sealed class PureAttribute : Attribute { }
 #pragma warning restore MA0048
+#endif
 #endif
