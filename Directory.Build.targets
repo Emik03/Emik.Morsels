@@ -1,4 +1,5 @@
 <Project>
+    <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
         <Title>$(AssemblyName)</Title>
         <Version>$(FileVersion)</Version>
@@ -7,10 +8,12 @@
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
     </PropertyGroup>
+    <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;GlobalUsingsAnalyzer;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
+    <!-- References for Unit Test projects. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all" />
         <PackageReference Include="NUnit.Analyzers" Version="3.3.0" PrivateAssets="all" />
@@ -18,13 +21,16 @@
         <PackageReference Include="coverlet.collector" Version="3.1.2" PrivateAssets="all" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" PrivateAssets="all" />
     </ItemGroup>
+    <!-- Unit Tests are auto-generated; do not use Emik.Morsels. Include global imports for convenience though. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <ProjectReference Include="..\*.csproj" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/NUnit/NUnitGlobals.cs" Link="Source/References/NUnitGlobals.cs" />
     </ItemGroup>
+    <!-- Unit Tests are auto-generated; do not use Emik.Morsels. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <ProjectReference Include="..\*.fsproj" />
     </ItemGroup>
+    <!-- Add explicit references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
         <Reference Include="System" Private="false" />
         <Reference Include="System.Xml" Private="false" />
@@ -33,6 +39,7 @@
         <Reference Include="System.Numerics" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/System.Numerics.dll" />
         <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
     </ItemGroup>
+    <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
         <PropertyGroup>
             <AliasName>@(PackageReference->'%(Alias)')</AliasName>
@@ -44,6 +51,7 @@
             </ReferencePath>
         </ItemGroup>
     </Target>
+    <!-- Allows mscorlib to have a distinct alias. -->
     <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
         <ItemGroup>
             <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
@@ -51,15 +59,19 @@
             </ReferencePath>
         </ItemGroup>
     </Target>
+    <!-- Creates the missing file, or else the build fails. -->
     <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true" />
     </Target>
+    <!-- Compile and run doctests. -->
     <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
         <Exec Command="doctest-csharp --help || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/" />
     </Target>
+    <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35'">
         <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" />
     </Target>
+    <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Mac or Linux. -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35'">
         <Exec Command="cp $(Out) &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" />
     </Target>
