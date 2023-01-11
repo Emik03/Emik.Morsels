@@ -63,9 +63,13 @@
     <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true" />
     </Target>
-    <!-- Compile and run doctests. -->
+    <!-- Compile and run doctests for Windows. -->
     <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
-        <Exec Command="doctest-csharp --help || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/ &amp;&amp; dotnet test $(MSBuildProjectFile)" />
+        <Exec Command="where -q doctest-csharp || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/ &amp;&amp; dotnet test $(MSBuildProjectFile)" />
+    </Target>
+    <!-- Compile and run doctests for Mac or Linux. -->
+    <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+        <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/ &amp;&amp; dotnet test $(MSBuildProjectFile)" />
     </Target>
     <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35'">
