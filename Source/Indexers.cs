@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
@@ -87,3 +88,4 @@ static partial class Indexers
     static Range RangeStart(Range range, int length) =>
         new(IndexStart(range.Start, length), IndexStart(range.End, length));
 }
+#endif

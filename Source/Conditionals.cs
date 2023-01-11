@@ -96,27 +96,6 @@ static partial class Conditionals
         return value;
     }
 
-    /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
-    /// <typeparam name="T">The type of value to filter.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
-    /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
-    [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
-#pragma warning disable CS8619
-        iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
-#pragma warning restore CS8619
-
-    /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
-    /// <typeparam name="T">The type of value to filter.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
-    /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
-    [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
-        where T : struct =>
-#pragma warning disable CS8629
-        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();
-#pragma warning restore CS8629
-
     /// <summary>Gives an optional value based on a condition.</summary>
     /// <remarks><para>The parameter is eagerly evaluated.</para></remarks>
     /// <typeparam name="T">The type of value.</typeparam>
@@ -164,4 +143,27 @@ static partial class Conditionals
     /// </returns>
     [MustUseReturnValue]
     internal static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
+
+#if !NET20 && !NET30
+    /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
+    /// <typeparam name="T">The type of value to filter.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
+#pragma warning disable CS8619
+        iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
+#pragma warning restore CS8619
+
+    /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
+    /// <typeparam name="T">The type of value to filter.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
+        where T : struct =>
+#pragma warning disable CS8629
+        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();
+#pragma warning restore CS8629
+#endif
 }

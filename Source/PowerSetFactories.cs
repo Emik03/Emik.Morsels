@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to create power sets.</summary>
@@ -41,3 +42,4 @@ static partial class PowerSetFactories
             ? Enumerable.Range(0, 1 << count).Select(mask => iterable.Where((_, j) => (1 << j & mask) is not 0))
             : throw new ArgumentOutOfRangeException(nameof(count), count, $"Cannot exceed bits in {nameof(Int32)}.");
 }
+#endif

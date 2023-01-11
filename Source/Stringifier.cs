@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Provides stringification methods.</summary>
@@ -266,3 +267,4 @@ static partial class Stringifier
         return Expression.Call(s_combine, exConstant, exCall);
     }
 }
+#endif

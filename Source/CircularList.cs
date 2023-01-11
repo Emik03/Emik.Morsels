@@ -93,6 +93,7 @@ sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
 }
 
+#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class CircularFactory
@@ -109,3 +110,4 @@ static partial class CircularFactory
             ? null
             : iterable as CircularList<T> ?? new CircularList<T>(iterable as IList<T> ?? iterable.ToList());
 }
+#endif

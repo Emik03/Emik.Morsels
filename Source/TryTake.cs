@@ -80,6 +80,18 @@ static partial class TryTake
             ? list.Count is 0 ? fallback : list[list.Count - 1]
             : iterable.EnumerateOr(fallback);
 
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <typeparam name="TKey">The key item in the collection.</typeparam>
+    /// <typeparam name="TValue">The value item in the collection.</typeparam>
+    /// <param name="dictionary">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="key">The key to use to get the value.</param>
+    /// <returns>An element from the parameter <paramref name="dictionary"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue]
+    internal static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
+        where TKey : notnull =>
+        dictionary.TryGetValue(key, out var value) ? value : default;
+
+#if !NET20 && !NET30
     /// <summary>Returns the enumeration, or an empty enumeration.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The enumeration to potentially return.</param>
@@ -130,15 +142,5 @@ static partial class TryTake
             _ => throw Unreachable,
         };
     }
-
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <typeparam name="TKey">The key item in the collection.</typeparam>
-    /// <typeparam name="TValue">The value item in the collection.</typeparam>
-    /// <param name="dictionary">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="key">The key to use to get the value.</param>
-    /// <returns>An element from the parameter <paramref name="dictionary"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue]
-    internal static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
-        where TKey : notnull =>
-        dictionary.TryGetValue(key, out var value) ? value : default;
+#endif
 }

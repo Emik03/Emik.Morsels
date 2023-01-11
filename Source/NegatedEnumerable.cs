@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
@@ -92,3 +93,4 @@ static partial class NegatedEnumerable
     ) =>
         source.Where(Not2(predicate));
 }
+#endif

@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
@@ -261,3 +262,4 @@ static partial class MatrixFactory
             ? null
             : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
 }
+#endif

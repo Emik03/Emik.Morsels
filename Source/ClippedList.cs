@@ -92,6 +92,7 @@ sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }
 
+#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="ClippedList{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class ClippedFactory
@@ -108,3 +109,4 @@ static partial class ClippedFactory
             ? null
             : iterable as ClippedList<T> ?? new ClippedList<T>(iterable as IList<T> ?? iterable.ToList());
 }
+#endif

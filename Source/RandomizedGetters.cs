@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for randomized getters.</summary>
@@ -77,3 +78,4 @@ static partial class RandomizedGetters
         new Random().Next;
 #endif
 }
+#endif

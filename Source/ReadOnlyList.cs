@@ -86,6 +86,7 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     public override string? ToString() => _list.ToString();
 }
 
+#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="IReadOnlyList{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class ReadOnlyFactory
@@ -102,3 +103,4 @@ static partial class ReadOnlyFactory
             ? null
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? iterable.ToList());
 }
+#endif

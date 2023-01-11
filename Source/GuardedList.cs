@@ -101,7 +101,7 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-#if NET35 // Good job .NET 3.5 Nullable Analysis.
+#if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
 #pragma warning disable CS8619
 #endif
     public IEnumerator<T?> GetEnumerator() => _list.GetEnumerator();
@@ -118,6 +118,7 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     bool IsIn(int index) => index >= 0 && index < Count;
 }
 
+#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class GuardedFactory
@@ -134,3 +135,4 @@ static partial class GuardedFactory
             ? null
             : iterable as GuardedList<T> ?? new GuardedList<T>(iterable as IList<T> ?? iterable.ToList());
 }
+#endif

@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 #pragma warning disable CA1710, CA1815
 namespace Emik.Morsels;
 
@@ -218,3 +219,4 @@ static partial class OnceFactory
     [Pure]
     internal static Once<T> Yield<T>(this T source) => source;
 }
+#endif

@@ -30,6 +30,7 @@ static partial class NullableItems
     [return: NotNullIfNotNull(nameof(iterator))]
     internal static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
 
+#if !NET20 && !NET30
     /// <summary>Returns the list if all items are non-null.</summary>
     /// <typeparam name="T">The type of list.</typeparam>
     /// <param name="list">The list to filter.</param>
@@ -40,6 +41,7 @@ static partial class NullableItems
     [Pure]
     internal static IList<T>? ItemNotNull<T>(this IList<T?>? list) =>
         list is null || list.Any(x => x is null) ? null : list;
+#endif
 
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>

@@ -6,6 +6,7 @@
 
 #endregion
 
+#if !NET20 && !NET30
 namespace Emik.Morsels;
 
 /// <summary>Methods that creates enumerations from individual items.</summary>
@@ -182,3 +183,4 @@ static partial class ManyQueries
         iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
         Enumerable.Empty<TResult>();
 }
+#endif

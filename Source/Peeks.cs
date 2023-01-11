@@ -124,4 +124,7 @@ static partial class Peeks
         return value;
     }
 #endif
+#if NET20 || NET30
+    static string Stringify<T>(this T value) => value?.ToString() ?? "";
+#endif
 }
