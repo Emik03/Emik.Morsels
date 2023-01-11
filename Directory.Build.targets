@@ -55,7 +55,7 @@
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true" />
     </Target>
     <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
-        <Exec Command="doctest-csharp --input-output $(MSBuildProjectDirectory)/" />
+        <Exec Command="doctest-csharp --help || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/" />
     </Target>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35'">
         <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" />
