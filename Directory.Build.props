@@ -230,7 +230,7 @@
         <PackageReference Include="Roslynator.Analyzers" Version="4.1.2" PrivateAssets="all" />
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all" />
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.1.2" PrivateAssets="all" />
-        <PackageReference Include="Absence.Fody" Version="1.0.0" PrivateAssets="all" ExcludeAssets="contentfiles" />
+        <PackageReference Include="Absence.Fody" Version="1.0.1" PrivateAssets="all" ExcludeAssets="contentfiles" />
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all" />
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" PrivateAssets="all" IncludeAssets="compile" />
@@ -252,7 +252,7 @@
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
         <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false" />
         <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false" />
-        <PackageReference Include="Divorce.Fody" Version="1.0.0" PrivateAssets="all" ExcludeAssets="contentfiles" />
+        <PackageReference Include="Divorce.Fody" Version="1.0.1" PrivateAssets="all" ExcludeAssets="contentfiles" />
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" Private="false" />
         <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false" />
         <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity" />
