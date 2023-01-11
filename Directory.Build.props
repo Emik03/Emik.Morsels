@@ -161,6 +161,7 @@
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Heap.cs" Link="Source/References/Emik/Runtime/Heap.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Span.cs" Link="Source/References/Emik/Buffers/Span.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs" />
+        <Compile Include="$(SharedPath)Emik.Morsels/Source/Delegates.cs" Link="Source/References/System/Delegates.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs" />
         <Compile Include="$(SharedPath)Emik.Morsels/Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />

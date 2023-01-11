@@ -16,6 +16,12 @@ namespace System.Diagnostics.Contracts { }
 
 namespace System.Dynamic { }
 
+namespace System.IO.Pipes { }
+
+namespace System.Linq { }
+
+namespace System.Linq.Expressions { }
+
 namespace System.Net.Http { }
 
 namespace System.Numerics { }
@@ -25,6 +31,8 @@ namespace System.Runtime.ExceptionServices { }
 namespace System.Threading.Tasks { }
 
 namespace System.Threading.Tasks.Sources { }
+
+namespace System.Xml.Linq { }
 
 namespace Aetos.ComparisonGenerator { }
 

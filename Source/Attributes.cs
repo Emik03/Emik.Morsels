@@ -215,6 +215,13 @@ namespace System.Runtime.CompilerServices
         DebuggerNonUserCode]
     static class IsExternalInit { }
 #endif
+#if NET20 || NET30
+    /// <summary>
+    /// Indicates that a method is an extension method, or that a class or assembly contains extension methods.
+    /// </summary>
+    [AttributeUsage(Method | Class | AttributeTargets.Assembly)]
+    sealed class ExtensionAttribute : Attribute { }
+#endif
 #if !NET5_0_OR_GREATER
     /// <summary>
     /// Used to indicate to the compiler that a method should be called in its containing module's initializer.
