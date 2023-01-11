@@ -6,8 +6,6 @@
 
 #endregion
 
-#region
-
 // ReSharper disable MissingBlankLines RedundantUsingDirective.Global
 #pragma warning disable GlobalUsingsAnalyzer
 #if NET35
@@ -43,7 +41,6 @@ global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
-#endregion
 #if !WAWA
 namespace System.Diagnostics.Contracts;
 using static AttributeTargets;
