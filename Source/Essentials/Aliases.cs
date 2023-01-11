@@ -6,6 +6,8 @@
 
 #endregion
 
+#region
+
 // ReSharper disable MissingBlankLines RedundantUsingDirective.Global
 #pragma warning disable GlobalUsingsAnalyzer
 #if NET35
@@ -27,20 +29,22 @@ global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttrib
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
-global using NotifyPropertyChangedInvocatorAttribute = unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
+global using NotifyPropertyChangedInvocatorAttribute =
+ unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 #endif
-#if NET35
-global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
-global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #if WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
+#endregion
+#if NET35
+global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
+global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #if !WAWA
 namespace System.Diagnostics.Contracts;
 using static AttributeTargets;
