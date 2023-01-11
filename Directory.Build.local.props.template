@@ -2,9 +2,7 @@
     <PropertyGroup>
         <Ktane>../</Ktane>
         <Unity>../</Unity>
-        <Absence>../</Absence>
         <Celeste>../</Celeste>
-        <Divorce>../</Divorce>
         <SharedPath>../</SharedPath>
         <Destination>../</Destination>
     </PropertyGroup>
