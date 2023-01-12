@@ -10,7 +10,6 @@
         <AnalysisLevel>6</AnalysisLevel>
         <FileVersion>1.0.0</FileVersion>
         <RunAnalyzers>true</RunAnalyzers>
-        <SignAssembly>true</SignAssembly>
         <LangVersion>preview</LangVersion>
         <Deterministic>true</Deterministic>
         <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -26,6 +25,7 @@
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <SignAssembly Condition="Exists('$(Morsels)private.snk')">true</SignAssembly>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
