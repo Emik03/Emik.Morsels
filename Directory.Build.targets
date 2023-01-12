@@ -7,6 +7,7 @@
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
+        <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
@@ -65,11 +66,11 @@
     </Target>
     <!-- Compile and run doctests for Windows. -->
     <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
-        <Exec Command="where -q doctest-csharp || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/ &amp;&amp; dotnet test $(MSBuildProjectFile)" />
+        <Exec Command="where -q doctest-csharp || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0" />
     </Target>
     <!-- Compile and run doctests for Mac or Linux. -->
     <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
-        <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory)/ &amp;&amp; dotnet test $(MSBuildProjectFile)" />
+        <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory):$(UnitTestFileProject) &amp;&amp; test -f &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0" />
     </Target>
     <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35'">
