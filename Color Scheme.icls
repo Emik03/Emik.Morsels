@@ -1,14 +1,14 @@
 <scheme name="Dracula VS-like" version="142" parent_scheme="Darcula">
   <option name="FONT_SCALE" value="1.25" />
   <metaInfo>
-    <property name="created">2022-12-12T08:01:40</property>
+    <property name="created">2023-01-12T11:50:48</property>
     <property name="ide">Rider</property>
-    <property name="ideVersion">2022.3.0.0</property>
-    <property name="modified">2022-12-12T08:01:57</property>
+    <property name="ideVersion">2022.3.1.0.0</property>
+    <property name="modified">2023-01-12T11:51:00</property>
     <property name="originalScheme">Dracula VS-like</property>
   </metaInfo>
   <option name="LINE_SPACING" value="1.2" />
-  <option name="EDITOR_FONT_SIZE" value="18" />
+  <option name="EDITOR_FONT_SIZE" value="21" />
   <option name="EDITOR_FONT_NAME" value="Fira Code" />
   <option name="EDITOR_LIGATURES" value="true" />
   <console-font>
@@ -80,6 +80,7 @@
     <option name="FILESTATUS_addedOutside" value="feff80" />
     <option name="FILESTATUS_changelistConflict" value="f780bf" />
     <option name="FILESTATUS_modifiedOutside" value="9580ff" />
+    <option name="FOLDED_TEXT_BORDER_COLOR" value="f1fa8c" />
     <option name="GUTTER_BACKGROUND" value="282a36" />
     <option name="INDENT_GUIDE" value="424450" />
     <option name="INFORMATION_HINT" value="282a36" />
@@ -800,7 +801,7 @@
     <option name="FOLDED_TEXT_ATTRIBUTES">
       <value>
         <option name="FOREGROUND" value="666b87" />
-        <option name="BACKGROUND" value="242632" />
+        <option name="BACKGROUND" value="282a36" />
       </value>
     </option>
     <option name="FOLLOWED_HYPERLINK_ATTRIBUTES">
@@ -2603,7 +2604,7 @@
     </option>
     <option name="MATCHED_BRACE_ATTRIBUTES">
       <value>
-        <option name="BACKGROUND" value="666b87" />
+        <option name="BACKGROUND" value="191a21" />
         <option name="FONT_TYPE" value="1" />
         <option name="EFFECT_COLOR" value="cccccc" />
         <option name="EFFECT_TYPE" value="4" />
@@ -2622,7 +2623,7 @@
     </option>
     <option name="NOT_USED_ELEMENT_ATTRIBUTES">
       <value>
-        <option name="FOREGROUND" value="d0d0cb" />
+        <option name="FOREGROUND" value="6272a4" />
       </value>
     </option>
     <option name="OC.CONDITIONALLY_NOT_COMPILED">
@@ -3453,9 +3454,19 @@
         <option name="EFFECT_TYPE" value="2" />
       </value>
     </option>
+    <option name="ReSharper.IL_CODE_LABEL">
+      <value>
+        <option name="FOREGROUND" value="f8f8f2" />
+      </value>
+    </option>
     <option name="ReSharper.IL_CONSTANT_LITERAL">
       <value>
         <option name="FOREGROUND" value="bd93f9" />
+      </value>
+    </option>
+    <option name="ReSharper.IL_IDENTIFIER">
+      <value>
+        <option name="FOREGROUND" value="ffb86c" />
       </value>
     </option>
     <option name="ReSharper.IL_INSTRUCTION">
@@ -3486,6 +3497,16 @@
     <option name="ReSharper.IL_STRING_LITERAL">
       <value>
         <option name="FOREGROUND" value="f1fa8c" />
+      </value>
+    </option>
+    <option name="ReSharper.IL_TARGET_CODE_LABEL">
+      <value>
+        <option name="FOREGROUND" value="f8f8f2" />
+      </value>
+    </option>
+    <option name="ReSharper.IL_VIEWER_SYNCHRONIZATION">
+      <value>
+        <option name="BACKGROUND" value="282a36" />
       </value>
     </option>
     <option name="ReSharper.MATCHED_FORMAT_STRING_ITEM">
@@ -3727,7 +3748,7 @@
     <option name="TEXT">
       <value>
         <option name="FOREGROUND" value="f8f8f2" />
-        <option name="BACKGROUND" value="21222c" />
+        <option name="BACKGROUND" value="191a21" />
         <option name="EFFECT_TYPE" value="5" />
       </value>
     </option>
@@ -3897,7 +3918,7 @@
     <option name="XML_TAG_DATA">
       <value>
         <option name="FOREGROUND" value="f8f8f2" />
-        <option name="BACKGROUND" value="21222c" />
+        <option name="BACKGROUND" value="191a21" />
         <option name="EFFECT_TYPE" value="5" />
       </value>
     </option>
