@@ -73,11 +73,11 @@
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true" />
     </Target>
     <!-- Compile and run doctests for Windows. -->
-    <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
         <Exec Command="where -q doctest-csharp || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0" />
     </Target>
     <!-- Compile and run doctests for Mac or Linux. -->
-    <Target Name="PreBuild" AfterTargets="PreBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
         <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory):$(UnitTestFileProject) &amp;&amp; test -f &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0" />
     </Target>
     <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
