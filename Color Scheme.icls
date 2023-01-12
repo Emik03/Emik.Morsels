@@ -1,14 +1,14 @@
 <scheme name="Dracula VS-like" version="142" parent_scheme="Darcula">
   <option name="FONT_SCALE" value="1.25" />
   <metaInfo>
-    <property name="created">2023-01-12T22:54:41</property>
+    <property name="created">2023-01-12T23:09:28</property>
     <property name="ide">Rider</property>
     <property name="ideVersion">2022.3.1.0.0</property>
-    <property name="modified">2023-01-12T22:55:05</property>
+    <property name="modified">2023-01-12T23:10:38</property>
     <property name="originalScheme">Dracula VS-like</property>
   </metaInfo>
   <option name="LINE_SPACING" value="1.2" />
-  <option name="EDITOR_FONT_SIZE" value="16" />
+  <option name="EDITOR_FONT_SIZE" value="18" />
   <option name="EDITOR_FONT_NAME" value="Fira Code" />
   <option name="EDITOR_LIGATURES" value="true" />
   <console-font>
@@ -57,7 +57,7 @@
     <option name="DIAGRAM_SELECTION_BOX_BORDER" value="ff79c5" />
     <option name="DIAGRAM_SNAPPING_LINES" value="ff79c5" />
     <option name="DIFF_SEPARATOR_WAVE" value="44475a" />
-    <option name="DOCUMENTATION_COLOR" value="282a36" />
+    <option name="DOCUMENTATION_COLOR" value="191a21" />
     <option name="DOC_COMMENT_GUIDE" value="6272a4" />
     <option name="DOC_COMMENT_LINK" value="f1fa8c" />
     <option name="ERROR_HINT" value="ff5555" />
@@ -83,7 +83,7 @@
     <option name="FILESTATUS_changelistConflict" value="f780bf" />
     <option name="FILESTATUS_modifiedOutside" value="9580ff" />
     <option name="FOLDED_TEXT_BORDER_COLOR" value="f1fa8c" />
-    <option name="GUTTER_BACKGROUND" value="14151b" />
+    <option name="GUTTER_BACKGROUND" value="191a21" />
     <option name="HINT_BORDER" value="44475a" />
     <option name="HTML_TAG_TREE_LEVEL0" value="ff5555" />
     <option name="HTML_TAG_TREE_LEVEL1" value="f1fa8c" />
@@ -109,7 +109,7 @@
     <option name="JUPYTER.SAUSAGE_BUTTON_SHORTCUT_COLOR" value="6272a4" />
     <option name="LINE_NUMBERS_COLOR" value="44475a" />
     <option name="LINE_NUMBER_ON_CARET_ROW_COLOR" value="f8f8f2" />
-    <option name="LOOKUP_COLOR" value="282a36" />
+    <option name="LOOKUP_COLOR" value="191a21" />
     <option name="MATCHED_BRACES_INDENT_GUIDE_COLOR" value="44475a" />
     <option name="METHOD_SEPARATORS_COLOR" value="44475a" />
     <option name="MODIFIED_LINES_COLOR" value="80ffea" />
@@ -138,11 +138,11 @@
     <option name="MnemonicIcon.background" value="666b87" />
     <option name="MnemonicIcon.borderColor" value="666b87" />
     <option name="MnemonicIcon.foreground" value="ffffff" />
-    <option name="NOTIFICATION_BACKGROUND" value="14151b" />
-    <option name="PROMOTION_PANE" value="14151b" />
+    <option name="NOTIFICATION_BACKGROUND" value="191a21" />
+    <option name="PROMOTION_PANE" value="191a21" />
     <option name="QUESTION_HINT" value="282a36" />
-    <option name="READONLY_BACKGROUND" value="14151b" />
-    <option name="RECENT_LOCATIONS_SELECTION" value="14151b" />
+    <option name="READONLY_BACKGROUND" value="191a21" />
+    <option name="RECENT_LOCATIONS_SELECTION" value="191a21" />
     <option name="RIGHT_MARGIN_COLOR" value="44475a" />
     <option name="SELECTED_INDENT_GUIDE" value="44475a" />
     <option name="SELECTED_TEARLINE_COLOR" value="ff79c6" />
@@ -3357,7 +3357,7 @@
     <option name="TEXT">
       <value>
         <option name="FOREGROUND" value="f8f8f2" />
-        <option name="BACKGROUND" value="14151b" />
+        <option name="BACKGROUND" value="191a21" />
         <option name="EFFECT_TYPE" value="5" />
       </value>
     </option>
@@ -3504,7 +3504,13 @@
     <option name="XML_ENTITY_REFERENCE" baseAttributes="DEFAULT_ENTITY" />
     <option name="XML_PROLOGUE" baseAttributes="TEXT" />
     <option name="XML_TAG" baseAttributes="DEFAULT_TAG" />
-    <option name="XML_TAG_DATA" baseAttributes="TEXT" />
+    <option name="XML_TAG_DATA">
+      <value>
+        <option name="FOREGROUND" value="f8f8f2" />
+        <option name="BACKGROUND" value="14151b" />
+        <option name="EFFECT_TYPE" value="5" />
+      </value>
+    </option>
     <option name="XML_TAG_NAME" baseAttributes="DEFAULT_KEYWORD" />
     <option name="XPATH.FUNCTION" baseAttributes="DEFAULT_FUNCTION_CALL" />
     <option name="XPATH.KEYWORD" baseAttributes="DEFAULT_KEYWORD" />
