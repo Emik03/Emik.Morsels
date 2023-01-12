@@ -1,10 +1,10 @@
 <scheme name="Dracula VS-like" version="142" parent_scheme="Darcula">
   <option name="FONT_SCALE" value="1.25" />
   <metaInfo>
-    <property name="created">2023-01-12T23:12:45</property>
+    <property name="created">2023-01-12T23:15:46</property>
     <property name="ide">Rider</property>
     <property name="ideVersion">2022.3.1.0.0</property>
-    <property name="modified">2023-01-12T23:12:57</property>
+    <property name="modified">2023-01-12T23:15:58</property>
     <property name="originalScheme">Dracula VS-like</property>
   </metaInfo>
   <option name="LINE_SPACING" value="1.2" />
@@ -2976,6 +2976,20 @@
         <option name="FOREGROUND" value="feff80" />
       </value>
     </option>
+    <option name="ReSharper.ASP_NET_RAZOR_CODE_BLOCK">
+      <value>
+        <option name="FOREGROUND" value="f8f8f2" />
+        <option name="BACKGROUND" value="14151b" />
+        <option name="EFFECT_TYPE" value="5" />
+      </value>
+    </option>
+    <option name="ReSharper.ASP_NET_RAZOR_CODE_BLOCK_TAG">
+      <value>
+        <option name="FOREGROUND" value="ff79c6" />
+        <option name="BACKGROUND" value="282a36" />
+        <option name="EFFECT_TYPE" value="5" />
+      </value>
+    </option>
     <option name="ReSharper.ASP_NET_RAZOR_COMMENT">
       <value>
         <option name="FOREGROUND" value="6272a4" />
@@ -3507,7 +3521,6 @@
     <option name="XML_TAG_DATA">
       <value>
         <option name="FOREGROUND" value="f8f8f2" />
-        <option name="BACKGROUND" value="14151b" />
         <option name="EFFECT_TYPE" value="5" />
       </value>
     </option>
