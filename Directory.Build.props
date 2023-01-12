@@ -13,7 +13,7 @@
         <SignAssembly>true</SignAssembly>
         <LangVersion>preview</LangVersion>
         <Deterministic>true</Deterministic>
-        <RunCodeAnalysis>true</RunCodeAnalysis>
+        <RunCodeAnalysis>false</RunCodeAnalysis>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
