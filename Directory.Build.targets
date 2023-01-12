@@ -14,6 +14,10 @@
         <IsPackable>false</IsPackable>
         <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;GlobalUsingsAnalyzer;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
+    <!-- Show implicitly added files on Solution Explorer. -->
+    <ItemGroup>
+        <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
     <!-- References for Unit Test projects. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all" />
@@ -22,10 +26,14 @@
         <PackageReference Include="coverlet.collector" Version="3.1.2" PrivateAssets="all" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" PrivateAssets="all" />
     </ItemGroup>
+    <!-- Fody projects should have FodyHelpers reference. -->
+    <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))">
+        <PackageReference Include="FodyHelpers" Version="6.6.4" />
+    </ItemGroup>
     <!-- Unit Tests are auto-generated; do not use Emik.Morsels. Include global imports for convenience though. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <ProjectReference Include="..\*.csproj" />
-        <Compile Include="$(SharedPath)Emik.Morsels/Source/NUnit/NUnitGlobals.cs" Link="Source/References/NUnitGlobals.cs" />
+        <Compile Include="$(Morsels)Source/NUnit/NUnitGlobals.cs" Link="Source/References/NUnitGlobals.cs" />
     </ItemGroup>
     <!-- Unit Tests are auto-generated; do not use Emik.Morsels. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
@@ -37,8 +45,8 @@
         <Reference Include="System.Xml" Private="false" />
         <Reference Include="System.Core" Private="false" />
         <Reference Include="System.Data" Private="false" />
-        <Reference Include="System.Numerics" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/System.Numerics.dll" />
-        <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(SharedPath)Emik.Morsels/References/mscorlib.dll" />
+        <Reference Include="System.Numerics" Private="false" HintPath="$(Morsels)References/System.Numerics.dll" />
+        <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(Morsels)References/mscorlib.dll" />
     </ItemGroup>
     <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">

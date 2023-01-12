@@ -3,7 +3,7 @@
         <Ktane>../</Ktane>
         <Unity>../</Unity>
         <Celeste>../</Celeste>
-        <SharedPath>../</SharedPath>
+        <Morsels>../</Morsels>
         <Destination>../</Destination>
     </PropertyGroup>
 </Project>
