@@ -17,7 +17,7 @@ global using static Emik.Morsels.Unforgiving;
 // ReSharper disable once RedundantUsingDirective.Global
 namespace Emik.Morsels;
 
-/// <summary>Provides a reference for an <see cref="UnreachableException"/>.</summary>
+/// <summary>Provides a reference for an <c>UnreachableException</c>.</summary>
 #pragma warning disable MA0048
 static partial class Unforgiving
 #pragma warning restore MA0048
