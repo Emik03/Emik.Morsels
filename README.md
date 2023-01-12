@@ -18,10 +18,11 @@ Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project
 
 ## Usage
 
-1. Download/clone the repository: `git clone https://github.com/Emik03/Emik.Morsels.git`
-2. Copy-paste [Directory.Build.local.props.template](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.local.props.template) and name the new duplicate `Directory.Build.local.props`.
-3. Modify the [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of `Directory.Build.local.props`, which contains absolute paths that are system-dependent.
-4. Add symbolic links to [global.json](https://github.com/Emik03/Emik.Morsels/blob/main/global.json), [stylecop.json](https://github.com/Emik03/Emik.Morsels/blob/main/stylecop.json), [Directory.Build.props](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.props), [Directory.Build.targets](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.targets), and `Directory.Build.local.props` for each project that references [Emik.Morsels](https://github.com/Emik03/Emik.Morsels).
+1. Download the [.NET 7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0).
+2. Download/clone the repository: `git clone https://github.com/Emik03/Emik.Morsels.git`
+3. Copy-paste [Directory.Build.local.props.template](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.local.props.template) and name the new duplicate `Directory.Build.local.props`.
+4. Modify the [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of `Directory.Build.local.props`, which contains absolute paths that are system-dependent.
+5. Add symbolic links to [global.json](https://github.com/Emik03/Emik.Morsels/blob/main/global.json), [stylecop.json](https://github.com/Emik03/Emik.Morsels/blob/main/stylecop.json), [Directory.Build.props](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.props), [Directory.Build.targets](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.targets), and `Directory.Build.local.props` for each project that references [Emik.Morsels](https://github.com/Emik03/Emik.Morsels).
     - You can alternatively have a folder for `Emik.Morsels` projects, where the root contains these four files, and all projects simply reside in nested folders. This way, you only need to set up the symlinks a single time.
 
 * Windows:
