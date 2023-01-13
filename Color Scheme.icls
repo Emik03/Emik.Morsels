@@ -1,10 +1,10 @@
 <scheme name="Dracula VS-like" version="142" parent_scheme="Darcula">
   <option name="FONT_SCALE" value="1.25" />
   <metaInfo>
-    <property name="created">2023-01-13T05:18:33</property>
+    <property name="created">2023-01-13T16:37:44</property>
     <property name="ide">Rider</property>
     <property name="ideVersion">2022.3.1.0.0</property>
-    <property name="modified">2023-01-13T05:18:48</property>
+    <property name="modified">2023-01-13T16:38:06</property>
     <property name="originalScheme">Dracula VS-like</property>
   </metaInfo>
   <option name="LINE_SPACING" value="1.2" />
@@ -109,7 +109,7 @@
     <option name="JUPYTER.SAUSAGE_BUTTON_SHORTCUT_COLOR" value="6272a4" />
     <option name="LINE_NUMBERS_COLOR" value="44475a" />
     <option name="LINE_NUMBER_ON_CARET_ROW_COLOR" value="f8f8f2" />
-    <option name="LOOKUP_COLOR" value="191a21" />
+    <option name="LOOKUP_COLOR" value="282a36" />
     <option name="MATCHED_BRACES_INDENT_GUIDE_COLOR" value="44475a" />
     <option name="METHOD_SEPARATORS_COLOR" value="44475a" />
     <option name="MODIFIED_LINES_COLOR" value="80ffea" />
