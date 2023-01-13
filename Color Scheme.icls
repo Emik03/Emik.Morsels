@@ -1,10 +1,10 @@
 <scheme name="Dracula VS-like" version="142" parent_scheme="Darcula">
   <option name="FONT_SCALE" value="1.25" />
   <metaInfo>
-    <property name="created">2023-01-12T23:15:46</property>
+    <property name="created">2023-01-13T05:18:33</property>
     <property name="ide">Rider</property>
     <property name="ideVersion">2022.3.1.0.0</property>
-    <property name="modified">2023-01-12T23:15:58</property>
+    <property name="modified">2023-01-13T05:18:48</property>
     <property name="originalScheme">Dracula VS-like</property>
   </metaInfo>
   <option name="LINE_SPACING" value="1.2" />
@@ -36,7 +36,7 @@
     <option name="BookmarkMnemonicIcon.foreground" value="ffffff" />
     <option name="CARET_COLOR" value="f8f8f2" />
     <option name="CARET_ROW_COLOR" value="282a36" />
-    <option name="CONSOLE_BACKGROUND_KEY" value="14151b" />
+    <option name="CONSOLE_BACKGROUND_KEY" value="191a21" />
     <option name="DELETED_LINES_COLOR" value="f780bf" />
     <option name="DIAGRAM_ANNOTATION_EDGE" value="f780bf" />
     <option name="DIAGRAM_COARSE_GRID" value="44475a" />
@@ -386,7 +386,7 @@
     </option>
     <option name="CONSOLE_NORMAL_OUTPUT">
       <value>
-        <option name="FOREGROUND" value="ff5555" />
+        <option name="FOREGROUND" value="6272a4" />
       </value>
     </option>
     <option name="CONSOLE_RANGE_TO_EXECUTE">
@@ -3366,7 +3366,9 @@
       </value>
     </option>
     <option name="TERMINAL_COMMAND_TO_RUN_USING_IDE">
-      <value />
+      <value>
+        <option name="FOREGROUND" value="f8f8f2" />
+      </value>
     </option>
     <option name="TEXT">
       <value>
