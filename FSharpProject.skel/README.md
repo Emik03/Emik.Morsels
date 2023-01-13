@@ -1,7 +1,7 @@
 # Repository
 
 [![NuGet package](https://img.shields.io/nuget/v/.svg?logo=NuGet)](https://www.nuget.org/packages/)
-[![License](https://img.shields.io/github/license//.svg?style=flat)](https://github.com//blob/main/LICENSE.md)
+[![License](https://img.shields.io/github/license//.svg?style=flat)](https://github.com//blob/main/LICENSE)
 
 Description.
 
