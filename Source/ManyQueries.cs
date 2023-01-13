@@ -8,7 +8,7 @@
 
 #if !NET20 && !NET30
 namespace Emik.Morsels;
-
+#pragma warning disable CS1574, CS1580
 /// <summary>Methods that creates enumerations from individual items.</summary>
 static partial class ManyQueries
 {
