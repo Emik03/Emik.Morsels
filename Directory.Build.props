@@ -224,6 +224,7 @@
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all" />
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all" />
+        <PackageReference Include="Absence.Fody" Version="1.0.2" PrivateAssets="all" />
         <PackageReference Include="CsharpMacros" Version="2.3.5" PrivateAssets="all" />
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all" />
         <PackageReference Include="InlineIL.Fody" Version="1.7.2" PrivateAssets="all" />
@@ -243,7 +244,6 @@
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all" />
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.1.2" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0" PrivateAssets="all" />
-        <PackageReference Include="Absence.Fody" Version="1.0.1" PrivateAssets="all" ExcludeAssets="contentfiles" />
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all" />
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" PrivateAssets="all" IncludeAssets="compile" />
@@ -267,10 +267,10 @@
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+        <PackageReference Include="Divorce.Fody" Version="1.0.2" PrivateAssets="all" />
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
         <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false" />
         <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false" />
-        <PackageReference Include="Divorce.Fody" Version="1.0.1" PrivateAssets="all" ExcludeAssets="contentfiles" />
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" Private="false" />
         <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false" />
         <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity" />
