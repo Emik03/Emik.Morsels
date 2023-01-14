@@ -77,8 +77,26 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
+    <!-- Use all compatible Fody projects for C# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy />
+                <Equals />
+                <InfoOf />
+                <InlineIL />
+                <NullGuard />
+                <Substitute />
+                <Virtuosity />
+                <JetBrainsAnnotations />
+                <LocalsInit Default="false" />
+                <InlineMethod />
+                <Absence />
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy />
@@ -134,8 +152,24 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40'">
+    <!-- Use all compatible Fody projects for F# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy />
+                <Equals />
+                <InfoOf />
+                <InlineIL />
+                <Substitute />
+                <Virtuosity />
+                <LocalsInit Default="false" />
+                <InlineMethod />
+                <Absence />
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy />
