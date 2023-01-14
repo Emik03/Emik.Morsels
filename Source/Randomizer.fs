@@ -38,4 +38,8 @@ let toBoolRng fn = (fun _ -> fn 0 2 = 0)
 
 /// Attempts to pick a random element from a sequence based on a function.
 /// Returns None if the sequence is empty.
+#if NETFRAMEWORK && !NET40_OR_GREATER
 let tryPickRandom fn xs = if xs |> Seq.isEmpty then None else Some (xs |> shuffle fn |> Seq.nth 0)
+#else
+let tryPickRandom fn xs = if xs |> Seq.isEmpty then None else Some (xs |> shuffle fn |> Seq.item 0)
+#endif
