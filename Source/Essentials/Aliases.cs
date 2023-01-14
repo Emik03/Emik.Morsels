@@ -46,7 +46,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
-#if NETFRAMEWORK && !NET40_OR_GREATER
+#if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 #if !WAWA
 namespace System.Diagnostics.Contracts;
 using static AttributeTargets;
