@@ -14,6 +14,25 @@ using static CollectionAccessType;
 
 #endregion
 
+#if !NET20 && !NET30
+/// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class CircularFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="CircularList{T}"/>.</param>
+    /// <returns>A <see cref="CircularList{T}"/> of <paramref name="iterable"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    internal static CircularList<T>? ToCircularLazily<T>(this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as CircularList<T> ?? new CircularList<T>(iterable as IList<T> ?? iterable.ToList());
+}
+#endif
+
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.
@@ -92,22 +111,3 @@ sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
     [NonNegativeValue, Pure]
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
 }
-
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class CircularFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="CircularList{T}"/>.</param>
-    /// <returns>A <see cref="CircularList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    internal static CircularList<T>? ToCircularLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as CircularList<T> ?? new CircularList<T>(iterable as IList<T> ?? iterable.ToList());
-}
-#endif

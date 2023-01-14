@@ -14,6 +14,25 @@ using static CollectionAccessType;
 
 #endregion
 
+#if !NET20 && !NET30
+/// <summary>Extension methods that act as factories for <see cref="IReadOnlyList{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class ReadOnlyFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="IReadOnlyList{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="IReadOnlyList{T}"/>.</param>
+    /// <returns>A <see cref="IReadOnlyList{T}"/> of <paramref name="iterable"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    internal static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? iterable.ToList());
+}
+#endif
+
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
 /// <typeparam name="T">The type of element in the list.</typeparam>
 sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
@@ -85,22 +104,3 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => _list.ToString();
 }
-
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="IReadOnlyList{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class ReadOnlyFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="IReadOnlyList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="IReadOnlyList{T}"/>.</param>
-    /// <returns>A <see cref="IReadOnlyList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    internal static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? iterable.ToList());
-}
-#endif

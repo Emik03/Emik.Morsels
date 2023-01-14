@@ -16,7 +16,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 #if NET20 || NET30 || NET35 || NET40 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2 || NETSTANDARD1_3 || NETSTANDARD1_4 || NETSTANDARD1_5 || NETSTANDARD1_6 || NETCOREAPP1_0 || NETCOREAPP1_1
-#pragma warning disable CA1200, CA1508, CA2208, CA5394, MA0012, MA0015, MA0048, MA0051, MA0097, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
+#pragma warning disable CA1200, CA1508, CA2208, CA5394, MA0012, MA0015, MA0048, MA0051, MA0097, SA1129, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
 namespace System
 {
 #pragma warning disable SA1403

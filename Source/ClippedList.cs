@@ -14,6 +14,25 @@ using static CollectionAccessType;
 
 #endregion
 
+#if !NET20 && !NET30
+/// <summary>Extension methods that act as factories for <see cref="ClippedList{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class ClippedFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClippedList{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="ClippedList{T}"/>.</param>
+    /// <returns>A <see cref="ClippedList{T}"/> of <paramref name="iterable"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    internal static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as ClippedList<T> ?? new ClippedList<T>(iterable as IList<T> ?? iterable.ToList());
+}
+#endif
+
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>
@@ -91,22 +110,3 @@ sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
     [NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }
-
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="ClippedList{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class ClippedFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClippedList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="ClippedList{T}"/>.</param>
-    /// <returns>A <see cref="ClippedList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    internal static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as ClippedList<T> ?? new ClippedList<T>(iterable as IList<T> ?? iterable.ToList());
-}
-#endif

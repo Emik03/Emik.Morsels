@@ -14,6 +14,25 @@ using static CollectionAccessType;
 
 #endregion
 
+#if !NET20 && !NET30
+/// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class GuardedFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="GuardedList{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="GuardedList{T}"/>.</param>
+    /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    internal static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as GuardedList<T> ?? new GuardedList<T>(iterable as IList<T> ?? iterable.ToList());
+}
+#endif
+
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
 /// an out of range value will always give the <see langword="default"/> value.
@@ -117,22 +136,3 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     [Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }
-
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class GuardedFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="GuardedList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="GuardedList{T}"/>.</param>
-    /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    internal static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as GuardedList<T> ?? new GuardedList<T>(iterable as IList<T> ?? iterable.ToList());
-}
-#endif

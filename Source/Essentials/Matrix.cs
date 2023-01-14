@@ -9,6 +9,36 @@
 #if !NET20 && !NET30
 namespace Emik.Morsels;
 
+/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class MatrixFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
+    /// <param name="countPerList">The length per count.</param>
+    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterator))]
+    internal static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
+        iterator is null
+            ? null
+            : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
+
+    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
+    /// <param name="countPerList">The length per count.</param>
+    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterator))]
+    internal static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+        iterator is null
+            ? null
+            : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
+}
+
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
 /// <typeparam name="T">The type of item within the list.</typeparam>
 sealed class Matrix<T> : IList<IList<T>>
@@ -242,33 +272,4 @@ sealed class Matrix<T> : IList<IList<T>>
     }
 }
 
-/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class MatrixFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    internal static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
-        iterator is null
-            ? null
-            : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
-
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    internal static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
-        iterator is null
-            ? null
-            : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
-}
 #endif

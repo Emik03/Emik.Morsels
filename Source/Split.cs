@@ -8,6 +8,33 @@
 
 namespace Emik.Morsels;
 
+/// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class SplitFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
+    /// <see langword="true"/> and <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    internal static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, Predicate<T> predicate)
+    {
+        List<T> t = new(), f = new();
+
+        foreach (var item in source)
+#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
+            (predicate(item) ? t : f).Add(item);
+#pragma warning restore RCS1235
+
+        return new(t, f);
+    }
+}
+
 /// <summary>Represents a fixed collection of 2 items.</summary>
 /// <typeparam name="T">The type of item in the collection.</typeparam>
 sealed partial class Split<T> : ICollection<T>,
@@ -190,31 +217,4 @@ sealed partial class Split<T> : ICollection<T>,
     /// <inheritdoc />
     [Pure]
     public override string ToString() => $"Split({Truthy}, {Falsy})";
-}
-
-/// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class SplitFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
-    /// <see langword="true"/> and <see langword="false"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    internal static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, Predicate<T> predicate)
-    {
-        List<T> t = new(), f = new();
-
-        foreach (var item in source)
-#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
-            (predicate(item) ? t : f).Add(item);
-#pragma warning restore RCS1235
-
-        return new(t, f);
-    }
 }
