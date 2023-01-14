@@ -159,7 +159,7 @@
         <AdditionalFiles Include="$(Morsels)global.json" />
         <AdditionalFiles Include="$(Morsels)stylecop.json" />
         <Content Include="$(Morsels)Directory.Build.props" Pack="false" />
-        <Content Include="$(Morsels)Directory.Build.targets" Pack="true" />
+        <Content Include="$(Morsels)Directory.Build.targets" Pack="false" />
         <Content Include="$(Morsels)Directory.Build.local.props" Pack="false" />
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
@@ -224,10 +224,10 @@
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all" />
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all" />
-        <PackageReference Include="Absence.Fody" Version="1.0.2" PrivateAssets="all" />
         <PackageReference Include="CsharpMacros" Version="2.3.5" PrivateAssets="all" />
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all" />
         <PackageReference Include="InlineIL.Fody" Version="1.7.2" PrivateAssets="all" />
+        <PackageReference Include="Absence.Fody" Version="1.0.3.1" PrivateAssets="all" />
         <PackageReference Include="NullGuard.Fody" Version="3.1.0" PrivateAssets="all" />
         <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all" />
         <PackageReference Include="UnitGenerator" Version="1.4.10" PrivateAssets="all" />

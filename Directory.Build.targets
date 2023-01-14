@@ -29,7 +29,6 @@
     <!-- Fody projects should have FodyHelpers reference. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))">
         <PackageReference Remove="$(AssemblyName)" />
-        <PackageReference Include="FodyHelpers" Version="6.6.4" />
     </ItemGroup>
     <!-- Unit Tests are auto-generated; do not use Emik.Morsels. Include global imports for convenience though. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
