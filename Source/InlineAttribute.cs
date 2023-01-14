@@ -6,7 +6,7 @@
 
 #endregion
 
-#if NETFRAMEWORK && !NET48
+#if NETFRAMEWORK && !NET48 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 namespace InlineMethod;
 
 #region

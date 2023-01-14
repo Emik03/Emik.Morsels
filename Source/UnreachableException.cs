@@ -1,13 +1,20 @@
+#region Emik.MPL
+
 // <copyright file="UnreachableException.cs" company="Emik">
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
+
+#endregion
+
 // ReSharper disable once CheckNamespace
 #if !NET7_0_OR_GREATER
 #pragma warning disable CA1064
 namespace System.Diagnostics;
 
 /// <summary>Exception thrown when the program executes an instruction that was thought to be unreachable.</summary>
+#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 [Serializable]
+#endif
 sealed partial class UnreachableException : Exception
 {
     const string Arg = "The program executed an instruction that was thought to be unreachable.";
@@ -34,7 +41,9 @@ sealed partial class UnreachableException : Exception
     public UnreachableException(string? message, Exception? innerException)
         : base(message, innerException) { }
 
+#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
     UnreachableException(SerializationInfo info, StreamingContext context)
         : base(info, context) { }
+#endif
 }
 #endif

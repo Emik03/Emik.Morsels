@@ -6,7 +6,7 @@
 
 #endregion
 
-#if !NET20 && !NET30
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 namespace Emik.Morsels;
 
 /// <summary>Provides stringification methods.</summary>

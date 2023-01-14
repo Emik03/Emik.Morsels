@@ -6,10 +6,11 @@
 
 #endregion
 
+// ReSharper disable once EmptyNamespace
+namespace System;
 #if NET20 || NET30
 // ReSharper disable TypeParameterCanBeVariant
 #pragma warning disable MA0048, SA1600
-namespace System;
 
 /// <summary>Encapsulates a method that has no parameters and does not return a value.</summary>
 delegate void Action();
@@ -100,4 +101,10 @@ delegate TResult Func<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3);
 /// <param name="arg4">The fourth parameter of the method that this delegate encapsulates.</param>
 /// <returns>The return value of the method that this delegate encapsulates.</returns>
 delegate TResult Func<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+#elif NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
+/// <summary>Represents a method that converts an object from one type to another type.</summary>
+/// <typeparam name="TInput">The type of object that is to be converted.</typeparam>
+/// <typeparam name="TOutput">The type the input object is to be converted to.</typeparam>
+/// <param name="input">The object to convert.</param>
+delegate TOutput Converter<TInput, TOutput>(TInput input);
 #endif

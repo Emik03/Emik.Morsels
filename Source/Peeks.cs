@@ -17,11 +17,15 @@ static partial class Peeks
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable once EventNeverSubscribedTo.Global
     internal static event Action<string> OnWrite =
+#if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
+        Shout;
+#else
         (Action<string>)Shout +
 #if NET35
         (Action<string>)UnityEngine.Debug.Log +
 #endif
         (Action<string>)Console.WriteLine;
+#endif
 
 #pragma warning disable CS1574
     /// <summary>
@@ -36,7 +40,9 @@ static partial class Peeks
     internal static void Shout(string message)
     {
         System.Diagnostics.Debug.WriteLine(message);
+#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
         Trace.WriteLine(message);
+#endif
     }
 
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
@@ -124,7 +130,7 @@ static partial class Peeks
         return value;
     }
 #endif
-#if NET20 || NET30
+#if NET20 || NET30 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
     static string Stringify<T>(this T value) => value?.ToString() ?? "";
 #endif
 }

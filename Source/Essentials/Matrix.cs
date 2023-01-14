@@ -104,7 +104,16 @@ sealed class Matrix<T> : IList<IList<T>>
     }
 
     /// <inheritdoc />
-    public void Add(IList<T>? item) => item?.ToList().ForEach(List.Add);
+    public void Add(IList<T>? item) =>
+        item?.ToList()
+#pragma warning disable SA1110
+#if NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+           .For
+#else
+           .ForEach
+#endif
+                (List.Add);
+#pragma warning restore SA1110
 
     /// <inheritdoc />
     public void Clear() => List.Clear();
