@@ -254,29 +254,29 @@
     <!-- Fody references that target any framework. -->
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all" />
-        <PackageReference Include="Asyncify" Version="0.9.7" PrivateAssets="all" />
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all" />
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all" />
         <PackageReference Include="CsharpMacros" Version="2.3.5" PrivateAssets="all" />
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all" />
-        <PackageReference Include="InlineIL.Fody" Version="1.7.2" PrivateAssets="all" />
-        <PackageReference Include="Absence.Fody" Version="1.0.3.1" PrivateAssets="all" />
-        <PackageReference Include="NullGuard.Fody" Version="3.1.0" PrivateAssets="all" />
+        <PackageReference Include="InlineIL.Fody" Version="1.7.4" PrivateAssets="all" />
+        <PackageReference Include="Absence.Fody" Version="1.0.3.2" PrivateAssets="all" />
+        <PackageReference Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all" />
         <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all" />
         <PackageReference Include="UnitGenerator" Version="1.4.10" PrivateAssets="all" />
         <PackageReference Include="LocalsInit.Fody" Version="1.1.0" PrivateAssets="all" />
         <PackageReference Include="Substitute.Fody" Version="1.6.0" PrivateAssets="all" />
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all" />
+        <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all" />
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all" />
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.5" PrivateAssets="all" />
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" />
-        <PackageReference Include="Collections.Analyzer" Version="0.2.6" PrivateAssets="all" />
-        <PackageReference Include="GlobalUsingsAnalyzer" Version="1.0.1" PrivateAssets="all" />
-        <PackageReference Include="Meziantou.Analyzer" Version="1.0.734" PrivateAssets="all" />
-        <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" PrivateAssets="all" />
-        <PackageReference Include="Roslynator.Analyzers" Version="4.1.2" PrivateAssets="all" />
+        <PackageReference Include="GlobalUsingsAnalyzer" Version="1.1.0" PrivateAssets="all" />
+        <PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all" />
+        <PackageReference Include="Collections.Analyzer" Version="0.2.8.1" PrivateAssets="all" />
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all" />
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.1.2" PrivateAssets="all" />
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all" />
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.2.0" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0" PrivateAssets="all" />
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all" />
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
@@ -301,7 +301,7 @@
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-        <PackageReference Include="Divorce.Fody" Version="1.0.2" PrivateAssets="all" />
+        <PackageReference Include="Divorce.Fody" Version="1.0.3" PrivateAssets="all" />
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
         <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false" />
         <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false" />
@@ -325,6 +325,6 @@
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.0 or less. -->
     <ItemGroup Condition="!('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40')">
-        <PackageReference Include="ConfigureAwait.Fody" Version="3.3.1" PrivateAssets="all" />
+        <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all" />
     </ItemGroup>
 </Project>
