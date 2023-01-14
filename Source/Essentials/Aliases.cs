@@ -9,7 +9,7 @@
 #region
 
 // ReSharper disable MissingBlankLines RedundantUsingDirective.Global
-#pragma warning disable GlobalUsingsAnalyzer
+#pragma warning disable GlobalUsingsAnalyzer, SA1649
 #if NET35
 extern alias unity;
 

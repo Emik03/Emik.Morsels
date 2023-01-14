@@ -8,7 +8,7 @@
 
 namespace System;
 
-#pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642
+#pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649
 #if !NETSTANDARD2_1 && !NETCOREAPP
 /// <summary>Represent a range has start and end indexes.</summary>
 /// <remarks><para>
