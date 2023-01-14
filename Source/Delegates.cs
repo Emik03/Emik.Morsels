@@ -100,10 +100,11 @@ delegate TResult Func<T1, T2, T3, TResult>(T1 arg1, T2 arg2, T3 arg3);
 /// <param name="arg4">The fourth parameter of the method that this delegate encapsulates.</param>
 /// <returns>The return value of the method that this delegate encapsulates.</returns>
 delegate TResult Func<T1, T2, T3, T4, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
-#elif NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
+#elif NETSTANDARD && !NETSTANDARD2_0_OR_GREATER // ReSharper disable once RedundantBlankLines
 /// <summary>Represents a method that converts an object from one type to another type.</summary>
 /// <typeparam name="TInput">The type of object that is to be converted.</typeparam>
 /// <typeparam name="TOutput">The type the input object is to be converted to.</typeparam>
 /// <param name="input">The object to convert.</param>
+/// <returns>The <typeparamref name="TOutput"/> that represents the converted <typeparamref name="TInput"/>.</returns>
 delegate TOutput Converter<TInput, TOutput>(TInput input);
 #endif
