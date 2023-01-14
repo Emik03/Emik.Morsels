@@ -33,12 +33,12 @@
     </ItemGroup>
     <!-- Unit Tests are auto-generated; do not use Emik.Morsels. Include global imports for convenience though. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <ProjectReference Include="..\*.csproj" />
+        <ProjectReference Include="../*.csproj" />
         <Compile Include="$(Morsels)Source/NUnit/NUnitGlobals.cs" Link="Source/References/NUnitGlobals.cs" />
     </ItemGroup>
     <!-- Unit Tests are auto-generated; do not use Emik.Morsels. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <ProjectReference Include="..\*.fsproj" />
+        <ProjectReference Include="../*.fsproj" />
     </ItemGroup>
     <!-- Add explicit references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">

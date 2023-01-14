@@ -159,7 +159,7 @@
         <AdditionalFiles Include="$(Morsels)global.json" />
         <AdditionalFiles Include="$(Morsels)stylecop.json" />
         <Content Include="$(Morsels)Directory.Build.props" Pack="false" />
-        <Content Include="$(Morsels)Directory.Build.targets" Pack="false" />
+        <Content Include="$(Morsels)Directory.Build.targets" Pack="true" />
         <Content Include="$(Morsels)Directory.Build.local.props" Pack="false" />
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
