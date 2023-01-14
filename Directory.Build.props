@@ -257,10 +257,10 @@
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all" />
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all" />
+        <PackageReference Include="Absence.Fody" Version="1.0.4" PrivateAssets="all" />
         <PackageReference Include="CsharpMacros" Version="2.3.5" PrivateAssets="all" />
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all" />
         <PackageReference Include="InlineIL.Fody" Version="1.7.4" PrivateAssets="all" />
-        <PackageReference Include="Absence.Fody" Version="1.0.3.2" PrivateAssets="all" />
         <PackageReference Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all" />
         <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all" />
         <PackageReference Include="UnitGenerator" Version="1.4.10" PrivateAssets="all" />
@@ -301,7 +301,7 @@
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-        <PackageReference Include="Divorce.Fody" Version="1.0.3" PrivateAssets="all" />
+        <PackageReference Include="Divorce.Fody" Version="1.0.4" PrivateAssets="all" />
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
         <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false" />
         <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false" />
