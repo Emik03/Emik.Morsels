@@ -8,12 +8,23 @@ global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute
 #endif
 using static System.AttributeTargets;
 
+#if WAWA
+namespace NullGuard
+{
+    /// <summary>Prevents the injection of null checking (implicit mode only).</summary>
+    [AttributeUsage(Parameter | ReturnValue | Property)]
+    sealed class AllowNullAttribute : Attribute { }
+}
+#endif
+
 namespace System.Diagnostics.CodeAnalysis
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1
+#if !WAWA
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
     [AttributeUsage(Field | Parameter | Property)]
     sealed class AllowNullAttribute : Attribute { }
+#endif
 
     /// <summary>Specifies that null is disallowed as an input even if the corresponding type allows it.</summary>
     [AttributeUsage(Field | Parameter | Property)]
@@ -264,8 +275,7 @@ namespace System.Runtime.CompilerServices
             ParameterName = parameterName;
 
         /// <summary>Gets the name of the parameter whose expression should be captured as a string.</summary>
-        [Pure]
-        public string ParameterName { get; }
+        public string ParameterName { [Pure] get; }
     }
 #endif
 #if !NET5_0_OR_GREATER
@@ -304,15 +314,13 @@ namespace System.Runtime.CompilerServices
         public CompilerFeatureRequiredAttribute(string featureName) => FeatureName = featureName;
 
         /// <summary>Gets the name of the compiler feature.</summary>
-        [Pure]
-        public string FeatureName { get; }
+        public string FeatureName { [Pure] get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the compiler can choose to allow access to the location
         /// where this attribute is applied if it does not understand <see cref="FeatureName"/>.
         /// </summary>
-        [Pure]
-        public bool IsOptional { get; set; }
+        public bool IsOptional { [Pure] get; set; }
     }
 
     /// <summary>Specifies that a type has required members or that a member is required.</summary>
