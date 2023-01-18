@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
     <Import Project="Directory.Build.local.props" />
     <!-- Common and/or default values. -->
@@ -224,6 +225,7 @@
         <Compile Include="$(Morsels)Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs" />
         <Compile Include="$(Morsels)Source/Essentials/CommonGlobals.cs" Link="Source/References/CommonGlobals.cs" />
         <Compile Include="$(Morsels)Source/IReadOnly.cs" Link="Source/References/System/Collections/IReadOnly.cs" />
+        <Compile Include="$(Morsels)Source/Matrix.cs" Link="Source/References/Emik/Collections/Generics/Matrix.cs" />
         <Compile Include="$(Morsels)Source/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs" />
         <Compile Include="$(Morsels)Source/Split.cs" Link="Source/References/Emik/Collections/Specialized/Split.cs" />
         <Compile Include="$(Morsels)Source/Unforgiving.cs" Link="Source/References/Emik/Diagnostics/Unforgiving.cs" />
@@ -233,7 +235,6 @@
         <Compile Include="$(Morsels)Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
         <Compile Include="$(Morsels)Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
         <Compile Include="$(Morsels)Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs" />
-        <Compile Include="$(Morsels)Source/Essentials/Matrix.cs" Link="Source/References/Emik/Collections/Generics/Matrix.cs" />
         <Compile Include="$(Morsels)Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs" />
         <Compile Include="$(Morsels)Source/RandomizedGetters.cs" Link="Source/References/Emik/Collections/RandomizedGetters.cs" />
         <Compile Include="$(Morsels)Source/ReadOnlyList.cs" Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs" />

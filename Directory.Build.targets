@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
