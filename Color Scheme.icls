@@ -1,14 +1,14 @@
 <scheme name="Dracula VS-like" version="142" parent_scheme="Darcula">
   <option name="FONT_SCALE" value="1.25" />
   <metaInfo>
-    <property name="created">2023-01-13T16:37:44</property>
+    <property name="created">2023-01-15T22:28:17</property>
     <property name="ide">Rider</property>
     <property name="ideVersion">2022.3.1.0.0</property>
-    <property name="modified">2023-01-13T16:38:06</property>
+    <property name="modified">2023-01-15T22:28:26</property>
     <property name="originalScheme">Dracula VS-like</property>
   </metaInfo>
   <option name="LINE_SPACING" value="1.2" />
-  <option name="EDITOR_FONT_SIZE" value="18" />
+  <option name="EDITOR_FONT_SIZE" value="17" />
   <option name="EDITOR_FONT_NAME" value="Fira Code" />
   <option name="EDITOR_LIGATURES" value="true" />
   <console-font>
@@ -746,25 +746,25 @@
     <option name="DIFF_CONFLICT">
       <value>
         <option name="BACKGROUND" value="ff79c6" />
-        <option name="ERROR_STRIPE_COLOR" value="ff79c6" />
+        <option name="ERROR_STRIPE_COLOR" value="191a21" />
       </value>
     </option>
     <option name="DIFF_DELETED">
       <value>
         <option name="BACKGROUND" value="ff5555" />
-        <option name="ERROR_STRIPE_COLOR" value="ff5555" />
+        <option name="ERROR_STRIPE_COLOR" value="191a21" />
       </value>
     </option>
     <option name="DIFF_INSERTED">
       <value>
         <option name="BACKGROUND" value="50fa7b" />
-        <option name="ERROR_STRIPE_COLOR" value="50fa7b" />
+        <option name="ERROR_STRIPE_COLOR" value="191a21" />
       </value>
     </option>
     <option name="DIFF_MODIFIED">
       <value>
         <option name="BACKGROUND" value="8be9fd" />
-        <option name="ERROR_STRIPE_COLOR" value="8be9fd" />
+        <option name="ERROR_STRIPE_COLOR" value="191a21" />
       </value>
     </option>
     <option name="DUPLICATE_FROM_SERVER">
