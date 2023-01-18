@@ -1,11 +1,4 @@
-﻿#region Emik.MPL
-
-// <copyright file="Range.cs" company="Emik">
-// Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// </copyright>
-
-#endregion
-
+﻿// SPDX-License-Identifier: MPL-2.0
 namespace System;
 
 #pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649

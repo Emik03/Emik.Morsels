@@ -1,22 +1,12 @@
-#region Emik.MPL
-
-// <copyright file="Attributes.cs" company="Emik">
-// Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// </copyright>
-
-#endregion
+// SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective
 #pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1114, SA1216, SA1402, SA1403, SA1649
-
-#region
 
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
 using static System.AttributeTargets;
-
-#endregion
 
 namespace System.Diagnostics.CodeAnalysis
 {

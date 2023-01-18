@@ -1,20 +1,9 @@
-#region Emik.MPL
-
-// <copyright file="Once.cs" company="Emik">
-// Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// </copyright>
-
-#endregion
-
+// SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 #pragma warning disable CA1710, CA1815
 namespace Emik.Morsels;
 
-#region
-
 using static CollectionAccessType;
-
-#endregion
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>

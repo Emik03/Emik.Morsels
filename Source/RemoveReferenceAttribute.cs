@@ -1,11 +1,4 @@
-#region Emik.MPL
-
-// <copyright file="RemoveReferenceAttribute.cs" company="Emik">
-// Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// </copyright>
-
-#endregion
-
+// SPDX-License-Identifier: MPL-2.0
 #if NET452
 [assembly: RemoveReference("System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a")]
 

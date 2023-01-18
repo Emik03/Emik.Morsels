@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /// Declares higher-order functions that decorate pre-existing functions.
 module internal Emik.Morsels.FunctionWrappers
 

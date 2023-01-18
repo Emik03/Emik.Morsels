@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /// Provides functions to convert tupled functions into curried.
 module internal Emik.Morsels.Courier
 

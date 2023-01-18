@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /// Extension methods for option types.
 module internal Emik.Morsels.OptionExtensions
 

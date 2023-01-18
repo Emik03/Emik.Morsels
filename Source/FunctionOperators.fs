@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 /// Defines operators for functions.
 module internal Emik.Morsels.FunctionOperators
 
