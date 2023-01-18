@@ -12,6 +12,47 @@ namespace Emik.Morsels;
 /// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
 static partial class NegatedEnumerable
 {
+    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+    /// <remarks><para>
+    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
+    /// Each duplicate appears exactly once within the returned value.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
+    /// <param name="source">The source to filter.</param>
+    /// <param name="comparer">The comparer to assess distinctiveness.</param>
+    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> DistinctDuplicates<T>(
+        this IEnumerable<T> source,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        source.GroupDuplicates(comparer).Select(x => x.Key);
+
+    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+    /// <remarks><para>
+    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
+    /// Each duplicate appears two or more times within the returned value.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
+    /// <param name="source">The source to filter.</param>
+    /// <param name="comparer">The comparer to assess distinctiveness.</param>
+    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> Duplicates<T>(this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
+        source.GroupDuplicates(comparer).SelectMany(x => x);
+
+    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+    /// <remarks><para>Filters out unique elements within an <see cref="Enumerable{T}"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
+    /// <param name="source">The source to filter.</param>
+    /// <param name="comparer">The comparer to assess distinctiveness.</param>
+    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    internal static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
+        this IEnumerable<T> source,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
+
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains elements from
@@ -77,7 +118,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> WhereNot<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+    internal static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.Where(Not1(predicate));
 
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -87,7 +128,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> WhereNot<T>(
+    internal static IEnumerable<T> Omit<T>(
         [NoEnumeration] this IEnumerable<T> source,
         Func<T, int, bool> predicate
     ) =>
