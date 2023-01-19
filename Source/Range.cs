@@ -2,7 +2,7 @@
 namespace System;
 
 #pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649
-#if !NETSTANDARD2_1 && !NETCOREAPP
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 /// <summary>Represent a range has start and end indexes.</summary>
 /// <remarks><para>
 /// Range is used by the C# compiler to support the range syntax.

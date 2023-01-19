@@ -19,7 +19,7 @@ namespace NullGuard
 
 namespace System.Diagnostics.CodeAnalysis
 {
-#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1
+#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
 #if !WAWA
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
     [AttributeUsage(Field | Parameter | Property)]
@@ -296,7 +296,7 @@ namespace System.Runtime.CompilerServices
         DebuggerNonUserCode]
     static class IsExternalInit { }
 #endif
-#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1
+#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
     /// <summary>
     /// Indicates the type of the async method builder that should be used by a language compiler to
     /// build the attributed async method or to build the attributed type when used as the return type
@@ -467,6 +467,7 @@ namespace System.Runtime.CompilerServices
 
 namespace System.Runtime.CompilerServices
 {
+#if !NET6_0_OR_GREATER
     /// <summary>
     /// Indicates that an API is in preview. This attribute allows call sites to be
     /// flagged with a diagnostic that indicates that a preview feature is used.
@@ -511,4 +512,5 @@ namespace System.Runtime.CompilerServices
         /// </summary>
         public string? Url { get; set; }
     }
+#endif
 }

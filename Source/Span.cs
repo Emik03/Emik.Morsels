@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
 namespace Emik.Morsels;
 
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
