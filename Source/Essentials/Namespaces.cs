@@ -104,9 +104,13 @@ namespace Emik.Unions.Mappings { }
 
 namespace Emik.Unions.Tagged { }
 
+namespace Fody { }
+
 namespace InlineIL { }
 
 namespace InlineMethod { }
+
+namespace Microsoft { }
 
 namespace Microsoft.CodeAnalysis { }
 
