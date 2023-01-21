@@ -28,7 +28,7 @@ global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 #endif
-#if WAWA
+#if NET35 && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
@@ -39,7 +39,7 @@ global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFo
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-#if !WAWA
+#if !NET35 || !WAWA
 namespace System.Diagnostics.Contracts;
 using static AttributeTargets;
 
