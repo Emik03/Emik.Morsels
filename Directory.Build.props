@@ -220,6 +220,7 @@
         <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
         <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
         <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs" />
+        <Compile Include="$(Morsels)Source/ExitCodes.cs" Link="Source/References/Emik/Diagnostics/ExitCodes.cs" />
         <Compile Include="$(Morsels)Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs" />
         <Compile Include="$(Morsels)Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs" />
         <Compile Include="$(Morsels)Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs" />
@@ -270,7 +271,7 @@
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all" />
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all" />
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all" />
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.5" PrivateAssets="all" />
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.10" PrivateAssets="all" />
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" />
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.1.0" PrivateAssets="all" />
         <PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all" />
