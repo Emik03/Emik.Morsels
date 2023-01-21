@@ -97,6 +97,45 @@ static partial class CharacterInvariance
     [Pure]
     public static double GetNumericValue(this char c) => char.GetNumericValue(c);
 
+    /// <inheritdoc cref="string.Trim(char[])"/>
+    [Pure]
+    public static string Trim(this string s, string trim)
+    {
+        int start = 0, end = 1;
+
+        for (; start < s.Length; start++)
+            if (start >= trim.Length || s[start] != trim[start])
+                break;
+
+        for (; end <= s.Length; end++)
+            if (end > trim.Length || s[^end] != trim[^end])
+                return s[..^(end - 1)];
+
+        return s[start..^end];
+    }
+
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    [Pure]
+    public static string TrimEnd(this string s, string trim)
+    {
+        for (var i = 1; i <= s.Length; i++)
+            if (i > trim.Length || s[^i] != trim[^i])
+                return s[..^(i - 1)];
+
+        return "";
+    }
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    [Pure]
+    public static string TrimStart(this string s, string trim)
+    {
+        for (var i = 0; i < s.Length; i++)
+            if (i >= trim.Length || s[i] != trim[i])
+                return s[i..];
+
+        return "";
+    }
+
     /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
     [Pure]
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
