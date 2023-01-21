@@ -208,6 +208,7 @@
         <Compile Include="$(Morsels)Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs" />
         <Compile Include="$(Morsels)Source/Delegates.cs" Link="Source/References/System/Delegates.cs" />
         <Compile Include="$(Morsels)Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs" />
+        <Compile Include="$(Morsels)Source/Exit.cs" Link="Source/References/Emik/Diagnostics/Exit.cs" />
         <Compile Include="$(Morsels)Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs" />
         <Compile Include="$(Morsels)Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />
         <Compile Include="$(Morsels)Source/ManyQueries.cs" Link="Source/References/Emik/ManyQueries.cs" />
@@ -220,7 +221,6 @@
         <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
         <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
         <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs" />
-        <Compile Include="$(Morsels)Source/ExitCodes.cs" Link="Source/References/Emik/Diagnostics/ExitCodes.cs" />
         <Compile Include="$(Morsels)Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs" />
         <Compile Include="$(Morsels)Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs" />
         <Compile Include="$(Morsels)Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs" />
