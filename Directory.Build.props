@@ -234,6 +234,7 @@
         <Compile Include="$(Morsels)Source/RuntimeHelpers.cs" Link="Source/References/System/Runtime/RuntimeHelpers.cs" />
         <Compile Include="$(Morsels)Source/NegatedEnumerable.cs" Link="Source/References/Emik/Linq/NegatedEnumerable.cs" />
         <Compile Include="$(Morsels)Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
+        <Compile Include="$(Morsels)Source/CharacterInvariance.cs" Link="Source/References/Emik/Text/CharacterInvariance.cs" />
         <Compile Include="$(Morsels)Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
         <Compile Include="$(Morsels)Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs" />
         <Compile Include="$(Morsels)Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs" />
