@@ -114,6 +114,12 @@ namespace Microsoft { }
 
 namespace Microsoft.CodeAnalysis { }
 
+namespace Mono { }
+
+namespace Mono.Cecil { }
+
+namespace Mono.Cecil.Rocks { }
+
 namespace NullGuard { }
 
 namespace RemoveReference { }
