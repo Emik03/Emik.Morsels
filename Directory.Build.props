@@ -218,6 +218,7 @@
         <Compile Include="$(Morsels)Source/Collected.cs" Link="Source/References/Emik/Linq/Collected.cs" />
         <Compile Include="$(Morsels)Source/Conditionals.cs" Link="Source/References/Emik/Conditionals.cs" />
         <Compile Include="$(Morsels)Source/Essentials/Namespaces.cs" Link="Source/References/Namespaces.cs" />
+        <Compile Include="$(Morsels)Source/TupleExtracts.cs" Link="Source/References/Emik/TupleExtracts.cs" />
         <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
         <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
         <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs" />
