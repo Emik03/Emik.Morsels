@@ -13,6 +13,9 @@ global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations
 global using Component = unity::UnityEngine.Component;
 global using ContractAnnotationAttribute = unity::JetBrains.Annotations.ContractAnnotationAttribute;
 global using Debug = unity::UnityEngine.Debug;
+#endif
+global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+#if NET35
 global using ImplicitUseKindFlags = unity::JetBrains.Annotations.ImplicitUseKindFlags;
 global using ImplicitUseTargetFlags = unity::JetBrains.Annotations.ImplicitUseTargetFlags;
 global using InstantHandleAttribute = unity::JetBrains.Annotations.InstantHandleAttribute;
@@ -21,8 +24,7 @@ global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttrib
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
-global using NotifyPropertyChangedInvocatorAttribute =
- unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
+global using NotifyPropertyChangedInvocatorAttribute = unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
