@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <Import Project="Directory.Build.local.props" />
+    <Import Project="Directory.Build.local.props"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
         <Authors>Emik</Authors>
@@ -42,19 +42,19 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
         <WeaverConfiguration>
             <Weavers>
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <ToString />
-                <NullGuard />
-                <Substitute />
-                <Virtuosity />
-                <JetBrainsAnnotations />
-                <LocalsInit Default="false" />
-                <Caseless StringComparison="InvariantCulture" />
-                <InlineMethod />
-                <Divorce />
-                <Absence />
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <JetBrainsAnnotations/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -62,19 +62,19 @@
     <PropertyGroup>
         <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' == 'net40'">
             <Weavers>
-                <Lazy />
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <ToString />
-                <NullGuard />
-                <Substitute />
-                <Virtuosity />
-                <JetBrainsAnnotations />
-                <LocalsInit Default="false" />
-                <Caseless StringComparison="InvariantCulture" />
-                <InlineMethod />
-                <Absence />
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <JetBrainsAnnotations/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -82,17 +82,17 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
         <WeaverConfiguration>
             <Weavers>
-                <Lazy />
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <NullGuard />
-                <Substitute />
-                <Virtuosity />
-                <JetBrainsAnnotations />
-                <LocalsInit Default="false" />
-                <InlineMethod />
-                <Absence />
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <JetBrainsAnnotations/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -100,20 +100,20 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
         <WeaverConfiguration>
             <Weavers>
-                <Lazy />
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <ToString />
-                <NullGuard />
-                <Substitute />
-                <Virtuosity />
-                <JetBrainsAnnotations />
-                <LocalsInit Default="false" />
-                <Caseless StringComparison="InvariantCulture" />
-                <ConfigureAwait ContinueOnCapturedContext="false" />
-                <InlineMethod />
-                <Absence />
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <JetBrainsAnnotations/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -121,17 +121,17 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
         <WeaverConfiguration>
             <Weavers>
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <ToString />
-                <Substitute />
-                <Virtuosity />
-                <LocalsInit Default="false" />
-                <Caseless StringComparison="InvariantCulture" />
-                <InlineMethod />
-                <Divorce />
-                <Absence />
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -139,17 +139,17 @@
     <PropertyGroup>
         <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net40'">
             <Weavers>
-                <Lazy />
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <ToString />
-                <Substitute />
-                <Virtuosity />
-                <LocalsInit Default="false" />
-                <Caseless StringComparison="InvariantCulture" />
-                <InlineMethod />
-                <Absence />
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -157,15 +157,15 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
         <WeaverConfiguration>
             <Weavers>
-                <Lazy />
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <Substitute />
-                <Virtuosity />
-                <LocalsInit Default="false" />
-                <InlineMethod />
-                <Absence />
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <Substitute/>
+                <Virtuosity/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -173,162 +173,163 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
         <WeaverConfiguration>
             <Weavers>
-                <Lazy />
-                <Equals />
-                <InfoOf />
-                <InlineIL />
-                <ToString />
-                <Substitute />
-                <Virtuosity />
-                <LocalsInit Default="false" />
-                <Caseless StringComparison="InvariantCulture" />
-                <ConfigureAwait ContinueOnCapturedContext="false" />
-                <InlineMethod />
-                <Absence />
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
-        <Compile Remove=".Tests/**" />
-        <AdditionalFiles Include="$(Morsels)global.json" />
-        <AdditionalFiles Include="$(Morsels)stylecop.json" />
-        <Content Include="$(Morsels)Directory.Build.props" Pack="false" />
-        <Content Include="$(Morsels)Directory.Build.targets" Pack="false" />
-        <Content Include="$(Morsels)Directory.Build.local.props" Pack="false" />
+        <Compile Remove=".Tests/**"/>
+        <AdditionalFiles Include="$(Morsels)global.json"/>
+        <AdditionalFiles Include="$(Morsels)stylecop.json"/>
+        <Content Include="$(Morsels)Directory.Build.props" Pack="false"/>
+        <Content Include="$(Morsels)Directory.Build.targets" Pack="false"/>
+        <Content Include="$(Morsels)Directory.Build.local.props" Pack="false"/>
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-        <Compile Include="$(Morsels)Source/Index.cs" Link="Source/References/System/Index.cs" />
-        <Compile Include="$(Morsels)Source/Range.cs" Link="Source/References/System/Range.cs" />
-        <Compile Include="$(Morsels)Source/Each.cs" Link="Source/References/Emik/Linq/Each.cs" />
-        <Compile Include="$(Morsels)Source/Force.cs" Link="Source/References/Emik/Linq/Force.cs" />
-        <Compile Include="$(Morsels)Source/Heap.cs" Link="Source/References/Emik/Runtime/Heap.cs" />
-        <Compile Include="$(Morsels)Source/Span.cs" Link="Source/References/Emik/Buffers/Span.cs" />
-        <Compile Include="$(Morsels)Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs" />
-        <Compile Include="$(Morsels)Source/Delegates.cs" Link="Source/References/System/Delegates.cs" />
-        <Compile Include="$(Morsels)Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs" />
-        <Compile Include="$(Morsels)Source/Exit.cs" Link="Source/References/Emik/Diagnostics/Exit.cs" />
-        <Compile Include="$(Morsels)Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs" />
-        <Compile Include="$(Morsels)Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs" />
-        <Compile Include="$(Morsels)Source/ManyQueries.cs" Link="Source/References/Emik/ManyQueries.cs" />
-        <Compile Include="$(Morsels)Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs" />
-        <Compile Include="$(Morsels)Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs" />
-        <Compile Include="$(Morsels)Source/Clamped.cs" Link="Source/References/Emik/Numerics/Clamped.cs" />
-        <Compile Include="$(Morsels)Source/Collected.cs" Link="Source/References/Emik/Linq/Collected.cs" />
-        <Compile Include="$(Morsels)Source/Conditionals.cs" Link="Source/References/Emik/Conditionals.cs" />
-        <Compile Include="$(Morsels)Source/Essentials/Namespaces.cs" Link="Source/References/Namespaces.cs" />
-        <Compile Include="$(Morsels)Source/TupleExtracts.cs" Link="Source/References/Emik/TupleExtracts.cs" />
-        <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs" />
-        <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs" />
-        <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs" />
-        <Compile Include="$(Morsels)Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs" />
-        <Compile Include="$(Morsels)Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs" />
-        <Compile Include="$(Morsels)Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs" />
-        <Compile Include="$(Morsels)Source/Essentials/CommonGlobals.cs" Link="Source/References/CommonGlobals.cs" />
-        <Compile Include="$(Morsels)Source/IReadOnly.cs" Link="Source/References/System/Collections/IReadOnly.cs" />
-        <Compile Include="$(Morsels)Source/Matrix.cs" Link="Source/References/Emik/Collections/Generics/Matrix.cs" />
-        <Compile Include="$(Morsels)Source/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs" />
-        <Compile Include="$(Morsels)Source/Split.cs" Link="Source/References/Emik/Collections/Specialized/Split.cs" />
-        <Compile Include="$(Morsels)Source/Unforgiving.cs" Link="Source/References/Emik/Diagnostics/Unforgiving.cs" />
-        <Compile Include="$(Morsels)Source/NullableItems.cs" Link="Source/References/Emik/Collections/NullableItems.cs" />
-        <Compile Include="$(Morsels)Source/RuntimeHelpers.cs" Link="Source/References/System/Runtime/RuntimeHelpers.cs" />
-        <Compile Include="$(Morsels)Source/NegatedEnumerable.cs" Link="Source/References/Emik/Linq/NegatedEnumerable.cs" />
-        <Compile Include="$(Morsels)Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs" />
-        <Compile Include="$(Morsels)Source/CharacterInvariance.cs" Link="Source/References/Emik/Text/CharacterInvariance.cs" />
-        <Compile Include="$(Morsels)Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs" />
-        <Compile Include="$(Morsels)Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs" />
-        <Compile Include="$(Morsels)Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs" />
-        <Compile Include="$(Morsels)Source/RandomizedGetters.cs" Link="Source/References/Emik/Collections/RandomizedGetters.cs" />
-        <Compile Include="$(Morsels)Source/ReadOnlyList.cs" Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs" />
-        <Compile Include="$(Morsels)Source/MethodImplOptions.cs" Link="Source/References/System/Diagnostics/MethodImplOptions.cs" />
-        <Compile Include="$(Morsels)Source/RemoveReferenceAttribute.cs" Link="Source/References/Fody/RemoveReferenceAttribute.cs" />
-        <Compile Include="$(Morsels)Source/UnreachableException.cs" Link="Source/References/System/Diagnostics/UnreachableException.cs" />
+        <Compile Include="$(Morsels)Source/Index.cs" Link="Source/References/System/Index.cs"/>
+        <Compile Include="$(Morsels)Source/Range.cs" Link="Source/References/System/Range.cs"/>
+        <Compile Include="$(Morsels)Source/Each.cs" Link="Source/References/Emik/Linq/Each.cs"/>
+        <Compile Include="$(Morsels)Source/Force.cs" Link="Source/References/Emik/Linq/Force.cs"/>
+        <Compile Include="$(Morsels)Source/Heap.cs" Link="Source/References/Emik/Runtime/Heap.cs"/>
+        <Compile Include="$(Morsels)Source/Span.cs" Link="Source/References/Emik/Buffers/Span.cs"/>
+        <Compile Include="$(Morsels)Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs"/>
+        <Compile Include="$(Morsels)Source/Delegates.cs" Link="Source/References/System/Delegates.cs"/>
+        <Compile Include="$(Morsels)Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs"/>
+        <Compile Include="$(Morsels)Source/Exit.cs" Link="Source/References/Emik/Diagnostics/Exit.cs"/>
+        <Compile Include="$(Morsels)Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs"/>
+        <Compile Include="$(Morsels)Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs"/>
+        <Compile Include="$(Morsels)Source/ManyQueries.cs" Link="Source/References/Emik/ManyQueries.cs"/>
+        <Compile Include="$(Morsels)Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs"/>
+        <Compile Include="$(Morsels)Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs"/>
+        <Compile Include="$(Morsels)Source/Clamped.cs" Link="Source/References/Emik/Numerics/Clamped.cs"/>
+        <Compile Include="$(Morsels)Source/Collected.cs" Link="Source/References/Emik/Linq/Collected.cs"/>
+        <Compile Include="$(Morsels)Source/Conditionals.cs" Link="Source/References/Emik/Conditionals.cs"/>
+        <Compile Include="$(Morsels)Source/Essentials/Namespaces.cs" Link="Source/References/Namespaces.cs"/>
+        <Compile Include="$(Morsels)Source/TupleExtracts.cs" Link="Source/References/Emik/TupleExtracts.cs"/>
+        <Compile Include="$(Morsels)Source/Attachments.cs" Link="Source/References/Emik/Linq/Attachments.cs"/>
+        <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs"/>
+        <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs"/>
+        <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs"/>
+        <Compile Include="$(Morsels)Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs"/>
+        <Compile Include="$(Morsels)Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs"/>
+        <Compile Include="$(Morsels)Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs"/>
+        <Compile Include="$(Morsels)Source/Essentials/CommonGlobals.cs" Link="Source/References/CommonGlobals.cs"/>
+        <Compile Include="$(Morsels)Source/IReadOnly.cs" Link="Source/References/System/Collections/IReadOnly.cs"/>
+        <Compile Include="$(Morsels)Source/Matrix.cs" Link="Source/References/Emik/Collections/Generics/Matrix.cs"/>
+        <Compile Include="$(Morsels)Source/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
+        <Compile Include="$(Morsels)Source/Split.cs" Link="Source/References/Emik/Collections/Specialized/Split.cs"/>
+        <Compile Include="$(Morsels)Source/Unforgiving.cs" Link="Source/References/Emik/Diagnostics/Unforgiving.cs"/>
+        <Compile Include="$(Morsels)Source/NullableItems.cs" Link="Source/References/Emik/Collections/NullableItems.cs"/>
+        <Compile Include="$(Morsels)Source/RuntimeHelpers.cs" Link="Source/References/System/Runtime/RuntimeHelpers.cs"/>
+        <Compile Include="$(Morsels)Source/NegatedEnumerable.cs" Link="Source/References/Emik/Linq/NegatedEnumerable.cs"/>
+        <Compile Include="$(Morsels)Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs"/>
+        <Compile Include="$(Morsels)Source/CharacterInvariance.cs" Link="Source/References/Emik/Text/CharacterInvariance.cs"/>
+        <Compile Include="$(Morsels)Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs"/>
+        <Compile Include="$(Morsels)Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs"/>
+        <Compile Include="$(Morsels)Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs"/>
+        <Compile Include="$(Morsels)Source/RandomizedGetters.cs" Link="Source/References/Emik/Collections/RandomizedGetters.cs"/>
+        <Compile Include="$(Morsels)Source/ReadOnlyList.cs" Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs"/>
+        <Compile Include="$(Morsels)Source/MethodImplOptions.cs" Link="Source/References/System/Diagnostics/MethodImplOptions.cs"/>
+        <Compile Include="$(Morsels)Source/RemoveReferenceAttribute.cs" Link="Source/References/Fody/RemoveReferenceAttribute.cs"/>
+        <Compile Include="$(Morsels)Source/UnreachableException.cs" Link="Source/References/System/Diagnostics/UnreachableException.cs"/>
     </ItemGroup>
     <!-- F# code snippets for F# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
-        <Compile Include="$(Morsels)Source/Courier.fs" Link="Emik.Morsels/Courier.fs" />
-        <Compile Include="$(Morsels)Source/Sequencer.fs" Link="Emik.Morsels/Sequencer.fs" />
-        <Compile Include="$(Morsels)Source/Randomizer.fs" Link="Emik.Morsels/Randomizer.fs" />
-        <Compile Include="$(Morsels)Source/FunctionWrappers.fs" Link="Emik.Morsels/FunctionWrappers.fs" />
-        <Compile Include="$(Morsels)Source/OptionExtensions.fs" Link="Emik.Morsels/OptionExtensions.fs" />
-        <Compile Include="$(Morsels)Source/FunctionOperators.fs" Link="Emik.Morsels/FunctionOperators.fs" />
-        <Compile Include="$(Morsels)Source/TargetFrameworkAttribute.fs" Link="Emik.Morsels/TargetFrameworkAttribute.fs" />
+        <Compile Include="$(Morsels)Source/Courier.fs" Link="Emik.Morsels/Courier.fs"/>
+        <Compile Include="$(Morsels)Source/Sequencer.fs" Link="Emik.Morsels/Sequencer.fs"/>
+        <Compile Include="$(Morsels)Source/Randomizer.fs" Link="Emik.Morsels/Randomizer.fs"/>
+        <Compile Include="$(Morsels)Source/FunctionWrappers.fs" Link="Emik.Morsels/FunctionWrappers.fs"/>
+        <Compile Include="$(Morsels)Source/OptionExtensions.fs" Link="Emik.Morsels/OptionExtensions.fs"/>
+        <Compile Include="$(Morsels)Source/FunctionOperators.fs" Link="Emik.Morsels/FunctionOperators.fs"/>
+        <Compile Include="$(Morsels)Source/TargetFrameworkAttribute.fs" Link="Emik.Morsels/TargetFrameworkAttribute.fs"/>
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all" />
-        <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
-        <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all" />
-        <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all" />
-        <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all" />
-        <PackageReference Include="CsharpMacros" Version="2.3.5" PrivateAssets="all" />
-        <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all" />
-        <PackageReference Include="InlineIL.Fody" Version="1.7.4" PrivateAssets="all" />
-        <PackageReference Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all" />
-        <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all" />
-        <PackageReference Include="UnitGenerator" Version="1.4.10" PrivateAssets="all" />
-        <PackageReference Include="LocalsInit.Fody" Version="1.1.0" PrivateAssets="all" />
-        <PackageReference Include="Substitute.Fody" Version="1.6.0" PrivateAssets="all" />
-        <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all" />
-        <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all" />
-        <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all" />
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.10" PrivateAssets="all" />
-        <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all" />
-        <PackageReference Include="GlobalUsingsAnalyzer" Version="1.1.0" PrivateAssets="all" />
-        <PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all" />
-        <PackageReference Include="Collections.Analyzer" Version="0.2.8.1" PrivateAssets="all" />
-        <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all" />
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all" />
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.2.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0" PrivateAssets="all" />
-        <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all" />
-        <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all" />
-        <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" PrivateAssets="all" IncludeAssets="compile" />
-        <PackageReference Include="JetBrainsAnnotations.Fody" Version="2.17.0" PrivateAssets="all" IncludeAssets="compile" />
+        <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all"/>
+        <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
+        <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
+        <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all"/>
+        <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all"/>
+        <PackageReference Include="CsharpMacros" Version="2.3.5" PrivateAssets="all"/>
+        <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all"/>
+        <PackageReference Include="InlineIL.Fody" Version="1.7.4" PrivateAssets="all"/>
+        <PackageReference Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
+        <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all"/>
+        <PackageReference Include="UnitGenerator" Version="1.4.10" PrivateAssets="all"/>
+        <PackageReference Include="LocalsInit.Fody" Version="1.1.0" PrivateAssets="all"/>
+        <PackageReference Include="Substitute.Fody" Version="1.6.0" PrivateAssets="all"/>
+        <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
+        <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
+        <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.10" PrivateAssets="all"/>
+        <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
+        <PackageReference Include="GlobalUsingsAnalyzer" Version="1.1.0" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Collections.Analyzer" Version="0.2.8.1" PrivateAssets="all"/>
+        <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
+        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0" PrivateAssets="all"/>
+        <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
+        <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2022.3.1" PrivateAssets="all" IncludeAssets="compile"/>
+        <PackageReference Include="JetBrainsAnnotations.Fody" Version="2.17.0" PrivateAssets="all" IncludeAssets="compile"/>
     </ItemGroup>
     <!-- F# latest for .NET Framework 2.0 - 4.5.2. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40' or '$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'net451' or '$(TargetFramework)' == 'net452')">
-        <PackageReference Include="FSharp.Core" Version="4.1.18" />
+        <PackageReference Include="FSharp.Core" Version="4.1.18"/>
     </ItemGroup>
     <!-- F# latest for .NET Framework 4.6.1+. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net471' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net481')">
-        <PackageReference Include="FSharp.Core" Version="4.7.2" />
+        <PackageReference Include="FSharp.Core" Version="4.7.2"/>
     </ItemGroup>
     <!-- F# latest for .NET Core. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451' and '$(TargetFramework)' != 'net452' and '$(TargetFramework)' != 'net461' and '$(TargetFramework)' != 'net462' and '$(TargetFramework)' != 'net47' and '$(TargetFramework)' != 'net471' and '$(TargetFramework)' != 'net472' and '$(TargetFramework)' != 'net48' and '$(TargetFramework)' != 'net481'">
-        <PackageReference Include="FSharp.Core" Version="7.0.0" />
+        <PackageReference Include="FSharp.Core" Version="7.0.0"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.5.1 or less. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451'">
-        <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all" />
+        <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-        <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all" />
-        <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all" />
-        <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false" />
-        <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false" />
-        <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" Private="false" />
-        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false" />
-        <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity" />
+        <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
+        <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
+        <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false"/>
+        <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false"/>
+        <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
-        <Reference Include="FNA" HintPath="$(Celeste)FNA.dll" Private="false" />
-        <Reference Include="Celeste" HintPath="$(Celeste)Celeste.exe" Private="false" />
-        <Reference Include="DotNetZip" HintPath="$(Celeste)DotNetZip.dll" Private="false" />
-        <Reference Include="YamlDotNet" HintPath="$(Celeste)YamlDotNet.dll" Private="false" />
-        <PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all" />
-        <Reference Include="MonoMod.Utils" HintPath="$(Celeste)MonoMod.Utils.dll" Private="false" />
-        <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)MMHOOK_Celeste.dll" Private="false" />
+        <Reference Include="FNA" HintPath="$(Celeste)FNA.dll" Private="false"/>
+        <Reference Include="Celeste" HintPath="$(Celeste)Celeste.exe" Private="false"/>
+        <Reference Include="DotNetZip" HintPath="$(Celeste)DotNetZip.dll" Private="false"/>
+        <Reference Include="YamlDotNet" HintPath="$(Celeste)YamlDotNet.dll" Private="false"/>
+        <PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all"/>
+        <Reference Include="MonoMod.Utils" HintPath="$(Celeste)MonoMod.Utils.dll" Private="false"/>
+        <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)MMHOOK_Celeste.dll" Private="false"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 3.5 or less. -->
     <ItemGroup Condition="!('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
-        <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all" />
+        <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.0 or less. -->
     <ItemGroup Condition="!('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40')">
-        <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all" />
+        <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
     </ItemGroup>
 </Project>
