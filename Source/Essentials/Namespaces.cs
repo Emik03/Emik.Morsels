@@ -6,6 +6,8 @@ namespace System.Buffers { }
 
 namespace System.Collections.Concurrent { }
 
+namespace System.Collections.Immutable { }
+
 namespace System.Configuration { }
 
 namespace System.Configuration.Assemblies { }
