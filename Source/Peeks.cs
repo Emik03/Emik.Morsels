@@ -32,6 +32,7 @@ static partial class Peeks
 #pragma warning restore CS1574
     internal static void Shout(string message)
     {
+        // ReSharper disable once InvocationIsSkipped
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
         Trace.WriteLine(message);
