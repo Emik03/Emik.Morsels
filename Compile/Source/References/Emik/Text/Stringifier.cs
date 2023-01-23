@@ -220,7 +220,8 @@ static partial class Stringifier
     {
         var exParam = Expression.Parameter(typeof(T), nameof(T));
 
-        var array = typeof(T) // ReSharper disable ArrangeStaticMemberQualifier
+        // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+        var array = typeof(T)
            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
            .Where(p => p.CanRead && p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute)))
            .Select(p => GetMethodCaller(p, exParam))

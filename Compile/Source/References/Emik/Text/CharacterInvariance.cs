@@ -36,9 +36,24 @@ static partial class CharacterInvariance
     [Pure]
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
 
+#if NETFRAMEWORK && !NET40_OR_GREATER
+    /// <summary>
+    /// Indicates whether a specified string is <see langword="null"/>,
+    /// empty, or consists only of white-space characters.
+    /// </summary>
+    /// <param name="value">The string to test.</param>
+    /// <returns>
+    /// <see langword="true"/> if the <paramref name="value"/> parameter is <see langword="null"/>,
+    /// or <see cref="string.Empty"/>, or if <paramref name="value"/> consists exclusively of white-space characters.
+    /// </returns>
+    [Pure]
+    public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
+        value is null || value.All(char.IsWhiteSpace);
+#else
     /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
     [Pure]
-    public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
+    public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
+#endif
 
     /// <inheritdoc cref="char.IsNumber(char)"/>
     [Pure]

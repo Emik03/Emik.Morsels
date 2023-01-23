@@ -50,8 +50,9 @@
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <ProjectReference Include="../*.csproj"/>
+        <ProjectReference Include="../*.fsproj"/>
         <PackageReference Remove="GlobalUsingsAnalyzer"/>
-        <ProjectReference Include="../*.$(MSBuildProjectExtension)"/>
         <Compile Remove="$(Morsels)Compile/Source/References/*/**/*.cs"/>
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all"/>
         <PackageReference Include="NUnit.Analyzers" Version="3.3.0" PrivateAssets="all"/>

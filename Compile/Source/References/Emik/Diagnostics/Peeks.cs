@@ -8,6 +8,7 @@ static partial class Peeks
 #pragma warning restore MA0048
 {
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
+    // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
     internal static event Action<string> OnWrite =
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2

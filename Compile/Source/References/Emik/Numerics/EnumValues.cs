@@ -22,7 +22,7 @@ public static class EnumValues
     {
         static Convert()
         {
-            var parameter = Parameter(typeof(T));
+            var parameter = Parameter(typeof(T), nameof(T));
             var underlying = GetUnderlyingType(typeof(T));
             var cast = Convert(parameter, underlying);
 

@@ -1,11 +1,10 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632, MA0048, SA1629, GlobalUsingsAnalyzer
-using SecurityAction = System.Security.Permissions.SecurityAction;
-
+#pragma warning disable CS8632, MA0048, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
 namespace Emik.Morsels;
-
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 using static SecurityAction;
 using static SecurityPermissionFlag;
+#endif
 
 /// <summary>Provides methods for exiting the program.</summary>
 static partial class Exit
@@ -15,10 +14,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
     public static Exception Success(string? message = null) => throw With(0, message);
 
     /// <remarks><para>This method represents the exit code 1, indicating failure.</para></remarks>
@@ -26,10 +25,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
     public static Exception Failure(string? message = null) => throw With(1, message);
 
     /// <remarks><para>This method represents the exit code 2, indicating invalid parameters.</para></remarks>
@@ -37,10 +36,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
     public static Exception Usage(string? message = null) => throw With(2, message);
 
     /// <typeparam name="T">Only used for type coercion.</typeparam>
@@ -48,10 +47,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
     public static T Success<T>(string? message = null) => throw With(0, message);
 
     /// <typeparam name="T">Only used for type coercion.</typeparam>
@@ -59,10 +58,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
     public static T Failure<T>(string? message = null) => throw With(1, message);
 
     /// <typeparam name="T">Only used for type coercion.</typeparam>
@@ -70,10 +69,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
     public static T Usage<T>(string? message = null) => throw With(2, message);
 
     /// <summary>Terminates this process and returns the exit code to the operating system.</summary>
@@ -85,10 +84,10 @@ static partial class Exit
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
-    ]
 #endif
+    ]
 #pragma warning disable CS1573
     static Exception With(byte exitCode, string? message)
 #pragma warning restore CS1573
