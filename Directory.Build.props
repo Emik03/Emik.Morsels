@@ -222,6 +222,7 @@
         <Compile Include="$(Morsels)Source/Attachments.cs" Link="Source/References/Emik/Linq/Attachments.cs"/>
         <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs"/>
         <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs"/>
+        <Compile Include="$(Morsels)Source/EnumValues.cs" Link="Source/References/Emik/Numerics/EnumValues.cs"/>
         <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs"/>
         <Compile Include="$(Morsels)Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs"/>
         <Compile Include="$(Morsels)Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs"/>
