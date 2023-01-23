@@ -199,63 +199,11 @@
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-        <Compile Include="$(Morsels)Source/Index.cs" Link="Source/References/System/Index.cs"/>
-        <Compile Include="$(Morsels)Source/Range.cs" Link="Source/References/System/Range.cs"/>
-        <Compile Include="$(Morsels)Source/Each.cs" Link="Source/References/Emik/Linq/Each.cs"/>
-        <Compile Include="$(Morsels)Source/Force.cs" Link="Source/References/Emik/Linq/Force.cs"/>
-        <Compile Include="$(Morsels)Source/Heap.cs" Link="Source/References/Emik/Runtime/Heap.cs"/>
-        <Compile Include="$(Morsels)Source/Span.cs" Link="Source/References/Emik/Buffers/Span.cs"/>
-        <Compile Include="$(Morsels)Source/TryTake.cs" Link="Source/References/Emik/Linq/TryTake.cs"/>
-        <Compile Include="$(Morsels)Source/Delegates.cs" Link="Source/References/System/Delegates.cs"/>
-        <Compile Include="$(Morsels)Source/Essentials/Aliases.cs" Link="Source/References/Aliases.cs"/>
-        <Compile Include="$(Morsels)Source/Exit.cs" Link="Source/References/Emik/Diagnostics/Exit.cs"/>
-        <Compile Include="$(Morsels)Source/EachLazy.cs" Link="Source/References/Emik/Linq/EachLazy.cs"/>
-        <Compile Include="$(Morsels)Source/Indexers.cs" Link="Source/References/Emik/Linq/Indexers.cs"/>
-        <Compile Include="$(Morsels)Source/ManyQueries.cs" Link="Source/References/Emik/ManyQueries.cs"/>
-        <Compile Include="$(Morsels)Source/Peeks.cs" Link="Source/References/Emik/Diagnostics/Peeks.cs"/>
-        <Compile Include="$(Morsels)Source/ValueTuple.cs" Link="Source/References/System/ValueTuple.cs"/>
-        <Compile Include="$(Morsels)Source/Clamped.cs" Link="Source/References/Emik/Numerics/Clamped.cs"/>
-        <Compile Include="$(Morsels)Source/Collected.cs" Link="Source/References/Emik/Linq/Collected.cs"/>
-        <Compile Include="$(Morsels)Source/Conditionals.cs" Link="Source/References/Emik/Conditionals.cs"/>
-        <Compile Include="$(Morsels)Source/Essentials/Namespaces.cs" Link="Source/References/Namespaces.cs"/>
-        <Compile Include="$(Morsels)Source/TupleExtracts.cs" Link="Source/References/Emik/TupleExtracts.cs"/>
-        <Compile Include="$(Morsels)Source/Attachments.cs" Link="Source/References/Emik/Linq/Attachments.cs"/>
-        <Compile Include="$(Morsels)Source/Stringifier.cs" Link="Source/References/Emik/Text/Stringifier.cs"/>
-        <Compile Include="$(Morsels)Source/Yes.cs" Link="Source/References/Emik/Collections/Immutable/Yes.cs"/>
-        <Compile Include="$(Morsels)Source/EnumValues.cs" Link="Source/References/Emik/Numerics/EnumValues.cs"/>
-        <Compile Include="$(Morsels)Source/Essentials/CLSCompliant.cs" Link="Source/References/CLSCompliant.cs"/>
-        <Compile Include="$(Morsels)Source/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs"/>
-        <Compile Include="$(Morsels)Source/MethodGroupings.cs" Link="Source/References/Emik/MethodGroupings.cs"/>
-        <Compile Include="$(Morsels)Source/Once.cs" Link="Source/References/Emik/Collections/Immutable/Once.cs"/>
-        <Compile Include="$(Morsels)Source/Essentials/CommonGlobals.cs" Link="Source/References/CommonGlobals.cs"/>
-        <Compile Include="$(Morsels)Source/IReadOnly.cs" Link="Source/References/System/Collections/IReadOnly.cs"/>
-        <Compile Include="$(Morsels)Source/Matrix.cs" Link="Source/References/Emik/Collections/Generics/Matrix.cs"/>
-        <Compile Include="$(Morsels)Source/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
-        <Compile Include="$(Morsels)Source/Split.cs" Link="Source/References/Emik/Collections/Specialized/Split.cs"/>
-        <Compile Include="$(Morsels)Source/Unforgiving.cs" Link="Source/References/Emik/Diagnostics/Unforgiving.cs"/>
-        <Compile Include="$(Morsels)Source/NullableItems.cs" Link="Source/References/Emik/Collections/NullableItems.cs"/>
-        <Compile Include="$(Morsels)Source/RuntimeHelpers.cs" Link="Source/References/System/Runtime/RuntimeHelpers.cs"/>
-        <Compile Include="$(Morsels)Source/NegatedEnumerable.cs" Link="Source/References/Emik/Linq/NegatedEnumerable.cs"/>
-        <Compile Include="$(Morsels)Source/PowerSetFactories.cs" Link="Source/References/Emik/Linq/PowerSetFactories.cs"/>
-        <Compile Include="$(Morsels)Source/CharacterInvariance.cs" Link="Source/References/Emik/Text/CharacterInvariance.cs"/>
-        <Compile Include="$(Morsels)Source/ClippedList.cs" Link="Source/References/Emik/Collections/Generics/ClippedList.cs"/>
-        <Compile Include="$(Morsels)Source/GuardedList.cs" Link="Source/References/Emik/Collections/Generics/GuardedList.cs"/>
-        <Compile Include="$(Morsels)Source/CircularList.cs" Link="Source/References/Emik/Collections/Generics/CircularList.cs"/>
-        <Compile Include="$(Morsels)Source/RandomizedGetters.cs" Link="Source/References/Emik/Collections/RandomizedGetters.cs"/>
-        <Compile Include="$(Morsels)Source/ReadOnlyList.cs" Link="Source/References/Emik/Collections/Immutable/ReadOnlyList.cs"/>
-        <Compile Include="$(Morsels)Source/MethodImplOptions.cs" Link="Source/References/System/Diagnostics/MethodImplOptions.cs"/>
-        <Compile Include="$(Morsels)Source/RemoveReferenceAttribute.cs" Link="Source/References/Fody/RemoveReferenceAttribute.cs"/>
-        <Compile Include="$(Morsels)Source/UnreachableException.cs" Link="Source/References/System/Diagnostics/UnreachableException.cs"/>
+        <Compile Include="$(Morsels)Compile/**/*.cs"/>
     </ItemGroup>
     <!-- F# code snippets for F# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
-        <Compile Include="$(Morsels)Source/Courier.fs" Link="Emik.Morsels/Courier.fs"/>
-        <Compile Include="$(Morsels)Source/Sequencer.fs" Link="Emik.Morsels/Sequencer.fs"/>
-        <Compile Include="$(Morsels)Source/Randomizer.fs" Link="Emik.Morsels/Randomizer.fs"/>
-        <Compile Include="$(Morsels)Source/FunctionWrappers.fs" Link="Emik.Morsels/FunctionWrappers.fs"/>
-        <Compile Include="$(Morsels)Source/OptionExtensions.fs" Link="Emik.Morsels/OptionExtensions.fs"/>
-        <Compile Include="$(Morsels)Source/FunctionOperators.fs" Link="Emik.Morsels/FunctionOperators.fs"/>
-        <Compile Include="$(Morsels)Source/TargetFrameworkAttribute.fs" Link="Emik.Morsels/TargetFrameworkAttribute.fs"/>
+        <Compile Include="$(Morsels)Compile/**/*.fs"/>
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>

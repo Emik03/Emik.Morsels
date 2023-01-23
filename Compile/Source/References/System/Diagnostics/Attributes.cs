@@ -8,15 +8,6 @@ global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute
 #endif
 using static System.AttributeTargets;
 
-#if WAWA
-namespace NullGuard
-{
-    /// <summary>Prevents the injection of null checking (implicit mode only).</summary>
-    [AttributeUsage(Parameter | ReturnValue | Property)]
-    sealed class AllowNullAttribute : Attribute { }
-}
-#endif
-
 namespace System.Diagnostics.CodeAnalysis
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
