@@ -46,10 +46,20 @@ static partial class NegatedEnumerable
     ) =>
         source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
 
+    /// <summary>Negated <see cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input sequence starting at
+    /// the first element in the linear series that does pass the test specified by the predicate.
+    /// </returns>
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+    [LinqTunnel, Pure]
+    internal static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+        source.SkipWhile(Not1(predicate));
+
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
+    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input
+    /// sequence that occur before the element at which the test no longer fails.
     /// </returns>
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
