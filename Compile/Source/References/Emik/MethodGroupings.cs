@@ -10,7 +10,7 @@ static partial class MethodGroupings
 {
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
-    public static void Invoke(Action del) => del();
+    public static void Invoke([InstantHandle] Action del) => del();
 
     /// <summary>Create a delegate.</summary>
     /// <param name="del">The method group.</param>

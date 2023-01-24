@@ -15,7 +15,7 @@ static partial class SplitFactory
     /// collection. The first half is as long as the parameter <paramref name="count"/> or shorter.
     /// </returns>
     [Pure]
-    internal static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, int count) =>
+    internal static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, [NonNegativeValue] int count) =>
         new(source.Take(count), source.Skip(count));
 
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
@@ -27,7 +27,7 @@ static partial class SplitFactory
     /// <see langword="true"/> and <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, Predicate<T> predicate)
+    internal static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
     {
         List<T> t = new(), f = new();
 
@@ -47,7 +47,11 @@ static partial class SplitFactory
     /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
     /// collection. The first half lasts until the first element that returned <see langword="true"/>.
     /// </returns>
-    internal static Split<IEnumerable<T>> SplitWhen<T>(this ICollection<T> source, Func<T, bool> predicate)
+    [Pure]
+    internal static Split<IEnumerable<T>> SplitWhen<T>(
+        this ICollection<T> source,
+        [InstantHandle] Func<T, bool> predicate
+    )
     {
         var index = source.TakeWhile(Not1(predicate)).Count();
         return source.SplitAt(index);

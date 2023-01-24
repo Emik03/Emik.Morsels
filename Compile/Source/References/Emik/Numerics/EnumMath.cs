@@ -14,6 +14,7 @@ static partial class EnumMath
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
     /// <param name="value">The value.</param>
     /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
+    [Pure]
     public static T Negate<T>(this T value)
         where T : Enum =>
         value.Op(static x => unchecked(-x));
@@ -23,6 +24,7 @@ static partial class EnumMath
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
     /// <param name="value">The value.</param>
     /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately before it.</returns>
+    [Pure]
     public static T Predecessor<T>(this T value)
         where T : Enum =>
         value.Op(static x => unchecked(--x));
@@ -32,6 +34,7 @@ static partial class EnumMath
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
     /// <param name="value">The value.</param>
     /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately after it.</returns>
+    [Pure]
     public static T Successor<T>(this T value)
         where T : Enum =>
         value.Op(static x => unchecked(++x));
@@ -42,6 +45,7 @@ static partial class EnumMath
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>The sum of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
     public static T Add<T>(this T left, T right)
         where T : Enum =>
         left.Op(right, static (x, y) => unchecked(x + y));
@@ -52,6 +56,7 @@ static partial class EnumMath
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>The difference of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
     public static T Subtract<T>(this T left, T right)
         where T : Enum =>
         left.Op(right, static (x, y) => unchecked(x - y));
@@ -62,6 +67,7 @@ static partial class EnumMath
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>The product of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
     public static T Multiply<T>(this T left, T right)
         where T : Enum =>
         left.Op(right, static (x, y) => unchecked(x * y));
@@ -72,6 +78,7 @@ static partial class EnumMath
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>The quotient of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
     public static T Divide<T>(this T left, T right)
         where T : Enum =>
         left.Op(right, static (x, y) => x / y);
@@ -82,15 +89,18 @@ static partial class EnumMath
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>The remainder of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
     public static T Modulo<T>(this T left, T right)
         where T : Enum =>
         left.Op(right, static (x, y) => x % y);
 
-    static T Op<T>(this T value, [RequireStaticDelegate(IsError = true)] Func<int, int> op)
+    [Pure]
+    static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
         where T : Enum =>
         Convert<T>.AsT(op(Convert<T>.AsInt(value)));
 
-    static T Op<T>(this T left, T right, [RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
+    [Pure]
+    static T Op<T>(this T left, T right, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
         where T : Enum =>
         Convert<T>.AsT(op(Convert<T>.AsInt(left), Convert<T>.AsInt(right)));
 
