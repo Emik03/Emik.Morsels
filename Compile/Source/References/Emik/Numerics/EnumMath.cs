@@ -9,6 +9,26 @@ using static Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
+    /// <summary>Performs a conversion operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The <see cref="int"/> cast of <paramref name="value"/>.</returns>
+    [Pure]
+    public static int AsInt<T>(this T value)
+        where T : Enum =>
+        Convert<T>.From(value);
+
+    /// <summary>Performs a conversion operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The <typeparamref name="T"/> cast of <paramref name="value"/>.</returns>
+    [Pure]
+    public static T As<T>(this int value)
+        where T : Enum =>
+        Convert<T>.To(value);
+
     /// <summary>Performs a negation operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -97,44 +117,31 @@ static partial class EnumMath
     [Pure]
     static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
         where T : Enum =>
-        Convert<T>.AsT(op(Convert<T>.AsInt(value)));
+        op(value.AsInt()).As<T>();
 
     [Pure]
     static T Op<T>(this T left, T right, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
         where T : Enum =>
-        Convert<T>.AsT(op(Convert<T>.AsInt(left), Convert<T>.AsInt(right)));
+        op(left.AsInt(), right.AsInt()).As<T>();
 
     static class Convert<T>
         where T : Enum
     {
-        public static Converter<T, int> AsInt { get; } = MakeAsInt();
+        public static Converter<T, int> From { get; } = Make<Converter<T, int>>(false);
 
-        public static Converter<int, T> AsT { get; } = MakeAsT();
+        public static Converter<int, T> To { get; } = Make<Converter<int, T>>(true);
 
-        static Converter<T, int> MakeAsInt()
+        static TFunc Make<TFunc>(bool isReverse)
+            where TFunc : Delegate
         {
-            var parameter = Parameter(typeof(T), nameof(T));
+            var parameter = Parameter(isReverse ? typeof(int) : typeof(T), nameof(T));
             var underlying = GetUnderlyingType(typeof(T));
-            var cast = Convert(parameter, underlying);
+            var cast = isReverse ? (Expression)parameter : Convert(parameter, underlying);
 
-            if (underlying != typeof(int))
-                cast = Convert(cast, typeof(int));
+            cast = underlying != typeof(int) ? Convert(parameter, isReverse ? underlying : typeof(int)) : cast;
+            cast = isReverse ? Convert(cast, typeof(T)) : cast;
 
-            return Lambda<Converter<T, int>>(cast, parameter).Compile();
-        }
-
-        static Converter<int, T> MakeAsT()
-        {
-            var parameter = Parameter(typeof(int), nameof(T));
-            var underlying = GetUnderlyingType(typeof(T));
-            var cast = (Expression)parameter;
-
-            if (underlying != typeof(int))
-                cast = Convert(parameter, underlying);
-
-            cast = Convert(cast, typeof(T));
-
-            return Lambda<Converter<int, T>>(cast, parameter).Compile();
+            return Lambda<TFunc>(cast, parameter).Compile();
         }
     }
 }
