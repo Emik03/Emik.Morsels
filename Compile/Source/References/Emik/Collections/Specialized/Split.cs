@@ -6,19 +6,17 @@ namespace Emik.Morsels;
 static partial class SplitFactory
 #pragma warning restore MA0048
 {
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <param name="count">The number of elements in the first half.</param>
     /// <returns>
     /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// collection. The first half is as long as the parameter <paramref name="count"/> or shorter.
     /// </returns>
-    internal static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, Func<T, bool> predicate)
-    {
-        var index = source.TakeWhile(Not1(predicate)).Count();
-        return new(source.Skip(index), source.Take(index));
-    }
+    [Pure]
+    internal static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, int count) =>
+        new(source.Take(count), source.Skip(count));
 
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
@@ -39,6 +37,20 @@ static partial class SplitFactory
 #pragma warning restore RCS1235
 
         return new(t, f);
+    }
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// </returns>
+    internal static Split<IEnumerable<T>> SplitWhen<T>(this ICollection<T> source, Func<T, bool> predicate)
+    {
+        var index = source.TakeWhile(Not1(predicate)).Count();
+        return source.SplitAt(index);
     }
 }
 
