@@ -11,6 +11,20 @@ static partial class SplitFactory
     /// <param name="source">The collection to split.</param>
     /// <param name="predicate">The method that decides where the item ends up.</param>
     /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// </returns>
+    internal static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, Func<T, bool> predicate)
+    {
+        var index = source.TakeWhile(Not1(predicate)).Count();
+        return new(source.Skip(index), source.Take(index));
+    }
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
     /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
     /// <see langword="true"/> and <see langword="false"/>.
     /// </returns>
