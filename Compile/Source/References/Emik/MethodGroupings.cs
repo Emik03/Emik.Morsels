@@ -66,10 +66,38 @@ static partial class MethodGroupings
     [Pure]
     public static Func<T, int, bool> Not2<T>(Func<T, int, bool> predicate) => (t, i) => !predicate(t, i);
 
+    /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
+    /// <typeparam name="T">The type to compare.</typeparam>
+    /// <typeparam name="TResult">The resulting value from the mapping used for comparison.</typeparam>
+    /// <param name="converter">The converter to use.</param>
+    /// <param name="comparer">If specified, the way the result of the delegate should be sorted.</param>
+    /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="converter"/>.</returns>
+    public static IComparer<T> Comparing<T, TResult>(
+        Converter<T, TResult> converter,
+        Comparer<TResult>? comparer = null
+    ) =>
+        new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
+
     /// <inheritdoc cref="MethodGroupings.Not{T}(Predicate{T})"/>
     [Pure]
     public static Predicate<T> Not<T>(Predicate<T> predicate) => t => !predicate(t);
 
     /// <inheritdoc cref="Invoke"/>
     public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
+
+    sealed class Comparer<T, TResult> : IComparer<T>
+    {
+        readonly Comparer<TResult> _comparer;
+
+        readonly Converter<T, TResult> _converter;
+
+        internal Comparer(Converter<T, TResult> converter, Comparer<TResult> comparer)
+        {
+            _converter = converter;
+            _comparer = comparer;
+        }
+
+        /// <inheritdoc />
+        public int Compare(T x, T y) => _comparer.Compare(_converter(x), _converter(y));
+    }
 }
