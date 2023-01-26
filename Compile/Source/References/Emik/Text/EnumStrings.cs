@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK || NET35_OR_GREATER
+#if !NETFRAMEWORK || NET40_OR_GREATER
 namespace Emik.Morsels;
 
 using static Expression;
