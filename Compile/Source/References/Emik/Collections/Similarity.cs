@@ -107,19 +107,10 @@ static class Similarity
         aLen is 0 && bLen is 0 ? 1 :
         aLen is 0 || bLen is 0 ? 0 :
         aLen is 1 && bLen is 1 ? eq.Equals(ind(a, 0), ind(b, 0)) ? 1 : 0 :
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
         Span.Allocate(bLen, (a, b, aLen, bLen, eq, ind), JaroAllocated);
-#else
-        FatPointer.Allocate(bLen, (a, b, aLen, bLen, eq, ind), JaroAllocated);
-#endif
 
     static double JaroAllocated<T, TItem>(
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
-        Span<byte>
-#else
-        FatPointer<byte>
-#endif
-            buf,
+        Span<byte> buf,
         (T, T, int, int, IEqualityComparer<TItem>, Func<T, int, TItem>) tup
     )
     {
@@ -137,12 +128,7 @@ static class Similarity
     }
 
     static int Next<T, TItem>(
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
-        Span<byte>
-#else
-        FatPointer<byte>
-#endif
-            buf,
+        Span<byte> buf,
         T a,
         T b,
         int bLen,
@@ -173,12 +159,7 @@ static class Similarity
     }
 
     static bool ShouldProceed<T, TItem>(
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
-        Span<byte>
-#else
-        FatPointer<byte>
-#endif
-            buf,
+        Span<byte> buf,
         T a,
         T b,
         int aLen,

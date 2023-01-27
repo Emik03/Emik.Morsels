@@ -2,6 +2,9 @@
 
 // ReSharper disable MissingBlankLines RedundantUsingDirective.Global
 #pragma warning disable GlobalUsingsAnalyzer, SA1649
+#if NETFRAMEWORK
+extern alias ms;
+#endif
 #if NET35
 extern alias unity;
 
@@ -32,10 +35,11 @@ global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribut
 #endif
 #if NET35 && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
+#elif NET40_OR_GREATER
+global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
-
 #if NET35
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;

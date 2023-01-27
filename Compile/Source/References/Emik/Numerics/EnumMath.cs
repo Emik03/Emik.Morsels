@@ -17,7 +17,7 @@ static partial class EnumMath
     [Pure]
     public static int AsInt<T>(this T value)
         where T : Enum =>
-        Convert<T>.From(value);
+        Cache<T>.From(value);
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -27,7 +27,7 @@ static partial class EnumMath
     [Pure]
     public static T As<T>(this int value)
         where T : Enum =>
-        Convert<T>.To(value);
+        Cache<T>.To(value);
 
     /// <summary>Performs a negation operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -124,7 +124,7 @@ static partial class EnumMath
         where T : Enum =>
         op(left.AsInt(), right.AsInt()).As<T>();
 
-    static class Convert<T>
+    static class Cache<T>
         where T : Enum
     {
         public static Converter<T, int> From { get; } = Make<Converter<T, int>>(false);

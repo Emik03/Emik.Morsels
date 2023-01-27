@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
 namespace Emik.Morsels;
 
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
@@ -20,22 +19,6 @@ static partial class Span
     public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
         where TSpan : unmanaged;
 
-    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param)
-        where TSpan : unmanaged;
-
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
@@ -52,31 +35,6 @@ static partial class Span
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        Span<TSpan> span,
-        ReadOnlySpan<TParam> param
-    )
-        where TSpan : unmanaged;
-
-    /// <summary>
-    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
-    /// </summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param)
         where TSpan : unmanaged;
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
@@ -151,90 +109,6 @@ static partial class Span
         int length,
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanAction<TSpan, TParam> del
-    )
-        where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-        {
-            del(stackalloc TSpan[value], param);
-            return;
-        }
-
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        del(span, param);
-
-        Marshal.FreeHGlobal(array);
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static void Allocate<TParam>(
-        int length,
-        ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<byte, TParam> del
-    ) =>
-        Allocate<byte, TParam>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static unsafe void Allocate<TSpan, TParam>(
-        int length,
-        ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<TSpan, TParam> del
-    )
-        where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-        {
-            del(stackalloc TSpan[value], param);
-            return;
-        }
-
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        del(span, param);
-
-        Marshal.FreeHGlobal(array);
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static void Allocate<TParam>(
-        int length,
-        Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionSpan<byte, TParam> del
-    ) =>
-        Allocate<byte, TParam>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static unsafe void Allocate<TSpan, TParam>(
-        int length,
-        Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionSpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
     {
@@ -365,7 +239,135 @@ static partial class Span
 
         return result;
     }
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param)
+        where TSpan : unmanaged;
 
+    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param)
+        where TSpan : unmanaged;
+#endif
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
+        Span<TSpan> span,
+        ReadOnlySpan<TParam> param
+    )
+        where TSpan : unmanaged;
+
+    /// <summary>
+    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
+    /// </summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param)
+        where TSpan : unmanaged;
+#endif
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="param">The parameter to pass in.</param>
+    /// <param name="del">The callback to invoke.</param>
+    public static void Allocate<TParam>(
+        int length,
+        ReadOnlySpan<TParam> param,
+        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<byte, TParam> del
+    ) =>
+        Allocate<byte, TParam>(length, param, del);
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
+    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="param">The parameter to pass in.</param>
+    /// <param name="del">The callback to invoke.</param>
+    public static unsafe void Allocate<TSpan, TParam>(
+        int length,
+        ReadOnlySpan<TParam> param,
+        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<TSpan, TParam> del
+    )
+        where TSpan : unmanaged
+    {
+        var value = Math.Max(length, 0);
+
+        if (IsStack<TSpan>(length))
+        {
+            del(stackalloc TSpan[value], param);
+            return;
+        }
+
+        var array = Marshal.AllocHGlobal(value);
+        Span<TSpan> span = new((void*)array, value);
+        del(span, param);
+
+        Marshal.FreeHGlobal(array);
+    }
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="param">The parameter to pass in.</param>
+    /// <param name="del">The callback to invoke.</param>
+    public static void Allocate<TParam>(
+        int length,
+        Span<TParam> param,
+        [InstantHandle, RequireStaticDelegate] SpanActionSpan<byte, TParam> del
+    ) =>
+        Allocate<byte, TParam>(length, param, del);
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
+    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="param">The parameter to pass in.</param>
+    /// <param name="del">The callback to invoke.</param>
+    public static unsafe void Allocate<TSpan, TParam>(
+        int length,
+        Span<TParam> param,
+        [InstantHandle, RequireStaticDelegate] SpanActionSpan<TSpan, TParam> del
+    )
+        where TSpan : unmanaged
+    {
+        var value = Math.Max(length, 0);
+
+        if (IsStack<TSpan>(length))
+        {
+            del(stackalloc TSpan[value], param);
+            return;
+        }
+
+        var array = Marshal.AllocHGlobal(value);
+        Span<TSpan> span = new((void*)array, value);
+        del(span, param);
+
+        Marshal.FreeHGlobal(array);
+    }
+#endif
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
@@ -459,5 +461,5 @@ static partial class Span
 
         return result;
     }
-}
 #endif
+}
