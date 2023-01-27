@@ -12,13 +12,16 @@ static class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure]
     public static double Jaro(
-        this string left,
-        string right,
+        this string? left,
+        string? right,
         IEqualityComparer<char>? comparer = null,
         bool winkler = false
     ) =>
-        Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer, winkler);
+        left is null || right is null
+            ? left is null && right is null ? 1 : 0
+            : Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer, winkler);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -27,13 +30,16 @@ static class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure]
     public static double Jaro<T>(
-        this IList<T> left,
-        IList<T> right,
+        this IList<T>? left,
+        IList<T>? right,
         IEqualityComparer<T>? comparer = null,
         bool winkler = false
     ) =>
-        Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer, winkler);
+        left is null || right is null
+            ? left is null && right is null ? 1 : 0
+            : Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer, winkler);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -45,11 +51,12 @@ static class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [MustUseReturnValue]
     public static double Jaro<T, TItem>(
         T left,
         T right,
-        [RequireStaticDelegate(IsError = true)] Func<T, int> counter,
-        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int> counter,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind,
         IEqualityComparer<TItem>? comparer = null,
         bool winkler = false
     ) =>
@@ -66,12 +73,13 @@ static class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [MustUseReturnValue]
     public static double Jaro<T, TItem>(
         T left,
         T right,
-        int leftLength,
-        int rightLength,
-        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind,
+        [NonNegativeValue] int leftLength,
+        [NonNegativeValue] int rightLength,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind,
         IEqualityComparer<TItem>? comparer = null,
         bool winkler = false
     ) =>
@@ -80,13 +88,14 @@ static class Similarity
             ? JaroWinkler(left, right, leftLength, rightLength, c, ind)
             : JaroVanilla(left, right, leftLength, rightLength, c, ind);
 
+    [Pure]
     static double JaroWinkler<T, TItem>(
         T a,
         T b,
-        int aLen,
-        int bLen,
+        [NonNegativeValue] int aLen,
+        [NonNegativeValue] int bLen,
         IEqualityComparer<TItem> eq,
-        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
     )
     {
         var jaroDistance = JaroVanilla(a, b, aLen, bLen, eq, ind);
@@ -96,19 +105,21 @@ static class Similarity
         return Min(distance, 1);
     }
 
+    [Pure]
     static double JaroVanilla<T, TItem>(
         T a,
         T b,
-        int aLen,
-        int bLen,
+        [NonNegativeValue] int aLen,
+        [NonNegativeValue] int bLen,
         IEqualityComparer<TItem> eq,
-        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
     ) =>
         aLen is 0 && bLen is 0 ? 1 :
         aLen is 0 || bLen is 0 ? 0 :
         aLen is 1 && bLen is 1 ? eq.Equals(ind(a, 0), ind(b, 0)) ? 1 : 0 :
         Span.Allocate(bLen, (a, b, aLen, bLen, eq, ind), JaroAllocated);
 
+    [Pure, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
         Span<byte> buf,
         (T, T, int, int, IEqualityComparer<TItem>, Func<T, int, TItem>) tup
@@ -124,21 +135,22 @@ static class Similarity
             if (InBounds(aLen, bLen, i))
                 lastB = Next(buf, a, b, bLen, aLen, i, lastB, eq, ind, ref matches, ref transpose);
 
-        return matches is 0 ? 0 : Equivalence(aLen, bLen, matches, transpose);
+        return matches is 0 ? 0 : JaroDistance(aLen, bLen, matches, transpose);
     }
 
+    [NonNegativeValue, Pure]
     static int Next<T, TItem>(
         Span<byte> buf,
         T a,
         T b,
-        int bLen,
-        int aLen,
-        int i,
-        int lastB,
+        [ValueRange(2, int.MaxValue)] int bLen,
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [NonNegativeValue] int i,
+        [NonNegativeValue] int lastB,
         IEqualityComparer<TItem> c,
         [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> index,
-        ref double matches,
-        ref int transpositions
+        [NonNegativeValue] ref double matches,
+        [NonNegativeValue] ref int transpositions
     )
     {
         for (var j = 0; j < bLen; j++)
@@ -158,29 +170,39 @@ static class Similarity
         return lastB;
     }
 
+    [Pure]
     static bool ShouldProceed<T, TItem>(
         Span<byte> buf,
         T a,
         T b,
-        int aLen,
-        int bLen,
-        int i,
-        int j,
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [ValueRange(2, int.MaxValue)] int bLen,
+        [NonNegativeValue] int i,
+        [NonNegativeValue] int j,
         IEqualityComparer<TItem> eq,
-        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
     ) =>
         InBounds(aLen, bLen, i, j) && buf[j] is 0 && EqualsAt(a, b, i, j, eq, indexer);
 
-    static bool EqualsAt<T, TItem>(T a, T b, int i, int j, IEqualityComparer<TItem> eq, Func<T, int, TItem> indexer) =>
+    [Pure]
+    static bool EqualsAt<T, TItem>(
+        T a,
+        T b,
+        [NonNegativeValue] int i,
+        [NonNegativeValue] int j,
+        IEqualityComparer<TItem> eq,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
+    ) =>
         eq.Equals(indexer(a, i), indexer(b, j));
 
+    [Pure]
     static int NumberOfEquals<T, TItem>(
         T a,
         T b,
-        int aLen,
-        int bLen,
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [ValueRange(2, int.MaxValue)] int bLen,
         IEqualityComparer<TItem> eq,
-        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
     )
     {
         var len = Min(aLen, bLen);
@@ -192,29 +214,48 @@ static class Similarity
         return len;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool InBounds(int aLen, int bLen, int i) => MinBound(aLen, bLen, i) <= MaxBound(aLen, bLen, i);
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static bool InBounds(
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [ValueRange(2, int.MaxValue)] int bLen,
+        [NonNegativeValue] int i
+    ) =>
+        MinBound(aLen, bLen, i) <= MaxBound(aLen, bLen, i);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool InBounds(int aLen, int bLen, int i, int j) =>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static bool InBounds(
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [ValueRange(2, int.MaxValue)] int bLen,
+        [NonNegativeValue] int i,
+        [NonNegativeValue] int j
+    ) =>
         MinBound(aLen, bLen, i) <= j && j <= MaxBound(aLen, bLen, i);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int MaxBound(int aLen, int bLen, int i) => Min(SearchRange(aLen, bLen) + i, bLen - 1);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int MinBound(int aLen, int bLen, int i) =>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+    static int MinBound(
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [ValueRange(2, int.MaxValue)] int bLen,
+        [NonNegativeValue] int i
+    ) =>
         SearchRange(aLen, bLen) < i ? Max(0, i - SearchRange(aLen, bLen)) : 0;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int SearchRange(int aLen, int bLen) => Max(aLen, bLen) / 2 - 1;
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+    static int SearchRange([NonNegativeValue] int aLen, [NonNegativeValue] int bLen) => Max(aLen, bLen) / 2 - 1;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static double Equivalence(int aLen, int bLen, double matches, int transpositions) =>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
+    static double JaroDistance(
+        [ValueRange(2, int.MaxValue)] int aLen,
+        [ValueRange(2, int.MaxValue)] int bLen,
+        [NonNegativeValue] double matches,
+        [NonNegativeValue] int transpositions
+    ) =>
         1 / 3.0 * (matches / aLen + matches / bLen + (matches - transpositions) / matches);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static double JaroWinklerDistance(double jaroDistance, int prefixLength) =>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
+    static double JaroWinklerDistance([ValueRange(0, 1)] double jaroDistance, [NonNegativeValue] int prefixLength) =>
         jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
 }
 #pragma warning restore SA1114

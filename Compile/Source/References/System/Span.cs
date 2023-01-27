@@ -20,7 +20,7 @@ readonly unsafe ref struct Span<T>
     /// <param name="length">The length of the buffer.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span(void* pointer, int length)
+    public Span(void* pointer, [NonNegativeValue] int length)
     {
         ValidateLength(length);
 
@@ -33,9 +33,9 @@ readonly unsafe ref struct Span<T>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="index"/> is less than zero or is greater than or equal to <see cref="Length"/>.
     /// </exception>
-    public T this[int index]
+    public T this[[NonNegativeValue] int index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             ValidateIndex(index);
@@ -53,18 +53,18 @@ readonly unsafe ref struct Span<T>
 #pragma warning disable CA1000
     public static Span<T> Empty
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 #pragma warning restore CA1000
 
     /// <summary>Gets a value indicating whether the current <see cref="Span{T}"/> is empty.</summary>
     public bool IsEmpty
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Length is 0;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Length is 0;
     }
 
     /// <summary>Gets the length of the current span.</summary>
-    public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+    public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
 
     /// <summary>Returns a value that indicates whether two <see cref="Span{T}"/> objects are equal.</summary>
     /// <remarks><para>
@@ -77,7 +77,7 @@ readonly unsafe ref struct Span<T>
     /// <returns>
     /// <see langword="true"/> if the two <see cref="Span{T}"/> objects are equal; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(Span<T> left, Span<T> right) =>
         left.Length == right.Length && left._pointer == right._pointer;
 
@@ -92,7 +92,7 @@ readonly unsafe ref struct Span<T>
     /// <see langword="true"/> if the two <see cref="Span{T}"/> objects are not equal;
     /// otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(Span<T> left, Span<T> right) => !(left == right);
 
     /// <summary>Clears the contents of this <see cref="Span{T}"/> object.</summary>
@@ -141,7 +141,9 @@ readonly unsafe ref struct Span<T>
     }
 
     /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining),
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
 
@@ -183,20 +185,22 @@ readonly unsafe ref struct Span<T>
     }
 
     /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining),
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
-    public override int GetHashCode() => (int)_pointer + Length;
+    public override int GetHashCode() => throw new NotSupportedException();
 
     /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
         typeof(T) == typeof(char)
             ? ToCharArray().Conjoin()
-            : $"Emik.Morsels.FatPointer<{typeof(T).Name}>[{Length}]";
+            : $"System.Span<{typeof(T).Name}>[{Length}]";
 
     /// <summary>Returns an enumerator of this <see cref="Span{T}"/>.</summary>
     /// <returns>An enumerator for this span.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
 
     /// <summary>Forms a slice out of the current span that begins at a specified index.</summary>
@@ -207,8 +211,8 @@ readonly unsafe ref struct Span<T>
     /// <returns>
     /// A span that consists of all elements of the current span from <paramref name="start"/> to the end of the span.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> Slice(int start) =>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public Span<T> Slice([NonNegativeValue] int start) =>
         (uint)start > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start))
             : new(_pointer + start, Length - start);
@@ -219,8 +223,8 @@ readonly unsafe ref struct Span<T>
     /// <exception cref="ArgumentOutOfRangeException">An out-of-range buffer is created.</exception>
     /// <returns>The <see cref="Span{T}"/> which is a slice of this buffer.</returns>
 #pragma warning disable CA2208, MA0015
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<T> Slice(int start, int length) =>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public Span<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException()
             : new(_pointer + start, length);
@@ -233,7 +237,7 @@ readonly unsafe ref struct Span<T>
     /// Using such APIs is unavoidable if an alternative API overhead that takes a <see cref="Span{T}"/> does not exist.
     /// </para></remarks>
     /// <returns>An array containing the data in the current span.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public T[] ToArray()
     {
         if (IsEmpty)
@@ -272,7 +276,7 @@ readonly unsafe ref struct Span<T>
             throw new ArgumentOutOfRangeException(nameof(index), index, $"must be non-zero and below length {Length}");
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     char[] ToCharArray() => new Span<char>((char*)_pointer, Length).ToArray();
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
@@ -283,6 +287,7 @@ readonly unsafe ref struct Span<T>
     {
         readonly Span<T> _span;
 
+        [ValueRange(-1, int.MaxValue)]
         int _index;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
@@ -297,7 +302,7 @@ readonly unsafe ref struct Span<T>
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         public readonly T Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _span[_index];
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _span[_index];
         }
 
         /// <inheritdoc cref="IEnumerator.Reset" />
@@ -324,9 +329,9 @@ readonly unsafe ref struct Span<T>
 
     sealed class SpanDebugView
     {
-        public SpanDebugView(Span<T> fat) => Items = fat.ToArray();
+        public SpanDebugView(Span<T> span) => Items = span.ToArray();
 
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden), UsedImplicitly]
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden), Pure, UsedImplicitly]
         public T[] Items { get; }
     }
 }
