@@ -1,88 +1,239 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace Emik.Morsels;
-#pragma warning disable CA1508 // Closures take care of this.
+#pragma warning disable SA1114
 using static Math;
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static class Similarity
 {
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
-    /// <typeparam name="T">The type of element in both <see cref="IEnumerable{T}"/> instances.</typeparam>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
-    /// <param name="useWinkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
+    /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    public static double Jaro(
+        this string left,
+        string right,
+        IEqualityComparer<char>? comparer = null,
+        bool winkler = false
+    ) =>
+        Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer, winkler);
+
+    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     public static double Jaro<T>(
-        this IEnumerable<T> left,
-        IEnumerable<T> right,
+        this IList<T> left,
+        IList<T> right,
         IEqualityComparer<T>? comparer = null,
-        bool useWinkler = false
+        bool winkler = false
     ) =>
-        left.ToCollectionLazily() is var a &&
-        right.ToCollectionLazily() is var b &&
-        (comparer ?? EqualityComparer<T>.Default) is var c &&
-        useWinkler
-            ? JaroWinkler(a, b, c)
-            : JaroVanilla(a, b, c);
+        Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer, winkler);
 
-    static double JaroWinkler<T>(ICollection<T> a, ICollection<T> b, IEqualityComparer<T> c)
+    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <typeparam name="TItem">The type of item within the sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="counter">The function that gets the count.</param>
+    /// <param name="ind">The function that acts as an indexer.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    public static double Jaro<T, TItem>(
+        T left,
+        T right,
+        [RequireStaticDelegate(IsError = true)] Func<T, int> counter,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind,
+        IEqualityComparer<TItem>? comparer = null,
+        bool winkler = false
+    ) =>
+        Jaro(left, right, counter(left), counter(right), ind, comparer, winkler);
+
+    /// <summary>Calculates the Jaro similarity between two instances.</summary>
+    /// <typeparam name="T">The type of instance.</typeparam>
+    /// <typeparam name="TItem">The type of item within the instance.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="leftLength">The left-hand side's length.</param>
+    /// <param name="rightLength">The right-hand side's length.</param>
+    /// <param name="ind">The function that acts as an indexer.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <param name="winkler">If <see langword="true"/>, gives a boost to strings that have a common prefix.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    public static double Jaro<T, TItem>(
+        T left,
+        T right,
+        int leftLength,
+        int rightLength,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind,
+        IEqualityComparer<TItem>? comparer = null,
+        bool winkler = false
+    ) =>
+        (comparer ?? EqualityComparer<TItem>.Default) is var c &&
+        winkler
+            ? JaroWinkler(left, right, leftLength, rightLength, c, ind)
+            : JaroVanilla(left, right, leftLength, rightLength, c, ind);
+
+    static double JaroWinkler<T, TItem>(
+        T a,
+        T b,
+        int aLen,
+        int bLen,
+        IEqualityComparer<TItem> eq,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
+    )
     {
-        var jaroDistance = a.Jaro(b, c);
-        var prefixLength = a.Zip(b).TakeWhile(a => c.Equals(a.First, a.Second)).Count();
-        var jaroWinklerDistance = jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
+        var jaroDistance = JaroVanilla(a, b, aLen, bLen, eq, ind);
+        var prefixLength = NumberOfEquals(a, b, aLen, bLen, eq, ind);
+        var distance = JaroWinklerDistance(jaroDistance, prefixLength);
 
-        return Min(jaroWinklerDistance, 1);
+        return Min(distance, 1);
     }
 
-    static double JaroVanilla<T>(ICollection<T> a, ICollection<T> b, IEqualityComparer<T> c) =>
-        a.Count is 0 && b.Count is 0 ? 1 :
-        a.Count is 0 || b.Count is 0 ? 0 :
-        a.Count is 1 && b.Count is 1 ? a.SequenceEqual(b) ? 1 : 0 :
-        JaroInner(a, b, c);
+    static double JaroVanilla<T, TItem>(
+        T a,
+        T b,
+        int aLen,
+        int bLen,
+        IEqualityComparer<TItem> eq,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
+    ) =>
+        aLen is 0 && bLen is 0 ? 1 :
+        aLen is 0 || bLen is 0 ? 0 :
+        aLen is 1 && bLen is 1 ? eq.Equals(ind(a, 0), ind(b, 0)) ? 1 : 0 :
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+        Span.Allocate(bLen, (a, b, aLen, bLen, eq, ind), JaroAllocated);
+#else
+        FatPointer.Allocate(bLen, (a, b, aLen, bLen, eq, ind), JaroAllocated);
+#endif
 
-    static double JaroInner<T>(ICollection<T> a, ICollection<T> b, IEqualityComparer<T> c)
+    static double JaroAllocated<T, TItem>(
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+        Span<byte>
+#else
+        FatPointer<byte>
+#endif
+            buf,
+        (T, T, int, int, IEqualityComparer<TItem>, Func<T, int, TItem>) tup
+    )
     {
-        int bMatchIndex = 0,
-            transpositions = 0;
-
+        var (a, b, aLen, bLen, eq, ind) = tup;
+        int lastB = 0, transpose = 0;
         double matches = 0;
 
-        BitArray bConsumed = new(b.Count);
+        buf.Clear();
 
-        bool WithinBounds(T _, int i) => MinBound(a, b, i) <= MaxBound(a, b, i);
+        for (var i = 0; i < aLen; i++)
+            if (InBounds(aLen, bLen, i))
+                lastB = Next(buf, a, b, bLen, aLen, i, lastB, eq, ind, ref matches, ref transpose);
 
-        ControlFlow Process(T ax, T bx, int i, int j)
+        return matches is 0 ? 0 : Equivalence(aLen, bLen, matches, transpose);
+    }
+
+    static int Next<T, TItem>(
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+        Span<byte>
+#else
+        FatPointer<byte>
+#endif
+            buf,
+        T a,
+        T b,
+        int bLen,
+        int aLen,
+        int i,
+        int lastB,
+        IEqualityComparer<TItem> c,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> index,
+        ref double matches,
+        ref int transpositions
+    )
+    {
+        for (var j = 0; j < bLen; j++)
         {
-            if (MinBound(a, b, i) > j || j > MaxBound(a, b, i) || !c.Equals(ax, bx) || bConsumed[j])
-                return ControlFlow.Continue;
+            if (!ShouldProceed(buf, a, b, aLen, bLen, i, j, c, index))
+                continue;
 
-            bConsumed[j] = true;
+            buf[j]++;
             matches++;
 
-            if (j < bMatchIndex)
+            if (j < lastB)
                 transpositions++;
 
-            bMatchIndex = j;
-            return ControlFlow.Break;
+            return j;
         }
 
-        a.Where(WithinBounds).For((aElem, i) => b.For((bElem, j) => Process(aElem, bElem, i, j)));
+        return lastB;
+    }
 
-        return matches is 0 ? 0 : Equivalence(a, b, matches, transpositions);
+    static bool ShouldProceed<T, TItem>(
+#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+        Span<byte>
+#else
+        FatPointer<byte>
+#endif
+            buf,
+        T a,
+        T b,
+        int aLen,
+        int bLen,
+        int i,
+        int j,
+        IEqualityComparer<TItem> eq,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
+    ) =>
+        InBounds(aLen, bLen, i, j) && buf[j] is 0 && EqualsAt(a, b, i, j, eq, indexer);
+
+    static bool EqualsAt<T, TItem>(T a, T b, int i, int j, IEqualityComparer<TItem> eq, Func<T, int, TItem> indexer) =>
+        eq.Equals(indexer(a, i), indexer(b, j));
+
+    static int NumberOfEquals<T, TItem>(
+        T a,
+        T b,
+        int aLen,
+        int bLen,
+        IEqualityComparer<TItem> eq,
+        [RequireStaticDelegate(IsError = true)] Func<T, int, TItem> ind
+    )
+    {
+        var len = Min(aLen, bLen);
+
+        for (var i = 0; i < len; i++)
+            if (!eq.Equals(ind(a, i), ind(b, i)))
+                return i;
+
+        return len;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static double Equivalence<T>(ICollection<T> a, ICollection<T> b, double matches, int transpositions) =>
-        1 / 3.0 * (matches / a.Count + matches / b.Count + (matches - transpositions) / matches);
+    static bool InBounds(int aLen, int bLen, int i) => MinBound(aLen, bLen, i) <= MaxBound(aLen, bLen, i);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int MaxBound<T>(ICollection<T> a, ICollection<T> b, int i) => Min(b.Count - 1, i + SearchRange(a, b));
+    static bool InBounds(int aLen, int bLen, int i, int j) =>
+        MinBound(aLen, bLen, i) <= j && j <= MaxBound(aLen, bLen, i);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int MinBound<T>(ICollection<T> a, ICollection<T> b, int i) =>
-        i > SearchRange(a, b) ? Max(0, i - SearchRange(a, b)) : 0;
+    static int MaxBound(int aLen, int bLen, int i) => Min(SearchRange(aLen, bLen) + i, bLen - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int SearchRange<T>(ICollection<T> a, ICollection<T> b) => Max(a.Count, b.Count) / 2 - 1;
+    static int MinBound(int aLen, int bLen, int i) =>
+        SearchRange(aLen, bLen) < i ? Max(0, i - SearchRange(aLen, bLen)) : 0;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static int SearchRange(int aLen, int bLen) => Max(aLen, bLen) / 2 - 1;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static double Equivalence(int aLen, int bLen, double matches, int transpositions) =>
+        1 / 3.0 * (matches / aLen + matches / bLen + (matches - transpositions) / matches);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static double JaroWinklerDistance(double jaroDistance, int prefixLength) =>
+        jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
 }
+#pragma warning restore SA1114

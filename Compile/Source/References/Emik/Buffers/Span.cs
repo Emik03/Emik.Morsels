@@ -112,7 +112,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
         {
@@ -154,7 +154,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
         {
@@ -196,7 +196,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
         {
@@ -238,7 +238,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
         {
@@ -305,7 +305,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value]);
@@ -352,7 +352,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value], param);
@@ -399,7 +399,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value], param);
@@ -446,7 +446,7 @@ static partial class Span
     )
         where TSpan : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value], param);

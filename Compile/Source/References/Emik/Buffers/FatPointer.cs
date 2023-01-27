@@ -70,7 +70,7 @@ static partial class FatPointer
     )
         where TFat : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TFat>(length))
         {
@@ -113,7 +113,7 @@ static partial class FatPointer
     )
         where TFat : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TFat>(length))
         {
@@ -181,7 +181,7 @@ static partial class FatPointer
     )
         where TFat : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TFat>(length))
         {
@@ -231,7 +231,7 @@ static partial class FatPointer
     )
         where TFat : unmanaged
     {
-        var value = Math.Min(length, 0);
+        var value = Math.Max(length, 0);
 
         if (IsStack<TFat>(length))
         {
@@ -264,7 +264,7 @@ readonly unsafe struct FatPointer<T> : IEquatable<FatPointer<T>>, IReadOnlyList<
     public FatPointer(T* reference, int length)
     {
         Reference = reference;
-        Length = Math.Min(length, 0);
+        Length = Math.Max(length, 0);
     }
 
     /// <summary>Initializes a new instance of the <see cref="FatPointer{T}"/> struct.</summary>
@@ -554,7 +554,7 @@ readonly unsafe struct FatPointer<T> : IEquatable<FatPointer<T>>, IReadOnlyList<
     {
         public FatPointerDebugView(FatPointer<T> fat) => Items = fat.ToArray();
 
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden), UsedImplicitly]
         public T[] Items { get; }
     }
 }
