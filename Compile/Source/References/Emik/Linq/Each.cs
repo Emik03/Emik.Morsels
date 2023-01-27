@@ -4,6 +4,7 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Each
 {
+#if !NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -83,6 +84,7 @@ static partial class Each
 
         return upper;
     }
+#endif
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -179,7 +181,6 @@ static partial class Each
 
         return list;
     }
-
 #endif
 
     /// <summary>
@@ -275,7 +276,6 @@ static partial class Each
 
         return dictionary;
     }
-
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -341,7 +341,6 @@ static partial class Each
     ) =>
         Enumerable.Repeat(func, upper).Select((x, i) => x(i));
 #endif
-
 #if NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified

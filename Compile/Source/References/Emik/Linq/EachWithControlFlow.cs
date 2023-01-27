@@ -2,8 +2,10 @@
 namespace Emik.Morsels;
 
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
+// ReSharper disable LoopCanBePartlyConvertedToQuery
 static class EachWithControlFlow
 {
+#if !NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -87,9 +89,8 @@ static class EachWithControlFlow
 
         return upper;
     }
-
+#endif
 #if !NET20 && !NET30
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
@@ -106,7 +107,9 @@ static class EachWithControlFlow
     {
         var list = iterable.ToCollectionLazily();
 
-        _ = list.FirstOrDefault(item => func(item) is ControlFlow.Break);
+        foreach (var item in list)
+            if (func(item) is ControlFlow.Break)
+                break;
 
         return list;
     }
@@ -130,7 +133,9 @@ static class EachWithControlFlow
     {
         var list = iterable.ToCollectionLazily();
 
-        _ = list.FirstOrDefault(item => func(item, external) is ControlFlow.Break);
+        foreach (var item in list)
+            if (func(item, external) is ControlFlow.Break)
+                break;
 
         return list;
     }
@@ -152,7 +157,9 @@ static class EachWithControlFlow
         var list = iterable.ToCollectionLazily();
         var i = 0;
 
-        _ = list.FirstOrDefault(item => func(item, checked(i++)) is ControlFlow.Break);
+        foreach (var item in list)
+            if (func(item, checked(i++)) is ControlFlow.Break)
+                break;
 
         return list;
     }
@@ -177,7 +184,9 @@ static class EachWithControlFlow
         var list = iterable.ToCollectionLazily();
         var i = 0;
 
-        _ = list.FirstOrDefault(item => func(item, checked(i++), external) is ControlFlow.Break);
+        foreach (var item in list)
+            if (func(item, checked(i++), external) is ControlFlow.Break)
+                break;
 
         return list;
     }
@@ -197,7 +206,9 @@ static class EachWithControlFlow
         [InstantHandle] Func<TKey, TValue, ControlFlow> func
     )
     {
-        _ = dictionary.FirstOrDefault(kvp => func(kvp.Key, kvp.Value) is ControlFlow.Break);
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
+                break;
 
         return dictionary;
     }
@@ -220,7 +231,9 @@ static class EachWithControlFlow
         [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
     )
     {
-        _ = dictionary.FirstOrDefault(kvp => func(kvp.Key, kvp.Value, external) is ControlFlow.Break);
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
+                break;
 
         return dictionary;
     }
@@ -242,7 +255,9 @@ static class EachWithControlFlow
     {
         var i = 0;
 
-        _ = dictionary.FirstOrDefault(kvp => func(kvp.Key, kvp.Value, checked(i++)) is ControlFlow.Break);
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value, checked(i++)) is ControlFlow.Break)
+                break;
 
         return dictionary;
     }
@@ -267,9 +282,104 @@ static class EachWithControlFlow
     {
         var i = 0;
 
-        _ = dictionary.FirstOrDefault(kvp => func(kvp.Key, kvp.Value, checked(i++), external) is ControlFlow.Break);
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value, checked(i++), external) is ControlFlow.Break)
+                break;
 
         return dictionary;
+    }
+#endif
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            if (func() is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            if (func(i) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Func<TExternal, ControlFlow> func
+    )
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            if (func(external) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    internal static T For<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Func<T, TExternal, ControlFlow> func
+    )
+        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+    {
+        for (var i = T.Zero; i < upper; i++)
+            if (func(i, external) is ControlFlow.Break)
+                break;
+
+        return upper;
     }
 #endif
 }
