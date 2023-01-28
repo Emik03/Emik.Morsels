@@ -73,7 +73,7 @@ static partial class MethodGroupings
     /// <param name="comparer">If specified, the way the result of the delegate should be sorted.</param>
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="converter"/>.</returns>
     public static IComparer<T> Comparing<T, TResult>(
-        Converter<T, TResult> converter,
+        Converter<T?, TResult> converter,
         Comparer<TResult>? comparer = null
     ) =>
         new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
@@ -89,15 +89,15 @@ static partial class MethodGroupings
     {
         readonly Comparer<TResult> _comparer;
 
-        readonly Converter<T, TResult> _converter;
+        readonly Converter<T?, TResult> _converter;
 
-        internal Comparer(Converter<T, TResult> converter, Comparer<TResult> comparer)
+        internal Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
         {
             _converter = converter;
             _comparer = comparer;
         }
 
         /// <inheritdoc />
-        public int Compare(T x, T y) => _comparer.Compare(_converter(x), _converter(y));
+        public int Compare(T? x, T? y) => _comparer.Compare(_converter(x), _converter(y));
     }
 }
