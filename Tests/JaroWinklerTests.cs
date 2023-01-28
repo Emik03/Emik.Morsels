@@ -4,16 +4,16 @@ namespace Emik.NRTs.Tests;
 public sealed class JaroWinklerTests
 {
     [Test]
-    public void BothEmpty() => AreEqual(1, "".Jaro("", winkler: true));
+    public void BothEmpty() => AreEqual(1, "".JaroWinkler(""));
 
     [Test]
-    public void FirstEmpty() => AreEqual(0, "".Jaro("jaro-winkler", winkler: true));
+    public void FirstEmpty() => AreEqual(0, "".JaroWinkler("jaro-winkler"));
 
     [Test]
-    public void SecondEmpty() => AreEqual(0, "distance".Jaro("", winkler: true));
+    public void SecondEmpty() => AreEqual(0, "distance".JaroWinkler(""));
 
     [Test]
-    public void Same() => AreEqual(1, "Jaro-Winkler".Jaro("Jaro-Winkler", winkler: true));
+    public void Same() => AreEqual(1, "Jaro-Winkler".JaroWinkler("Jaro-Winkler"));
 
     [Test]
     public void Multibyte()
@@ -22,8 +22,8 @@ public sealed class JaroWinklerTests
             A = "testabctest",
             B = "testöঙ香test";
 
-        AreEqual(0.89, A.Jaro(B, winkler: true), 0.001);
-        AreEqual(0.89, B.Jaro(A, winkler: true), 0.001);
+        AreEqual(0.89, A.JaroWinkler(B), 0.001);
+        AreEqual(0.89, B.JaroWinkler(A), 0.001);
     }
 
     [Test]
@@ -33,35 +33,35 @@ public sealed class JaroWinklerTests
             A = "dixon",
             B = "dicksonx";
 
-        AreEqual(0.813, A.Jaro(B, winkler: true), 0.001);
-        AreEqual(0.813, B.Jaro(A, winkler: true), 0.001);
+        AreEqual(0.813, A.JaroWinkler(B), 0.001);
+        AreEqual(0.813, B.JaroWinkler(A), 0.001);
     }
 
     [Test]
-    public void DiffOneCharacter() => AreEqual(0, "a".Jaro("b", winkler: true));
+    public void DiffOneCharacter() => AreEqual(0, "a".JaroWinkler("b"));
 
     [Test]
-    public void SameOneCharacter() => AreEqual(1, "a".Jaro("a", winkler: true));
+    public void SameOneCharacter() => AreEqual(1, "a".JaroWinkler("a"));
 
     [Test]
-    public void DiffNoTransposition() => AreEqual(0.84, "dwayne".Jaro("duane", winkler: true), 0.001);
+    public void DiffNoTransposition() => AreEqual(0.84, "dwayne".JaroWinkler("duane"), 0.001);
 
     [Test]
-    public void DiffWithTransposition() => AreEqual(0.961, "martha".Jaro("marhta", winkler: true), 0.001);
+    public void DiffWithTransposition() => AreEqual(0.961, "martha".JaroWinkler("marhta"), 0.001);
 
     [Test]
-    public void Names() => AreEqual(0.562, "Friedrich Nietzsche".Jaro("Fran-Paul Sartre", winkler: true), 0.001);
+    public void Names() => AreEqual(0.562, "Friedrich Nietzsche".JaroWinkler("Fran-Paul Sartre"), 0.001);
 
     [Test]
-    public void LongPrefix() => AreEqual(0.911, "cheeseburger".Jaro("cheese fries", winkler: true), 0.001);
+    public void LongPrefix() => AreEqual(0.911, "cheeseburger".JaroWinkler("cheese fries"), 0.001);
 
     [Test]
-    public void MoreNames() => AreEqual(0.868, "Thorkel".Jaro("Thorgier", winkler: true), 0.001);
+    public void MoreNames() => AreEqual(0.868, "Thorkel".JaroWinkler("Thorgier"), 0.001);
 
     [Test]
-    public void LengthOfOne() => AreEqual(0.738, "Dinsdale".Jaro("D", winkler: true), 0.001);
+    public void LengthOfOne() => AreEqual(0.738, "Dinsdale".JaroWinkler("D"), 0.001);
 
     [Test]
     public void VeryLongPrefix() =>
-        AreEqual(1, "thequickbrownfoxjumpedoverx".Jaro("thequickbrownfoxjumpedovery", winkler: true), 0.001);
+        AreEqual(1, "thequickbrownfoxjumpedoverx".JaroWinkler("thequickbrownfoxjumpedovery"), 0.001);
 }
