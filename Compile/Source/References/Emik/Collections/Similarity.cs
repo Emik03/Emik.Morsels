@@ -21,7 +21,8 @@ static class Similarity
             ? left is null && right is null ? 1 : 0
             : Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
 
-    /// <summary>Calculates the Jaro similarity between two strings.</summary>
+    /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
+    /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
@@ -52,7 +53,8 @@ static class Similarity
             ? left is null && right is null ? 1 : 0
             : Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
 
-    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -87,7 +89,8 @@ static class Similarity
     ) =>
         Jaro(left, right, counter(left), counter(right), indexer, comparer);
 
-    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <typeparam name="TItem">The type of item within the sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -127,7 +130,8 @@ static class Similarity
     ) =>
         JaroInner(left, right, leftLength, rightLength, indexer, comparer ?? EqualityComparer<TItem>.Default);
 
-    /// <summary>Calculates the Jaro similarity between two instances.</summary>
+    /// <summary>Calculates the Jaro-Winkler similarity between two instances.</summary>
+    /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
     /// <typeparam name="T">The type of instance.</typeparam>
     /// <typeparam name="TItem">The type of item within the instance.</typeparam>
     /// <param name="left">The left-hand side.</param>
