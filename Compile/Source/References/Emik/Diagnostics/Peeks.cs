@@ -10,7 +10,7 @@ static partial class Peeks
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
-    internal static event Action<string> OnWrite =
+    public static event Action<string> OnWrite =
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
@@ -31,7 +31,7 @@ static partial class Peeks
     /// </para></remarks>
     /// <param name="message">The value to send a message.</param>
 #pragma warning restore CS1574
-    internal static void Shout(string message)
+    public static void Shout(string message)
     {
         // ReSharper disable once InvocationIsSkipped
         System.Diagnostics.Debug.WriteLine(message);
@@ -46,8 +46,7 @@ static partial class Peeks
     /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
-    internal static void Write(this string message) =>
-        (OnWrite ?? throw new InvalidOperationException(message))(message);
+    public static void Write(this string message) => (OnWrite ?? throw new InvalidOperationException(message))(message);
 
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
@@ -56,7 +55,7 @@ static partial class Peeks
     /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
-    internal static void Write<T>(T value) => Write(value.Stringify());
+    public static void Write<T>(T value) => Write(value.Stringify());
 
     /// <summary>Quick and dirty debugging function.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
@@ -75,7 +74,7 @@ static partial class Peeks
     /// </exception>
     /// <returns>The parameter <paramref name="value"/>.</returns>
     [return: NotNullIfNotNull(nameof(value))]
-    internal static T Debug<T>(
+    public static T Debug<T>(
         this T value,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T, object?>? map = null,
@@ -102,7 +101,7 @@ static partial class Peeks
     /// <param name="value">The value to pass into the callback.</param>
     /// <param name="action">The callback to perform.</param>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    internal static T Peek<T>(this T value, [InstantHandle] Action<T> action)
+    public static T Peek<T>(this T value, [InstantHandle] Action<T> action)
     {
         action(value);
 
@@ -118,13 +117,23 @@ static partial class Peeks
     /// The value <paramref name="call"/> points to <see langword="null"/>.
     /// </exception>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    internal static unsafe T Peek<T>(this T value, [InstantHandle, NonNegativeValue] delegate*<T, void> call)
+    public static unsafe T Peek<T>(this T value, [InstantHandle, NonNegativeValue] delegate*<T, void> call)
     {
         (call is null ? throw new ArgumentNullException(nameof(call)) : call)(value);
 
         return value;
     }
+
 #endif
+
+    /// <summary>Executes the function, and returns the result.</summary>
+    /// <typeparam name="T">The type of value and input parameter.</typeparam>
+    /// <typeparam name="TResult">The type of output and return value.</typeparam>
+    /// <param name="value">The value to pass into the callback.</param>
+    /// <param name="converter">The callback to perform.</param>
+    /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
+    public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
+        converter(value);
 #if NET20 || NET30 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
     static string Stringify<T>(this T value) => value?.ToString() ?? "";
 #endif
