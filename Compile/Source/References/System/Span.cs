@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 namespace System;
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
+#pragma warning disable 0809
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
@@ -19,7 +20,7 @@ readonly unsafe ref struct Span<T>
     /// <param name="pointer">A pointer to the starting address of a specified number of T elements in memory.</param>
     /// <param name="length">The length of the buffer.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span(void* pointer, [NonNegativeValue] int length)
     {
         ValidateLength(length);
@@ -321,10 +322,6 @@ readonly unsafe ref struct Span<T>
             _index = index;
             return true;
         }
-
-        /// <inheritdoc cref="IDisposable.Dispose" />
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Dispose() { }
     }
 
     sealed class SpanDebugView
