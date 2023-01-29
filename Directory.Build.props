@@ -42,7 +42,6 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
         <WeaverConfiguration>
             <Weavers>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -66,7 +65,6 @@
         <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' == 'net40'">
             <Weavers>
                 <Lazy/>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -89,7 +87,6 @@
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -110,7 +107,6 @@
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -133,7 +129,6 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
         <WeaverConfiguration>
             <Weavers>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -154,7 +149,6 @@
         <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net40'">
             <Weavers>
                 <Lazy/>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -174,7 +168,6 @@
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -192,7 +185,6 @@
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
-                <State/>
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
@@ -229,7 +221,6 @@
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
-        <PackageReference Include="State.Fody" Version="1.1.1" PrivateAssets="all"/>
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all"/>
         <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all"/>
