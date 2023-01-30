@@ -48,7 +48,7 @@ static partial class Stringifier
     /// <param name="chars">The enumeration of characters.</param>
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
-    internal static string Conjoin(this IEnumerable<char> chars) => string.Concat(chars);
+    public static string Conjoin(this IEnumerable<char> chars) => string.Concat(chars);
 #endif
 
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
@@ -61,7 +61,7 @@ static partial class Stringifier
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
-    internal static string Conjoin<T>(this IEnumerable<T> values, char separator)
+    public static string Conjoin<T>(this IEnumerable<T> values, char separator)
     {
         StringBuilder stringBuilder = new();
         using var enumerator = values.GetEnumerator();
@@ -83,7 +83,7 @@ static partial class Stringifier
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
-    internal static string Conjoin<T>(this IEnumerable<T> values, string separator = Separator)
+    public static string Conjoin<T>(this IEnumerable<T> values, string separator = Separator)
     {
         StringBuilder stringBuilder = new();
         using var enumerator = values.GetEnumerator();
@@ -104,8 +104,12 @@ static partial class Stringifier
     /// <param name="indexByZero">Determines whether to index from zero or one.</param>
     /// <returns>The parameter <paramref name="i"/> as an ordinal.</returns>
     [Pure]
-    internal static string Nth(this int i, bool indexByZero = false) =>
-        indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
+    public static string Nth(this int i, bool indexByZero = false) => indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
+
+    /// <inheritdoc cref="string.Split(string[], StringSplitOptions)"/>
+    // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static string[] Split(this string source, string separator) =>
+        source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     /// <summary>
@@ -120,7 +124,7 @@ static partial class Stringifier
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
-    internal static string Stringify<T>(this T? source) => source.Stringify(false, true);
+    public static string Stringify<T>(this T? source) => source.Stringify(false, true);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -141,7 +145,7 @@ static partial class Stringifier
     /// </param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
-    internal static string Stringify<T>(this T? source, bool isSurrounded, bool isRecursive) =>
+    public static string Stringify<T>(this T? source, bool isSurrounded, bool isRecursive) =>
         source switch
         {
             null => Null,
