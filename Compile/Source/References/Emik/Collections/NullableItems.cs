@@ -35,7 +35,7 @@ static partial class NullableItems
     /// </returns>
     [Pure]
     internal static IList<T>? ItemNotNull<T>(this IList<T?>? list) =>
-        list is null || list.Any(x => x is null) ? null : list;
+        list?.All(x => x is not null) ?? false ? list : null;
 #endif
 
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
