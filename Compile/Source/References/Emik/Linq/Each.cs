@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>

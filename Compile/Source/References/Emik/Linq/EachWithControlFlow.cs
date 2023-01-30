@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>

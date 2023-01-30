@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable SA1114
 using static Math;

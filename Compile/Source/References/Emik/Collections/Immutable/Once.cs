@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 #pragma warning disable CA1710, CA1815
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 using static CollectionAccessType;

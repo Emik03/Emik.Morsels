@@ -1,5 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #pragma warning disable CS8632, MA0048, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 using static SecurityAction;

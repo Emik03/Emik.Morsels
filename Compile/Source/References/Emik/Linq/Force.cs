@@ -2,6 +2,8 @@
 
 // ReSharper disable InvertIf
 #pragma warning disable IDE0059
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to force full enumerations.</summary>

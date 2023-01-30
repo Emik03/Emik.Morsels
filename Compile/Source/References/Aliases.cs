@@ -27,7 +27,8 @@ global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttrib
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
-global using NotifyPropertyChangedInvocatorAttribute = unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
+global using NotifyPropertyChangedInvocatorAttribute =
+ unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
@@ -40,13 +41,16 @@ global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
+
 #if NET35
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 #if !NET35 || !WAWA
+// ReSharper disable once CheckNamespace
 namespace System.Diagnostics.Contracts;
+
 using static AttributeTargets;
 
 /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>

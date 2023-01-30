@@ -1,4 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 namespace System;
 
 #pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649

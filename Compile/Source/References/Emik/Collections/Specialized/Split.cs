@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-namespace Emik.Morsels;
 
+// ReSharper disable once CheckNamespace
+namespace Emik.Morsels;
+#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class SplitFactory
@@ -57,6 +59,7 @@ static partial class SplitFactory
         return source.SplitAt(index);
     }
 }
+#endif
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
 /// <typeparam name="T">The type of item in the collection.</typeparam>

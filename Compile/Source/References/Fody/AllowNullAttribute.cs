@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if WAWA
+// ReSharper disable once CheckNamespace
 namespace NullGuard;
 
 using static AttributeTargets;

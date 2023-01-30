@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK && !NET48 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
 namespace InlineMethod;
 
 using static AttributeTargets;

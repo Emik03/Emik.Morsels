@@ -1,8 +1,8 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once EmptyNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if !NET471_OR_GREATER && !NETSTANDARD1_6_OR_GREATER && !NETCOREAPP
+#if !NET20 && !NET30 && !NET471_OR_GREATER && !NETSTANDARD1_6_OR_GREATER && !NETCOREAPP
 /// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
 static partial class Attachments
 {

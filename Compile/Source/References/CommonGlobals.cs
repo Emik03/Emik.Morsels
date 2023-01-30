@@ -92,7 +92,7 @@ global using Mono;
 global using Mono.Cecil;
 global using Mono.Cecil.Rocks;
 global using NullGuard;
-#if UNIT_TESTS
+#if UNIT_TESTS && !NET20 && !NET30
 global using NUnit;
 global using NUnit.Compatibility;
 global using NUnit.Framework;
@@ -112,7 +112,7 @@ global using RemoveReference;
 global using UnitGenerator;
 global using UnityEditor;
 global using UnityEngine;
-#if UNIT_TESTS
+#if UNIT_TESTS && !NET20 && !NET30
 global using static NUnit.Framework.Assert;
 global using static NUnit.Framework.Has;
 global using static NUnit.Framework.Is;

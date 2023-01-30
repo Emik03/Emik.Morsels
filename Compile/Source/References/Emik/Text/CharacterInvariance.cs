@@ -1,4 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
@@ -36,7 +38,7 @@ static partial class CharacterInvariance
     [Pure]
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
 
-#if NETFRAMEWORK && !NET40_OR_GREATER
+#if NET35
     /// <summary>
     /// Indicates whether a specified string is <see langword="null"/>,
     /// empty, or consists only of white-space characters.
@@ -49,7 +51,7 @@ static partial class CharacterInvariance
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
         value is null || value.All(char.IsWhiteSpace);
-#else
+#elif !NET20 && !NET30
     /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);

@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable ArrangeAttributes FunctionComplexityOverflow InconsistentNaming SuspiciousTypeConversion.Global
+// ReSharper disable ArrangeAttributes CheckNamespace FunctionComplexityOverflow InconsistentNaming SuspiciousTypeConversion.Global
 // Shamelessly stolen from https://raw.githubusercontent.com/igor-tkachev/Portable.System.ValueTuple/master/Portable.System.ValueTuple.cs
 // and creatively reworked. Which is...
 //
@@ -2320,54 +2320,54 @@ namespace System
             return k switch
             {
                 1 => ValueTuple.CombineHashCodes(
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 2 => ValueTuple.CombineHashCodes(
-                                        Item6?.GetHashCode() ?? 0,
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item6?.GetHashCode() ?? 0,
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 3 => ValueTuple.CombineHashCodes(
-                                        Item5?.GetHashCode() ?? 0,
-                                        Item6?.GetHashCode() ?? 0,
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item5?.GetHashCode() ?? 0,
+                    Item6?.GetHashCode() ?? 0,
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 4 => ValueTuple.CombineHashCodes(
-                                        Item4?.GetHashCode() ?? 0,
-                                        Item5?.GetHashCode() ?? 0,
-                                        Item6?.GetHashCode() ?? 0,
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item4?.GetHashCode() ?? 0,
+                    Item5?.GetHashCode() ?? 0,
+                    Item6?.GetHashCode() ?? 0,
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 5 => ValueTuple.CombineHashCodes(
-                                        Item3?.GetHashCode() ?? 0,
-                                        Item4?.GetHashCode() ?? 0,
-                                        Item5?.GetHashCode() ?? 0,
-                                        Item6?.GetHashCode() ?? 0,
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item3?.GetHashCode() ?? 0,
+                    Item4?.GetHashCode() ?? 0,
+                    Item5?.GetHashCode() ?? 0,
+                    Item6?.GetHashCode() ?? 0,
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 6 => ValueTuple.CombineHashCodes(
-                                        Item2?.GetHashCode() ?? 0,
-                                        Item3?.GetHashCode() ?? 0,
-                                        Item4?.GetHashCode() ?? 0,
-                                        Item5?.GetHashCode() ?? 0,
-                                        Item6?.GetHashCode() ?? 0,
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item2?.GetHashCode() ?? 0,
+                    Item3?.GetHashCode() ?? 0,
+                    Item4?.GetHashCode() ?? 0,
+                    Item5?.GetHashCode() ?? 0,
+                    Item6?.GetHashCode() ?? 0,
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 7 or 8 => ValueTuple.CombineHashCodes(
-                                        Item1?.GetHashCode() ?? 0,
-                                        Item2?.GetHashCode() ?? 0,
-                                        Item3?.GetHashCode() ?? 0,
-                                        Item4?.GetHashCode() ?? 0,
-                                        Item5?.GetHashCode() ?? 0,
-                                        Item6?.GetHashCode() ?? 0,
-                                        Item7?.GetHashCode() ?? 0,
-                                        rest.GetHashCode()
-                                    ),
+                    Item1?.GetHashCode() ?? 0,
+                    Item2?.GetHashCode() ?? 0,
+                    Item3?.GetHashCode() ?? 0,
+                    Item4?.GetHashCode() ?? 0,
+                    Item5?.GetHashCode() ?? 0,
+                    Item6?.GetHashCode() ?? 0,
+                    Item7?.GetHashCode() ?? 0,
+                    rest.GetHashCode()
+                ),
                 _ => throw new InvalidOperationException("Missed all cases for computing ValueTuple hash code"),
             };
         }

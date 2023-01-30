@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
 
+// ReSharper disable once RedundantUsingDirective.Global
 global using static Emik.Morsels.MethodGroupings;
 
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Methods to create methods.</summary>

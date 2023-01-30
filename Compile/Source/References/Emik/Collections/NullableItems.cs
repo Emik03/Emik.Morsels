@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable UnusedMember.Local
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 #pragma warning disable CA1508

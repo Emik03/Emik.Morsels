@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
 #if !NET7_0_OR_GREATER
+// ReSharper disable once CheckNamespace
 #pragma warning disable CA1064
 namespace System.Diagnostics;
 

@@ -5,6 +5,7 @@
 extern alias ms;
 using Options = ms::System.Runtime.CompilerServices.MethodImplOptions;
 
+// ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 
 /// <summary>

@@ -1,10 +1,13 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Provides stringification methods.</summary>
 static partial class Stringifier
 {
+    // ReSharper disable UnusedMember.Local
+#pragma warning disable CA1823, IDE0051
     const string
         Else = "th",
         False = "false",
@@ -16,7 +19,9 @@ static partial class Stringifier
         Separator = ", ",
         Third = "rd",
         True = "true";
+#pragma warning restore CA1823, IDE0051
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, bool> s_hasMethods = new();
 
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
@@ -30,7 +35,7 @@ static partial class Stringifier
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
         s_stringify = ((Func<bool, bool, bool, string>)Stringify).Method.GetGenericMethodDefinition();
-
+#endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
@@ -102,6 +107,7 @@ static partial class Stringifier
     internal static string Nth(this int i, bool indexByZero = false) =>
         indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
     /// </summary>
@@ -151,7 +157,7 @@ static partial class Stringifier
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-
+#endif
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
 
@@ -164,7 +170,7 @@ static partial class Stringifier
             3 => Third,
             _ => Else,
         }}";
-
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [Pure]
     static StringBuilder DictionaryStringifier(this IDictionary dictionary)
     {
@@ -260,5 +266,5 @@ static partial class Stringifier
 
         return Expression.Call(s_combine, exConstant, exCall);
     }
-}
 #endif
+}

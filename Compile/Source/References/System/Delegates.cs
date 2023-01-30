@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once EmptyNamespace
+// ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
 #pragma warning disable MA0048, SA1600
 #if NET20 || NET30 // ReSharper disable TypeParameterCanBeVariant

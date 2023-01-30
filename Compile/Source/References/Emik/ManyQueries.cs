@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable CS1574, CS1580
 /// <summary>Methods that creates enumerations from individual items.</summary>

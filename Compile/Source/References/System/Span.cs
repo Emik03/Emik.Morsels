@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once EmptyNamespace
+// ReSharper disable once CheckNamespace
 namespace System;
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
 #pragma warning disable 0809

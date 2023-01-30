@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 #pragma warning disable MA0008, SA1515, SA1611, SA1615, SA1623, SA1642
+// ReSharper disable once CheckNamespace
 namespace System;
 
 /// <summary>Represent a type can be used to index a collection either from the start or the end.</summary>
