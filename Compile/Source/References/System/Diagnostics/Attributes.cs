@@ -434,7 +434,7 @@ namespace System.Runtime.CompilerServices
     /// Indicates that compiler support for a particular feature is
     /// required for the location where this attribute is applied.
     /// </summary>
-    [AttributeUsage(All, AllowMultiple = true, Inherited = false)]
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
     sealed class CompilerFeatureRequiredAttribute : Attribute
     {
         /// <summary>The <see cref="FeatureName"/> used for the ref structs C# feature.</summary>
