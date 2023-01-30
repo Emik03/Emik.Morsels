@@ -282,8 +282,7 @@ static partial class Span
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(in Span<TSpan> span, in Span<TParam> param)
         where TSpan : unmanaged;
-#endif
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
@@ -367,8 +366,7 @@ static partial class Span
 
         Marshal.FreeHGlobal(array);
     }
-#endif
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
+
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
