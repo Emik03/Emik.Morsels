@@ -13,12 +13,12 @@ namespace System.Diagnostics.CodeAnalysis
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
 #if !WAWA
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
-    [AttributeUsage(Field | Parameter | Property)]
+    [AttributeUsage(Field | Parameter | AttributeTargets.Property)]
     sealed class AllowNullAttribute : Attribute { }
 #endif
 
     /// <summary>Specifies that null is disallowed as an input even if the corresponding type allows it.</summary>
-    [AttributeUsage(Field | Parameter | Property)]
+    [AttributeUsage(Field | Parameter | AttributeTargets.Property)]
     sealed class DisallowNullAttribute : Attribute { }
 
     /// <summary>Applied to a method that will never return under any circumstance.</summary>
@@ -47,11 +47,11 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Specifies that an output may be null even if the corresponding type disallows it.</summary>
-    [AttributeUsage(Field | Parameter | Property | ReturnValue)]
+    [AttributeUsage(Field | Parameter | AttributeTargets.Property | ReturnValue)]
     sealed class MaybeNullAttribute : Attribute { }
 
     /// <summary>Specifies that an output will not be null even if the corresponding type allows it. Specifies that an input argument was not null when the call returns.</summary>
-    [AttributeUsage(Field | Parameter | Property | ReturnValue)]
+    [AttributeUsage(Field | Parameter | AttributeTargets.Property | ReturnValue)]
     sealed class NotNullAttribute : Attribute { }
 
     /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
@@ -96,7 +96,7 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Specifies that the output will be non-null if the named parameter is non-null.</summary>
-    [AttributeUsage(Parameter | Property | ReturnValue, AllowMultiple = true)]
+    [AttributeUsage(Parameter | AttributeTargets.Property | ReturnValue, AllowMultiple = true)]
     sealed class NotNullIfNotNullAttribute : Attribute
     {
         /// <summary>
@@ -113,44 +113,44 @@ namespace System.Diagnostics.CodeAnalysis
     }
 #endif
 #if NETFRAMEWORK || NETSTANDARD
-    /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values.</summary>
-    [AttributeUsage(Method | Property, Inherited = false, AllowMultiple = true)]
+    /// <summary>Specifies that the method or AttributeTargets.Property will ensure that the listed field and AttributeTargets.Property members have not-null values.</summary>
+    [AttributeUsage(Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
     sealed class MemberNotNullAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/> class with a field or property member.
+        /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/> class with a field or AttributeTargets.Property member.
         /// </summary>
         /// <param name="member">
-        /// The field or property member that is promised to be not-null.
+        /// The field or AttributeTargets.Property member that is promised to be not-null.
         /// </param>
         public MemberNotNullAttribute(string member) => Members = new[] { member };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/> class
-        /// with the list of field and property members.
+        /// with the list of field and AttributeTargets.Property members.
         /// </summary>
         /// <param name="members">
-        /// The list of field and property members that are promised to be not-null.
+        /// The list of field and AttributeTargets.Property members that are promised to be not-null.
         /// </param>
         public MemberNotNullAttribute(params string[] members) => Members = members;
 
-        /// <summary>Gets field or property member names.</summary>
+        /// <summary>Gets field or AttributeTargets.Property member names.</summary>
         public string[] Members { get; }
     }
 
-    /// <summary>Specifies that the method or property will ensure that the listed field and property members have not-null values when returning with the specified return value condition.</summary>
-    [AttributeUsage(Method | Property, Inherited = false, AllowMultiple = true)]
+    /// <summary>Specifies that the method or AttributeTargets.Property will ensure that the listed field and AttributeTargets.Property members have not-null values when returning with the specified return value condition.</summary>
+    [AttributeUsage(Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
     sealed class MemberNotNullWhenAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullWhenAttribute"/> class
-        /// with the specified return value condition and a field or property member.
+        /// with the specified return value condition and a field or AttributeTargets.Property member.
         /// </summary>
         /// <param name="returnValue">
         /// The return value condition. If the method returns this value, the associated parameter will not be null.
         /// </param>
         /// <param name="member">
-        /// The field or property member that is promised to be not-null.
+        /// The field or AttributeTargets.Property member that is promised to be not-null.
         /// </param>
         public MemberNotNullWhenAttribute(bool returnValue, string member)
         {
@@ -160,13 +160,13 @@ namespace System.Diagnostics.CodeAnalysis
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullWhenAttribute"/> class
-        /// with the specified return value condition and list of field and property members.
+        /// with the specified return value condition and list of field and AttributeTargets.Property members.
         /// </summary>
         /// <param name="returnValue">
         /// The return value condition. If the method returns this value, the associated parameter will not be null.
         /// </param>
         /// <param name="members">
-        /// The list of field and property members that are promised to be not-null.
+        /// The list of field and AttributeTargets.Property members that are promised to be not-null.
         /// </param>
         public MemberNotNullWhenAttribute(bool returnValue, params string[] members)
         {
@@ -179,7 +179,7 @@ namespace System.Diagnostics.CodeAnalysis
         /// </summary>
         public bool ReturnValue { get; }
 
-        /// <summary>Gets field or property member names.</summary>
+        /// <summary>Gets field or AttributeTargets.Property member names.</summary>
         public string[] Members { get; }
     }
 #endif
@@ -192,7 +192,7 @@ namespace System.Diagnostics.CodeAnalysis
     sealed class SetsRequiredMembersAttribute : Attribute { }
 
     /// <summary>Specifies the syntax used in a string.</summary>
-    [AttributeUsage(Parameter | Field | Property)]
+    [AttributeUsage(Parameter | Field | AttributeTargets.Property)]
     sealed class StringSyntaxAttribute : Attribute
     {
         /// <summary>The syntax identifier for strings containing composite formats for string formatting.</summary>
@@ -268,7 +268,7 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Used to indicate a byref escapes and is not scoped.</summary>
-    [AttributeUsage(Method | Property | Parameter, Inherited = false)]
+    [AttributeUsage(Method | AttributeTargets.Property | Parameter, Inherited = false)]
     sealed class UnscopedRefAttribute : Attribute { }
 #endif
 }
@@ -361,7 +361,7 @@ namespace System.Runtime.CompilerServices
     /// </para><list type="bullet">
     /// <item><description>The method must be <see langword="static"/>.</description></item>
     /// <item><description>
-    /// The method must be an ordinary member method, as opposed to a property accessor,
+    /// The method must be an ordinary member method, as opposed to a AttributeTargets.Property accessor,
     /// constructor, local function, and so on.
     /// </description></item>
     /// <item><description>The method must be parameterless..</description></item>
@@ -417,7 +417,14 @@ namespace System.Runtime.CompilerServices
     /// not permitted on assemblies. Use at the module level instead to apply to multiple type declarations.
     /// </para></remarks>
     [AttributeUsage(
-        AttributeTargets.Module | Class | Struct | Interface | Constructor | Method | Property | AttributeTargets.Event,
+        AttributeTargets.Module |
+        Class |
+        Struct |
+        Interface |
+        Constructor |
+        Method |
+        AttributeTargets.Property |
+        AttributeTargets.Event,
         Inherited = false
     )]
     sealed class SkipLocalsInitAttribute : Attribute { }
@@ -475,7 +482,7 @@ namespace System.Runtime.CompilerServices
         Interface |
         Method |
         AttributeTargets.Module |
-        Property |
+        AttributeTargets.Property |
         Struct,
         Inherited = false
     )]
