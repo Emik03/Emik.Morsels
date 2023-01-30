@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once EmptyNamespace
 namespace System;
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
 #pragma warning disable 0809
@@ -172,7 +174,7 @@ readonly unsafe ref struct Span<T>
         return true;
     }
 
-    /// <inheritdoc cref="TryCopyTo(System.Span{T})"/>
+    /// <inheritdoc cref="TryCopyTo(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryCopyTo(IList<T> destination)
     {

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once EmptyNamespace
 namespace System.Linq;
 
 #if !NETCOREAPP3_0_OR_GREATER

@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable ArrangeAttributes FunctionComplexityOverflow SuspiciousTypeConversion.Global
+// ReSharper disable ArrangeAttributes FunctionComplexityOverflow InconsistentNaming SuspiciousTypeConversion.Global
 // Shamelessly stolen from https://raw.githubusercontent.com/igor-tkachev/Portable.System.ValueTuple/master/Portable.System.ValueTuple.cs
 // and creatively reworked. Which is...
 //
@@ -10,7 +10,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 #if NET20 || NET30 || NET35 || NET40 || NET45 || NET451 || NET452 || NET46 || NET461 || NET462 || NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2 || NETSTANDARD1_3 || NETSTANDARD1_4 || NETSTANDARD1_5 || NETSTANDARD1_6 || NETCOREAPP1_0 || NETCOREAPP1_1
-#pragma warning disable CA1200, CA1508, CA2208, CA5394, MA0012, MA0015, MA0048, MA0051, MA0097, SA1129, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
+#pragma warning disable CA1200, CA1508, CA2208, CA5394, DOC100, DOC202, MA0012, MA0015, MA0048, MA0051, MA0097, SA1129, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
 namespace System
 {
 #pragma warning disable SA1403
@@ -454,8 +454,7 @@ namespace System
         /// </list>
         /// </remarks>
         [Pure]
-        public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1> && Equals((ValueTuple<T1>)obj);
+        public override bool Equals([NotNullWhen(true)] object? obj) => obj is ValueTuple<T1> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1}"/>
@@ -541,7 +540,7 @@ namespace System
         /// <returns>The string representation of this <see cref="ValueTuple{T1}"/> instance.</returns>
         /// <remarks>
         /// The string returned by this method takes the form <c>(Item1)</c>,
-        /// where <c>Item1</c> represents the value of <see cref="Item1"/>. If the field is <see langword="null"/>,
+        /// where <see cref="Item1"/> represents the value of <see cref="Item1"/>. If the field is <see langword="null"/>,
         /// it is represented as <see cref="string.Empty"/>.
         /// </remarks>
         [Pure]
@@ -626,7 +625,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2> && Equals((ValueTuple<T1, T2>)obj);
+            obj is ValueTuple<T1, T2> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2}"/> instance is equal to a specified <see cref="ValueTuple{T1,T2}"/>.
@@ -730,7 +729,7 @@ namespace System
         /// <returns>The string representation of this <see cref="ValueTuple{T1,T2}"/> instance.</returns>
         /// <remarks>
         /// The string returned by this method takes the form <c>(Item1, Item2)</c>,
-        /// where <c>Item1</c> and <c>Item2</c> represent the values of the <see cref="Item1"/>
+        /// where <see cref="Item1"/> and <see cref="Item2"/> represent the values of the <see cref="Item1"/>
         /// and <see cref="Item2"/> fields. If either field value is <see langword="null"/>,
         /// it is represented as <see cref="string.Empty"/>.
         /// </remarks>
@@ -821,7 +820,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2, T3> && Equals((ValueTuple<T1, T2, T3>)obj);
+            obj is ValueTuple<T1, T2, T3> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2,T3}"/>
@@ -1037,7 +1036,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2, T3, T4> && Equals((ValueTuple<T1, T2, T3, T4>)obj);
+            obj is ValueTuple<T1, T2, T3, T4> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2,T3,T4}"/>
@@ -1276,7 +1275,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2, T3, T4, T5> && Equals((ValueTuple<T1, T2, T3, T4, T5>)obj);
+            obj is ValueTuple<T1, T2, T3, T4, T5> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2,T3,T4,T5}"/>
@@ -1537,7 +1536,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2, T3, T4, T5, T6> && Equals((ValueTuple<T1, T2, T3, T4, T5, T6>)obj);
+            obj is ValueTuple<T1, T2, T3, T4, T5, T6> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2,T3,T4,T5,T6}"/>
@@ -1830,7 +1829,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2, T3, T4, T5, T6, T7> && Equals((ValueTuple<T1, T2, T3, T4, T5, T6, T7>)obj);
+            obj is ValueTuple<T1, T2, T3, T4, T5, T6, T7> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2,T3,T4,T5,T6,T7}"/>
@@ -2151,8 +2150,7 @@ namespace System
         /// </remarks>
         [Pure]
         public override bool Equals([NotNullWhen(true)] object? obj) =>
-            obj is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> tuple &&
-            Equals(tuple);
+            obj is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> tuple && Equals(tuple);
 
         /// <summary>
         /// Returns a value that indicates whether the current <see cref="ValueTuple{T1,T2,T3,T4,T5,T6,T7, TRest}"/>
@@ -2319,68 +2317,59 @@ namespace System
             // In this case, the rest member has less than 8 elements so we need to combine some our elements with the elements in rest
             var k = 8 - size;
 
-            switch (k)
+            return k switch
             {
-                case 1:
-                    return ValueTuple.CombineHashCodes(
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-                case 2:
-                    return ValueTuple.CombineHashCodes(
-                        Item6?.GetHashCode() ?? 0,
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-                case 3:
-                    return ValueTuple.CombineHashCodes(
-                        Item5?.GetHashCode() ?? 0,
-                        Item6?.GetHashCode() ?? 0,
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-                case 4:
-                    return ValueTuple.CombineHashCodes(
-                        Item4?.GetHashCode() ?? 0,
-                        Item5?.GetHashCode() ?? 0,
-                        Item6?.GetHashCode() ?? 0,
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-                case 5:
-                    return ValueTuple.CombineHashCodes(
-                        Item3?.GetHashCode() ?? 0,
-                        Item4?.GetHashCode() ?? 0,
-                        Item5?.GetHashCode() ?? 0,
-                        Item6?.GetHashCode() ?? 0,
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-                case 6:
-                    return ValueTuple.CombineHashCodes(
-                        Item2?.GetHashCode() ?? 0,
-                        Item3?.GetHashCode() ?? 0,
-                        Item4?.GetHashCode() ?? 0,
-                        Item5?.GetHashCode() ?? 0,
-                        Item6?.GetHashCode() ?? 0,
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-                case 7:
-                case 8:
-                    return ValueTuple.CombineHashCodes(
-                        Item1?.GetHashCode() ?? 0,
-                        Item2?.GetHashCode() ?? 0,
-                        Item3?.GetHashCode() ?? 0,
-                        Item4?.GetHashCode() ?? 0,
-                        Item5?.GetHashCode() ?? 0,
-                        Item6?.GetHashCode() ?? 0,
-                        Item7?.GetHashCode() ?? 0,
-                        rest.GetHashCode()
-                    );
-            }
-
-            throw new InvalidOperationException("Missed all cases for computing ValueTuple hash code");
+                1 => ValueTuple.CombineHashCodes(
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                2 => ValueTuple.CombineHashCodes(
+                                        Item6?.GetHashCode() ?? 0,
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                3 => ValueTuple.CombineHashCodes(
+                                        Item5?.GetHashCode() ?? 0,
+                                        Item6?.GetHashCode() ?? 0,
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                4 => ValueTuple.CombineHashCodes(
+                                        Item4?.GetHashCode() ?? 0,
+                                        Item5?.GetHashCode() ?? 0,
+                                        Item6?.GetHashCode() ?? 0,
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                5 => ValueTuple.CombineHashCodes(
+                                        Item3?.GetHashCode() ?? 0,
+                                        Item4?.GetHashCode() ?? 0,
+                                        Item5?.GetHashCode() ?? 0,
+                                        Item6?.GetHashCode() ?? 0,
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                6 => ValueTuple.CombineHashCodes(
+                                        Item2?.GetHashCode() ?? 0,
+                                        Item3?.GetHashCode() ?? 0,
+                                        Item4?.GetHashCode() ?? 0,
+                                        Item5?.GetHashCode() ?? 0,
+                                        Item6?.GetHashCode() ?? 0,
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                7 or 8 => ValueTuple.CombineHashCodes(
+                                        Item1?.GetHashCode() ?? 0,
+                                        Item2?.GetHashCode() ?? 0,
+                                        Item3?.GetHashCode() ?? 0,
+                                        Item4?.GetHashCode() ?? 0,
+                                        Item5?.GetHashCode() ?? 0,
+                                        Item6?.GetHashCode() ?? 0,
+                                        Item7?.GetHashCode() ?? 0,
+                                        rest.GetHashCode()
+                                    ),
+                _ => throw new InvalidOperationException("Missed all cases for computing ValueTuple hash code"),
+            };
         }
 
         [Pure]
@@ -2406,68 +2395,59 @@ namespace System
             // In this case, the rest member has less than 8 elements so we need to combine some our elements with the elements in rest
             var k = 8 - size;
 
-            switch (k)
+            return k switch
             {
-                case 1:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-                case 2:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item6),
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-                case 3:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item5),
-                        comparer.GetHashCode(Item6),
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-                case 4:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item4),
-                        comparer.GetHashCode(Item5),
-                        comparer.GetHashCode(Item6),
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-                case 5:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item3),
-                        comparer.GetHashCode(Item4),
-                        comparer.GetHashCode(Item5),
-                        comparer.GetHashCode(Item6),
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-                case 6:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item2),
-                        comparer.GetHashCode(Item3),
-                        comparer.GetHashCode(Item4),
-                        comparer.GetHashCode(Item5),
-                        comparer.GetHashCode(Item6),
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-                case 7:
-                case 8:
-                    return ValueTuple.CombineHashCodes(
-                        comparer.GetHashCode(Item1),
-                        comparer.GetHashCode(Item2),
-                        comparer.GetHashCode(Item3),
-                        comparer.GetHashCode(Item4),
-                        comparer.GetHashCode(Item5),
-                        comparer.GetHashCode(Item6),
-                        comparer.GetHashCode(Item7),
-                        rest.GetHashCode(comparer)
-                    );
-            }
-
-            throw new InvalidOperationException("Missed all cases for computing ValueTuple hash code");
+                1 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                2 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item6),
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                3 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item5),
+                    comparer.GetHashCode(Item6),
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                4 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item4),
+                    comparer.GetHashCode(Item5),
+                    comparer.GetHashCode(Item6),
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                5 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item3),
+                    comparer.GetHashCode(Item4),
+                    comparer.GetHashCode(Item5),
+                    comparer.GetHashCode(Item6),
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                6 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item2),
+                    comparer.GetHashCode(Item3),
+                    comparer.GetHashCode(Item4),
+                    comparer.GetHashCode(Item5),
+                    comparer.GetHashCode(Item6),
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                7 or 8 => ValueTuple.CombineHashCodes(
+                    comparer.GetHashCode(Item1),
+                    comparer.GetHashCode(Item2),
+                    comparer.GetHashCode(Item3),
+                    comparer.GetHashCode(Item4),
+                    comparer.GetHashCode(Item5),
+                    comparer.GetHashCode(Item6),
+                    comparer.GetHashCode(Item7),
+                    rest.GetHashCode(comparer)
+                ),
+                _ => throw new InvalidOperationException("Missed all cases for computing ValueTuple hash code"),
+            };
         }
 
         [Pure]
