@@ -90,6 +90,7 @@ global using Microsoft.Win32;
 global using Microsoft.Win32.SafeHandles; */
 global using Mono;
 global using Mono.Cecil;
+global using Mono.Cecil.Cil;
 global using Mono.Cecil.Rocks;
 global using NullGuard;
 #if UNIT_TESTS && !NET20 && !NET30

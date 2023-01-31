@@ -120,6 +120,8 @@ namespace Mono { }
 
 namespace Mono.Cecil { }
 
+namespace Mono.Cecil.Cil { }
+
 namespace Mono.Cecil.Rocks { }
 
 namespace NullGuard { }
