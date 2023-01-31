@@ -79,7 +79,6 @@ global using Emik.Unions.Disjoints;
 global using Emik.Unions.Mappings;
 global using Emik.Unions.Tagged;
 global using Fody;
-global using ILMerge;
 global using InlineIL;
 global using InlineMethod;
 global using JetBrains.Annotations; /*
