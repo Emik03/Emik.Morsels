@@ -11,12 +11,12 @@ static partial class Heap
     /// for production, but not for deprecated reasons.
     /// </summary>
     const string NotForProduction = "NOT deprecated. While this can be used in Release builds to run this on " +
-        "optimized code; This API exists for public builds and should be excluded from final production builds.";
+        "optimized code; This API exists for debugging builds and should be excluded from final production builds.";
 
     /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
     /// <param name="action">The dangerous callback.</param>
     [Inline, Obsolete(NotForProduction)]
-    internal static void Swallow([InstantHandle] this Action action)
+    public static void Swallow([InstantHandle] this Action action)
     {
         try
         {
@@ -40,7 +40,7 @@ static partial class Heap
     /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
     /// <returns>The number of bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.</returns>
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    internal static long CountAllocation([InstantHandle, RequireStaticDelegate] Action heap, bool willWarmup = true)
+    public static long CountAllocation([InstantHandle, RequireStaticDelegate] Action heap, bool willWarmup = true)
     {
         if (willWarmup)
             heap.Swallow();
@@ -74,7 +74,7 @@ static partial class Heap
     /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
     /// </returns>
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    internal static long[] CountAllocations(
+    public static long[] CountAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
         [NonNegativeValue] int times = 256,
         bool willWarmup = true
@@ -89,5 +89,30 @@ static partial class Heap
             all[i] += CountAllocation(heap, false);
 
         return all;
+    }
+
+    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
+    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
+    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
+    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
+    /// <returns>
+    /// An <see cref="Array"/> where each entry is a separate test of the number of
+    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// </returns>
+    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
+    public static bool HasAllocations(
+        [InstantHandle, RequireStaticDelegate] Action heap,
+        [NonNegativeValue] int times = 256,
+        bool willWarmup = true
+    )
+    {
+        if (willWarmup)
+            heap.Swallow();
+
+        for (var i = 0; i < times; i++)
+            if (CountAllocation(heap, false) is not 0)
+                return false;
+
+        return true;
     }
 }
