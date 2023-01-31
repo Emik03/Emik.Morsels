@@ -15,7 +15,7 @@ static partial class Conditionals
     /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate) =>
+    public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate) =>
         value is not null && predicate(value);
 
     /// <summary>Determines whether the inner value of a nullable value matches a given predicate.</summary>
@@ -27,7 +27,7 @@ static partial class Conditionals
     /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate)
+    public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate)
         where T : struct =>
         value is { } t && predicate(t);
 
@@ -36,7 +36,7 @@ static partial class Conditionals
     /// <param name="exThat">Filled by the compiler, the expression to assert.</param>
     /// <returns>The parameter <paramref name="that"/>.</returns>
     [AssertionMethod]
-    internal static bool IsFalse(
+    public static bool IsFalse(
         [AssertionCondition(AssertionConditionType.IS_FALSE)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
@@ -47,7 +47,7 @@ static partial class Conditionals
     /// <param name="exThat">Filled by the compiler, the expression to assert.</param>
     /// <returns>The parameter <paramref name="that"/>.</returns>
     [AssertionMethod]
-    internal static bool IsTrue(
+    public static bool IsTrue(
         [AssertionCondition(AssertionConditionType.IS_TRUE)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
@@ -58,7 +58,7 @@ static partial class Conditionals
     /// <param name="ifFalse">The value to invoke when <see langword="false"/>.</param>
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    internal static bool NotThen(
+    public static bool NotThen(
         this bool value,
         [InstantHandle] Action ifFalse,
         [InstantHandle] Action? ifTrue = null
@@ -77,7 +77,7 @@ static partial class Conditionals
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <param name="ifFalse">The value to invoke when <see langword="false"/>.</param>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    internal static bool Then(
+    public static bool Then(
         this bool value,
         [InstantHandle] Action ifTrue,
         [InstantHandle] Action? ifFalse = null

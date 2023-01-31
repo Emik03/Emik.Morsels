@@ -17,7 +17,7 @@ static partial class CircularFactory
     /// <returns>A <see cref="CircularList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static CircularList<T>? ToCircularLazily<T>(this IEnumerable<T>? iterable) =>
+    public static CircularList<T>? ToCircularLazily<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
             : iterable as CircularList<T> ?? new CircularList<T>(iterable as IList<T> ?? iterable.ToList());

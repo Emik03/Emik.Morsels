@@ -19,7 +19,7 @@ static partial class TryTake
     /// </para></remarks>
     /// <returns>The length of the collection if pre-computed, or <see langword="null"/>.</returns>
     [Pure]
-    internal static int? TryCount<TSource>([NoEnumeration] this IEnumerable<TSource> source) =>
+    public static int? TryCount<TSource>([NoEnumeration] this IEnumerable<TSource> source) =>
         source switch
         {
             IReadOnlyCollection<TSource> col => col.Count,
@@ -34,7 +34,7 @@ static partial class TryTake
     /// <param name="fallback">The fallback item.</param>
     /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
     [Pure]
-    internal static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
+    public static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
     {
         using var iterator = iterable.GetEnumerator();
 
@@ -55,7 +55,7 @@ static partial class TryTake
     /// <param name="fallback">The fallback item.</param>
     /// <returns>The first item, or the parameter <paramref name="fallback"/>.</returns>
     [MustUseReturnValue]
-    internal static T FirstOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
+    public static T FirstOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
     {
         if (iterable is IList<T> list)
             return list.Count is 0 ? fallback : list[0];
@@ -70,7 +70,7 @@ static partial class TryTake
     /// <param name="fallback">The fallback item.</param>
     /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
     [MustUseReturnValue]
-    internal static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
+    public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
         iterable is IList<T> list // ReSharper disable once UseIndexFromEndExpression
             ? list.Count is 0 ? fallback : list[list.Count - 1]
             : iterable.EnumerateOr(fallback);
@@ -82,7 +82,7 @@ static partial class TryTake
     /// <param name="key">The key to use to get the value.</param>
     /// <returns>An element from the parameter <paramref name="dictionary"/>, or <see langword="default"/>.</returns>
     [MustUseReturnValue]
-    internal static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
+    public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
 
@@ -92,7 +92,7 @@ static partial class TryTake
     /// <param name="iterable">The enumeration to potentially return.</param>
     /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
+    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
         iterable ?? Enumerable.Empty<T>();
 
     /// <summary>Gets a specific item from a collection.</summary>
@@ -101,7 +101,7 @@ static partial class TryTake
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    internal static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
+    public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
@@ -122,7 +122,7 @@ static partial class TryTake
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    internal static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
+    public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse

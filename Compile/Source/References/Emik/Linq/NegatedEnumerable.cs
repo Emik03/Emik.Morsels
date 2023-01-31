@@ -16,7 +16,7 @@ static partial class NegatedEnumerable
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> DistinctDuplicates<T>(
+    public static IEnumerable<T> DistinctDuplicates<T>(
         this IEnumerable<T> source,
         IEqualityComparer<T>? comparer = null
     ) =>
@@ -32,7 +32,7 @@ static partial class NegatedEnumerable
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Duplicates<T>(this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
+    public static IEnumerable<T> Duplicates<T>(this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
         source.GroupDuplicates(comparer).SelectMany(x => x);
 
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
@@ -41,7 +41,7 @@ static partial class NegatedEnumerable
     /// <param name="source">The source to filter.</param>
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    internal static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
+    public static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
         this IEnumerable<T> source,
         IEqualityComparer<T>? comparer = null
     ) =>
@@ -54,7 +54,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+    public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.SkipWhile(Not1(predicate));
 
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -64,7 +64,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+    public static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.TakeWhile(Not1(predicate));
 
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -74,7 +74,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> TakeUntil<T>(
+    public static IEnumerable<T> TakeUntil<T>(
         [NoEnumeration] this IEnumerable<T> source,
         Func<T, int, bool> predicate
     ) =>
@@ -87,7 +87,7 @@ static partial class NegatedEnumerable
     /// <param name="iterator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> encapsulating the parameter <paramref name="iterator"/>.</returns>
     [Pure]
-    internal static IEnumerable<object?> ToEnumerable([InstantHandle] this IEnumerator? iterator)
+    public static IEnumerable<object?> ToEnumerable([InstantHandle] this IEnumerator? iterator)
     {
         if (iterator is null)
             yield break;
@@ -104,7 +104,7 @@ static partial class NegatedEnumerable
     /// <param name="iterator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> encapsulating the parameter <paramref name="iterator"/>.</returns>
     [Pure]
-    internal static IEnumerable<T> ToEnumerable<T>([InstantHandle] this IEnumerator<T>? iterator)
+    public static IEnumerable<T> ToEnumerable<T>([InstantHandle] this IEnumerator<T>? iterator)
     {
         if (iterator is null)
             yield break;
@@ -122,7 +122,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+    public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.Where(Not1(predicate));
 
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -132,7 +132,7 @@ static partial class NegatedEnumerable
     /// </returns>
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Omit<T>(
+    public static IEnumerable<T> Omit<T>(
         [NoEnumeration] this IEnumerable<T> source,
         Func<T, int, bool> predicate
     ) =>

@@ -15,7 +15,7 @@ static partial class MatrixFactory
     /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
-    internal static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
+    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
         iterator is null
             ? null
             : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
@@ -27,7 +27,7 @@ static partial class MatrixFactory
     /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
-    internal static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
         iterator is null
             ? null
             : new Matrix<T>(iterator as IList<T> ?? iterator.ToList(), countPerList);
@@ -35,7 +35,7 @@ static partial class MatrixFactory
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
 /// <typeparam name="T">The type of item within the list.</typeparam>
-sealed class Matrix<T> : IList<IList<T>>
+sealed partial class Matrix<T> : IList<IList<T>>
 {
     readonly int _countPerListEager;
 

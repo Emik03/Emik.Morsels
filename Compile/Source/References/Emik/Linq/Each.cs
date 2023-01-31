@@ -16,7 +16,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static int For([NonNegativeValue] this int upper, [InstantHandle] Action action)
+    public static int For([NonNegativeValue] this int upper, [InstantHandle] Action action)
     {
         for (var i = 0; i < upper; i++)
             action();
@@ -33,7 +33,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static int For([NonNegativeValue] this int upper, [InstantHandle] Action<int> action)
+    public static int For([NonNegativeValue] this int upper, [InstantHandle] Action<int> action)
     {
         for (var i = 0; i < upper; i++)
             action(i);
@@ -52,7 +52,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static int For<TExternal>(
+    public static int For<TExternal>(
         [NonNegativeValue] this int upper,
         TExternal external,
         [InstantHandle] Action<TExternal> action
@@ -75,7 +75,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static int For<TExternal>(
+    public static int For<TExternal>(
         [NonNegativeValue] this int upper,
         TExternal external,
         [InstantHandle] Action<int, TExternal> action
@@ -97,7 +97,7 @@ static partial class Each
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    internal static ICollection<T> For<T>(
+    public static ICollection<T> For<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Action<T> action
     )
@@ -121,7 +121,7 @@ static partial class Each
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    internal static ICollection<T> For<T, TExternal>(
+    public static ICollection<T> For<T, TExternal>(
         [InstantHandle] this IEnumerable<T> iterable,
         TExternal external,
         [InstantHandle] Action<T, TExternal> action
@@ -144,7 +144,7 @@ static partial class Each
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    internal static ICollection<T> For<T>(
+    public static ICollection<T> For<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Action<T, int> action
     )
@@ -169,7 +169,7 @@ static partial class Each
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    internal static ICollection<T> For<T, TExternal>(
+    public static ICollection<T> For<T, TExternal>(
         [InstantHandle] this IEnumerable<T> iterable,
         TExternal external,
         [InstantHandle] Action<T, int, TExternal> action
@@ -195,7 +195,7 @@ static partial class Each
     /// <param name="dictionary">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    internal static IDictionary<TKey, TValue> For<TKey, TValue>(
+    public static IDictionary<TKey, TValue> For<TKey, TValue>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Action<TKey, TValue> action
     )
@@ -218,7 +218,7 @@ static partial class Each
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    internal static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
+    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         TExternal external,
         [InstantHandle] Action<TKey, TValue, TExternal> action
@@ -240,7 +240,7 @@ static partial class Each
     /// <param name="dictionary">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    internal static IDictionary<TKey, TValue> For<TKey, TValue>(
+    public static IDictionary<TKey, TValue> For<TKey, TValue>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Action<TKey, TValue, int> action
     )
@@ -265,7 +265,7 @@ static partial class Each
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    internal static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
+    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         TExternal external,
         [InstantHandle] Action<TKey, TValue, int, TExternal> action
@@ -287,7 +287,7 @@ static partial class Each
     /// <param name="num">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<int> For(this int num) =>
+    public static IEnumerable<int> For(this int num) =>
         Math.Abs(num) is var abs && num < 0
             ? Enumerable.Repeat(abs, abs).Select((x, i) => x - i - 1)
             : Enumerable.Range(0, num);
@@ -296,7 +296,7 @@ static partial class Each
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
     [Pure]
-    internal static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
+    public static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
 
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -308,7 +308,7 @@ static partial class Each
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TExternal> For<TExternal>([NonNegativeValue] this int upper, TExternal external) =>
+    public static IEnumerable<TExternal> For<TExternal>([NonNegativeValue] this int upper, TExternal external) =>
         Enumerable.Repeat(external, upper);
 
     /// <summary>
@@ -321,7 +321,7 @@ static partial class Each
     /// <param name="func">The function for each loop.</param>
     /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> For<TResult>(
+    public static IEnumerable<TResult> For<TResult>(
         [NonNegativeValue] this int upper,
         [InstantHandle] Func<TResult> func
     ) =>

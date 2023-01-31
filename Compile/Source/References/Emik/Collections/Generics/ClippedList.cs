@@ -17,7 +17,7 @@ static partial class ClippedFactory
     /// <returns>A <see cref="ClippedList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
+    public static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
             : iterable as ClippedList<T> ?? new ClippedList<T>(iterable as IList<T> ?? iterable.ToList());

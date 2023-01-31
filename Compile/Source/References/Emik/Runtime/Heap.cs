@@ -11,7 +11,7 @@ static partial class Heap
     /// for production, but not for deprecated reasons.
     /// </summary>
     const string NotForProduction = "NOT deprecated. While this can be used in Release builds to run this on " +
-        "optimized code; This API exists for internal builds and should be excluded from final production builds.";
+        "optimized code; This API exists for public builds and should be excluded from final production builds.";
 
     /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
     /// <param name="action">The dangerous callback.</param>

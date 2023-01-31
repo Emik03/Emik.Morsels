@@ -5,6 +5,19 @@ namespace Emik.Morsels;
 
 using static CollectionAccessType;
 
+/// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class YesFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Yes{T}"/> instance that can be yielded forever.</returns>
+    [Pure]
+    public static Yes<T> Forever<T>(this T source) => source;
+}
+
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
@@ -61,17 +74,4 @@ readonly partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
-
-/// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class YesFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The <see cref="Yes{T}"/> instance that can be yielded forever.</returns>
-    [Pure]
-    internal static Yes<T> Forever<T>(this T source) => source;
 }

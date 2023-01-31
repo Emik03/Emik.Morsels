@@ -16,7 +16,7 @@ static partial class Collected
     /// is not <paramref langword="null"/>, otherwise <paramref langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static TList? Collect<T, TList>(
+    public static TList? Collect<T, TList>(
         [InstantHandle] this IEnumerable<T?> iterable,
         [InstantHandle] Converter<IEnumerable<T>, TList> converter
     )
@@ -31,7 +31,7 @@ static partial class Collected
     /// <returns>Itself as <see cref="ICollection{T}"/>, or a collected <see cref="Array"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as ICollection<T> ?? iterable.ToList();
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
@@ -40,7 +40,7 @@ static partial class Collected
     /// <returns>Itself as <see cref="IList{T}"/>, or a collected <see cref="Array"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+    public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
 }
 #endif

@@ -15,7 +15,7 @@ static partial class NullableItems
     /// <returns>The parameter <paramref name="iterable"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static IEnumerable<T?>? ItemCanBeNull<T>(this IEnumerable<T>? iterable) => iterable;
+    public static IEnumerable<T?>? ItemCanBeNull<T>(this IEnumerable<T>? iterable) => iterable;
 
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -23,7 +23,7 @@ static partial class NullableItems
     /// <returns>The parameter <paramref name="iterator"/>, with <see cref="ItemCanBeNullAttribute"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
-    internal static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
+    public static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
 
 #if !NET20 && !NET30
     /// <summary>Returns the list if all items are non-null.</summary>
@@ -34,7 +34,7 @@ static partial class NullableItems
     /// otherwise <see langword="null"/>.
     /// </returns>
     [Pure]
-    internal static IList<T>? ItemNotNull<T>(this IList<T?>? list) =>
+    public static IList<T>? ItemNotNull<T>(this IList<T?>? list) =>
         list?.All(x => x is not null) ?? false ? list : null;
 #endif
 
@@ -44,7 +44,7 @@ static partial class NullableItems
     /// <returns>The parameter <paramref name="collection"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(collection))]
-    internal static IReadOnlyCollection<T?>? ItemCanBeNull<T>(this IReadOnlyCollection<T>? collection) => collection;
+    public static IReadOnlyCollection<T?>? ItemCanBeNull<T>(this IReadOnlyCollection<T>? collection) => collection;
 
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -52,7 +52,7 @@ static partial class NullableItems
     /// <returns>The parameter <paramref name="list"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(list))]
-    internal static IReadOnlyList<T?>? ItemCanBeNull<T>(this IReadOnlyList<T>? list) => list;
+    public static IReadOnlyList<T?>? ItemCanBeNull<T>(this IReadOnlyList<T>? list) => list;
 
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -60,6 +60,6 @@ static partial class NullableItems
     /// <returns>The parameter <paramref name="set"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(set))]
-    internal static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
+    public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
 #pragma warning restore CS8619
 }

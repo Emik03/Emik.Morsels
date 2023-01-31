@@ -15,7 +15,7 @@ static class RuntimeHelpers
     /// </param>
     /// <returns>The subarray defined by <paramref name="range"/>.</returns>
     [Pure]
-    internal static T[] GetSubArray<T>(T[] array, Range range)
+    public static T[] GetSubArray<T>(T[] array, Range range)
     {
         range.GetOffsetAndLength(array.Length, out var offset, out var length);
 

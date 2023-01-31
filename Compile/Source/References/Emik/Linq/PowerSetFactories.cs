@@ -8,7 +8,7 @@ static partial class PowerSetFactories
 {
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<IEnumerable<object>> PowerSet(this ICollection collection) =>
+    public static IEnumerable<IEnumerable<object>> PowerSet(this ICollection collection) =>
         collection.Cast<object>().PowerSetInner(collection.Count);
 
     /// <summary>Creates a power set from a collection.</summary>
@@ -22,7 +22,7 @@ static partial class PowerSetFactories
     /// <param name="collection">The set to create a power set.</param>
     /// <returns>The power set of the parameter <paramref name="collection"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<IEnumerable<T>> PowerSet<T>(this ICollection<T> collection) =>
+    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this ICollection<T> collection) =>
         collection.PowerSetInner(collection.Count);
 
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>

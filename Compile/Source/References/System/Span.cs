@@ -198,7 +198,7 @@ readonly unsafe ref struct Span<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
         typeof(T) == typeof(char)
-            ? ToCharArray().Conjoin()
+            ? ToChars().Conjoin()
             : $"System.Span<{typeof(T).Name}>[{Length}]";
 
     /// <summary>Returns an enumerator of this <see cref="Span{T}"/>.</summary>
@@ -280,7 +280,7 @@ readonly unsafe ref struct Span<T>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    char[] ToCharArray() => new Span<char>((char*)_pointer, Length).ToArray();
+    IEnumerable<char> ToChars() => new Span<char>((char*)_pointer, Length).ToArray();
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
@@ -296,7 +296,7 @@ readonly unsafe ref struct Span<T>
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="span">The buffer to peek through.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal Enumerator(Span<T> span)
+        public Enumerator(Span<T> span)
         {
             _span = span;
             _index = -1;

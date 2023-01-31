@@ -16,7 +16,7 @@ static partial class EachLazy
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
+    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
         new Enumerable<T, object?>(iterable, null, action);
 
     /// <summary>
@@ -31,7 +31,7 @@ static partial class EachLazy
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Lazily<T, TExternal>(
+    public static IEnumerable<T> Lazily<T, TExternal>(
         [NoEnumeration] this IEnumerable<T> iterable,
         TExternal external,
         Action<T, TExternal> action
@@ -48,7 +48,7 @@ static partial class EachLazy
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
+    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
         new Enumerable<T, object?>(iterable, null, action);
 
     /// <summary>
@@ -63,7 +63,7 @@ static partial class EachLazy
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Lazily<T, TExternal>(
+    public static IEnumerable<T> Lazily<T, TExternal>(
         [NoEnumeration] this IEnumerable<T> iterable,
         TExternal external,
         Action<T, int, TExternal> action
@@ -87,19 +87,19 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     readonly TExternal _external;
 
     /// <inheritdoc />
-    internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T> action)
+    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
+    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
+    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    internal Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
+    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
@@ -133,7 +133,7 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
         int _index;
 
-        internal Enumerator(IEnumerator<T> enumerator, TExternal external, Delegate action)
+        public Enumerator(IEnumerator<T> enumerator, TExternal external, Delegate action)
         {
             _enumerator = enumerator;
             _external = external;

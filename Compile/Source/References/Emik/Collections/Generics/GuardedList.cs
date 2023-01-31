@@ -17,7 +17,7 @@ static partial class GuardedFactory
     /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
+    public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
             : iterable as GuardedList<T> ?? new GuardedList<T>(iterable as IList<T> ?? iterable.ToList());

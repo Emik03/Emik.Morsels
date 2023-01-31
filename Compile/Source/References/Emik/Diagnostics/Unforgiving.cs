@@ -12,8 +12,8 @@ static partial class Unforgiving
 #pragma warning restore MA0048
 {
     /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>
-    internal static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");
+    public static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");
 
     /// <summary>Gets the <see cref="Exception"/> that represents an unreachable state.</summary>
-    internal static UnreachableException Unreachable { get; } = new();
+    public static UnreachableException Unreachable { get; } = new();
 }

@@ -17,7 +17,7 @@ static partial class ReadOnlyFactory
     /// <returns>A <see cref="IReadOnlyList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    internal static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
+    public static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? iterable.ToList());
@@ -33,7 +33,7 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <summary>Initializes a new instance of the <see cref="ReadOnlyList{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
-    internal ReadOnlyList([ProvidesContext] IList<T> list) => _list = list;
+    public ReadOnlyList([ProvidesContext] IList<T> list) => _list = list;
 
     /// <inheritdoc />
     [Pure]

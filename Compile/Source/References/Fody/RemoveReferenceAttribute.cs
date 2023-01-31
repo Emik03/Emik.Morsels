@@ -12,7 +12,7 @@ sealed partial class RemoveReferenceAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="RemoveReferenceAttribute"/> class.</summary>
     /// <param name="fullName">The full name of an assembly to remove its reference.</param>
-    internal RemoveReferenceAttribute(string fullName) => FullName = fullName;
+    public RemoveReferenceAttribute(string fullName) => FullName = fullName;
 
     /// <summary>Gets an assembly's full name which has been stripped from this compiled binary.</summary>
     internal string FullName { get; }

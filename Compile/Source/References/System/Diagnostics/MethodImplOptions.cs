@@ -20,7 +20,7 @@ namespace System.Runtime.CompilerServices;
 static partial class MethodImplOptions
 {
     /// <summary>The method is implemented in unmanaged code.</summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions Unmanaged =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions Unmanaged =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 2);
 
     /// <summary>

@@ -14,7 +14,7 @@ static partial class Indexers
     /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
+    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
 
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -24,7 +24,7 @@ static partial class Indexers
     /// <param name="range">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<int> For(this Range range) =>
+    public static IEnumerable<int> For(this Range range) =>
         range.Start.Value is var start &&
         range.End.Value is var end &&
         start == end ? Enumerable.Empty<int>() :
@@ -37,7 +37,7 @@ static partial class Indexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    internal static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, Index index) =>
+    public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, Index index) =>
         index.IsFromEnd ? iterable.NthLast(index.Value) : iterable.Nth(index.Value);
 
     /// <summary>Gets a range of items from a collection.</summary>
@@ -46,7 +46,7 @@ static partial class Indexers
     /// <param name="range">The ranges to get.</param>
     /// <returns>A slice from the parameter <paramref name="iterable"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Nth<T>([InstantHandle] this IEnumerable<T> iterable, Range range)
+    public static IEnumerable<T> Nth<T>([InstantHandle] this IEnumerable<T> iterable, Range range)
     {
         [LinqTunnel, Pure]
         static IEnumerable<TT> Sub<TT>([InstantHandle] IEnumerable<TT> iterable, Range range) =>
@@ -67,13 +67,13 @@ static partial class Indexers
     /// <param name="index">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
     [Pure]
-    internal static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
+    public static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
 
     /// <summary>Gets an enumeration of a range.</summary>
     /// <param name="range">The range to iterate over.</param>
     /// <returns>An enumeration from the range's start to end.</returns>
     [Pure]
-    internal static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
+    public static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
 
     [Pure]
     static Index IndexStart(Index index, int length) => index.IsFromEnd ? length - index.Value - 1 : index;

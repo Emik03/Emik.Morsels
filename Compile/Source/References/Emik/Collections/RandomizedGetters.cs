@@ -12,7 +12,7 @@ static partial class RandomizedGetters
     /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    internal static IList<T> Shuffle<T>(
+    public static IList<T> Shuffle<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
     )
@@ -45,7 +45,7 @@ static partial class RandomizedGetters
     /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    internal static T PickRandom<T>(
+    public static T PickRandom<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
     )

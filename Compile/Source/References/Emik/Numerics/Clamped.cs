@@ -17,7 +17,7 @@ static partial class Clamped
     /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
     /// </returns>
     [Pure]
-    internal static int Clamp(this int number, int? min = null, int? max = null) =>
+    public static int Clamp(this int number, int? min = null, int? max = null) =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&
         number <= small ? small :
@@ -25,7 +25,7 @@ static partial class Clamped
 
     /// <inheritdoc cref="Clamp(int, int?, int?)"/>
     [Pure]
-    internal static float Clamp(this float number, float? min = null, float? max = null) =>
+    public static float Clamp(this float number, float? min = null, float? max = null) =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&
         number <= small ? small :
@@ -42,7 +42,7 @@ static partial class Clamped
     /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
     /// </returns>
     [Pure]
-    internal static T Clamp<T>(this T number, T? min = null, T? max = null)
+    public static T Clamp<T>(this T number, T? min = null, T? max = null)
         where T : class, IComparisonOperators<T, T, bool> =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&
@@ -51,7 +51,7 @@ static partial class Clamped
 
     /// <inheritdoc cref="Clamp{T}(T, T?, T?)"/>
     [Pure]
-    internal static T Clamp<T>(this T number, T? min = null, T? max = null)
+    public static T Clamp<T>(this T number, T? min = null, T? max = null)
         where T : struct, IComparisonOperators<T, T, bool> =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&

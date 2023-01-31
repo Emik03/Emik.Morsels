@@ -93,7 +93,7 @@ static partial class MethodGroupings
 
         readonly Converter<T?, TResult> _converter;
 
-        internal Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
+        public Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
         {
             _converter = converter;
             _comparer = comparer;

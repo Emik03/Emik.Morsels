@@ -7,6 +7,19 @@ namespace Emik.Morsels;
 
 using static CollectionAccessType;
 
+/// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
+#pragma warning disable MA0048
+static partial class OnceFactory
+#pragma warning restore MA0048
+{
+    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> Yield<T>(this T source) => source;
+}
+
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
@@ -196,18 +209,5 @@ readonly partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, I
         [CollectionAccess(None)]
         public void Reset() => _hasMoved = false;
     }
-}
-
-/// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class OnceFactory
-#pragma warning restore MA0048
-{
-    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
-    [Pure]
-    internal static Once<T> Yield<T>(this T source) => source;
 }
 #endif
