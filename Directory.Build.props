@@ -44,6 +44,7 @@
             <Weavers>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <TailCall/>
                 <ToString/>
@@ -67,6 +68,7 @@
                 <Lazy/>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <ToString/>
                 <TailCall/>
@@ -89,6 +91,7 @@
                 <Lazy/>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <TailCall/>
                 <NullGuard/>
@@ -109,6 +112,7 @@
                 <Lazy/>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <ToString/>
                 <TailCall/>
@@ -131,6 +135,7 @@
             <Weavers>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <ToString/>
                 <Substitute/>
@@ -151,6 +156,7 @@
                 <Lazy/>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <ToString/>
                 <Substitute/>
@@ -170,6 +176,7 @@
                 <Lazy/>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <Substitute/>
                 <Virtuosity/>
@@ -187,6 +194,7 @@
                 <Lazy/>
                 <Equals/>
                 <InfoOf/>
+                <ILMerge/>
                 <InlineIL/>
                 <ToString/>
                 <Substitute/>
