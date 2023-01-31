@@ -7,5 +7,5 @@ using static AttributeTargets;
 
 /// <summary>Prevents the injection of null checking (implicit mode only).</summary>
 [AttributeUsage(Parameter | ReturnValue | Property)]
-sealed class AllowNullAttribute : Attribute { }
+sealed partial class AllowNullAttribute : Attribute { }
 #endif

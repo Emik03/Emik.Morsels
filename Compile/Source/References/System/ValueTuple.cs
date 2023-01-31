@@ -13,12 +13,32 @@
 #pragma warning disable CA1200, CA1508, CA2208, CA5394, DOC100, DOC202, MA0012, MA0015, MA0048, MA0051, MA0097, SA1129, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
 namespace System
 {
+    /// <summary>Allows a <see cref="KeyValuePair{TKey, TValue}"/> to be deconstructed, much like a tuple.</summary>
+    static partial class KeyValuePairDeconstructors
+    {
+        /// <summary>Deconstructs a <see cref="KeyValuePair{TKey, TValue}"/> into its components.</summary>
+        /// <typeparam name="TKey">The key generic in the <see cref="KeyValuePair{TKey, TValue}"/>.</typeparam>
+        /// <typeparam name="TValue">The value generic in the <see cref="KeyValuePair{TKey, TValue}"/>.</typeparam>
+        /// <param name="kvp">The key value pair to deconstruct.</param>
+        /// <param name="key">The key value to get assigned as the key value pair's key.</param>
+        /// <param name="value">The key value to get assigned as the key value pair's value.</param>
+        public static void Deconstruct<TKey, TValue>(
+            this KeyValuePair<TKey, TValue> kvp,
+            out TKey key,
+            out TValue value
+        )
+        {
+            key = kvp.Key;
+            value = kvp.Value;
+        }
+    }
+
 #pragma warning disable SA1403
     namespace Runtime.CompilerServices
 #pragma warning restore SA1403
     {
         /// <summary>This interface is required for types that want to be indexed into by dynamic patterns.</summary>
-        interface ITuple
+        partial interface ITuple
         {
             /// <summary>The number of positions in this data structure.</summary>
             [NonNegativeValue, Pure]
@@ -41,7 +61,7 @@ namespace System
             AttributeTargets.Parameter |
             AttributeTargets.ReturnValue
         )]
-        sealed class TupleElementNamesAttribute : Attribute
+        sealed partial class TupleElementNamesAttribute : Attribute
         {
             readonly string[] _transformNames;
 
@@ -81,7 +101,7 @@ namespace System
     /// <summary>
     /// Helper so we can call some tuple methods recursively without knowing the underlying types.
     /// </summary>
-    interface IValueTupleInternal : ITuple
+    partial interface IValueTupleInternal : ITuple
     {
         [Pure]
         int GetHashCode(IEqualityComparer comparer);
@@ -101,7 +121,7 @@ namespace System
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
-    readonly struct ValueTuple : IEquatable<ValueTuple>,
+    readonly partial struct ValueTuple : IEquatable<ValueTuple>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -363,25 +383,24 @@ namespace System
             );
 
         [Pure]
-        internal static int CombineHashCodes(int h1, int h2) => Combine(Combine(s_randomSeed, h1), h2);
+        public static int CombineHashCodes(int h1, int h2) => Combine(Combine(s_randomSeed, h1), h2);
 
         [Pure]
-        internal static int CombineHashCodes(int h1, int h2, int h3) => Combine(CombineHashCodes(h1, h2), h3);
+        public static int CombineHashCodes(int h1, int h2, int h3) => Combine(CombineHashCodes(h1, h2), h3);
 
         [Pure]
-        internal static int CombineHashCodes(int h1, int h2, int h3, int h4) =>
-            Combine(CombineHashCodes(h1, h2, h3), h4);
+        public static int CombineHashCodes(int h1, int h2, int h3, int h4) => Combine(CombineHashCodes(h1, h2, h3), h4);
 
         [Pure]
-        internal static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5) =>
+        public static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5) =>
             Combine(CombineHashCodes(h1, h2, h3, h4), h5);
 
         [Pure]
-        internal static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5, int h6) =>
+        public static int CombineHashCodes(int h1, int h2, int h3, int h4, int h5, int h6) =>
             Combine(CombineHashCodes(h1, h2, h3, h4, h5), h6);
 
         [Pure]
-        internal static int CombineHashCodes(
+        public static int CombineHashCodes(
             int h1,
             int h2,
             int h3,
@@ -393,7 +412,7 @@ namespace System
             Combine(CombineHashCodes(h1, h2, h3, h4, h5, h6), h7);
 
         [Pure]
-        internal static int CombineHashCodes(
+        public static int CombineHashCodes(
             int h1,
             int h2,
             int h3,
@@ -420,7 +439,7 @@ namespace System
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
-    readonly struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
+    readonly partial struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -579,7 +598,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
+    readonly partial struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -768,7 +787,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
+    readonly partial struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -977,7 +996,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
+    readonly partial struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1209,7 +1228,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
+    readonly partial struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1463,7 +1482,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
+    readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1741,7 +1760,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
+    readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -2049,7 +2068,7 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
+    readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
         IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
@@ -2506,28 +2525,6 @@ namespace System
 
                 throw new IndexOutOfRangeException();
             }
-        }
-    }
-
-    /// <summary>Allows a <see cref="KeyValuePair{TKey, TValue}"/> to be deconstructed, much like a tuple.</summary>
-#pragma warning disable
-    static class KeyValuePairDeconstructors
-#pragma warning restore
-    {
-        /// <summary>Deconstructs a <see cref="KeyValuePair{TKey, TValue}"/> into its components.</summary>
-        /// <typeparam name="TKey">The key generic in the <see cref="KeyValuePair{TKey, TValue}"/>.</typeparam>
-        /// <typeparam name="TValue">The value generic in the <see cref="KeyValuePair{TKey, TValue}"/>.</typeparam>
-        /// <param name="kvp">The key value pair to deconstruct.</param>
-        /// <param name="key">The key value to get assigned as the key value pair's key.</param>
-        /// <param name="value">The key value to get assigned as the key value pair's value.</param>
-        internal static void Deconstruct<TKey, TValue>(
-            this KeyValuePair<TKey, TValue> kvp,
-            out TKey key,
-            out TValue value
-        )
-        {
-            key = kvp.Key;
-            value = kvp.Value;
         }
     }
 }

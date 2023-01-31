@@ -5,7 +5,7 @@ namespace System.Runtime.CompilerServices;
 /// <summary>
 /// Provides a set of static methods and properties that provide support for compilers. This class cannot be inherited.
 /// </summary>
-static class RuntimeHelpers
+static partial class RuntimeHelpers
 {
     /// <summary>Slices the specified array using the specified range.</summary>
     /// <typeparam name="T">The type of elements in the array.</typeparam>

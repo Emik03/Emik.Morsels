@@ -9,7 +9,7 @@ namespace System;
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
 [DebuggerTypeProxy(typeof(Span<>.SpanDebugView)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
-readonly unsafe ref struct Span<T>
+readonly unsafe ref partial struct Span<T>
     where T : unmanaged
 {
     /// <summary>Gets the pointer representing the first element in the buffer.</summary>

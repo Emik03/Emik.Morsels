@@ -27,11 +27,11 @@ static partial class MethodImplOptions
     /// The method cannot be inlined.
     /// Inlining is an optimization by which a method call is replaced with the method body.
     /// </summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions NoInlining =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions NoInlining =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 3);
 
     /// <summary>The method is declared, but its implementation is provided elsewhere.</summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions ForwardRef =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions ForwardRef =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 4);
 
     /// <summary>
@@ -40,23 +40,23 @@ static partial class MethodImplOptions
     /// Only one thread can execute in any of the instance functions,
     /// and only one thread can execute in any of a class's static functions.
     /// </summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions Synchronized =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions Synchronized =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 5);
 
     /// <summary>
     /// The method is not optimized by the just-in-time (JIT) compiler or by native code generation (see Ngen.exe)
     /// when debugging possible code generation problems.
     /// </summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions NoOptimization =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions NoOptimization =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 6);
 
     /// <summary>The method signature is exported exactly as declared.</summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions PreserveSig =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions PreserveSig =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 7);
 
     /// <summary>The method should be inlined if possible.</summary>
     [ComVisible(false)]
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions AggressiveInlining =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions AggressiveInlining =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 8);
 
     /// <summary>The method contains code that should always be optimized by the just-in-time (JIT) compiler.</summary>
@@ -68,13 +68,13 @@ static partial class MethodImplOptions
     /// They bypass the first tier of Tiered Compilation and therefore can't benefit from optimizations that rely on
     /// tiering, for example, Dynamic PGO or optimizations based on initialized classes.
     /// </para></remarks>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions AggressiveOptimization =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions AggressiveOptimization =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 9);
 
     /// <summary>
     /// The call is internal, that is, it calls a method that's implemented within the common language runtime.
     /// </summary>
-    internal const ms::System.Runtime.CompilerServices.MethodImplOptions InternalCall =
+    public const ms::System.Runtime.CompilerServices.MethodImplOptions InternalCall =
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 10);
 }
 #endif

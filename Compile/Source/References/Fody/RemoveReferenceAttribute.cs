@@ -15,6 +15,6 @@ sealed partial class RemoveReferenceAttribute : Attribute
     public RemoveReferenceAttribute(string fullName) => FullName = fullName;
 
     /// <summary>Gets an assembly's full name which has been stripped from this compiled binary.</summary>
-    internal string FullName { get; }
+    public string FullName { get; }
 }
 #endif

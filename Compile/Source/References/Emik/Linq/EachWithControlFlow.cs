@@ -5,7 +5,7 @@ namespace Emik.Morsels;
 
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
 // ReSharper disable LoopCanBePartlyConvertedToQuery
-static class EachWithControlFlow
+static partial class EachWithControlFlow
 {
 #if !NET7_0_OR_GREATER
     /// <summary>

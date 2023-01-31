@@ -13,21 +13,21 @@ namespace System.Diagnostics.CodeAnalysis
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
 #if !WAWA
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
-    [AttributeUsage(Field | Parameter | AttributeTargets.Property)]
-    sealed class AllowNullAttribute : Attribute { }
+    [AttributeUsage(Field | Parameter | Property)]
+    sealed partial class AllowNullAttribute : Attribute { }
 #endif
 
     /// <summary>Specifies that null is disallowed as an input even if the corresponding type allows it.</summary>
-    [AttributeUsage(Field | Parameter | AttributeTargets.Property)]
-    sealed class DisallowNullAttribute : Attribute { }
+    [AttributeUsage(Field | Parameter | Property)]
+    sealed partial class DisallowNullAttribute : Attribute { }
 
     /// <summary>Applied to a method that will never return under any circumstance.</summary>
     [AttributeUsage(Method, Inherited = false)]
-    sealed class DoesNotReturnAttribute : Attribute { }
+    sealed partial class DoesNotReturnAttribute : Attribute { }
 
     /// <summary>Specifies that the method will not return if the associated Boolean parameter is passed the specified value.</summary>
     [AttributeUsage(Parameter)]
-    sealed class DoesNotReturnIfAttribute : Attribute
+    sealed partial class DoesNotReturnIfAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DoesNotReturnIfAttribute"/> class
@@ -47,16 +47,16 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Specifies that an output may be null even if the corresponding type disallows it.</summary>
-    [AttributeUsage(Field | Parameter | AttributeTargets.Property | ReturnValue)]
-    sealed class MaybeNullAttribute : Attribute { }
+    [AttributeUsage(Field | Parameter | Property | ReturnValue)]
+    sealed partial class MaybeNullAttribute : Attribute { }
 
     /// <summary>Specifies that an output will not be null even if the corresponding type allows it. Specifies that an input argument was not null when the call returns.</summary>
-    [AttributeUsage(Field | Parameter | AttributeTargets.Property | ReturnValue)]
-    sealed class NotNullAttribute : Attribute { }
+    [AttributeUsage(Field | Parameter | Property | ReturnValue)]
+    sealed partial class NotNullAttribute : Attribute { }
 
     /// <summary>Specifies that when a method returns <see cref="ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
     [AttributeUsage(Parameter)]
-    sealed class MaybeNullWhenAttribute : Attribute
+    sealed partial class MaybeNullWhenAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MaybeNullWhenAttribute"/> class
@@ -78,7 +78,7 @@ namespace System.Diagnostics.CodeAnalysis
     /// the parameter will not be null even if the corresponding type allows it.
     /// </summary>
     [AttributeUsage(Parameter)]
-    sealed class NotNullWhenAttribute : Attribute
+    sealed partial class NotNullWhenAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NotNullWhenAttribute"/> class
@@ -96,8 +96,8 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Specifies that the output will be non-null if the named parameter is non-null.</summary>
-    [AttributeUsage(Parameter | AttributeTargets.Property | ReturnValue, AllowMultiple = true)]
-    sealed class NotNullIfNotNullAttribute : Attribute
+    [AttributeUsage(Parameter | Property | ReturnValue, AllowMultiple = true)]
+    sealed partial class NotNullIfNotNullAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NotNullIfNotNullAttribute"/> class
@@ -114,8 +114,8 @@ namespace System.Diagnostics.CodeAnalysis
 #endif
 #if NETFRAMEWORK || NETSTANDARD
     /// <summary>Specifies that the method or AttributeTargets.Property will ensure that the listed field and AttributeTargets.Property members have not-null values.</summary>
-    [AttributeUsage(Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    sealed class MemberNotNullAttribute : Attribute
+    [AttributeUsage(Method | Property, Inherited = false, AllowMultiple = true)]
+    sealed partial class MemberNotNullAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/> class with a field or AttributeTargets.Property member.
@@ -139,8 +139,8 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Specifies that the method or AttributeTargets.Property will ensure that the listed field and AttributeTargets.Property members have not-null values when returning with the specified return value condition.</summary>
-    [AttributeUsage(Method | AttributeTargets.Property, Inherited = false, AllowMultiple = true)]
-    sealed class MemberNotNullWhenAttribute : Attribute
+    [AttributeUsage(Method | Property, Inherited = false, AllowMultiple = true)]
+    sealed partial class MemberNotNullWhenAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullWhenAttribute"/> class
@@ -189,11 +189,11 @@ namespace System.Diagnostics.CodeAnalysis
     /// and callers do not need to set any required members themselves.
     /// </summary>
     [AttributeUsage(Constructor)]
-    sealed class SetsRequiredMembersAttribute : Attribute { }
+    sealed partial class SetsRequiredMembersAttribute : Attribute { }
 
     /// <summary>Specifies the syntax used in a string.</summary>
-    [AttributeUsage(Parameter | Field | AttributeTargets.Property)]
-    sealed class StringSyntaxAttribute : Attribute
+    [AttributeUsage(Parameter | Field | Property)]
+    sealed partial class StringSyntaxAttribute : Attribute
     {
         /// <summary>The syntax identifier for strings containing composite formats for string formatting.</summary>
         public const string CompositeFormat = nameof(CompositeFormat);
@@ -268,8 +268,8 @@ namespace System.Diagnostics.CodeAnalysis
     }
 
     /// <summary>Used to indicate a byref escapes and is not scoped.</summary>
-    [AttributeUsage(Method | AttributeTargets.Property | Parameter, Inherited = false)]
-    sealed class UnscopedRefAttribute : Attribute { }
+    [AttributeUsage(Method | Property | Parameter, Inherited = false)]
+    sealed partial class UnscopedRefAttribute : Attribute { }
 #endif
 }
 
@@ -297,7 +297,7 @@ namespace System.Runtime.CompilerServices
         Class | Struct | Interface | AttributeTargets.Delegate | AttributeTargets.Enum | Method,
         Inherited = false
     )]
-    sealed class AsyncMethodBuilderAttribute : Attribute
+    sealed partial class AsyncMethodBuilderAttribute : Attribute
     {
         /// <summary>Initializes a new instance of the <see cref="AsyncMethodBuilderAttribute"/> class.</summary>
         /// <param name="builderType">The <see cref="Type"/> of the associated builder.</param>
@@ -312,18 +312,18 @@ namespace System.Runtime.CompilerServices
     /// Indicates that a method is an extension method, or that a class or assembly contains extension methods.
     /// </summary>
     [AttributeUsage(Method | Class | AttributeTargets.Assembly)]
-    sealed class ExtensionAttribute : Attribute { }
+    sealed partial class ExtensionAttribute : Attribute { }
 #endif
 #if !NET6_0_OR_GREATER
     /// <summary>Indicates the attributed type is to be used as an interpolated string handler.</summary>
     [AttributeUsage(Class | Struct, Inherited = false)]
-    sealed class InterpolatedStringHandlerAttribute : Attribute { }
+    sealed partial class InterpolatedStringHandlerAttribute : Attribute { }
 
     /// <summary>
     /// Indicates which arguments to a method involving an interpolated string handler should be passed to that handler.
     /// </summary>
     [AttributeUsage(Parameter)]
-    sealed class InterpolatedStringHandlerArgumentAttribute : Attribute
+    sealed partial class InterpolatedStringHandlerArgumentAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="InterpolatedStringHandlerArgumentAttribute"/> class.
@@ -375,26 +375,26 @@ namespace System.Runtime.CompilerServices
     /// https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer.
     /// </para></remarks>
     [AttributeUsage(Method, Inherited = false)]
-    sealed class ModuleInitializerAttribute : Attribute { }
+    sealed partial class ModuleInitializerAttribute : Attribute { }
 #endif
 #if NETFRAMEWORK
     /// <inheritdoc />
     [AttributeUsage(Parameter)]
-    sealed class CallerFilePathAttribute : Attribute { }
+    sealed partial class CallerFilePathAttribute : Attribute { }
 
     /// <inheritdoc />
     [AttributeUsage(Parameter)]
-    sealed class CallerLineNumberAttribute : Attribute { }
+    sealed partial class CallerLineNumberAttribute : Attribute { }
 
     /// <inheritdoc />
     [AttributeUsage(Parameter)]
-    sealed class CallerMemberNameAttribute : Attribute { }
+    sealed partial class CallerMemberNameAttribute : Attribute { }
 #endif
 #if NETFRAMEWORK || NETSTANDARD
     /// <summary>Indicates that a parameter captures the expression passed for another parameter as a string.</summary>
     /// <remarks><para>This attribute is implemented in the compiler for C# 10 and later versions only.</para></remarks>
     [AttributeUsage(Parameter)]
-    sealed class CallerArgumentExpressionAttribute : Attribute
+    sealed partial class CallerArgumentExpressionAttribute : Attribute
     {
         /// <summary>Initializes a new instance of the <see cref="CallerArgumentExpressionAttribute"/> class.</summary>
         /// <param name="parameterName">The name of the parameter whose expression should be captured as a string.</param>
@@ -423,19 +423,19 @@ namespace System.Runtime.CompilerServices
         Interface |
         Constructor |
         Method |
-        AttributeTargets.Property |
-        AttributeTargets.Event,
+        Property |
+        Event,
         Inherited = false
     )]
-    sealed class SkipLocalsInitAttribute : Attribute { }
+    sealed partial class SkipLocalsInitAttribute : Attribute { }
 #endif
 #if !NET7_0_OR_GREATER
     /// <summary>
     /// Indicates that compiler support for a particular feature is
     /// required for the location where this attribute is applied.
     /// </summary>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    sealed class CompilerFeatureRequiredAttribute : Attribute
+    [AttributeUsage(All, AllowMultiple = true, Inherited = false)]
+    sealed partial class CompilerFeatureRequiredAttribute : Attribute
     {
         /// <summary>The <see cref="FeatureName"/> used for the ref structs C# feature.</summary>
         public const string RefStructs = nameof(RefStructs);
@@ -459,7 +459,7 @@ namespace System.Runtime.CompilerServices
 
     /// <summary>Specifies that a type has required members or that a member is required.</summary>
     [AttributeUsage(Constructor)]
-    sealed class RequiredMemberAttribute : Attribute { }
+    sealed partial class RequiredMemberAttribute : Attribute { }
 #endif
 }
 
@@ -477,16 +477,16 @@ namespace System.Runtime.CompilerServices
         Constructor |
         AttributeTargets.Delegate |
         AttributeTargets.Enum |
-        AttributeTargets.Event |
+        Event |
         Field |
         Interface |
         Method |
         AttributeTargets.Module |
-        AttributeTargets.Property |
+        Property |
         Struct,
         Inherited = false
     )]
-    sealed class RequiresPreviewFeaturesAttribute : Attribute
+    sealed partial class RequiresPreviewFeaturesAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RequiresPreviewFeaturesAttribute"/> class.

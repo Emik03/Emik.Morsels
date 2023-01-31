@@ -101,7 +101,7 @@ static partial class Conditionals
     /// is <see langword="false"/>, else <see langword="default"/>.
     /// </returns>
     [Pure]
-    internal static T? NotThen<T>(this bool value, T ifFalse) => value ? default : ifFalse;
+    public static T? NotThen<T>(this bool value, T ifFalse) => value ? default : ifFalse;
 
     /// <summary>Gives an optional value based on a condition.</summary>
     /// <remarks><para>The parameter is lazily evaluated.</para></remarks>
@@ -113,7 +113,7 @@ static partial class Conditionals
     /// is <see langword="false"/>, else <see langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static T? NotThen<T>(this bool value, Func<T> onFalse) => value ? default : onFalse();
+    public static T? NotThen<T>(this bool value, Func<T> onFalse) => value ? default : onFalse();
 
     /// <summary>Gives an optional value based on a condition.</summary>
     /// <remarks><para>The parameter is eagerly evaluated.</para></remarks>
@@ -125,7 +125,7 @@ static partial class Conditionals
     /// is <see langword="true"/>, else <see langword="default"/>.
     /// </returns>
     [Pure]
-    internal static T? Then<T>(this bool value, T onTrue) => value ? onTrue : default;
+    public static T? Then<T>(this bool value, T onTrue) => value ? onTrue : default;
 
     /// <summary>Gives an optional value based on a condition.</summary>
     /// <remarks><para>The parameter is lazily evaluated.</para></remarks>
@@ -137,7 +137,7 @@ static partial class Conditionals
     /// is <see langword="true"/>, else <see langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
-    internal static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
+    public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
 
 #if !NET20 && !NET30
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
@@ -145,7 +145,7 @@ static partial class Conditionals
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
+    public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
 #pragma warning disable CS8619
         iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
 #pragma warning restore CS8619
@@ -155,7 +155,7 @@ static partial class Conditionals
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
+    public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
         where T : struct =>
 #pragma warning disable CS8629
         iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();

@@ -27,12 +27,12 @@ static partial class PowerSetFactories
 
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<IEnumerable<T>> PowerSet<T>(this IReadOnlyCollection<T> collection) =>
+    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this IReadOnlyCollection<T> collection) =>
         collection.PowerSetInner(collection.Count);
 
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]
-    internal static IEnumerable<IEnumerable<T>> PowerSet<T>(this T[] collection) =>
+    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this T[] collection) =>
         ((ICollection<T>)collection).PowerSet();
 
     [LinqTunnel, Pure]

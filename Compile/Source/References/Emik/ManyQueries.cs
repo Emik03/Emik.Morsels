@@ -96,7 +96,7 @@ static partial class ManyQueries
     /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
     /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, IEnumerable<TResult?>?> map
     )
@@ -115,7 +115,7 @@ static partial class ManyQueries
     /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
     /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, int, IEnumerable<TResult?>?> map
     ) =>
@@ -132,7 +132,7 @@ static partial class ManyQueries
     /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
     /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, int, IEnumerable<TResult?>?> map
     )
@@ -150,7 +150,7 @@ static partial class ManyQueries
     /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
     /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, int, IEnumerable<TResult?>?> map
     )
@@ -168,7 +168,7 @@ static partial class ManyQueries
     /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
     /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, int, IEnumerable<TResult?>?> map
     )

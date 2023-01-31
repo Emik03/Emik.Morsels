@@ -337,7 +337,7 @@ static partial class Each
     /// <param name="func">The function for each loop.</param>
     /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
     [LinqTunnel, Pure]
-    internal static IEnumerable<TResult> For<TResult>(
+    public static IEnumerable<TResult> For<TResult>(
         [NonNegativeValue] this int upper,
         [InstantHandle] Converter<int, TResult> func
     ) =>
@@ -354,7 +354,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
+    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
     {
         for (var i = T.Zero; i < upper; i++)
@@ -373,7 +373,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
+    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
     {
         for (var i = T.Zero; i < upper; i++)
@@ -394,7 +394,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static T For<T, TExternal>(
+    public static T For<T, TExternal>(
         [NonNegativeValue] this T upper,
         TExternal external,
         [InstantHandle] Action<TExternal> action
@@ -419,7 +419,7 @@ static partial class Each
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    internal static T For<T, TExternal>(
+    public static T For<T, TExternal>(
         [NonNegativeValue] this T upper,
         TExternal external,
         [InstantHandle] Action<T, TExternal> action

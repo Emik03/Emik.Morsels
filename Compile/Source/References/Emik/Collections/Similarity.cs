@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 using static Math;
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
-static class Similarity
+static partial class Similarity
 {
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
