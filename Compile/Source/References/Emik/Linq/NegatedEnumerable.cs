@@ -80,41 +80,6 @@ static partial class NegatedEnumerable
     ) =>
         source.TakeWhile(Not2(predicate));
 
-    /// <summary>
-    /// Negated <see cref="IEnumerable.GetEnumerator"/>.
-    /// Creates an <see cref="IEnumerable{T}"/> encapsulating an <see cref="IEnumerator{T}"/>.
-    /// </summary>
-    /// <param name="iterator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-    /// <returns>An <see cref="IEnumerable{T}"/> encapsulating the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    public static IEnumerable<object?> ToEnumerable([InstantHandle] this IEnumerator? iterator)
-    {
-        if (iterator is null)
-            yield break;
-
-        while (iterator.MoveNext())
-            yield return iterator.Current;
-    }
-
-    /// <summary>
-    /// Negated <see cref="IEnumerable{T}.GetEnumerator"/>.
-    /// Creates an <see cref="IEnumerable{T}"/> encapsulating an <see cref="IEnumerator{T}"/>.
-    /// </summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-    /// <returns>An <see cref="IEnumerable{T}"/> encapsulating the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    public static IEnumerable<T> ToEnumerable<T>([InstantHandle] this IEnumerator<T>? iterator)
-    {
-        if (iterator is null)
-            yield break;
-
-        while (iterator.MoveNext())
-            yield return iterator.Current;
-
-        yield return iterator.Current;
-    }
-
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains elements from
