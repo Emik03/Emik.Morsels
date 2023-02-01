@@ -13,8 +13,8 @@
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
-        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
+        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
