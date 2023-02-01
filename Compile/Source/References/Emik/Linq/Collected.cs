@@ -8,12 +8,21 @@ static partial class Collected
 {
     /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
     /// <typeparam name="T">The type of item within the enumeration.</typeparam>
-    /// <param name="collection">The potentially empty collection.</param>
+    /// <param name="iterable">The potentially empty collection.</param>
     /// <param name="fallback">The fallback value.</param>
-    /// <returns>The parameter <paramref name="collection"/> if non-empty, or <paramref name="fallback"/>.</returns>
-    [Pure]
-    public static IEnumerable<T> DefaultIfEmpty<T>(this ICollection<T>? collection, IEnumerable<T> fallback) =>
-        collection is { Count: not 0 } ? collection : fallback;
+    /// <returns>The parameter <paramref name="iterable"/> if non-empty, or <paramref name="fallback"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> DefaultIfEmpty<T>(this IEnumerable<T>? iterable, IEnumerable<T> fallback)
+    {
+        using var a = iterable?.GetEnumerator();
+
+        if (a?.MoveNext() ?? false)
+            while (a.MoveNext())
+                yield return a.Current;
+
+        foreach (var b in fallback)
+            yield return b;
+    }
 
     /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
