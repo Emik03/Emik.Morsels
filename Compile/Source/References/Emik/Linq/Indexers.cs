@@ -31,6 +31,16 @@ static partial class Indexers
         Math.Abs(start - end) is var len &&
         start < end ? Enumerable.Range(start, len) : Enumerable.Repeat(start, len).Select((x, i) => x - i - 1);
 
+    /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="enumerable">The enumerable to split.</param>
+    /// <returns>The <see cref="KeyValuePair{TKey, TValue}"/> consisting of the head as key and tail as value.</returns>
+    [LinqTunnel, Pure]
+    public static KeyValuePair<T?, IEnumerable<T>> Cons<T>(this IEnumerable<T>? enumerable) =>
+        enumerable?.GetEnumerator() is { } enumerator
+            ? new(enumerator.MoveNext() ? enumerator.Current : default, enumerator.AsEnumerable())
+            : new(default, Enumerable.Empty<T>());
+
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
