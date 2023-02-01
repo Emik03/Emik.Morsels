@@ -17,7 +17,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static int For([NonNegativeValue] this int upper, [InstantHandle] Func<ControlFlow> func)
+    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<ControlFlow> func)
     {
         for (var i = 0; i < upper; i++)
             if (func() is ControlFlow.Break)
@@ -35,7 +35,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static int For([NonNegativeValue] this int upper, [InstantHandle] Func<int, ControlFlow> func)
+    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<int, ControlFlow> func)
     {
         for (var i = 0; i < upper; i++)
             if (func(i) is ControlFlow.Break)
@@ -55,7 +55,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static int For<TExternal>(
+    public static int BreakableFor<TExternal>(
         [NonNegativeValue] this int upper,
         TExternal external,
         [InstantHandle] Func<TExternal, ControlFlow> func
@@ -79,7 +79,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static int For<TExternal>(
+    public static int BreakableFor<TExternal>(
         [NonNegativeValue] this int upper,
         TExternal external,
         [InstantHandle] Func<int, TExternal, ControlFlow> func
@@ -102,7 +102,7 @@ static partial class EachWithControlFlow
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T>(
+    public static ICollection<T> BreakableFor<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<T, ControlFlow> func
     )
@@ -127,7 +127,7 @@ static partial class EachWithControlFlow
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T, TExternal>(
+    public static ICollection<T> BreakableFor<T, TExternal>(
         [InstantHandle] this IEnumerable<T> iterable,
         TExternal external,
         [InstantHandle] Func<T, TExternal, ControlFlow> func
@@ -151,7 +151,7 @@ static partial class EachWithControlFlow
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T>(
+    public static ICollection<T> BreakableFor<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<T, int, ControlFlow> func
     )
@@ -177,7 +177,7 @@ static partial class EachWithControlFlow
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
     /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T, TExternal>(
+    public static ICollection<T> BreakableFor<T, TExternal>(
         [InstantHandle] this IEnumerable<T> iterable,
         TExternal external,
         [InstantHandle] Func<T, int, TExternal, ControlFlow> func
@@ -203,7 +203,7 @@ static partial class EachWithControlFlow
     /// <param name="dictionary">The collection of items to go through one-by-one.</param>
     /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue>(
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Func<TKey, TValue, ControlFlow> func
     )
@@ -227,7 +227,7 @@ static partial class EachWithControlFlow
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         TExternal external,
         [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
@@ -250,7 +250,7 @@ static partial class EachWithControlFlow
     /// <param name="dictionary">The collection of items to go through one-by-one.</param>
     /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue>(
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Func<TKey, TValue, int, ControlFlow> func
     )
@@ -276,7 +276,7 @@ static partial class EachWithControlFlow
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
     /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
     /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         TExternal external,
         [InstantHandle] Func<TKey, TValue, int, TExternal, ControlFlow> func
@@ -302,7 +302,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
+    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
     {
         for (var i = T.Zero; i < upper; i++)
@@ -322,7 +322,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
+    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
         where T : IComparisonOperators<T, T, bool>, INumberBase<T>
     {
         for (var i = T.Zero; i < upper; i++)
@@ -344,7 +344,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static T For<T, TExternal>(
+    public static T BreakableFor<T, TExternal>(
         [NonNegativeValue] this T upper,
         TExternal external,
         [InstantHandle] Func<TExternal, ControlFlow> func
@@ -370,7 +370,7 @@ static partial class EachWithControlFlow
     /// <param name="func">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
-    public static T For<T, TExternal>(
+    public static T BreakableFor<T, TExternal>(
         [NonNegativeValue] this T upper,
         TExternal external,
         [InstantHandle] Func<T, TExternal, ControlFlow> func
