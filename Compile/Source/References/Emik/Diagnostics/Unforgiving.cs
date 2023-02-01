@@ -3,7 +3,7 @@
 
 global using static Emik.Morsels.Unforgiving;
 
-// ReSharper disable once RedundantUsingDirective.Global
+// ReSharper disable once CheckNamespace RedundantUsingDirective.Global
 namespace Emik.Morsels;
 
 /// <summary>Provides a reference for an <c>UnreachableException</c>.</summary>
