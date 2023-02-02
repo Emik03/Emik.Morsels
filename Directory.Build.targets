@@ -45,11 +45,10 @@
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
     </ItemGroup>
-    <!-- This is a roslyn analyzer. -->
-    <ItemGroup Condition="$(AssemblyName.Contains(&quot;Analyzer&quot;))">
+    <!-- Roslyn analyzer references. -->
+    <ItemGroup Condition="$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.2" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.2" PrivateAssets="all"/>
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all"/>
         <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.16.6" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.5.0-2.final" PrivateAssets="all"/>
     </ItemGroup>
