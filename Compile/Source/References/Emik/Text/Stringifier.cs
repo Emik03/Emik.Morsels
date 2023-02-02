@@ -26,6 +26,27 @@ static partial class Stringifier
 
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
 
+    static readonly Dictionary<Type, string> s_unfoldedNames = new()
+    {
+        [typeof(byte)] = "byte",
+        [typeof(char)] = "char",
+        [typeof(decimal)] = "decimal",
+        [typeof(double)] = "double",
+        [typeof(float)] = "float",
+        [typeof(int)] = "int",
+        [typeof(long)] = "long",
+        [typeof(nint)] = "nint",
+        [typeof(nuint)] = "nuint",
+        [typeof(object)] = "object",
+        [typeof(sbyte)] = "sbyte",
+        [typeof(short)] = "short",
+        [typeof(string)] = "string",
+        [typeof(uint)] = "uint",
+        [typeof(ulong)] = "ulong",
+        [typeof(ushort)] = "ushort",
+        [typeof(void)] = "void",
+    };
+
     static readonly ConstantExpression
         s_exEmpty = Expression.Constant(""),
         s_exFalse = Expression.Constant(false),
@@ -103,28 +124,10 @@ static partial class Stringifier
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
     [Pure]
-    public static string UnfoldedName(this Type? type)
-    {
-        if (type is null)
-            return Null;
-
-        if (!type.IsGenericType)
-            return type.Name;
-
-        var sb = new StringBuilder().Append(type.Name, 0, type.Name.IndexOf('`')).Append('<');
-
-        void Append(Type x)
-        {
-            sb.Append(',').Append(' ');
-            UnfoldedName(x, sb);
-        }
-
-        var (head, tail) = type.GetGenericArguments();
-        UnfoldedName(head, sb);
-        tail.For(Append);
-        sb.Append('>');
-        return $"{sb}";
-    }
+    public static string UnfoldedName(this Type? type) =>
+        type is null ? Null :
+        s_unfoldedNames.TryGetValue(type, out var val) ? val :
+        s_unfoldedNames[type] = type.IsGenericType ? $"{type.UnfoldedName(new())}" : type.Name;
 
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
@@ -193,24 +196,6 @@ static partial class Stringifier
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
 #endif
-    static void UnfoldedName(this Type? type, StringBuilder sb)
-    {
-        if (type is null)
-            return;
-
-        sb.Append(type.Name, 0, type.Name.IndexOf('`')).Append('<');
-
-        void Action5(Type x)
-        {
-            sb.Append(',').Append(' ');
-            UnfoldedName(x, sb);
-        }
-
-        var (head, tail) = type.GetGenericArguments();
-        UnfoldedName(head, sb);
-        tail.Lazily(Action5).Enumerate();
-        sb.Append('>');
-    }
 
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
@@ -333,6 +318,32 @@ static partial class Stringifier
             builder.Append(Separator).AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
 
         return builder;
+    }
+
+    static StringBuilder UnfoldedName(this Type? type, StringBuilder sb)
+    {
+        StringBuilder Append(Type x)
+        {
+            sb.Append(',').Append(' ');
+            return x.UnfoldedName(sb);
+        }
+
+        if (type is null)
+            return sb;
+
+        if (s_unfoldedNames.TryGetValue(type, out var val))
+            return sb.Append(val);
+
+        var name = type.Name;
+
+        if (!type.IsGenericType)
+            return sb.Append(name);
+
+        var len = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
+        var (head, tail) = type.GetGenericArguments();
+
+        head.UnfoldedName(sb.Append(name, 0, len).Append('<'));
+        return tail.Select(Append).EnumerateOr(sb).Append('>');
     }
 #endif
 }
