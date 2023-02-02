@@ -19,7 +19,9 @@ static partial class EnumeratorToEnumerable
     /// </returns>
     [LinqTunnel, Pure]
     public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
+#pragma warning disable IDISP004
         enumerator.AsGeneric().AsEnumerable();
+#pragma warning restore IDISP004
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside a <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
@@ -50,9 +52,9 @@ static partial class EnumeratorToEnumerable
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>Finalizes an instance of the <see cref="Enumerable{T}"/> class.</summary>
-#pragma warning disable MA0055
+#pragma warning disable MA0055, IDISP007, IDISP023
         ~Enumerable() => _enumerator.Dispose();
-#pragma warning restore MA0055
+#pragma warning restore MA0055, IDISP007, IDISP023
     }
 
     /// <summary>Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.</summary>
