@@ -41,6 +41,8 @@
     </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
+        <None Remove="$(AssemblyName).Generated.Tests/**"/>
+        <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
     </ItemGroup>
     <!-- This is a roslyn analyzer. -->
