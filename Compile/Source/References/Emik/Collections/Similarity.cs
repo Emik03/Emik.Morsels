@@ -19,9 +19,9 @@ static partial class Similarity
         string? right,
         IEqualityComparer<char>? comparer = null
     ) =>
-        left is null || right is null
-            ? left is null && right is null ? 1 : 0
-            : Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
+        ReferenceEquals(left, right) ? 1 :
+        left is null || right is null ? 0 :
+        Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
     /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
@@ -35,9 +35,9 @@ static partial class Similarity
         string? right,
         IEqualityComparer<char>? comparer = null
     ) =>
-        left is null || right is null
-            ? left is null && right is null ? 1 : 0
-            : JaroWinkler(left, right, static x => x.Length, static (x, i) => x[i], comparer);
+        ReferenceEquals(left, right) ? 1 :
+        left is null || right is null ? 0 :
+        JaroWinkler(left, right, static x => x.Length, static (x, i) => x[i], comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -51,9 +51,9 @@ static partial class Similarity
         IList<T>? right,
         IEqualityComparer<T>? comparer = null
     ) =>
-        left is null || right is null
-            ? left is null && right is null ? 1 : 0
-            : Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
+        ReferenceEquals(left, right) ? 1 :
+        left is null || right is null ? 0 :
+        Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
@@ -68,9 +68,9 @@ static partial class Similarity
         IList<T>? right,
         IEqualityComparer<T>? comparer = null
     ) =>
-        left is null || right is null
-            ? left is null && right is null ? 1 : 0
-            : JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
+        ReferenceEquals(left, right) ? 1 :
+        left is null || right is null ? 0 :
+        JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
