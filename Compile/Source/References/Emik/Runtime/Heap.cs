@@ -111,8 +111,8 @@ static partial class Heap
 
         for (var i = 0; i < times; i++)
             if (CountAllocation(heap, false) is not 0)
-                return false;
+                return true;
 
-        return true;
+        return false;
     }
 }
