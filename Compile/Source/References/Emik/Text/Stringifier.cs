@@ -34,7 +34,7 @@ static partial class Stringifier
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
-        s_stringify = ((Func<bool, bool, bool, string>)Stringify).Method.GetGenericMethodDefinition();
+        s_stringify = ((Func<bool, bool, bool, bool, string>)Stringify).Method.GetGenericMethodDefinition();
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
@@ -99,6 +99,33 @@ static partial class Stringifier
         return stringBuilder.ToString();
     }
 
+    /// <summary>Gets the type name, with its generics extended.</summary>
+    /// <param name="type">The <see cref="Type"/> to get the name of.</param>
+    /// <returns>The name of the parameter <paramref name="type"/>.</returns>
+    [Pure]
+    public static string UnfoldedName(this Type? type)
+    {
+        if (type is null)
+            return Null;
+
+        if (!type.IsGenericType)
+            return type.Name;
+
+        var sb = new StringBuilder().Append(type.Name, 0, type.Name.IndexOf('`')).Append('<');
+
+        void Append(Type x)
+        {
+            sb.Append(',').Append(' ');
+            UnfoldedName(x, sb);
+        }
+
+        var (head, tail) = type.GetGenericArguments();
+        UnfoldedName(head, sb);
+        tail.For(Append);
+        sb.Append('>');
+        return $"{sb}";
+    }
+
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="indexByZero">Determines whether to index from zero or one.</param>
@@ -124,7 +151,7 @@ static partial class Stringifier
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
-    public static string Stringify<T>(this T? source) => source.Stringify(false, true);
+    public static string Stringify<T>(this T? source) => source.Stringify(false, true, false);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -140,14 +167,18 @@ static partial class Stringifier
     /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
     /// </param>
     /// <param name="isRecursive">
-    /// Determines whether it re-calls <see cref="Stringify{T}(T, bool, bool)"/>
+    /// Determines whether it re-calls <see cref="Stringify{T}(T, bool, bool, bool)"/>
     /// on each property in <paramref name="source"/>.
+    /// </param>
+    /// <param name="forceReflection">
+    /// Determines whether it uses its own reflective stringification regardless of type.
     /// </param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
-    public static string Stringify<T>(this T? source, bool isSurrounded, bool isRecursive) =>
+    public static string Stringify<T>(this T? source, bool isSurrounded, bool isRecursive, bool forceReflection) =>
         source switch
         {
+            _ when forceReflection => source.UseStringifier(),
             null => Null,
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
@@ -162,6 +193,32 @@ static partial class Stringifier
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
 #endif
+    static void UnfoldedName(this Type? type, StringBuilder sb)
+    {
+        if (type is null)
+            return;
+
+        sb.Append(type.Name, 0, type.Name.IndexOf('`')).Append('<');
+
+        void Action5(Type x)
+        {
+            sb.Append(',').Append(' ');
+            UnfoldedName(x, sb);
+        }
+
+        var (head, tail) = type.GetGenericArguments();
+        UnfoldedName(head, sb);
+        tail.Lazily(Action5).Enumerate();
+        sb.Append('>');
+    }
+
+    // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+    [MustUseReturnValue]
+    static bool CanUse(PropertyInfo p) =>
+        p.CanRead &&
+        p.GetIndexParameters().Length is 0 &&
+        p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
+
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
 
@@ -175,20 +232,6 @@ static partial class Stringifier
             _ => Else,
         }}";
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    [Pure]
-    static StringBuilder DictionaryStringifier(this IDictionary dictionary)
-    {
-        var iterator = dictionary.GetEnumerator();
-        StringBuilder builder = new();
-
-        if (iterator.MoveNext())
-            builder.AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
-
-        while (iterator.MoveNext())
-            builder.Append(Separator).AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
-
-        return builder;
-    }
 
     [Pure]
     static StringBuilder EnumeratorStringifier(this IEnumerator iterator)
@@ -219,10 +262,16 @@ static partial class Stringifier
         if (s_hasMethods[typeof(T)] || !isRecursive)
             return source?.ToString() ?? Null;
 
+        return UseStringifier(source);
+    }
+
+    [MustUseReturnValue]
+    static string UseStringifier<T>(this T source)
+    {
         if (!s_stringifiers.ContainsKey(typeof(T)))
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
 
-        return $"{typeof(T).Name} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
+        return $"{typeof(T).UnfoldedName()} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
     }
 
     [MustUseReturnValue]
@@ -233,9 +282,9 @@ static partial class Stringifier
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var array = typeof(T)
            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-           .Where(p => p.CanRead && p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute)))
+           .Where(CanUse)
            .Select(p => GetMethodCaller(p, exParam))
-           .ToList();
+           .ToCollectionLazily();
 
         static MethodCallExpression Combine(MethodCallExpression prev, MethodCallExpression curr)
         {
@@ -266,9 +315,24 @@ static partial class Stringifier
 
         Expression
             exMember = Expression.MakeMemberAccess(param, info),
-            exCall = Expression.Call(method, exMember, s_exTrue, s_exFalse);
+            exCall = Expression.Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
 
         return Expression.Call(s_combine, exConstant, exCall);
+    }
+
+    [Pure]
+    static StringBuilder DictionaryStringifier(this IDictionary dictionary)
+    {
+        var iterator = dictionary.GetEnumerator();
+        StringBuilder builder = new();
+
+        if (iterator.MoveNext())
+            builder.AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
+
+        while (iterator.MoveNext())
+            builder.Append(Separator).AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
+
+        return builder;
     }
 #endif
 }
