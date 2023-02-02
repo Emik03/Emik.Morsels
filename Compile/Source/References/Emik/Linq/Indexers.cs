@@ -32,14 +32,25 @@ static partial class Indexers
         start < end ? Enumerable.Range(start, len) : Enumerable.Repeat(start, len).Select((x, i) => x - i - 1);
 
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
+    /// <remarks><para>
+    /// The tail is not guaranteed to be able to be enumerated over multiple times.
+    /// As such, use a method like <see cref="Collected.ToCollectionLazily{T}"/> if multiple enumerations are needed.
+    /// </para></remarks>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="enumerable">The enumerable to split.</param>
-    /// <returns>The <see cref="KeyValuePair{TKey, TValue}"/> consisting of the head as key and tail as value.</returns>
-    [LinqTunnel, Pure]
-    public static KeyValuePair<T?, IEnumerable<T>> Cons<T>(this IEnumerable<T>? enumerable) =>
-        enumerable?.GetEnumerator() is { } enumerator
-            ? new(enumerator.MoveNext() ? enumerator.Current : default, enumerator.AsEnumerable())
-            : new(default, Enumerable.Empty<T>());
+    /// <param name="head">The first element of the parameter <paramref name="enumerable"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
+    public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
+    {
+        head = default;
+        tail = Enumerable.Empty<T>();
+
+        if (enumerable?.GetEnumerator() is not { } enumerator)
+            return;
+
+        head = enumerator.MoveNext() ? enumerator.Current : default;
+        tail = enumerator.AsEnumerable();
+    }
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
