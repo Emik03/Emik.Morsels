@@ -256,7 +256,11 @@ static partial class Stringifier
         if (!s_stringifiers.ContainsKey(typeof(T)))
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
 
-        return $"{typeof(T).UnfoldedName()} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
+        var name = source?.GetType() is { } type && type != typeof(T)
+            ? $"{type.UnfoldedName()} as {typeof(T).UnfoldedName()}"
+            : typeof(T).UnfoldedName();
+
+        return $"{name} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
     }
 
     [MustUseReturnValue]
