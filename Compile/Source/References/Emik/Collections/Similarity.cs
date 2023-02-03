@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable SA1114
+#pragma warning disable 8500, SA1114
 using static Math;
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
@@ -71,6 +71,68 @@ static partial class Similarity
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
+
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure]
+    public static unsafe double Jaro<T>(
+        this ReadOnlySpan<T> left,
+        ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer = null
+    )
+    {
+        // ReSharper disable once WrongIndentSize
+#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
+        var l = left.Pointer;
+        var r = right.Pointer;
+#else
+        fixed (T* l = left)
+        fixed (T* r = right)
+#endif
+        return Jaro(
+            new Fat<T>(l, left.Length),
+            new(r, right.Length),
+            static x => x.Length,
+            static (x, i) => x[i],
+            comparer
+        );
+    }
+
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>Like <see cref="Jaro"/>, but with a bias to common prefixes.</para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure]
+    public static unsafe double JaroWinkler<T>(
+        this ReadOnlySpan<T> left,
+        ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer = null
+    )
+    {
+        // ReSharper disable once WrongIndentSize
+#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
+        var l = left.Pointer;
+        var r = right.Pointer;
+#else
+        fixed (T* l = left)
+        fixed (T* r = right)
+#endif
+        return JaroWinkler(
+            new Fat<T>(l, left.Length),
+            new(r, right.Length),
+            static x => x.Length,
+            static (x, i) => x[i],
+            comparer
+        );
+    }
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -335,5 +397,29 @@ static partial class Similarity
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroWinklerDistance([ValueRange(0, 1)] double jaroDistance, [NonNegativeValue] int prefixLength) =>
         jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
+
+    /// <summary>Represents a pointer with a length.</summary>
+    [StructLayout(LayoutKind.Auto)]
+    readonly unsafe struct Fat<T>
+    {
+        const string Message = "Value must be non-negative and less than the length.";
+
+        readonly T* _pointer;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Fat(T* pointer, int length)
+        {
+            _pointer = pointer;
+            Length = length;
+        }
+
+        public T this[int i]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get => (uint)i < (uint)Length ? _pointer[i] : throw new ArgumentOutOfRangeException(nameof(i), i, Message);
+        }
+
+        public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
+    }
 }
 #pragma warning restore SA1114
