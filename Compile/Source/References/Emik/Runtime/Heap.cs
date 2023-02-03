@@ -44,24 +44,38 @@ static partial class Heap
     {
         if (willWarmup)
             heap.Swallow();
-
+#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         var mode = GCSettings.LatencyMode;
-
+#endif
         try
         {
-            GCSettings.LatencyMode = GCLatencyMode.LowLatency;
-
+#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            GC.TryStartNoGCRegion(ushort.MaxValue, ushort.MaxValue);
+#else
+            GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+            var before = GC.GetTotalAllocatedBytes(true);
+#else
             var before = GC.GetTotalMemory(true);
-
+#endif
             heap.Swallow();
-
-            var after = GC.GetTotalMemory(false);
+#if NETCOREAPP3_0_OR_GREATER
+            var after = GC.GetTotalAllocatedBytes(true);
+#else
+            var after = GC.GetTotalMemory(false); // Prevents last-second garbage collection.
+#endif
 
             return after - before;
         }
         finally
         {
+#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            if (GCSettings.LatencyMode is GCLatencyMode.NoGCRegion)
+                GC.EndNoGCRegion();
+#else
             GCSettings.LatencyMode = mode;
+#endif
         }
     }
 
