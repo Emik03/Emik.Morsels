@@ -44,7 +44,7 @@ static partial class Heap
     {
         if (willWarmup)
             heap.Swallow();
-#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if !(NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER)
         var mode = GCSettings.LatencyMode;
 #endif
         try
@@ -52,7 +52,7 @@ static partial class Heap
 #if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
             GC.TryStartNoGCRegion(ushort.MaxValue, ushort.MaxValue);
 #else
-            GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+            GCSettings.LatencyMode = GCLatencyMode.LowLatency;
 #endif
 #if NETCOREAPP3_0_OR_GREATER
             var before = GC.GetTotalAllocatedBytes(true);
