@@ -3,18 +3,14 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
-#pragma warning disable 0809, MA0048
+#pragma warning disable 0809, 8500, MA0048
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
 readonly unsafe ref partial struct Span<T>
-    where T : unmanaged
 {
-    /// <summary>Gets the pointer representing the first element in the buffer.</summary>
-    readonly T* _pointer;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Span{T}"/> struct from a specified number of
     /// <typeparamref name="T"/> elements starting at a specified memory address.
@@ -27,7 +23,7 @@ readonly unsafe ref partial struct Span<T>
     {
         ValidateLength(length);
 
-        _pointer = (T*)pointer;
+        Pointer = (T*)pointer;
         Length = length;
     }
 
@@ -42,13 +38,13 @@ readonly unsafe ref partial struct Span<T>
         get
         {
             ValidateIndex(index);
-            return _pointer[index];
+            return Pointer[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ValidateIndex(index);
-            _pointer[index] = value;
+            Pointer[index] = value;
         }
     }
 
@@ -69,6 +65,18 @@ readonly unsafe ref partial struct Span<T>
     /// <summary>Gets the length of the current span.</summary>
     public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
 
+    /// <summary>Gets the pointer representing the first element in the buffer.</summary>
+    /// <remarks><para>
+    /// This property does not normally exist, and is used as a workaround polyfill for <c>GetPinnableReference</c>.
+    /// When using this property, ensure you have the appropriate preprocessors for using a fixed expression instead.
+    /// </para></remarks>
+    public T* Pointer
+    {
+        [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining),
+         NonNegativeValue, Pure]
+        get;
+    }
+
     /// <summary>Returns a value that indicates whether two <see cref="Span{T}"/> objects are equal.</summary>
     /// <remarks><para>
     /// Two <see cref="Span{T}"/> objects are equal if they have the same length and the corresponding elements of
@@ -82,7 +90,7 @@ readonly unsafe ref partial struct Span<T>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(Span<T> left, Span<T> right) =>
-        left.Length == right.Length && left._pointer == right._pointer;
+        left.Length == right.Length && left.Pointer == right.Pointer;
 
     /// <summary>Returns a value that indicates whether two <see cref="Span{T}"/> objects are not equal.</summary>
     /// <remarks><para>
@@ -101,7 +109,7 @@ readonly unsafe ref partial struct Span<T>
     /// <summary>Defines an implicit conversion of a <see cref="Span{T}"/> to a <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <param name="span">The object to convert to a <see cref="ReadOnlySpan{T}"/>.</param>
     /// <returns>A read-only span that corresponds to the current instance.</returns>
-    public static implicit operator ReadOnlySpan<T>(Span<T> span) => new(span._pointer, span.Length);
+    public static implicit operator ReadOnlySpan<T>(Span<T> span) => new(span.Pointer, span.Length);
 
     /// <summary>Clears the contents of this <see cref="Span{T}"/> object.</summary>
     /// <remarks><para>
@@ -109,7 +117,9 @@ readonly unsafe ref partial struct Span<T>
     /// It does not remove items from the <see cref="Span{T}"/>.
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable CS8604
     public void Clear() => Fill(default);
+#pragma warning restore CS8604
 
     /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="Span{T}"/>.</summary>
     /// <param name="destination">The destination <see cref="Span{T}"/> object.</param>
@@ -145,7 +155,7 @@ readonly unsafe ref partial struct Span<T>
     public void Fill(T value)
     {
         for (var i = 0; i < Length; i++)
-            _pointer[i] = value;
+            Pointer[i] = value;
     }
 
     /// <inheritdoc />
@@ -221,7 +231,7 @@ readonly unsafe ref partial struct Span<T>
     public Span<T> Slice([NonNegativeValue] int start) =>
         (uint)start > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start))
-            : new(_pointer + start, Length - start);
+            : new(Pointer + start, Length - start);
 
     /// <summary>Creates the slice of this buffer.</summary>
     /// <param name="start">The start of the slice from this buffer.</param>
@@ -233,7 +243,7 @@ readonly unsafe ref partial struct Span<T>
     public Span<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException()
-            : new(_pointer + start, length);
+            : new(Pointer + start, length);
 #pragma warning restore CA2208, MA0015
 
     /// <summary>Copies the contents of this span into a new array.</summary>
@@ -285,7 +295,7 @@ readonly unsafe ref partial struct Span<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     string CharsToString()
     {
-        Span<char> span = new(_pointer, Length);
+        Span<char> span = new(Pointer, Length);
         StringBuilder sb = new(Length);
 
         for (var i = 0; i < Length; i++)
@@ -345,11 +355,7 @@ readonly unsafe ref partial struct Span<T>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
 readonly unsafe ref partial struct ReadOnlySpan<T>
-    where T : unmanaged
 {
-    /// <summary>Gets the pointer representing the first element in the buffer.</summary>
-    readonly T* _pointer;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ReadOnlySpan{T}"/> struct from a specified number of
     /// <typeparamref name="T"/> elements starting at a specified memory address.
@@ -362,7 +368,7 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     {
         ValidateLength(length);
 
-        _pointer = (T*)pointer;
+        Pointer = (T*)pointer;
         Length = length;
     }
 
@@ -377,7 +383,7 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
         get
         {
             ValidateIndex(index);
-            return _pointer[index];
+            return Pointer[index];
         }
     }
 
@@ -398,6 +404,18 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     /// <summary>Gets the length of the current span.</summary>
     public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
 
+    /// <summary>Gets the pointer representing the first element in the buffer.</summary>
+    /// <remarks><para>
+    /// This property does not normally exist, and is used as a workaround polyfill for <c>GetPinnableReference</c>.
+    /// When using this property, ensure you have the appropriate preprocessors for using a fixed expression instead.
+    /// </para></remarks>
+    public T* Pointer
+    {
+        [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining),
+         NonNegativeValue, Pure]
+        get;
+    }
+
     /// <summary>Returns a value that indicates whether two <see cref="ReadOnlySpan{T}"/> objects are equal.</summary>
     /// <remarks><para>
     /// Two <see cref="ReadOnlySpan{T}"/> objects are equal if they have the same length and the corresponding elements
@@ -412,7 +430,7 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(ReadOnlySpan<T> left, ReadOnlySpan<T> right) =>
-        left.Length == right.Length && left._pointer == right._pointer;
+        left.Length == right.Length && left.Pointer == right.Pointer;
 
     /// <summary>
     /// Returns a value that indicates whether two <see cref="ReadOnlySpan{T}"/> objects are not equal.
@@ -533,7 +551,7 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     public ReadOnlySpan<T> Slice([NonNegativeValue] int start) =>
         (uint)start > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start))
-            : new(_pointer + start, Length - start);
+            : new(Pointer + start, Length - start);
 
     /// <summary>Creates the slice of this buffer.</summary>
     /// <param name="start">The start of the slice from this buffer.</param>
@@ -545,7 +563,7 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     public ReadOnlySpan<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException()
-            : new(_pointer + start, length);
+            : new(Pointer + start, length);
 #pragma warning restore CA2208, MA0015
 
     /// <summary>Copies the contents of this span into a new array.</summary>
@@ -598,7 +616,7 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     string CharsToString()
     {
-        ReadOnlySpan<char> span = new(_pointer, Length);
+        ReadOnlySpan<char> span = new(Pointer, Length);
         StringBuilder sb = new(Length);
 
         for (var i = 0; i < Length; i++)
@@ -655,7 +673,6 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
 /// <summary>Represents a debug view to this span.</summary>
 /// <typeparam name="T">The type of element in the span.</typeparam>
 sealed class SpanDebugView<T>
-    where T : unmanaged
 {
     /// <summary>Initializes a new instance of the <see cref="SpanDebugView{T}"/> class.</summary>
     /// <param name="span">The span to collect.</param>
