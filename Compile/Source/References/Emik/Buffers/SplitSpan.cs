@@ -8,12 +8,7 @@ namespace Emik.Morsels;
 static partial class SplitFactory
 #pragma warning restore MA0048
 {
-    /// <inheritdoc cref="SplitFrom{T}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<char> SplitFrom(this string s, string sep, IEqualityComparer<char>? comparer = null) =>
-        s.AsSpan().SplitFrom(sep.AsSpan(), comparer);
-
-    /// <inheritdoc cref="SplitFactory.SplitLines(ReadOnlySpan{char})"/>
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<char> SplitLines(this string s) => s.AsSpan().SplitLines();
 
@@ -24,7 +19,11 @@ static partial class SplitFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> s) => new(s, Whitespaces.Breaking.AsSpan());
 
-    /// <inheritdoc cref="SplitTerminated{T}"/>
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<char> SplitLines(this Span<char> s) => ((ReadOnlySpan<char>)s).SplitLines();
+
+    /// <inheritdoc cref="SplitTerminated{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<char> SplitTerminated(
         this string s,
@@ -33,7 +32,7 @@ static partial class SplitFactory
     ) =>
         s.AsSpan().SplitTerminated(sep.AsSpan(), comparer);
 
-    /// <inheritdoc cref="SplitFactory.SplitWhitespace(ReadOnlySpan{char})"/>
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<char> SplitWhitespace(this string s) => s.AsSpan().SplitWhitespace();
 
@@ -44,19 +43,9 @@ static partial class SplitFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> s) => new(s, Whitespaces.Unicode.AsSpan());
 
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="s">The span to split.</param>
-    /// <param name="sep">The separator.</param>
-    /// <param name="comparer">The comparer to use.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="s"/>.</returns>
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<T> SplitFrom<T>(
-        this ReadOnlySpan<T> s,
-        ReadOnlySpan<T> sep,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        new(s, sep, comparer, false);
+    public static SplitSpan<char> SplitWhitespace(this Span<char> s) => ((ReadOnlySpan<char>)s).SplitWhitespace();
 
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -71,6 +60,15 @@ static partial class SplitFactory
         IEqualityComparer<T>? comparer = null
     ) =>
         new(s, sep, comparer);
+
+    /// <inheritdoc cref="SplitTerminated{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<T> SplitTerminated<T>(
+        this Span<T> s,
+        ReadOnlySpan<T> sep,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        ((ReadOnlySpan<T>)s).SplitTerminated(sep, comparer);
 }
 #endif
 
@@ -83,26 +81,17 @@ readonly ref partial struct SplitSpan<T>
     /// <param name="span">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
     /// <param name="comparer">The comparison to determine when to split.</param>
-    /// <param name="isTerminated">When <see langword="true"/>, treat separator as a big pattern match.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitSpan(
         ReadOnlySpan<T> span,
         ReadOnlySpan<T> separator,
-        IEqualityComparer<T>? comparer = null,
-        bool isTerminated = true
+        IEqualityComparer<T>? comparer = null
     )
     {
-        IsTerminated = isTerminated;
         Comparer = comparer ?? EqualityComparer<T>.Default;
         Span = span;
         Separator = separator;
     }
-
-    /// <summary>
-    /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
-    /// or if all of them match.
-    /// </summary>
-    public bool IsTerminated { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>Gets the comparer that determines when to split.</summary>
     public IEqualityComparer<T> Comparer { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
@@ -121,64 +110,50 @@ readonly ref partial struct SplitSpan<T>
     [StructLayout(LayoutKind.Auto)]
     public ref partial struct Enumerator
     {
-        readonly SplitSpan<T> _span;
+        readonly SplitSpan<T> _split;
 
-        int _end;
+        int _end = -1;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
-        /// <param name="span">Tne entry to enumerate.</param>
+        /// <param name="split">Tne entry to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Enumerator(SplitSpan<T> span) => _span = span;
+        public Enumerator(SplitSpan<T> split) => _split = split;
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
 
         /// <inheritdoc cref="IEnumerator{T}.Reset"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => _end = 0;
+        public void Reset() => _end = -1;
 
         /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            var start = ++_end;
-            var result = _span.IsTerminated ? Terminated() : Full();
-
-            if (result)
-                Current = _span.Span[start.._end];
-
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool Full()
-        {
-            for (; _end < _span.Span.Length; _end++)
+            while (true)
             {
-                var limit = Math.Min(_span.Separator.Length, _span.Span.Length - _end);
+                var start = ++_end;
+                Terminate();
 
-                for (var sep = 0; sep < limit; sep++)
-                {
-                    if (!_span.Comparer.Equals(_span.Span[_end + sep], _span.Separator[sep]))
-                        break;
+                if (_end > _split.Span.Length)
+                    return false;
 
-                    if (sep - limit is -1)
-                        return true;
-                }
+                Current = _split.Span[start.._end];
+
+                if (Current.IsEmpty)
+                    continue;
+
+                return true;
             }
-
-            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool Terminated()
+        void Terminate()
         {
-            for (; _end < _span.Span.Length; _end++)
-                foreach (var t in _span.Separator)
-                    if (_span.Comparer.Equals(_span.Span[_end], t))
-                        return true;
-
-            return false;
+            for (; _end < _split.Span.Length; _end++)
+                foreach (var t in _split.Separator)
+                    if (_split.Comparer.Equals(_split.Span[_end], t))
+                        return;
         }
     }
 }
