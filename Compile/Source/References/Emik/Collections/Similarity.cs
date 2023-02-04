@@ -87,7 +87,7 @@ static partial class Similarity
     )
     {
         // ReSharper disable once WrongIndentSize
-#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
+#if !(NET461_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var l = left.Pointer;
         var r = right.Pointer;
 #else
@@ -118,7 +118,7 @@ static partial class Similarity
     )
     {
         // ReSharper disable once WrongIndentSize
-#if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
+#if !(NET461_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var l = left.Pointer;
         var r = right.Pointer;
 #else
