@@ -6,6 +6,7 @@
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
+
 namespace System.Diagnostics.CodeAnalysis
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
