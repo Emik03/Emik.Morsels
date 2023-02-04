@@ -21,6 +21,22 @@ static partial class Span
     public delegate void SpanAction<TSpan, in TParam>(in Span<TSpan> span, TParam param)
         where TSpan : unmanaged;
 
+    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(in Span<TSpan> span, in ReadOnlySpan<TParam> param)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    public delegate void SpanActionSpan<TSpan, TParam>(in Span<TSpan> span, in Span<TParam> param)
+        where TSpan : unmanaged;
+
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
@@ -37,6 +53,31 @@ static partial class Span
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(in Span<TSpan> span, TParam param)
+        where TSpan : unmanaged;
+
+    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
+        in Span<TSpan> span,
+        in ReadOnlySpan<TParam> param
+    )
+        where TSpan : unmanaged;
+
+    /// <summary>
+    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
+    /// </summary>
+    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
+    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="span">The allocated span.</param>
+    /// <param name="param">The span parameter.</param>
+    /// <returns>The returned value of this delegate.</returns>
+    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(in Span<TSpan> span, in Span<TParam> param)
         where TSpan : unmanaged;
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
@@ -241,47 +282,6 @@ static partial class Span
 
         return result;
     }
-#if !NETFRAMEWORK && !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
-    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(in Span<TSpan> span, in ReadOnlySpan<TParam> param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(in Span<TSpan> span, in Span<TParam> param)
-        where TSpan : unmanaged;
-
-    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        in Span<TSpan> span,
-        in ReadOnlySpan<TParam> param
-    )
-        where TSpan : unmanaged;
-
-    /// <summary>
-    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
-    /// </summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(in Span<TSpan> span, in Span<TParam> param)
-        where TSpan : unmanaged;
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -460,5 +460,4 @@ static partial class Span
 
         return result;
     }
-#endif
 }
