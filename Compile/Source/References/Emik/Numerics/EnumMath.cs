@@ -10,6 +10,17 @@ using static Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
+    static readonly Dictionary<Type, IList> _dictionary = new();
+
+    /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
+    /// <typeparam name="T">The type of enum to get the values from.</typeparam>
+    /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
+    public static IList<T> GetValues<T>()
+        where T : Enum =>
+        _dictionary.TryGetValue(typeof(T), out var list)
+            ? (IList<T>)list
+            : (T[])(_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
+
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -114,6 +125,24 @@ static partial class EnumMath
     public static T Modulo<T>(this T left, T right)
         where T : Enum =>
         left.Op(right, static (x, y) => x % y);
+
+    /// <summary>Computes the product of a sequence of <typeparamref name="T"/> values.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the product of.</param>
+    /// <returns>The product of the values in the sequence.</returns>
+    [Pure]
+    public static T Product<T>(this IEnumerable<T> source)
+        where T : Enum =>
+        source.Aggregate(Multiply);
+
+    /// <summary>Computes the sum of a sequence of <typeparamref name="T"/> values.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the sum of.</param>
+    /// <returns>The sum of the values in the sequence.</returns>
+    [Pure]
+    public static T Sum<T>(this IEnumerable<T> source)
+        where T : Enum =>
+        source.Aggregate(Add);
 
     [Pure]
     static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
