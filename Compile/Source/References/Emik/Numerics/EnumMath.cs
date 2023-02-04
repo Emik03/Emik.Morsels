@@ -10,16 +10,16 @@ using static Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
-    static readonly Dictionary<Type, IList> _dictionary = new();
+    static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
     /// <typeparam name="T">The type of enum to get the values from.</typeparam>
     /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
     public static IList<T> GetValues<T>()
         where T : Enum =>
-        _dictionary.TryGetValue(typeof(T), out var list)
+        s_dictionary.TryGetValue(typeof(T), out var list)
             ? (IList<T>)list
-            : (T[])(_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
+            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
