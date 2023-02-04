@@ -178,7 +178,12 @@ static partial class Stringifier
     /// </param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
-    public static string Stringify<T>(this T? source, bool isSurrounded, bool isRecursive, bool forceReflection) =>
+    public static string Stringify<T>(
+        this T? source,
+        bool isSurrounded,
+        bool isRecursive = true,
+        bool forceReflection = true
+    ) =>
         source switch
         {
             _ when forceReflection => source.UseStringifier(),
