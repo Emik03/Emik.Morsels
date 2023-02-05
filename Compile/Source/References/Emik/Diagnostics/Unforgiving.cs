@@ -14,6 +14,9 @@ static partial class Unforgiving
     /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>
     public static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");
 
+    /// <summary>Gets the <see cref="Exception"/> that represents unfinished logic.</summary>
+    public static NotImplementedException Todo { get; } = new();
+
     /// <summary>Gets the <see cref="Exception"/> that represents an unreachable state.</summary>
     public static UnreachableException Unreachable { get; } = new();
 }
