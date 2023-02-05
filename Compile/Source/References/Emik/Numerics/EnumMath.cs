@@ -12,14 +12,19 @@ static partial class EnumMath
 {
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
-    /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
-    /// <typeparam name="T">The type of enum to get the values from.</typeparam>
-    /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
-    public static IList<T> GetValues<T>()
+    /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="left"/> has the values
+    /// of the parameter <paramref name="right"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool Has<T>(this T left, T right)
         where T : Enum =>
-        s_dictionary.TryGetValue(typeof(T), out var list)
-            ? (IList<T>)list
-            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
+        left.Op(right, static (x, y) => (x & y) == y);
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -30,6 +35,15 @@ static partial class EnumMath
     public static int AsInt<T>(this T value)
         where T : Enum =>
         Caching<T>.From(value);
+
+    /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
+    /// <typeparam name="T">The type of enum to get the values from.</typeparam>
+    /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
+    public static IList<T> GetValues<T>()
+        where T : Enum =>
+        s_dictionary.TryGetValue(typeof(T), out var list)
+            ? (IList<T>)list
+            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -153,6 +167,15 @@ static partial class EnumMath
     static T Op<T>(this T left, T right, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
         where T : Enum =>
         op(left.AsInt(), right.AsInt()).As<T>();
+
+    [Pure]
+    static TResult Op<T, TResult>(
+        this T left,
+        T right,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, TResult> op
+    )
+        where T : Enum =>
+        op(left.AsInt(), right.AsInt());
 
     static class Caching<T>
         where T : Enum
