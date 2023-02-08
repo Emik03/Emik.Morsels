@@ -12,9 +12,9 @@ static partial class Headless
     /// <param name="head">The first element of the parameter <paramref name="collection"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="collection"/>.</param>
     public static void Deconstruct<T>(
-        this ICollection<T>? collection,
+        this IList<T>? collection,
         out T? head,
-        [NotNullIfNotNull(nameof(collection))] out ICollection<T>? tail
+        [NotNullIfNotNull(nameof(collection))] out IList<T>? tail
     )
     {
         head = collection is null ? default : collection.FirstOrDefault();
@@ -29,53 +29,78 @@ static partial class Headless
     /// </returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(collection))]
-    public static HeadlessCollection<T>? Tail<T>(this ICollection<T>? collection) =>
-        collection is null ? null : new(collection);
+    public static HeadlessList<T>? Tail<T>(this IList<T>? collection) => collection is null ? null : new(collection);
 }
 
-/// <summary>Represents a collection with no head.</summary>
-/// <typeparam name="T">The type of collection to encapsulate.</typeparam>
+/// <summary>Represents a list with no head.</summary>
+/// <typeparam name="T">The type of list to encapsulate.</typeparam>
 #pragma warning disable MA0048
-sealed partial class HeadlessCollection<T> : ICollection<T>
+sealed partial class HeadlessList<T> : IList<T>
 #pragma warning restore MA0048
 {
-    readonly ICollection<T> _collection;
+    readonly IList<T> _list;
 
-    /// <summary>Initializes a new instance of the <see cref="HeadlessCollection{T}"/> class.</summary>
-    /// <param name="collection">The collection to encapsulate.</param>
-    public HeadlessCollection(ICollection<T> collection) => _collection = collection;
-
-    /// <inheritdoc />
-    public bool IsReadOnly => _collection.IsReadOnly;
+    /// <summary>Initializes a new instance of the <see cref="HeadlessList{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    public HeadlessList(IList<T> list) => _list = list;
 
     /// <inheritdoc />
-    public int Count => _collection.Count - 1;
+    public T this[int index]
+    {
+        get => index is not -1 ? _list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
+        set => _list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
+    }
 
     /// <inheritdoc />
-    public void Add(T item) => _collection.Add(item);
+    public bool IsReadOnly => _list.IsReadOnly;
 
     /// <inheritdoc />
-    public void Clear() => _collection.Clear();
+    public int Count => _list.Count - 1;
+
+    /// <inheritdoc />
+    public void Add(T item) => _list.Add(item);
+
+    /// <inheritdoc />
+    public void Clear() => _list.Clear();
 
     /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex)
     {
-        using var a = GetEnumerator();
-
-        while (arrayIndex < array.Length && a.MoveNext())
-            array[arrayIndex++] = a.Current;
+        for (var i = 0; i < Count && arrayIndex + i < array.Length; i++)
+            array[arrayIndex + i] = this[i];
     }
 
     /// <inheritdoc />
-    public bool Contains(T item) => _collection.Contains(item);
+    public void Insert(int index, T item)
+    {
+        if (index is -1)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        _list.Insert(index + 1, item);
+    }
 
     /// <inheritdoc />
-    public bool Remove(T item) => _collection.Remove(item);
+    public void RemoveAt(int index)
+    {
+        if (index is not -1)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        _list.RemoveAt(index + 1);
+    }
+
+    /// <inheritdoc />
+    public bool Contains(T item) => _list.Contains(item);
+
+    /// <inheritdoc />
+    public bool Remove(T item) => _list.Remove(item);
+
+    /// <inheritdoc />
+    public int IndexOf(T item) => _list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator()
     {
-        var ret = ((IEnumerable)_collection).GetEnumerator();
+        var ret = ((IEnumerable)_list).GetEnumerator();
         ret.MoveNext();
         return ret;
     }
@@ -83,7 +108,7 @@ sealed partial class HeadlessCollection<T> : ICollection<T>
     /// <inheritdoc />
     public IEnumerator<T> GetEnumerator()
     {
-        var ret = _collection.GetEnumerator();
+        var ret = _list.GetEnumerator();
         ret.MoveNext();
         return ret;
     }
