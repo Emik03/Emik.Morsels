@@ -108,6 +108,8 @@ namespace Emik.Unions.Tagged { }
 
 namespace Fody { }
 
+namespace ILMerge { }
+
 namespace InlineIL { }
 
 namespace InlineMethod { }
