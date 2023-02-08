@@ -51,12 +51,12 @@
                 <Substitute/>
                 <Virtuosity/>
                 <PrecompiledRegex/>
-                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="InvariantCulture"/>
                 <InlineMethod/>
-                <Divorce/>
                 <Absence/>
+                <Divorce/>
+                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -74,11 +74,11 @@
                 <Substitute/>
                 <Virtuosity/>
                 <PrecompiledRegex/>
-                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="InvariantCulture"/>
                 <InlineMethod/>
                 <Absence/>
+                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -95,10 +95,10 @@
                 <Substitute/>
                 <Virtuosity/>
                 <PrecompiledRegex/>
-                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <InlineMethod/>
                 <Absence/>
+                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -116,12 +116,12 @@
                 <Substitute/>
                 <Virtuosity/>
                 <PrecompiledRegex/>
-                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="InvariantCulture"/>
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
                 <InlineMethod/>
                 <Absence/>
+                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>

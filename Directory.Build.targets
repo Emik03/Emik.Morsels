@@ -30,12 +30,12 @@
                 <NullGuard Mode="Implicit"/>
                 <Substitute/>
                 <Virtuosity/>
-                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="InvariantCulture"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
+                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
