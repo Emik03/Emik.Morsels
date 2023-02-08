@@ -18,9 +18,7 @@ static partial class ClippedFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as ClippedList<T> ?? new ClippedList<T>(iterable as IList<T> ?? iterable.ToList());
+        iterable is null ? null : iterable as ClippedList<T> ?? new(iterable.ToListLazily());
 }
 #endif
 

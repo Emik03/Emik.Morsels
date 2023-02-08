@@ -18,9 +18,7 @@ static partial class GuardedFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as GuardedList<T> ?? new GuardedList<T>(iterable as IList<T> ?? iterable.ToList());
+        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
 }
 #endif
 
