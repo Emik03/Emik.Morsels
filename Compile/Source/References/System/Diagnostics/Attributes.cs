@@ -556,3 +556,153 @@ namespace System.Runtime.CompilerServices
     }
 #endif
 }
+#if !NET7_0_OR_GREATER
+namespace System.Text.RegularExpressions
+{
+    /// <summary>
+    /// Instructs the System.Text.RegularExpressions source generator to
+    /// generate an implementation of the specified regular expression.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The generator associated with this attribute only supports C#. It only supplies an implementation when applied
+    /// to static, partial, parameterless, non-generic methods that are typed to return <see cref="Regex"/>.
+    /// </para>
+    /// <para>
+    /// When the <see cref="Regex"/> supports case-insensitive matches (either by passing
+    /// <see cref="RegexOptions.IgnoreCase"/> or using the inline <c>(?i)</c> switch in the pattern) the regex engines
+    /// will use an internal casing table to transform the passed in pattern into an equivalent case-sensitive one.
+    /// For example, given the pattern <c>abc</c>, the engines will transform it to the equivalent pattern
+    /// <c>[Aa][Bb][Cc]</c>. The equivalences found in this internal casing table can change over time, for example in
+    /// the case new characters are added to a new version of Unicode. When using the source generator, this
+    /// transformation happens at compile time, which means the casing table used to find the equivalences will depend
+    /// on the target framework at compile time. This differs from the rest of the <see cref="Regex"/> engines, which
+    /// perform this transformation at run-time, meaning they will always use casing table for the current runtime.
+    /// </para></remarks>
+    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+    public sealed class RegexGeneratorAttribute : Attribute
+    {
+        /// <summary>Initializes a new instance of the <see cref="GeneratedRegexAttribute"/> with the specified pattern.</summary>
+        /// <param name="pattern">The regular expression pattern to match.</param>
+        public RegexGeneratorAttribute([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
+            : this(pattern, RegexOptions.None) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
+        /// with the specified pattern and options.
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern to match.</param>
+        /// <param name="options">
+        /// A bitwise combination of the enumeration values that modify the regular expression.
+        /// </param>
+        public RegexGeneratorAttribute(
+            [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
+            RegexOptions options
+        )
+            : this(pattern, options, Timeout.Infinite) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
+        /// with the specified pattern and options.
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern to match.</param>
+        /// <param name="options">
+        /// A bitwise combination of the enumeration values that modify the regular expression.
+        /// </param>
+        /// <param name="cultureName">
+        /// The name of a culture to be used for case sensitive comparisons.
+        /// <paramref name="cultureName"/> is not case-sensitive.
+        /// </param>
+        /// <remarks><para>
+        /// For a list of predefined culture names on Windows systems, see the Language tag column in the
+        /// list of language/region names supported by Windows
+        /// (https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c).
+        /// Culture names follow the standard defined by BCP 47 (https://tools.ietf.org/html/bcp47). In addition,
+        /// starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
+        /// </para><para>
+        /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
+        /// </para></remarks>
+        public RegexGeneratorAttribute(
+            [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
+            RegexOptions options,
+            string cultureName
+        )
+            : this(pattern, options, Timeout.Infinite, cultureName) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
+        /// with the specified pattern, options, and timeout.
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern to match.</param>
+        /// <param name="options">
+        /// A bitwise combination of the enumeration values that modify the regular expression.
+        /// </param>
+        /// <param name="matchTimeoutMilliseconds">
+        /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+        /// to indicate that the method should not time out.
+        /// </param>
+        public RegexGeneratorAttribute(
+            [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
+            RegexOptions options,
+            int matchTimeoutMilliseconds
+        )
+            : this(pattern, options, matchTimeoutMilliseconds, "") { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
+        /// with the specified pattern, options, and timeout.
+        /// </summary>
+        /// <param name="pattern">The regular expression pattern to match.</param>
+        /// <param name="options">
+        /// A bitwise combination of the enumeration values that modify the regular expression.
+        /// </param>
+        /// <param name="matchTimeoutMilliseconds">
+        /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+        /// to indicate that the method should not time out.</param>
+        /// <param name="cultureName">
+        /// The name of a culture to be used for case sensitive comparisons.
+        /// <paramref name="cultureName"/> is not case-sensitive.
+        /// </param>
+        /// <remarks><para>
+        /// For a list of predefined culture names on Windows systems, see the Language tag column in the list of
+        /// language/region names supported by Windows
+        /// (https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c).
+        /// Culture names follow the standard defined by BCP 47 (https://tools.ietf.org/html/bcp47). In addition,
+        /// starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
+        /// </para><para>
+        /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
+        /// </para></remarks>
+        public RegexGeneratorAttribute(
+            [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
+            RegexOptions options,
+            int matchTimeoutMilliseconds,
+            string cultureName
+        )
+        {
+            Pattern = pattern;
+            Options = options;
+            MatchTimeoutMilliseconds = matchTimeoutMilliseconds;
+            CultureName = cultureName;
+        }
+
+        /// <summary>
+        /// Gets a time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
+        /// to indicate that the method should not time out.
+        /// </summary>
+        [Pure]
+        public int MatchTimeoutMilliseconds { get; }
+
+        /// <summary>Gets the name of the culture to be used for case sensitive comparisons.</summary>
+        [Pure]
+        public string CultureName { get; }
+
+        /// <summary>Gets the regular expression pattern to match.</summary>
+        [Pure]
+        public string Pattern { get; }
+
+        /// <summary>Gets a bitwise combination of the enumeration values that modify the regular expression.</summary>
+        [Pure]
+        public RegexOptions Options { get; }
+    }
+}
+#endif
