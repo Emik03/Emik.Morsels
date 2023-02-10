@@ -580,22 +580,24 @@ namespace System.Text.RegularExpressions
     /// perform this transformation at run-time, meaning they will always use casing table for the current runtime.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public sealed class RegexGeneratorAttribute : Attribute
+    public sealed class GeneratedRegexAttribute : Attribute
     {
-        /// <summary>Initializes a new instance of the <see cref="GeneratedRegexAttribute"/> with the specified pattern.</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/> class with the specified pattern.
+        /// </summary>
         /// <param name="pattern">The regular expression pattern to match.</param>
-        public RegexGeneratorAttribute([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
+        public GeneratedRegexAttribute([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
             : this(pattern, RegexOptions.None) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
-        /// with the specified pattern and options.
+        /// class with the specified pattern and options.
         /// </summary>
         /// <param name="pattern">The regular expression pattern to match.</param>
         /// <param name="options">
         /// A bitwise combination of the enumeration values that modify the regular expression.
         /// </param>
-        public RegexGeneratorAttribute(
+        public GeneratedRegexAttribute(
             [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
             RegexOptions options
         )
@@ -603,7 +605,7 @@ namespace System.Text.RegularExpressions
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
-        /// with the specified pattern and options.
+        /// class with the specified pattern and options.
         /// </summary>
         /// <param name="pattern">The regular expression pattern to match.</param>
         /// <param name="options">
@@ -622,7 +624,7 @@ namespace System.Text.RegularExpressions
         /// </para><para>
         /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
         /// </para></remarks>
-        public RegexGeneratorAttribute(
+        public GeneratedRegexAttribute(
             [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
             RegexOptions options,
             string cultureName
@@ -631,7 +633,7 @@ namespace System.Text.RegularExpressions
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
-        /// with the specified pattern, options, and timeout.
+        /// class with the specified pattern, options, and timeout.
         /// </summary>
         /// <param name="pattern">The regular expression pattern to match.</param>
         /// <param name="options">
@@ -641,7 +643,7 @@ namespace System.Text.RegularExpressions
         /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
         /// to indicate that the method should not time out.
         /// </param>
-        public RegexGeneratorAttribute(
+        public GeneratedRegexAttribute(
             [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
             RegexOptions options,
             int matchTimeoutMilliseconds
@@ -650,7 +652,7 @@ namespace System.Text.RegularExpressions
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/>
-        /// with the specified pattern, options, and timeout.
+        /// class with the specified pattern, options, and timeout.
         /// </summary>
         /// <param name="pattern">The regular expression pattern to match.</param>
         /// <param name="options">
@@ -672,7 +674,7 @@ namespace System.Text.RegularExpressions
         /// </para><para>
         /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
         /// </para></remarks>
-        public RegexGeneratorAttribute(
+        public GeneratedRegexAttribute(
             [StringSyntax(StringSyntaxAttribute.Regex, nameof(options))] string pattern,
             RegexOptions options,
             int matchTimeoutMilliseconds,
