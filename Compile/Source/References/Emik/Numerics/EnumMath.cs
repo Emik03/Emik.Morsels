@@ -24,7 +24,7 @@ static partial class EnumMath
     [Pure]
     public static bool Has<T>(this T left, T right)
         where T : Enum =>
-        left.Op(right, static (x, y) => (x & y) == y);
+        left.Op(right, static (x, y) => (x & y) == x);
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
