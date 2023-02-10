@@ -4,6 +4,7 @@
 namespace Emik.Morsels;
 #pragma warning disable 8500, SA1114
 using static Math;
+using static Span;
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity
@@ -267,11 +268,13 @@ static partial class Similarity
             leftLength is 0 || rightLength is 0 ? 0 :
                 leftLength is 1 && rightLength is 1 ?
                     comparer.Equals(indexer(left, 0), indexer(right, 0)) ? 1 : 0 :
-                    Span.Allocate(
-                        rightLength,
-                        (left, right, leftLength, rightLength, indexer, comparer),
-                        JaroAllocated
-                    );
+                    Allocate(rightLength, (left, right, leftLength, rightLength, indexer, comparer), Fun<T, TItem>());
+
+    static SpanFunc<byte, (T, T, int, int, Func<T, int, TItem>, IEqualityComparer<TItem>), double> Fun<T, TItem>() =>
+        static (
+            in Span<byte> span,
+            (T, T, int, int, Func<T, int, TItem>, IEqualityComparer<TItem>) tuple
+        ) => JaroAllocated(in span, tuple);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
