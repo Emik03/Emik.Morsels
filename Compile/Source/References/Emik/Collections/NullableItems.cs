@@ -26,6 +26,13 @@ static partial class NullableItems
     public static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
 
 #if !NET20 && !NET30
+    /// <summary>Allows for more fluent ways to treat nullable iterators as empty ones.</summary>
+    /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to do a null check on.</param>
+    /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [Pure]
+    public static IEnumerable<T> OrEmpty<T>(this IEnumerable<T>? iterable) => iterable ?? Enumerable.Empty<T>();
+
     /// <summary>Returns the list if all items are non-null.</summary>
     /// <typeparam name="T">The type of list.</typeparam>
     /// <param name="list">The list to filter.</param>
