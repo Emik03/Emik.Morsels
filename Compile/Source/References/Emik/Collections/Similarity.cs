@@ -274,7 +274,7 @@ static partial class Similarity
         static (
             in Span<byte> span,
             (T, T, int, int, Func<T, int, TItem>, IEqualityComparer<TItem>) tuple
-        ) => JaroAllocated(in span, tuple);
+        ) => JaroAllocated(span, tuple);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
