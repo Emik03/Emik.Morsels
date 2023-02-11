@@ -87,6 +87,41 @@ static partial class TryTake
         dictionary.TryGetValue(key, out var value) ? value : default;
 
 #if !NET20 && !NET30
+    /// <summary>Returns the item, or a fallback.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="self">The item to potentially return.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The parameter <paramref name="self"/>, or <paramref name="fallback"/>.</returns>
+    [Pure]
+    public static T Or<T>(this T? self, T fallback)
+        where T : class =>
+        self ?? fallback;
+
+    /// <summary>Returns the item, or a fallback.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="self">The item to potentially return.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The parameter <paramref name="self"/>, or <paramref name="fallback"/>.</returns>
+    [Pure]
+    public static T Or<T>(this T? self, T fallback)
+        where T : struct =>
+        self ?? fallback;
+
+    /// <summary>Returns the item, or a fallback.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="self">The item to potentially return.</param>
+    /// <returns>The parameter <paramref name="self"/>, or a new instance.</returns>
+    [Pure]
+    public static T OrNew<T>(this T? self)
+        where T : class, new() =>
+        self ?? new();
+
+    /// <summary>Returns the string, or an empty string.</summary>
+    /// <param name="str">The string to potentially return.</param>
+    /// <returns>The parameter <paramref name="str"/>, or <see cref="string.Empty"/>.</returns>
+    [Pure]
+    public static string OrEmpty(this string? str) => str ?? "";
+
     /// <summary>Returns the enumeration, or an empty enumeration.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The enumeration to potentially return.</param>
