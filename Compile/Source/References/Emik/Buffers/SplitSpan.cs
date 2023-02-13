@@ -122,11 +122,11 @@ readonly ref partial struct SplitSpan<T>
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; private set; }
 
-        /// <inheritdoc cref="IEnumerator{T}.Reset"/>
+        /// <inheritdoc cref="IEnumerator.Reset"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _end = -1;
 
-        /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
+        /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
