@@ -55,25 +55,6 @@ static partial class Conditionals
 
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="value">The value to check.</param>
-    /// <param name="ifFalse">The value to invoke when <see langword="false"/>.</param>
-    /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
-    /// <returns>The parameter <paramref name="value"/>.</returns>
-    public static bool NotThen(
-        this bool value,
-        [InstantHandle] Action ifFalse,
-        [InstantHandle] Action? ifTrue = null
-    )
-    {
-        if (value)
-            ifTrue?.Invoke();
-        else
-            ifFalse();
-
-        return value;
-    }
-
-    /// <summary>Conditionally invokes based on a condition.</summary>
-    /// <param name="value">The value to check.</param>
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <param name="ifFalse">The value to invoke when <see langword="false"/>.</param>
     /// <returns>The parameter <paramref name="value"/>.</returns>
@@ -90,30 +71,6 @@ static partial class Conditionals
 
         return value;
     }
-
-    /// <summary>Gives an optional value based on a condition.</summary>
-    /// <remarks><para>The parameter is eagerly evaluated.</para></remarks>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The value to check.</param>
-    /// <param name="ifFalse">The value to return when <see langword="false"/>.</param>
-    /// <returns>
-    /// The value <paramref name="ifFalse"/> if <paramref name="value"/>
-    /// is <see langword="false"/>, else <see langword="default"/>.
-    /// </returns>
-    [Pure]
-    public static T? NotThen<T>(this bool value, T ifFalse) => value ? default : ifFalse;
-
-    /// <summary>Gives an optional value based on a condition.</summary>
-    /// <remarks><para>The parameter is lazily evaluated.</para></remarks>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The value to check.</param>
-    /// <param name="onFalse">The value to invoke when <see langword="false"/>.</param>
-    /// <returns>
-    /// The value returned from <paramref name="onFalse"/> if <paramref name="value"/>
-    /// is <see langword="false"/>, else <see langword="default"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    public static T? NotThen<T>(this bool value, Func<T> onFalse) => value ? default : onFalse();
 
     /// <summary>Gives an optional value based on a condition.</summary>
     /// <remarks><para>The parameter is eagerly evaluated.</para></remarks>
