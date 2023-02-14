@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
-#if !(NET461_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 0809, 8500, MA0048
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
