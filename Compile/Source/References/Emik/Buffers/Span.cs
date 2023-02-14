@@ -10,7 +10,7 @@ static partial class Span
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <param name="span">The allocated span.</param>
-    public delegate void SpanAction<TSpan>(in Span<TSpan> span)
+    public delegate void SpanAction<TSpan>(Span<TSpan> span)
         where TSpan : unmanaged;
 
     /// <summary>A callback for a span with a reference parameter.</summary>
@@ -18,7 +18,7 @@ static partial class Span
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
-    public delegate void SpanAction<TSpan, in TParam>(in Span<TSpan> span, TParam param)
+    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
         where TSpan : unmanaged;
 
     /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
@@ -26,7 +26,7 @@ static partial class Span
     /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(in Span<TSpan> span, in ReadOnlySpan<TParam> param)
+    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param)
 #if UNMANAGED_SPAN
         where TParam : unmanaged
 #endif
@@ -37,7 +37,7 @@ static partial class Span
     /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(in Span<TSpan> span, in Span<TParam> param)
+    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param)
 #if UNMANAGED_SPAN
         where TParam : unmanaged
 #endif
@@ -48,7 +48,7 @@ static partial class Span
     /// <typeparam name="TResult">The resulting type.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(in Span<TSpan> span)
+    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span)
         where TSpan : unmanaged;
 
     /// <summary>A callback for a span with a reference parameter with a return value.</summary>
@@ -58,7 +58,7 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(in Span<TSpan> span, TParam param)
+    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
         where TSpan : unmanaged;
 
     /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
@@ -69,8 +69,8 @@ static partial class Span
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        in Span<TSpan> span,
-        in ReadOnlySpan<TParam> param
+        Span<TSpan> span,
+        ReadOnlySpan<TParam> param
     )
 #if UNMANAGED_SPAN
         where TParam : unmanaged
@@ -86,7 +86,7 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(in Span<TSpan> span, in Span<TParam> param)
+    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param)
 #if UNMANAGED_SPAN
         where TParam : unmanaged
 #endif
