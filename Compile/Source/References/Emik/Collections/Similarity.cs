@@ -86,6 +86,9 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer = null
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         // ReSharper disable once WrongIndentSize
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
@@ -117,6 +120,9 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer = null
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         // ReSharper disable once WrongIndentSize
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY

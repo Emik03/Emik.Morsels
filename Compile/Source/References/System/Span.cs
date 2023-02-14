@@ -10,6 +10,9 @@ namespace System;
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
 readonly unsafe ref partial struct Span<T>
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Span{T}"/> struct from a specified number of
@@ -355,6 +358,9 @@ readonly unsafe ref partial struct Span<T>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
 readonly unsafe ref partial struct ReadOnlySpan<T>
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ReadOnlySpan{T}"/> struct from a specified number of
@@ -673,6 +679,9 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
 /// <summary>Represents a debug view to this span.</summary>
 /// <typeparam name="T">The type of element in the span.</typeparam>
 sealed class SpanDebugView<T>
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
 {
     /// <summary>Initializes a new instance of the <see cref="SpanDebugView{T}"/> class.</summary>
     /// <param name="span">The span to collect.</param>

@@ -76,6 +76,9 @@ static partial class SplitFactory
 /// <typeparam name="T">The type of element from the span.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 readonly ref partial struct SplitSpan<T>
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
 {
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="span">The line to split.</param>

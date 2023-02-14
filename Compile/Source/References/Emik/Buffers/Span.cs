@@ -27,6 +27,9 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
     public delegate void SpanActionReadOnlySpan<TSpan, TParam>(in Span<TSpan> span, in ReadOnlySpan<TParam> param)
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
         where TSpan : unmanaged;
 
     /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
@@ -35,6 +38,9 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
     public delegate void SpanActionSpan<TSpan, TParam>(in Span<TSpan> span, in Span<TParam> param)
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
         where TSpan : unmanaged;
 
     /// <summary>A callback for a span with a return value.</summary>
@@ -66,6 +72,9 @@ static partial class Span
         in Span<TSpan> span,
         in ReadOnlySpan<TParam> param
     )
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
         where TSpan : unmanaged;
 
     /// <summary>
@@ -78,6 +87,9 @@ static partial class Span
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(in Span<TSpan> span, in Span<TParam> param)
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
         where TSpan : unmanaged;
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
@@ -293,8 +305,12 @@ static partial class Span
         int length,
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<byte, TParam> del
-    ) =>
-        Allocate<byte, TParam>(length, param, del);
+    )
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
+        =>
+            Allocate<byte, TParam>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -309,6 +325,9 @@ static partial class Span
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
     {
         var value = Math.Max(length, 0);
 
@@ -335,8 +354,12 @@ static partial class Span
         int length,
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<byte, TParam> del
-    ) =>
-        Allocate<byte, TParam>(length, param, del);
+    )
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
+        =>
+            Allocate<byte, TParam>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -351,6 +374,9 @@ static partial class Span
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
     {
         var value = Math.Max(length, 0);
 
@@ -380,8 +406,12 @@ static partial class Span
         int length,
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<byte, TParam, TResult> del
-    ) =>
-        Allocate<byte, TParam, TResult>(length, param, del);
+    )
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
+        =>
+            Allocate<byte, TParam, TResult>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -399,6 +429,9 @@ static partial class Span
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<TSpan, TParam, TResult> del
     )
         where TSpan : unmanaged
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
     {
         var value = Math.Max(length, 0);
 
@@ -427,8 +460,12 @@ static partial class Span
         int length,
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<byte, TParam, TResult> del
-    ) =>
-        Allocate<byte, TParam, TResult>(length, param, del);
+    )
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
+        =>
+            Allocate<byte, TParam, TResult>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -446,6 +483,9 @@ static partial class Span
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<TSpan, TParam, TResult> del
     )
         where TSpan : unmanaged
+#if UNMANAGED_SPAN
+        where TParam : unmanaged
+#endif
     {
         var value = Math.Max(length, 0);
 
