@@ -7,8 +7,7 @@ namespace System;
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
-[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
- StructLayout(LayoutKind.Auto)]
+[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Auto)]
 readonly unsafe
 #if !NO_REF_STRUCTS
     ref
@@ -45,13 +44,13 @@ readonly unsafe
         get
         {
             ValidateIndex(index);
-            return Pointer[index];
+            return ((T*)Pointer)[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ValidateIndex(index);
-            Pointer[index] = value;
+            ((T*)Pointer)[index] = value;
         }
     }
 
@@ -76,8 +75,12 @@ readonly unsafe
     /// <remarks><para>
     /// This property does not normally exist, and is used as a workaround polyfill for <c>GetPinnableReference</c>.
     /// When using this property, ensure you have the appropriate preprocessors for using a fixed expression instead.
+    /// </para><para>
+    /// Due to a specific runtime issue, this property cannot be generic, as this causes some JITs
+    /// (notably .NET Framework) to be upset from its metadata and refuse to load. It is therefore expected of the
+    /// caller to cast the returned pointer every time if needed.
     /// </para></remarks>
-    public T* Pointer
+    public void* Pointer
     {
         [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining),
          NonNegativeValue, Pure]
@@ -162,7 +165,7 @@ readonly unsafe
     public void Fill(T value)
     {
         for (var i = 0; i < Length; i++)
-            Pointer[i] = value;
+            ((T*)Pointer)[i] = value;
     }
 
 #if !NO_REF_STRUCTS
@@ -242,7 +245,7 @@ readonly unsafe
     public Span<T> Slice([NonNegativeValue] int start) =>
         (uint)start > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start))
-            : new(Pointer + start, Length - start);
+            : new((T*)Pointer + start, Length - start);
 
     /// <summary>Creates the slice of this buffer.</summary>
     /// <param name="start">The start of the slice from this buffer.</param>
@@ -254,7 +257,7 @@ readonly unsafe
     public Span<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException()
-            : new(Pointer + start, length);
+            : new((T*)Pointer + start, length);
 #pragma warning restore CA2208, MA0015
 
     /// <summary>Copies the contents of this span into a new array.</summary>
@@ -320,7 +323,7 @@ readonly unsafe
 #pragma warning disable CA1034
     public
 #if !NO_REF_STRUCTS
-    ref
+        ref
 #endif
         partial struct Enumerator
 #pragma warning restore CA1034
@@ -367,8 +370,7 @@ readonly unsafe
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="ReadOnlySpan{T}"/>.</typeparam>
-[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
- StructLayout(LayoutKind.Auto)]
+[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Auto)]
 readonly unsafe
 #if !NO_REF_STRUCTS
     ref
@@ -405,7 +407,7 @@ readonly unsafe
         get
         {
             ValidateIndex(index);
-            return Pointer[index];
+            return ((T*)Pointer)[index];
         }
     }
 
@@ -430,8 +432,12 @@ readonly unsafe
     /// <remarks><para>
     /// This property does not normally exist, and is used as a workaround polyfill for <c>GetPinnableReference</c>.
     /// When using this property, ensure you have the appropriate preprocessors for using a fixed expression instead.
+    /// </para><para>
+    /// Due to a specific runtime issue, this property cannot be generic, as this causes some JITs
+    /// (notably .NET Framework) to be upset from its metadata and refuse to load. It is therefore expected of the
+    /// caller to cast the returned pointer every time if needed.
     /// </para></remarks>
-    public T* Pointer
+    public void* Pointer
     {
         [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining),
          NonNegativeValue, Pure]
@@ -577,7 +583,7 @@ readonly unsafe
     public ReadOnlySpan<T> Slice([NonNegativeValue] int start) =>
         (uint)start > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start))
-            : new(Pointer + start, Length - start);
+            : new((T*)Pointer + start, Length - start);
 
     /// <summary>Creates the slice of this buffer.</summary>
     /// <param name="start">The start of the slice from this buffer.</param>
@@ -589,7 +595,7 @@ readonly unsafe
     public ReadOnlySpan<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException()
-            : new(Pointer + start, length);
+            : new((T*)Pointer + start, length);
 #pragma warning restore CA2208, MA0015
 
     /// <summary>Copies the contents of this span into a new array.</summary>
@@ -656,7 +662,7 @@ readonly unsafe
 #pragma warning disable CA1034
     public
 #if !NO_REF_STRUCTS
-    ref
+        ref
 #endif
         partial struct Enumerator
 #pragma warning restore CA1034

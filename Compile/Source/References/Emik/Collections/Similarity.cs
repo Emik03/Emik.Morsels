@@ -408,12 +408,12 @@ static partial class Similarity
     [StructLayout(LayoutKind.Auto)]
     readonly unsafe partial struct Fat<T>
     {
-        const string Message = "Value must be non-negative and less than the length.";
+        const string E = "Value must be non-negative and less than the length.";
 
-        readonly T* _pointer;
+        readonly void* _pointer;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Fat(T* pointer, int length)
+        public Fat(void* pointer, int length)
         {
             _pointer = pointer;
             Length = length;
@@ -422,7 +422,7 @@ static partial class Similarity
         public T this[int i]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get => (uint)i < (uint)Length ? _pointer[i] : throw new ArgumentOutOfRangeException(nameof(i), i, Message);
+            get => (uint)i < (uint)Length ? ((T*)_pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
         }
 
         public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
