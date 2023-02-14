@@ -75,7 +75,11 @@ static partial class SplitFactory
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="T">The type of element from the span.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-readonly ref partial struct SplitSpan<T>
+readonly
+#if !NO_REF_STRUCTS
+    ref
+#endif
+    partial struct SplitSpan<T>
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -111,7 +115,11 @@ readonly ref partial struct SplitSpan<T>
 
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public ref partial struct Enumerator
+    public
+#if !NO_REF_STRUCTS
+        ref
+#endif
+        partial struct Enumerator
     {
         readonly SplitSpan<T> _split;
 

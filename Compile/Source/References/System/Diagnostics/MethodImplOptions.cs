@@ -57,7 +57,11 @@ static partial class MethodImplOptions
     /// <summary>The method should be inlined if possible.</summary>
     [ComVisible(false)]
     public const ms::System.Runtime.CompilerServices.MethodImplOptions AggressiveInlining =
+#if NO_AGGRESSIVE_INLINING
+        0;
+#else
         (ms::System.Runtime.CompilerServices.MethodImplOptions)(1 << 8);
+#endif
 
     /// <summary>The method contains code that should always be optimized by the just-in-time (JIT) compiler.</summary>
     /// <remarks><para>

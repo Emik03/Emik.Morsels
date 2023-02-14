@@ -406,7 +406,7 @@ static partial class Similarity
 
     /// <summary>Represents a pointer with a length.</summary>
     [StructLayout(LayoutKind.Auto)]
-    readonly unsafe struct Fat<T>
+    readonly unsafe partial struct Fat<T>
     {
         const string Message = "Value must be non-negative and less than the length.";
 

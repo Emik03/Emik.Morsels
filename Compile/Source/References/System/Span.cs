@@ -3,13 +3,17 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 0809, 8500, MA0048
+#pragma warning disable 0660, 0661, 0809, 8500, CA1066, MA0048
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
-readonly unsafe ref partial struct Span<T>
+readonly unsafe
+#if !NO_REF_STRUCTS
+    ref
+#endif
+    partial struct Span<T>
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -161,12 +165,14 @@ readonly unsafe ref partial struct Span<T>
             Pointer[i] = value;
     }
 
+#if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
+#endif
 
     /// <summary>
     /// Attempts to copy the current <see cref="Span{T}"/> to a destination <see cref="Span{T}"/>
@@ -205,12 +211,14 @@ readonly unsafe ref partial struct Span<T>
         return true;
     }
 
+#if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override int GetHashCode() => throw new NotSupportedException();
+#endif
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -298,11 +306,11 @@ readonly unsafe ref partial struct Span<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     string CharsToString()
     {
-        Span<char> span = new(Pointer, Length);
+        var ptr = (char*)Pointer;
         StringBuilder sb = new(Length);
 
         for (var i = 0; i < Length; i++)
-            sb[i] = span[i];
+            sb[i] = ptr[i];
 
         return $"{sb}";
     }
@@ -310,7 +318,11 @@ readonly unsafe ref partial struct Span<T>
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
 #pragma warning disable CA1034
-    public ref struct Enumerator
+    public
+#if !NO_REF_STRUCTS
+    ref
+#endif
+        partial struct Enumerator
 #pragma warning restore CA1034
     {
         readonly Span<T> _span;
@@ -357,7 +369,11 @@ readonly unsafe ref partial struct Span<T>
 /// <typeparam name="T">The type of items in the <see cref="ReadOnlySpan{T}"/>.</typeparam>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"),
  StructLayout(LayoutKind.Auto)]
-readonly unsafe ref partial struct ReadOnlySpan<T>
+readonly unsafe
+#if !NO_REF_STRUCTS
+    ref
+#endif
+    partial struct ReadOnlySpan<T>
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -484,12 +500,14 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
             destination[i] = this[i];
     }
 
+#if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on ReadOnlySpan will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
+#endif
 
     /// <summary>
     /// Attempts to copy the current <see cref="ReadOnlySpan{T}"/> to a destination <see cref="Span{T}"/>
@@ -528,12 +546,14 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
         return true;
     }
 
+#if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on ReadOnlySpan will always throw an exception. Use the equality operator instead.")]
     public override int GetHashCode() => throw new NotSupportedException();
+#endif
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -622,11 +642,11 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     string CharsToString()
     {
-        ReadOnlySpan<char> span = new(Pointer, Length);
+        var ptr = (char*)Pointer;
         StringBuilder sb = new(Length);
 
         for (var i = 0; i < Length; i++)
-            sb[i] = span[i];
+            sb[i] = ptr[i];
 
         return $"{sb}";
     }
@@ -634,7 +654,11 @@ readonly unsafe ref partial struct ReadOnlySpan<T>
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
 #pragma warning disable CA1034
-    public ref struct Enumerator
+    public
+#if !NO_REF_STRUCTS
+    ref
+#endif
+        partial struct Enumerator
 #pragma warning restore CA1034
     {
         readonly ReadOnlySpan<T> _span;
