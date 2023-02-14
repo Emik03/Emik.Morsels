@@ -124,8 +124,8 @@ namespace System
 #endif
     readonly partial struct ValueTuple : IEquatable<ValueTuple>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple>,
@@ -173,20 +173,20 @@ namespace System
         public override int GetHashCode() => 0;
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) => other is ValueTuple;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) => other is ValueTuple;
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => 0;
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => 0;
 
-    [Pure, ValueRange(0)]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer) =>
-        other switch
-        {
-            null => 1,
-            ValueTuple => 0,
-            _ => throw new ArgumentException(),
-        };
+        [Pure, ValueRange(0)]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer) =>
+            other switch
+            {
+                null => 1,
+                ValueTuple => 0,
+                _ => throw new ArgumentException(),
+            };
 
 #endif
 
@@ -442,8 +442,8 @@ namespace System
 #endif
     readonly partial struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1>>,
@@ -521,33 +521,33 @@ namespace System
         public override int GetHashCode() => Item1?.GetHashCode() ?? 0;
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1>)
+                return false;
 
-        var objTuple = (ValueTuple<T1>)other;
+            var objTuple = (ValueTuple<T1>)other;
 
-        return comparer.Equals(Item1, objTuple.Item1);
-    }
+            return comparer.Equals(Item1, objTuple.Item1);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => comparer.GetHashCode(Item1);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => comparer.GetHashCode(Item1);
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1>)other;
+            var objTuple = (ValueTuple<T1>)other;
 
-        return comparer.Compare(Item1, objTuple.Item1);
-    }
+            return comparer.Compare(Item1, objTuple.Item1);
+        }
 
 #endif
 
@@ -601,8 +601,8 @@ namespace System
     [StructLayout(LayoutKind.Auto)]
     readonly partial struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2>>,
@@ -689,37 +689,37 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1, T2>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1, T2>)
+                return false;
 
-        var objTuple = (ValueTuple<T1, T2>)other;
+            var objTuple = (ValueTuple<T1, T2>)other;
 
-        return
-            comparer.Equals(Item1, objTuple.Item1) &&
-            comparer.Equals(Item2, objTuple.Item2);
-    }
+            return
+                comparer.Equals(Item1, objTuple.Item1) &&
+                comparer.Equals(Item2, objTuple.Item2);
+        }
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1, T2>)other;
+            var objTuple = (ValueTuple<T1, T2>)other;
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        return c != 0 ? c : comparer.Compare(Item2, objTuple.Item2);
-    }
+            return c != 0 ? c : comparer.Compare(Item2, objTuple.Item2);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
@@ -790,8 +790,8 @@ namespace System
     [StructLayout(LayoutKind.Auto)]
     readonly partial struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2, T3>>,
@@ -891,42 +891,42 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1, T2, T3>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1, T2, T3>)
+                return false;
 
-        var objTuple = (ValueTuple<T1, T2, T3>)other;
+            var objTuple = (ValueTuple<T1, T2, T3>)other;
 
-        return
-            comparer.Equals(Item1, objTuple.Item1) &&
-            comparer.Equals(Item2, objTuple.Item2) &&
-            comparer.Equals(Item3, objTuple.Item3);
-    }
+            return
+                comparer.Equals(Item1, objTuple.Item1) &&
+                comparer.Equals(Item2, objTuple.Item2) &&
+                comparer.Equals(Item3, objTuple.Item3);
+        }
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2, T3>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2, T3>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1, T2, T3>)other;
+            var objTuple = (ValueTuple<T1, T2, T3>)other;
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item2, objTuple.Item2);
-        return c != 0 ? c : comparer.Compare(Item3, objTuple.Item3);
-    }
+            c = comparer.Compare(Item2, objTuple.Item2);
+            return c != 0 ? c : comparer.Compare(Item3, objTuple.Item3);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
@@ -999,8 +999,8 @@ namespace System
     [StructLayout(LayoutKind.Auto)]
     readonly partial struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2, T3, T4>>,
@@ -1113,48 +1113,48 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1, T2, T3, T4>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1, T2, T3, T4>)
+                return false;
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4>)other;
 
-        return
-            comparer.Equals(Item1, objTuple.Item1) &&
-            comparer.Equals(Item2, objTuple.Item2) &&
-            comparer.Equals(Item3, objTuple.Item3) &&
-            comparer.Equals(Item4, objTuple.Item4);
-    }
+            return
+                comparer.Equals(Item1, objTuple.Item1) &&
+                comparer.Equals(Item2, objTuple.Item2) &&
+                comparer.Equals(Item3, objTuple.Item3) &&
+                comparer.Equals(Item4, objTuple.Item4);
+        }
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2, T3, T4>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2, T3, T4>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4>)other;
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item2, objTuple.Item2);
+            c = comparer.Compare(Item2, objTuple.Item2);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item3, objTuple.Item3);
-        return c != 0 ? c : comparer.Compare(Item4, objTuple.Item4);
-    }
+            c = comparer.Compare(Item3, objTuple.Item3);
+            return c != 0 ? c : comparer.Compare(Item4, objTuple.Item4);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
@@ -1231,8 +1231,8 @@ namespace System
     [StructLayout(LayoutKind.Auto)]
     readonly partial struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2, T3, T4, T5>>,
@@ -1358,54 +1358,54 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1, T2, T3, T4, T5>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1, T2, T3, T4, T5>)
+                return false;
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4, T5>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4, T5>)other;
 
-        return
-            comparer.Equals(Item1, objTuple.Item1) &&
-            comparer.Equals(Item2, objTuple.Item2) &&
-            comparer.Equals(Item3, objTuple.Item3) &&
-            comparer.Equals(Item4, objTuple.Item4) &&
-            comparer.Equals(Item5, objTuple.Item5);
-    }
+            return
+                comparer.Equals(Item1, objTuple.Item1) &&
+                comparer.Equals(Item2, objTuple.Item2) &&
+                comparer.Equals(Item3, objTuple.Item3) &&
+                comparer.Equals(Item4, objTuple.Item4) &&
+                comparer.Equals(Item5, objTuple.Item5);
+        }
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2, T3, T4, T5>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2, T3, T4, T5>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4, T5>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4, T5>)other;
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item2, objTuple.Item2);
+            c = comparer.Compare(Item2, objTuple.Item2);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item3, objTuple.Item3);
+            c = comparer.Compare(Item3, objTuple.Item3);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item4, objTuple.Item4);
-        return c != 0 ? c : comparer.Compare(Item5, objTuple.Item5);
-    }
+            c = comparer.Compare(Item4, objTuple.Item4);
+            return c != 0 ? c : comparer.Compare(Item5, objTuple.Item5);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
@@ -1485,8 +1485,8 @@ namespace System
     [StructLayout(LayoutKind.Auto)]
     readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
@@ -1625,60 +1625,60 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
+                return false;
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6>)other;
 
-        return
-            comparer.Equals(Item1, objTuple.Item1) &&
-            comparer.Equals(Item2, objTuple.Item2) &&
-            comparer.Equals(Item3, objTuple.Item3) &&
-            comparer.Equals(Item4, objTuple.Item4) &&
-            comparer.Equals(Item5, objTuple.Item5) &&
-            comparer.Equals(Item6, objTuple.Item6);
-    }
+            return
+                comparer.Equals(Item1, objTuple.Item1) &&
+                comparer.Equals(Item2, objTuple.Item2) &&
+                comparer.Equals(Item3, objTuple.Item3) &&
+                comparer.Equals(Item4, objTuple.Item4) &&
+                comparer.Equals(Item5, objTuple.Item5) &&
+                comparer.Equals(Item6, objTuple.Item6);
+        }
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6>)other;
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item2, objTuple.Item2);
+            c = comparer.Compare(Item2, objTuple.Item2);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item3, objTuple.Item3);
+            c = comparer.Compare(Item3, objTuple.Item3);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item4, objTuple.Item4);
+            c = comparer.Compare(Item4, objTuple.Item4);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item5, objTuple.Item5);
-        return c != 0 ? c : comparer.Compare(Item6, objTuple.Item6);
-    }
+            c = comparer.Compare(Item5, objTuple.Item5);
+            return c != 0 ? c : comparer.Compare(Item6, objTuple.Item6);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
@@ -1763,8 +1763,8 @@ namespace System
     [StructLayout(LayoutKind.Auto)]
     readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
@@ -1924,65 +1924,65 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
-    {
-        if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
-            return false;
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
+        {
+            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
+                return false;
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>)other;
 
-        return
-            comparer.Equals(Item1, objTuple.Item1) &&
-            comparer.Equals(Item2, objTuple.Item2) &&
-            comparer.Equals(Item3, objTuple.Item3) &&
-            comparer.Equals(Item4, objTuple.Item4) &&
-            comparer.Equals(Item5, objTuple.Item5) &&
-            comparer.Equals(Item6, objTuple.Item6) &&
-            comparer.Equals(Item7, objTuple.Item7);
-    }
+            return
+                comparer.Equals(Item1, objTuple.Item1) &&
+                comparer.Equals(Item2, objTuple.Item2) &&
+                comparer.Equals(Item3, objTuple.Item3) &&
+                comparer.Equals(Item4, objTuple.Item4) &&
+                comparer.Equals(Item5, objTuple.Item5) &&
+                comparer.Equals(Item6, objTuple.Item6) &&
+                comparer.Equals(Item7, objTuple.Item7);
+        }
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
+                throw new ArgumentException();
 
-        var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>)other;
+            var objTuple = (ValueTuple<T1, T2, T3, T4, T5, T6, T7>)other;
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item2, objTuple.Item2);
+            c = comparer.Compare(Item2, objTuple.Item2);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item3, objTuple.Item3);
+            c = comparer.Compare(Item3, objTuple.Item3);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item4, objTuple.Item4);
+            c = comparer.Compare(Item4, objTuple.Item4);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item5, objTuple.Item5);
+            c = comparer.Compare(Item5, objTuple.Item5);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item6, objTuple.Item6);
-        return c != 0 ? c : comparer.Compare(Item7, objTuple.Item7);
-    }
+            c = comparer.Compare(Item6, objTuple.Item6);
+            return c != 0 ? c : comparer.Compare(Item7, objTuple.Item7);
+        }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
@@ -2072,8 +2072,8 @@ namespace System
     readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
         IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
 #if !NET20 && !NET30 && !NET35
-    IStructuralEquatable,
-    IStructuralComparable,
+        IStructuralEquatable,
+        IStructuralComparable,
 #endif
         IComparable,
         IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
@@ -2251,63 +2251,63 @@ namespace System
         }
 
 #if !NET20 && !NET30 && !NET35
-    [Pure]
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) =>
-        other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple &&
-        comparer.Equals(Item1, objTuple.Item1) &&
-        comparer.Equals(Item2, objTuple.Item2) &&
-        comparer.Equals(Item3, objTuple.Item3) &&
-        comparer.Equals(Item4, objTuple.Item4) &&
-        comparer.Equals(Item5, objTuple.Item5) &&
-        comparer.Equals(Item6, objTuple.Item6) &&
-        comparer.Equals(Item7, objTuple.Item7) &&
-        comparer.Equals(Rest, objTuple.Rest);
+        [Pure]
+        bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) =>
+            other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple &&
+            comparer.Equals(Item1, objTuple.Item1) &&
+            comparer.Equals(Item2, objTuple.Item2) &&
+            comparer.Equals(Item3, objTuple.Item3) &&
+            comparer.Equals(Item4, objTuple.Item4) &&
+            comparer.Equals(Item5, objTuple.Item5) &&
+            comparer.Equals(Item6, objTuple.Item6) &&
+            comparer.Equals(Item7, objTuple.Item7) &&
+            comparer.Equals(Rest, objTuple.Rest);
 
-    [Pure]
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
-    {
-        if (other == null)
-            return 1;
+        [Pure]
+        int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+        {
+            if (other == null)
+                return 1;
 
-        if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple)
-            throw new ArgumentException();
+            if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple)
+                throw new ArgumentException();
 
-        var c = comparer.Compare(Item1, objTuple.Item1);
+            var c = comparer.Compare(Item1, objTuple.Item1);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item2, objTuple.Item2);
+            c = comparer.Compare(Item2, objTuple.Item2);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item3, objTuple.Item3);
+            c = comparer.Compare(Item3, objTuple.Item3);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item4, objTuple.Item4);
+            c = comparer.Compare(Item4, objTuple.Item4);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item5, objTuple.Item5);
+            c = comparer.Compare(Item5, objTuple.Item5);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item6, objTuple.Item6);
+            c = comparer.Compare(Item6, objTuple.Item6);
 
-        if (c != 0)
-            return c;
+            if (c != 0)
+                return c;
 
-        c = comparer.Compare(Item7, objTuple.Item7);
-        return c != 0 ? c : comparer.Compare(Rest, objTuple.Rest);
-    }
+            c = comparer.Compare(Item7, objTuple.Item7);
+            return c != 0 ? c : comparer.Compare(Rest, objTuple.Rest);
+        }
 
-    [Pure]
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
+        [Pure]
+        int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
 
         /// <summary>
