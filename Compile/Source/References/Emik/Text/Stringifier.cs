@@ -394,15 +394,10 @@ public
             return sb.Append(name);
 
         var len = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
-        var (head, tail) = type.GetGenericArguments();
+        var types = type.GetGenericArguments();
 
-        head.UnfoldedName(sb.Append(name, 0, len).Append('<'));
-
-        if (tail is null)
-            return sb.Append('>');
-
-        foreach (var t in tail)
-            sb.Append(Append(t));
+        types.FirstOrDefault()?.UnfoldedName(sb.Append(name, 0, len).Append('<'));
+        _ = types.Skip(1).Select(Append).LastOrDefault(_ => false);
 
         return sb.Append('>');
     }
