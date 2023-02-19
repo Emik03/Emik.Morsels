@@ -233,6 +233,9 @@ public
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
             string s => isSurrounded ? $@"""{s}""" : s,
+#if WAWA
+            Object o => o.name,
+#endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
             IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
             ICollection l => $"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
