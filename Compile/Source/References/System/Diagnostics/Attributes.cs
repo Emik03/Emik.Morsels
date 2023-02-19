@@ -580,7 +580,7 @@ namespace System.Text.RegularExpressions
     /// perform this transformation at run-time, meaning they will always use casing table for the current runtime.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public sealed class GeneratedRegexAttribute : Attribute
+    sealed partial class GeneratedRegexAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GeneratedRegexAttribute"/> class with the specified pattern.
