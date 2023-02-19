@@ -4,7 +4,10 @@
 namespace Emik.Morsels;
 
 /// <summary>Provides stringification methods.</summary>
-static partial class Stringifier
+#if WAWA
+public
+#endif
+    static partial class Stringifier
 {
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
@@ -82,7 +85,13 @@ static partial class Stringifier
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
-    public static string Conjoin<T>(this IEnumerable<T> values, char separator)
+    public static string Conjoin<T>(
+#if !WAWA
+        this
+#endif
+        IEnumerable<T> values,
+        char separator
+    )
     {
         StringBuilder stringBuilder = new();
         using var enumerator = values.GetEnumerator();
@@ -104,7 +113,13 @@ static partial class Stringifier
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
-    public static string Conjoin<T>(this IEnumerable<T> values, string separator = Separator)
+    public static string Conjoin<T>(
+#if !WAWA
+        this
+#endif
+        IEnumerable<T> values,
+        string separator = Separator
+    )
     {
         StringBuilder stringBuilder = new();
         using var enumerator = values.GetEnumerator();
@@ -124,7 +139,12 @@ static partial class Stringifier
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
     [Pure]
-    public static string UnfoldedName(this Type? type) =>
+    public static string UnfoldedName(
+#if !WAWA
+        this
+#endif
+        Type? type
+    ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = type.IsGenericType ? $"{type.UnfoldedName(new())}" : type.Name;
@@ -134,11 +154,24 @@ static partial class Stringifier
     /// <param name="indexByZero">Determines whether to index from zero or one.</param>
     /// <returns>The parameter <paramref name="i"/> as an ordinal.</returns>
     [Pure]
-    public static string Nth(this int i, bool indexByZero = false) => indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
+    public static string Nth(
+#if !WAWA
+        this
+#endif
+        int i,
+        bool indexByZero = false
+    ) =>
+        indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
 
     /// <inheritdoc cref="string.Split(string[], StringSplitOptions)"/>
     // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static string[] Split(this string source, string separator) =>
+    public static string[] Split(
+#if !WAWA
+        this
+#endif
+        string source,
+        string separator
+    ) =>
         source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -154,7 +187,13 @@ static partial class Stringifier
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
-    public static string Stringify<T>(this T? source) => source.Stringify(false, true, false);
+    public static string Stringify<T>(
+#if !WAWA
+        this
+#endif
+        T? source
+    ) =>
+        Stringify(source, false, true, false);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -179,7 +218,10 @@ static partial class Stringifier
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
     public static string Stringify<T>(
-        this T? source,
+#if !WAWA
+        this
+#endif
+        T? source,
         bool isSurrounded,
         bool isRecursive = true,
         bool forceReflection = true
@@ -262,8 +304,8 @@ static partial class Stringifier
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
 
         var name = source?.GetType() is { } type && type != typeof(T)
-            ? $"{type.UnfoldedName()} as {typeof(T).UnfoldedName()}"
-            : typeof(T).UnfoldedName();
+            ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
+            : UnfoldedName(typeof(T));
 
         return $"{name} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
     }
@@ -352,7 +394,14 @@ static partial class Stringifier
         var (head, tail) = type.GetGenericArguments();
 
         head.UnfoldedName(sb.Append(name, 0, len).Append('<'));
-        return tail.Select(Append).EnumerateOr(sb).Append('>');
+
+        if (tail is null)
+            return sb.Append('>');
+
+        foreach (var t in tail)
+            sb.Append(Append(t));
+
+        return sb.Append('>');
     }
 #endif
 }
