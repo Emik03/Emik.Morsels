@@ -21,8 +21,6 @@
         <FileVersion>3.1</FileVersion>
         <Nullable>annotations</Nullable>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
-        <DefaultDocumentationLinksBaseUrl>../DefaultDocumentationLinks/*.txt</DefaultDocumentationLinksBaseUrl>
-        <DefaultDocumentationLinksOutputFile>../DefaultDocumentationLinks/$(AssemblyName).txt</DefaultDocumentationLinksOutputFile>
         <WeaverConfiguration>
             <Weavers>
                 <Equals/>
