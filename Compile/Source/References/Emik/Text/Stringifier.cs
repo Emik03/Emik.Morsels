@@ -1,13 +1,17 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
+#if NET35 && WAWA
+namespace Wawa.Modules;
+#else
+// ReSharper disable CheckNamespace
 namespace Emik.Morsels;
+#endif
 
 /// <summary>Provides stringification methods.</summary>
-#if WAWA
+// ReSharper disable once BadPreprocessorIndent
+#if NET35 && WAWA
 public
 #endif
-    static partial class Stringifier
+static partial class Stringifier
 {
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
@@ -233,7 +237,7 @@ public
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
             string s => isSurrounded ? $@"""{s}""" : s,
-#if WAWA
+#if NET35 && WAWA
             Object o => o.name,
 #endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),

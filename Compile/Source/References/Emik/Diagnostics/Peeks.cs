@@ -1,5 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #pragma warning disable CS8632
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Provides methods to use callbacks within a statement.</summary>
@@ -55,7 +57,7 @@ static partial class Peeks
     /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
-    public static void Write<T>(T value) => Write(value.Stringify());
+    public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 
     /// <summary>Quick and dirty debugging function.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
@@ -88,7 +90,7 @@ static partial class Peeks
     {
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
-                @$"{(map ?? (x => x))(value).Stringify()}{(shouldLogExpression ? @$"
+                @$"{Stringifier.Stringify((map ?? (x => x))(value))}{(shouldLogExpression ? @$"
         of {expression}" : "")}
         at {member} in {path}:line {line}"
             );
