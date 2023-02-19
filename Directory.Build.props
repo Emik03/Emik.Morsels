@@ -29,8 +29,8 @@
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <SignAssembly Condition="Exists('$(Morsels)private.snk')">true</SignAssembly>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
-        <DefaultDocumentationFileNameMode>NameAndMd5Mix</DefaultDocumentationFileNameMode>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
+        <DefaultDocumentationFileNameFactory>NameAndMd5Mix</DefaultDocumentationFileNameFactory>
         <DefaultDocumentationInvalidCharReplacement>.</DefaultDocumentationInvalidCharReplacement>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
         <AssemblyOriginatorKeyFile Condition="Exists('$(Morsels)private.snk')">$(Morsels)private.snk</AssemblyOriginatorKeyFile>
