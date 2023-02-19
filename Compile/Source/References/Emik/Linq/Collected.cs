@@ -58,7 +58,7 @@ static partial class Collected
     )
         where TList : IList<T> => // ReSharper disable once NullableWarningSuppressionIsUsed
 #pragma warning disable CS8620 // Checked later, technically could cause problems, but most factory methods are fine.
-        (TList?)converter(iterable).ItemNotNull();
+        (TList?)converter(iterable);
 #pragma warning restore CS8620
 }
 #endif
