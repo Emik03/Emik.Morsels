@@ -691,20 +691,16 @@ namespace System.Text.RegularExpressions
         /// Gets a time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
         /// to indicate that the method should not time out.
         /// </summary>
-        [Pure]
-        public int MatchTimeoutMilliseconds { get; }
+        public int MatchTimeoutMilliseconds { [Pure] get; }
 
         /// <summary>Gets the name of the culture to be used for case sensitive comparisons.</summary>
-        [Pure]
-        public string CultureName { get; }
+        public string CultureName { [Pure] get; }
 
         /// <summary>Gets the regular expression pattern to match.</summary>
-        [Pure]
-        public string Pattern { get; }
+        public string Pattern { [Pure] get; }
 
         /// <summary>Gets a bitwise combination of the enumeration values that modify the regular expression.</summary>
-        [Pure]
-        public RegexOptions Options { get; }
+        public RegexOptions Options { [Pure] get; }
     }
 }
 #endif
