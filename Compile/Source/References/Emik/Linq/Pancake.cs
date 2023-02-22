@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Provides methods to flatten <see cref="IEnumerable{T}"/> instances.</summary>
