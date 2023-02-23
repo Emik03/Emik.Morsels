@@ -20,7 +20,7 @@ Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project
 
 ## Usage
 
-1. Download the [.NET 7 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/7.0).
+1. Download the [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
 2. Download/clone the repository: `git clone https://github.com/Emik03/Emik.Morsels.git`
 3. Copy-paste [Directory.Build.local.props.template](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.local.props.template) and name the new duplicate `Directory.Build.local.props`.
 4. Modify the [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of `Directory.Build.local.props`, which contains absolute paths that are system-dependent.
