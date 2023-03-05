@@ -88,6 +88,7 @@ static partial class Stringifier
     /// <param name="values">The values to join.</param>
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
+    // ReSharper disable BadPreprocessorIndent
     [Pure]
     public static string Conjoin<T>(
 #if !WAWA
