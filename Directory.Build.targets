@@ -42,6 +42,7 @@
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <None Remove="Documentation/**"/>
+        <PackageReference Remove="$(AssemblyName)"/>
         <None Remove="$(AssemblyName).Generated.Tests/**"/>
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
