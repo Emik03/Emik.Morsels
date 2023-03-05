@@ -47,14 +47,13 @@
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
-    <ItemGroup Condition="$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+    <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.2" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.2" PrivateAssets="all"/>
-        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.16.6" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0-4.final" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
-    <ItemGroup Condition="$(AssemblyName.Contains(&quot;Analyzer&quot;)) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+    <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
         <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
     </ItemGroup>
