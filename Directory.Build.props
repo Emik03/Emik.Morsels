@@ -247,6 +247,7 @@
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
         <PackageReference Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all"/>
+        <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="1.0.0.1" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.2.0" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" PrivateAssets="all"/>
