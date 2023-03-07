@@ -22,7 +22,7 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure]
-    public static double Jaro(this string? left, string? right, Func<char, char, bool>? comparer) =>
+    public static double Jaro(this string? left, string? right, [InstantHandle] Func<char, char, bool>? comparer) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
@@ -57,7 +57,7 @@ static partial class Similarity
     public static double JaroWinkler(
         this string? left,
         string? right,
-        Func<char, char, bool>? comparer
+        [InstantHandle] Func<char, char, bool>? comparer
     ) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
@@ -94,7 +94,7 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure]
-    public static double Jaro<T>(this IList<T>? left, IList<T>? right, Func<T, T, bool>? comparer) =>
+    public static double Jaro<T>(this IList<T>? left, IList<T>? right, [InstantHandle] Func<T, T, bool>? comparer) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
@@ -131,7 +131,7 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure]
-    public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, Func<T, T, bool>? comparer) =>
+    public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, [InstantHandle] Func<T, T, bool>? comparer) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
@@ -179,7 +179,7 @@ static partial class Similarity
     public static unsafe double Jaro<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
-        Func<T, T, bool>? comparer = null
+        [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -234,7 +234,7 @@ static partial class Similarity
     public static unsafe double JaroWinkler<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
-        Func<T, T, bool>? comparer = null
+        [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -272,7 +272,7 @@ static partial class Similarity
         T right,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int> counter,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
-        Func<TItem, TItem, bool>? comparer = null
+        [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         Jaro(left, right, counter(left), counter(right), indexer, comparer);
 
@@ -295,7 +295,7 @@ static partial class Similarity
         T right,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int> counter,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
-        Func<TItem, TItem, bool>? comparer = null
+        [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         JaroWinkler(left, right, counter(left), counter(right), indexer, comparer);
 
@@ -316,7 +316,7 @@ static partial class Similarity
         [NonNegativeValue] int leftLength,
         [NonNegativeValue] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
-        Func<TItem, TItem, bool>? comparer = null
+        [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         JaroInner(left, right, leftLength, rightLength, indexer, comparer ?? EqualityComparer<TItem>.Default.Equals);
 
@@ -341,7 +341,7 @@ static partial class Similarity
         [NonNegativeValue] int leftLength,
         [NonNegativeValue] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
-        Func<TItem, TItem, bool>? comparer = null
+        [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     )
     {
         comparer ??= EqualityComparer<TItem>.Default.Equals;
@@ -390,7 +390,7 @@ static partial class Similarity
         [NonNegativeValue] int leftLength,
         [NonNegativeValue] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
-        Func<TItem, TItem, bool> comparer
+        [InstantHandle] Func<TItem, TItem, bool> comparer
     ) =>
         leftLength is 0 && rightLength is 0 ? 1 :
             leftLength is 0 || rightLength is 0 ? 0 :
@@ -410,7 +410,7 @@ static partial class Similarity
         [ValueRange(2, int.MaxValue)] int rightLength,
         [NonNegativeValue] int leftIndex,
         [NonNegativeValue] int rightPreviousIndex,
-        Func<TItem, TItem, bool> comparer,
+        [InstantHandle] Func<TItem, TItem, bool> comparer,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
         [NonNegativeValue] ref double matchCount,
         [NonNegativeValue] ref int transpositionCount
@@ -442,7 +442,7 @@ static partial class Similarity
         [ValueRange(2, int.MaxValue)] int bLen,
         [NonNegativeValue] int leftIndex,
         [NonNegativeValue] int rightIndex,
-        Func<TItem, TItem, bool> comparer,
+        [InstantHandle] Func<TItem, TItem, bool> comparer,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
     ) =>
         InBounds(aLen, bLen, leftIndex, rightIndex) &&
@@ -455,7 +455,7 @@ static partial class Similarity
         T right,
         [NonNegativeValue] int leftIndex,
         [NonNegativeValue] int rightIndex,
-        Func<TItem, TItem, bool> comparer,
+        [InstantHandle] Func<TItem, TItem, bool> comparer,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
     ) =>
         comparer(indexer(left, leftIndex), indexer(right, rightIndex));
@@ -467,7 +467,7 @@ static partial class Similarity
         [ValueRange(2, int.MaxValue)] int leftLength,
         [ValueRange(2, int.MaxValue)] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
-        Func<TItem, TItem, bool> comparer
+        [InstantHandle] Func<TItem, TItem, bool> comparer
     )
     {
         var sharedLength = Min(leftLength, rightLength);
@@ -498,7 +498,11 @@ static partial class Similarity
         rightIndex <= MaxBound(leftLength, rightLength, leftIndex);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    static int MaxBound(int leftLength, int rightLength, int leftIndex) =>
+    static int MaxBound(
+        [ValueRange(2, int.MaxValue)] int leftLength,
+        [ValueRange(2, int.MaxValue)] int rightLength,
+        [NonNegativeValue] int leftIndex
+    ) =>
         Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
@@ -535,7 +539,7 @@ static partial class Similarity
         readonly void* _pointer;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Fat(void* pointer, int length)
+        public Fat(void* pointer, [NonNegativeValue] int length)
         {
             _pointer = pointer;
             Length = length;
