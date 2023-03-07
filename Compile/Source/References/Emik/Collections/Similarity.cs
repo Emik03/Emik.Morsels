@@ -13,7 +13,7 @@ static partial class Similarity
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro(this string? left, string? right) => left.Jaro(right, EqualityComparer<char>.Default);
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
@@ -21,7 +21,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro(this string? left, string? right, [InstantHandle] Func<char, char, bool>? comparer) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
@@ -32,7 +32,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro(this string? left, string? right, IEqualityComparer<char>? comparer) =>
         left.Jaro(right, comparer is null ? null : comparer.Equals);
 
@@ -41,7 +41,7 @@ static partial class Similarity
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler(this string? left, string? right) =>
         left.JaroWinkler(right, EqualityComparer<char>.Default);
 
@@ -53,7 +53,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler(
         this string? left,
         string? right,
@@ -71,7 +71,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler(
         this string? left,
         string? right,
@@ -84,7 +84,7 @@ static partial class Similarity
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this IList<T>? left, IList<T>? right) => left.Jaro(right, EqualityComparer<T>.Default);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
@@ -93,7 +93,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this IList<T>? left, IList<T>? right, [InstantHandle] Func<T, T, bool>? comparer) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
@@ -105,7 +105,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.Jaro(right, comparer is null ? null : comparer.Equals);
 
@@ -117,7 +117,7 @@ static partial class Similarity
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right) =>
         left.JaroWinkler(right, EqualityComparer<T>.Default);
 
@@ -130,7 +130,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, [InstantHandle] Func<T, T, bool>? comparer) =>
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
@@ -145,7 +145,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
 
@@ -161,7 +161,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer) =>
         left.Jaro(right, comparer is null ? null : comparer.Equals);
 
@@ -175,7 +175,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static unsafe double Jaro<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
@@ -212,7 +212,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
@@ -230,7 +230,7 @@ static partial class Similarity
     /// <param name="right">The right-hand side.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [Pure]
+    [Pure, ValueRange(0, 1)]
     public static unsafe double JaroWinkler<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
@@ -266,7 +266,7 @@ static partial class Similarity
     /// <param name="indexer">The function that acts as an indexer.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [MustUseReturnValue]
+    [MustUseReturnValue, ValueRange(0, 1)]
     public static double Jaro<T, TItem>(
         T left,
         T right,
@@ -289,7 +289,7 @@ static partial class Similarity
     /// <param name="indexer">The function that acts as an indexer.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [MustUseReturnValue]
+    [MustUseReturnValue, ValueRange(0, 1)]
     public static double JaroWinkler<T, TItem>(
         T left,
         T right,
@@ -309,7 +309,7 @@ static partial class Similarity
     /// <param name="indexer">The function that acts as an indexer.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [MustUseReturnValue]
+    [MustUseReturnValue, ValueRange(0, 1)]
     public static double Jaro<T, TItem>(
         T left,
         T right,
@@ -334,7 +334,7 @@ static partial class Similarity
     /// <param name="indexer">The function that acts as an indexer.</param>
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
-    [MustUseReturnValue]
+    [MustUseReturnValue, ValueRange(0, 1)]
     public static double JaroWinkler<T, TItem>(
         T left,
         T right,
@@ -383,7 +383,7 @@ static partial class Similarity
         return matchCount is 0 ? 0 : JaroDistance(leftLength, rightLength, matchCount, transpositionCount);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, ValueRange(0, 1)]
     static double JaroInner<T, TItem>(
         T left,
         T right,
@@ -398,6 +398,7 @@ static partial class Similarity
                     comparer(indexer(left, 0), indexer(right, 0)) ? 1 : 0 :
                     Allocate(rightLength, (left, right, leftLength, rightLength, indexer, comparer), Fun<T, TItem>());
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static SpanFunc<byte, (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>), double> Fun<T, TItem>() =>
         static (span, tuple) => JaroAllocated(span, tuple);
 
@@ -460,7 +461,7 @@ static partial class Similarity
     ) =>
         comparer(indexer(left, leftIndex), indexer(right, rightIndex));
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int NumberOfEquals<T, TItem>(
         T left,
         T right,
@@ -514,7 +515,7 @@ static partial class Similarity
         SearchRange(leftLength, rightLength) < leftIndex ? Max(0, leftIndex - SearchRange(leftLength, rightLength)) : 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    static int SearchRange([NonNegativeValue] int leftLength, [NonNegativeValue] int rightLength) =>
+    static int SearchRange([ValueRange(2, int.MaxValue)] int leftLength, [ValueRange(2, int.MaxValue)] int rightLength) =>
         Max(leftLength, rightLength) / 2 - 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
