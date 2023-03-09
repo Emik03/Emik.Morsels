@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632
+#pragma warning disable CS8632, RCS1196
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
@@ -57,6 +57,7 @@ static partial class Peeks
     /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
+    // ReSharper disable once InvokeAsExtensionMethod
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 
     /// <summary>Quick and dirty debugging function.</summary>
@@ -88,6 +89,7 @@ static partial class Peeks
         [CallerMemberName] string? member = null
     )
     {
+        // ReSharper disable once InvokeAsExtensionMethod
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
                 @$"{Stringifier.Stringify((map ?? (x => x))(value))}{(shouldLogExpression ? @$"
