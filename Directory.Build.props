@@ -206,6 +206,7 @@
     </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
+        <AdditionalFiles Include="*.expected"/>
         <AdditionalFiles Include="$(Morsels)global.json"/>
         <AdditionalFiles Include="$(Morsels)stylecop.json"/>
         <Content Include="$(Morsels)Directory.Build.props" Pack="false"/>
