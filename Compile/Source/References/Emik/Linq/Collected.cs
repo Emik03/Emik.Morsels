@@ -17,11 +17,12 @@ static partial class Collected
         using var a = iterable?.GetEnumerator();
 
         if (a?.MoveNext() ?? false)
-            while (a.MoveNext())
+            do
                 yield return a.Current;
-
-        foreach (var b in fallback)
-            yield return b;
+            while (a.MoveNext());
+        else
+            foreach (var b in fallback)
+                yield return b;
     }
 
     /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
