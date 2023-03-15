@@ -10,6 +10,10 @@
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
     </PropertyGroup>
+    <!-- Properties for Roslyn analyzer projects. -->
+    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
