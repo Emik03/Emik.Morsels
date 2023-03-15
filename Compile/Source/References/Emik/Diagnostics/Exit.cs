@@ -100,9 +100,7 @@ static partial class Exit
         if (message is not null)
             (exitCode is 0 ? Console.Out : Console.Error).WriteLine(message);
 
-#pragma warning disable RS1035
         Environment.Exit(exitCode);
-#pragma warning restore RS1035
         throw Unreachable;
     }
 }
