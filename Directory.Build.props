@@ -225,6 +225,7 @@
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
+        <PackageReference Include="SmallSharp" Version="1.1.7" PrivateAssets="all"/>
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all"/>
         <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all"/>
@@ -273,6 +274,10 @@
     <!-- Does not work on .NET Framework 4.5.1 or less. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451'">
         <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
+    </ItemGroup>
+    <!-- Application-only references. -->
+    <ItemGroup Condition="'$(OutputType)' == 'Exe'">
+        <PackageReference Include="docopt.net" Version="0.8.1"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
