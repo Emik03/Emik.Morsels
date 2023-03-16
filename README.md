@@ -24,28 +24,8 @@ Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project
 2. Download/clone the repository: `git clone https://github.com/Emik03/Emik.Morsels.git`
 3. Copy-paste [Directory.Build.local.props.template](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.local.props.template) and name the new duplicate `Directory.Build.local.props`.
 4. Modify the [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of `Directory.Build.local.props`, which contains absolute paths that are system-dependent.
-5. Add symbolic links to [global.json](https://github.com/Emik03/Emik.Morsels/blob/main/global.json), [stylecop.json](https://github.com/Emik03/Emik.Morsels/blob/main/stylecop.json), [Directory.Build.props](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.props), [Directory.Build.targets](https://github.com/Emik03/Emik.Morsels/blob/main/Directory.Build.targets), and `Directory.Build.local.props` for each project that references [Emik.Morsels](https://github.com/Emik03/Emik.Morsels).
-    - You can alternatively have a folder for `Emik.Morsels` projects, where the root contains these four files, and all projects simply reside in nested folders. This way, you only need to set up the symlinks a single time.
-
-* Windows:
-
-```bat
-mklink global.json <GLOBAL_PATH>
-mklink stylecop.json <STYLECOP_PATH>
-mklink Directory.Build.props <PROPS_PATH>
-mklink Directory.Build.targets <TARGETS_PATH>
-mklink Directory.Build.local.props <LOCAL_PROPS_PATH>
-```
-
-* Mac/Linux:
-
-```shell
-ln -s global.json <GLOBAL_PATH>
-ln -s stylecop.json <STYLECOP_PATH>
-ln -s Directory.Build.props <PROPS_PATH>
-ln -s Directory.Build.targets <TARGETS_PATH>
-ln -s Directory.Build.local.props <LOCAL_PROPS_PATH>
-```
+5. Execute [this command on Windows](https://github.com/Emik03/Emik.Morsels/blob/main/Shell/symlink.bat) or [this command on Mac/Linux](https://github.com/Emik03/Emik.Morsels/blob/main/Shell/symlink.sh) with each [Emik.Morsels](https://github.com/Emik03/Emik.Morsels) project as the working directory to symlink everything together.
+    - You can alternatively have a folder for `Emik.Morsels` projects, and all projects simply reside in nested folders. This way, you only need to set up the symlinks a single time on the root folder since [search scope applies to parent folders](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022#search-scope) as well.
 
 ## Tree Shaking
 
@@ -55,12 +35,12 @@ Of course, if you add every type, it often means that a lot of unnecessary code 
 
 Emik.Morsels has framework-dependent dependencies to accomodate the following purposes:
 
-| Framework                    | Purpose                                                                                                                               |
-|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| .NET Framework 3.5           | [Keep Talking and Nobody Explodes](https://keeptalkinggame.com/) / [Unity 2017.4.22f1](https://unity3d.com/unity/whats-new/2017.4.22) |
-| .NET Framework 4.5.2         | [Celeste](https://www.celestegame.com/) / [Everest](https://everestapi.github.io/)                                                    |
-| .NET Standard 2.0            | [Fody](https://github.com/Fody/Home) / General                                                                                        |
-| .NET Standard 2.1 / NET Core | General                                                                                                                               |
+| Framework            | Purpose                                                                                                                           |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| .NET Framework 3.5   | [Keep Talking and Nobody Explodes](https://keeptalkinggame.com/) / [Unity 2017.4.x](https://unity3d.com/unity/whats-new/2017.4.0) |
+| .NET Framework 4.5.2 | [Celeste](https://www.celestegame.com/) / [Everest](https://everestapi.github.io/)                                                |
+| .NET Standard 2.0    | [Fody](https://github.com/Fody/Home) / General                                                                                    |
+| Not in this list     | General                                                                                                                           |
 
 Different scripts and configurations within this repository will act accordingly to the current framework, such as polyfills, or by taking advantage of .NET 6+'s [`static abstract`](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/static-abstract-interface-methods) features. If you do not own the products, you can simply target another framework. (e.g. .NET Framework 4.5.1)
 

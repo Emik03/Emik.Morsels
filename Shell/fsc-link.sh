@@ -5,3 +5,4 @@ if ! test -f "$dir"/FSharp/fsc.exe; then
 dotnet "$(dirname "$0")/fsc.dll" $1' > "$dir"/FSharp/fsc.exe
 fi
 chmod +x -- "$dir"/FSharp/fsc.dll "$dir"/FSharp/fsc.exe
+
