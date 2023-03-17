@@ -44,8 +44,6 @@ Emik.Morsels has framework-dependent dependencies to accomodate the following pu
 
 Different scripts and configurations within this repository will act accordingly to the current framework, such as polyfills, or by taking advantage of .NET 6+'s [`static abstract`](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/static-abstract-interface-methods) features. If you do not own the products, you can simply target another framework. (e.g. .NET Framework 4.5.1)
 
-Anything span-related will not be supported prior to .NET Standard 2.1, and .NET Framework 3.0 and older are considered too old to be necessarily supported in this repository.
-
 ## Modified Standard Library
 
 Emik.Morsels also contains an IL-modified version of the .NET Framework 3.5 reference assembly. This is a reference assembly that has a weaved `System.Type.op_Equality`, allowing you to use record types without [Emik.Net20Records](https://github.com/Emik03/Emik.Net20Records).
