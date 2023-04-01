@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <Version>0.0.1</Version>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RepositoryUrl>https://github.com/Emik03/Emik.Morsels</RepositoryUrl>
         <PackageTags>Polyfill Helper Internals Source Generator Analyzer Roslyn</PackageTags>
