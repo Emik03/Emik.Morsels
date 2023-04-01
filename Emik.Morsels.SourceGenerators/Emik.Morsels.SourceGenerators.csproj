@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RepositoryUrl>https://github.com/Emik03/Emik.Morsels</RepositoryUrl>
+        <PackageTags>Polyfill Helper Internals Source Generator Analyzer Roslyn</PackageTags>
+        <Description>C# code bits of internal implementations that are shared in projects.</Description>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Update="Source\MorselsGenerator.cs" AutoGen="true" DesignTime="true">
+            <DependentUpon>MorselsGenerator.tt</DependentUpon>
+        </Compile>
+        <None Update="Source\MorselsGenerator.tt">
+            <LastGenOutput>MorselsGenerator.cs</LastGenOutput>
+            <Generator>TextTemplatingFileGenerator</Generator>
+        </None>
+    </ItemGroup>
+</Project>
