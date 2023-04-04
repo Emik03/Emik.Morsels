@@ -1,0 +1,690 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Emik.Morsels</id>
+    <authors>Emik</authors>
+    <version>0.0.1</version>
+    <title>Emik.Morsels</title>
+    <copyright>Copyright © Emik 2023</copyright>
+    <license type="expression">MPL-2.0</license>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <repository url="https://github.com/Emik03/Emik.Morsels"/>
+    <licenseUrl>https://licenses.nuget.org/MPL-2.0</licenseUrl>
+    <tags>Content ContentFiles Files Framework Props Targets</tags>
+    <description>C# code bits of internal implementations that are shared in projects.</description>
+    <contentFiles>
+      <files include="any/any/*" buildAction="Content"/>
+    </contentFiles>
+    <dependencies>
+      <group>
+        <!-- Framework dependent. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework2.0">
+        <!-- Framework dependent. -->
+        <dependency id="FSharp.Core" version="4.1.18"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework3.5">
+        <!-- Framework dependent. -->
+        <dependency id="Divorce.Fody" version="1.0.5"/>
+        <dependency id="FSharp.Core" version="4.1.18"/>
+        <dependency id="UnityEngineAnalyzer" version="1.0.0"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework4.0">
+        <!-- Framework dependent. -->
+        <dependency id="FSharp.Core" version="4.1.18"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <!-- Framework dependent. -->
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="4.1.18"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework4.5.2">
+        <!-- Framework dependent. -->
+        <dependency id="Doctest" version="0.0.6"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="4.1.18"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <dependency id="RemoveReference.Fody" version="1.0.5"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework4.6">
+        <!-- Framework dependent. -->
+        <dependency id="Doctest" version="0.0.6"/>
+        <dependency id="docopt.net" version="0.8.1"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="SmallSharp" version="1.1.7"/>
+        <dependency id="FSharp.Core" version="4.1.18"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework=".NETFramework4.6.1">
+        <!-- Framework dependent. -->
+        <dependency id="Doctest" version="0.0.6"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="4.7.2"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netstandard1.0">
+        <!-- Framework dependent. -->
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netstandard1.1">
+        <!-- Framework dependent. -->
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netstandard2.0">
+        <!-- Framework dependent. -->
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FodyHelpers" version="6.6.4"/>
+        <dependency id="FSharp.Core" version="7.0.0"/>
+        <dependency id="Gu.Analyzers" version="2.0.2"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <dependency id="IDisposableAnalyzers" version="4.0.2"/>
+        <dependency id="Microsoft.CodeAnalysis.CSharp.Workspaces" version="4.6.0-1.final"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netstandard2.1">
+        <!-- Framework dependent. -->
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="7.0.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netcoreapp1.0">
+        <!-- Framework dependent. -->
+        <dependency id="docopt.net" version="0.8.1"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="7.0.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netcoreapp2.0">
+        <!-- Framework dependent. -->
+        <dependency id="docopt.net" version="0.8.1"/>
+        <dependency id="SmallSharp" version="1.1.7"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="7.0.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="netcoreapp3.0">
+        <!-- Framework dependent. -->
+        <dependency id="docopt.net" version="0.8.1"/>
+        <dependency id="SmallSharp" version="1.1.7"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="7.0.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+      <group targetFramework="net5.0">
+        <!-- Framework dependent. -->
+        <dependency id="docopt.net" version="0.8.1"/>
+        <dependency id="SmallSharp" version="1.1.7"/>
+        <dependency id="Lazy.Fody" version="1.11.0"/>
+        <dependency id="FSharp.Core" version="7.0.0"/>
+        <dependency id="ConfigureAwait.Fody" version="3.3.2"/>
+        <!-- Framework agnostic. -->
+        <dependency id="AsyncFixer" version="1.6.0"/>
+        <dependency id="Fody" version="6.6.5-beta2"/>
+        <dependency id="Equals.Fody" version="4.0.2"/>
+        <dependency id="InfoOf.Fody" version="2.1.1"/>
+        <dependency id="Absence.Fody" version="1.0.5"/>
+        <dependency id="CsharpMacros" version="2.3.5"/>
+        <dependency id="Caseless.Fody" version="1.9.1"/>
+        <dependency id="InlineIL.Fody" version="1.7.4"/>
+        <dependency id="NullGuard.Fody" version="3.1.1"/>
+        <dependency id="ToString.Fody" version="1.11.1"/>
+        <dependency id="UnitGenerator" version="1.4.10"/>
+        <dependency id="LocalsInit.Fody" version="1.1.0"/>
+        <dependency id="Substitute.Fody" version="1.6.0"/>
+        <dependency id="Virtuosity.Fody" version="3.1.1"/>
+        <dependency id="Asyncify" version="0.9.5707.38527"/>
+        <dependency id="InlineMethod.Fody" version="0.6.2"/>
+        <dependency id="Meziantou.Analyzer" version="2.0.29"/>
+        <dependency id="ReflectionAnalyzers" version="0.3.1"/>
+        <dependency id="GlobalUsingsAnalyzer" version="1.4.0"/>
+        <dependency id="Roslynator.Analyzers" version="4.2.0"/>
+        <dependency id="PrecompiledRegex.Fody" version="1.0.0"/>
+        <dependency id="Collections.Analyzer" version="0.2.8.1"/>
+        <dependency id="Scifa.CheckedExceptions" version="1.0.14"/>
+        <dependency id="DefaultDocumentation" version="0.8.3-beta1"/>
+        <dependency id="JetBrainsAnnotations.Fody" version="2.17.0"/>
+        <dependency id="StyleCop.Analyzers" version="1.2.0-beta.435"/>
+        <dependency id="JetBrains.Annotations" version="2023.2.0-eap1"/>
+        <dependency id="Emik.SourceGenerators.Tattoo" version="1.0.1.1"/>
+        <dependency id="Roslynator.CodeAnalysis.Analyzers" version="4.2.0"/>
+        <dependency id="Dwaas.Param.Documentation.Analyzer" version="1.0.6258.29691"/>
+        <dependency id="Microsoft.VisualStudio.Threading.Analyzers" version="17.5.22"/>
+        <dependency id="DotNetAnalyzers.DocumentationAnalyzers" version="1.0.0-beta.59"/>
+        <dependency id="Microsoft.CodeAnalysis.NetAnalyzers" version="8.0.0-preview1.23121.1"/>
+        <dependency id="Microsoft.CodeAnalysis.BannedApiAnalyzers" version="3.3.5-beta1.23121.1"/>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="any/any/*" target="Content"/>
+    <file src="build/*" target="Build"/>
+    <file src="*.dll" target="analyzers/dotnet/cs"/>
+  </files>
+</package>

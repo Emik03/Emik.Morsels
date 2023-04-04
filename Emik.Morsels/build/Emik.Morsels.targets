@@ -1,0 +1,121 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<Project>
+    <!-- Common and/or default values that reference values in Emik.Morsels.props. -->
+    <PropertyGroup>
+        <Title>$(AssemblyName)</Title>
+        <Version>$(FileVersion)</Version>
+        <AssemblyVersion>$(FileVersion)</AssemblyVersion>
+        <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
+        <InformationalVersion>$(FileVersion)</InformationalVersion>
+        <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
+        <EmikMorselsContentFiles>$(MSBuildThisFileDirectory)/../contentFiles/any/any/</EmikMorselsContentFiles>
+        <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
+    </PropertyGroup>
+    <!-- Having the template shown is redundant when the user already has defined their directories. -->
+    <ItemGroup Condition="!('$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net452') or $([MSBuild]::GetPathOfFileAbove('Emik.Morsels.local.props', '$(MSBuildProjectFullPath)../')) != ''">
+        <Content Remove="$(EmikMorselsContentFiles)Emik.Morsels.local.props.template"/>
+    </ItemGroup>
+    <!-- Properties for Roslyn analyzer projects. -->
+    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
+    <!-- Properties for Unit Test projects. -->
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <IsPackable>false</IsPackable>
+        <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
+        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
+    </PropertyGroup>
+    <!-- Properties for wawa projects. -->
+    <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
+        <FileVersion>3.1.1</FileVersion>
+        <Nullable>annotations</Nullable>
+        <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <NullGuard Mode="Implicit"/>
+                <Substitute/>
+                <Virtuosity/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Assign correct attributes to files. -->
+    <ItemGroup>
+        <None Remove="Documentation/**"/>
+        <None Remove="$(AssemblyName).Generated.Tests/**"/>
+        <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
+        <Content Remove="$(EmikMorselsContentFiles)stylecop.json"/>
+        <Content Remove="$(EmikMorselsContentFiles)mscorlib.weaved.dll"/>
+        <AdditionalFiles Include="$(EmikMorselsContentFiles)stylecop.json"/>
+        <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
+    </ItemGroup>
+    <!-- Add weaved library for compatibility with records. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35'">
+        <Content Include="$(EmikMorselsContentFiles)mscorlib.weaved.dll"/>
+    </ItemGroup>
+    <!-- Roslyn analyzer references. -->
+    <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    </ItemGroup>
+    <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
+    <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <ProjectReference Include="../*.csproj" PrivateAssets="all"/>
+        <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
+    </ItemGroup>
+    <!-- Add explicit references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+        <Reference Include="System" Private="false"/>
+        <Reference Include="System.Xml" Private="false"/>
+        <Reference Include="System.Core" Private="false"/>
+        <Reference Include="System.Data" Private="false"/>
+        <Reference Include="System.Numerics" Private="false" HintPath="$(EmikMorselsContentFiles)mscorlib.weaved.dll"/>
+        <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(EmikMorselsContentFiles)mscorlib.weaved.dll"/>
+    </ItemGroup>
+    <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
+    <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
+        <PropertyGroup>
+            <AliasName>@(PackageReference->'%(Alias)')</AliasName>
+            <AliasPackageReference>@(PackageReference->'%(Identity)')</AliasPackageReference>
+        </PropertyGroup>
+        <ItemGroup>
+            <ReferencePath Condition="'%(FileName)' == '$(AliasPackageReference)'">
+                <Aliases>$(AliasName)</Aliases>
+            </ReferencePath>
+        </ItemGroup>
+    </Target>
+    <!-- Allows mscorlib to have a distinct alias. -->
+    <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+        <ItemGroup>
+            <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
+                <Aliases>global, ms</Aliases>
+            </ReferencePath>
+        </ItemGroup>
+    </Target>
+    <!-- Creates the missing file, or else the build fails. -->
+    <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
+        <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true"/>
+    </Target>
+    <!-- Compile and run doctests for Windows. -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+        <Exec Command="where -q doctest-csharp || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
+    </Target>
+    <!-- Compile and run doctests for Mac or Linux. -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+        <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory):$(UnitTestFileProject) &amp;&amp; test -f &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
+    </Target>
+    <Target Name="ValidateLocalProperties" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+        <Error Condition="'$(TargetFramework)' == 'net452' and '$(Celeste)' == ''" Text="Emik.Morsels reserves .NET Framework 4.5.2 for use with Celeste. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Celeste should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(TargetFramework)' == 'net452' and '$(Ktane)' == ''" Text="Emik.Morsels reserves .NET Framework 3.5 for use with Keep Talking and Nobody Explodes. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Keep Talking and Nobody Explodes should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(TargetFramework)' == 'net452' and '$(Unity)' == ''" Text="Emik.Morsels reserves .NET Framework 3.5 for use with Unity. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Unity should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+    </Target>
+</Project>

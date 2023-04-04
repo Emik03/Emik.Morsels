@@ -1,0 +1,231 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<Project>
+    <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Emik.Morsels.local.props', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Emik.Morsels.local.props', '$(MSBuildProjectFullPath)../'))"/>
+    <!-- Common and/or default values. -->
+    <PropertyGroup>
+        <Authors>Emik</Authors>
+        <Optimize>true</Optimize>
+        <Nullable>enable</Nullable>
+        <OutputPath>bin</OutputPath>
+        <FileVersion>1.0</FileVersion>
+        <WarningLevel>5</WarningLevel>
+        <AnalysisLevel>6</AnalysisLevel>
+        <RunAnalyzers>true</RunAnalyzers>
+        <LangVersion>preview</LangVersion>
+        <Deterministic>true</Deterministic>
+        <RunCodeAnalysis>false</RunCodeAnalysis>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+        <EnablePreviewFeatures>false</EnablePreviewFeatures>
+        <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+        <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+        <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+        <DefaultDocumentationFolder>Documentation/</DefaultDocumentationFolder>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
+        <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)'))=./</PathMap>
+        <DefaultDocumentationFileNameFactory>NameAndMd5Mix</DefaultDocumentationFileNameFactory>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+        <DefaultDocumentationInvalidCharReplacement>.</DefaultDocumentationInvalidCharReplacement>
+        <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk')))">true</SignAssembly>
+        <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
+        <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
+        <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk')))">$([MSBuild]::GetPathOfFileAbove('private.snk'))</AssemblyOriginatorKeyFile>
+        <NoWarn>0253;1701;1702;8632;ASYNC0004;CS0436;CA1043;CA1046;CA1055;CA1062;CA1303;CA1305;CA1307;CA1309;CA1310;CA1704;CA1709;CA1711;CA1812;CA1813;CA1822;CA2007;CA2201;CA2204;CA2225;DOC203;GU0009;GU0011;GU0073;IDE0052;MA0001;MA0004;MA0006;MA0009;MA0011;MA0023;MA0029;MA0046;MA0074;MA0076;MA0077;SA1000;SA1008;SA1009;SA1010;SA1011;SA1012;SA1013;SA1101;SA1111;SA1118;SA1122;SA1124;SA1132;SA1133;SA1134;SA1135;SA1200;SA1201;SA1202;SA1205;SA1206;SA1308;SA1309;SA1311;SA1313;SA1400;SA1402;SA1407;SA1408;SA1414;SA1500;SA1501;SA1502;SA1503;SA1512;SA1513;SA1516;SA1519;SA1633;SA1648;SA1649;NU1701;RCS1001;RCS1003;RCS1080;RCS1084;RCS1123;RCS1169;RCS1194;RCS1213;RCS1233;RCS1247;RS1035;UEA0006</NoWarn>
+    </PropertyGroup>
+    <!-- F# exclusive properties. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
+        <TailCalls>true</TailCalls>
+        <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <TailCall/>
+                <ToString/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+                <Divorce/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.0. -->
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' == 'net40'">
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.0. -->
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net40'">
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Allow analysis of expected files. -->
+    <ItemGroup>
+        <AdditionalFiles Include="**/*.expected"/>
+        <None Include="$(MSBuildThisFileDirectory)Emik.Morsels.props"/>
+        <None Include="$(MSBuildThisFileDirectory)Emik.Morsels.targets"/>
+    </ItemGroup>
+    <!-- Keep Talking and Nobody Explodes references. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+        <Reference Include="UnityEditor" HintPath="$(Unity)Data/Managed/UnityEditor.dll" Private="false"/>
+        <Reference Include="KMFramework" HintPath="$(Ktane)ktane_Data/Managed/KMFramework.dll" Private="false"/>
+        <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(Unity)Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
+    </ItemGroup>
+    <!-- Celeste references. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
+        <Reference Include="FNA" HintPath="$(Celeste)FNA.dll" Private="false"/>
+        <Reference Include="Celeste" HintPath="$(Celeste)Celeste.exe" Private="false"/>
+        <Reference Include="DotNetZip" HintPath="$(Celeste)DotNetZip.dll" Private="false"/>
+        <Reference Include="YamlDotNet" HintPath="$(Celeste)YamlDotNet.dll" Private="false"/>
+        <Reference Include="MonoMod.Utils" HintPath="$(Celeste)MonoMod.Utils.dll" Private="false"/>
+        <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)MMHOOK_Celeste.dll" Private="false"/>
+    </ItemGroup>
+</Project>

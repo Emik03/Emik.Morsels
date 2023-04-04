@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <Ktane>../</Ktane>
+        <Unity>../</Unity>
+        <Celeste>../</Celeste>
+    </PropertyGroup>
+</Project>
