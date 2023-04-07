@@ -1,5 +1,6 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
+    <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildProjectFullPath)../'))"/>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
         <Title>$(AssemblyName)</Title>
