@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <Import Project="Directory.Build.local.props"/>
+    <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Emik.Morsels.local.props', '$(MSBuildProjectFullPath)../'))"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
         <Authors>Emik</Authors>
@@ -27,14 +27,14 @@
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation/</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-        <SignAssembly Condition="Exists('$(Morsels)private.snk')">true</SignAssembly>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
         <DefaultDocumentationFileNameFactory>NameAndMd5Mix</DefaultDocumentationFileNameFactory>
         <DefaultDocumentationInvalidCharReplacement>.</DefaultDocumentationInvalidCharReplacement>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-        <AssemblyOriginatorKeyFile Condition="Exists('$(Morsels)private.snk')">$(Morsels)private.snk</AssemblyOriginatorKeyFile>
         <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
+        <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
+        <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
         <NoWarn>0253;1701;1702;8632;ASYNC0004;CS0436;CA1043;CA1046;CA1055;CA1062;CA1303;CA1305;CA1307;CA1309;CA1310;CA1704;CA1709;CA1711;CA1812;CA1813;CA1822;CA2007;CA2201;CA2204;CA2225;DOC203;GU0009;GU0011;GU0073;IDE0052;MA0001;MA0004;MA0006;MA0009;MA0011;MA0023;MA0029;MA0046;MA0074;MA0076;MA0077;SA1000;SA1008;SA1009;SA1010;SA1011;SA1012;SA1013;SA1101;SA1111;SA1118;SA1122;SA1124;SA1132;SA1133;SA1134;SA1135;SA1200;SA1201;SA1202;SA1205;SA1206;SA1308;SA1309;SA1311;SA1313;SA1400;SA1402;SA1407;SA1408;SA1414;SA1500;SA1501;SA1502;SA1503;SA1512;SA1513;SA1516;SA1519;SA1633;SA1648;SA1649;NU1701;RCS1001;RCS1003;RCS1080;RCS1084;RCS1123;RCS1169;RCS1194;RCS1213;RCS1233;RCS1247;RS1035;UEA0006</NoWarn>
     </PropertyGroup>
     <!-- F# exclusive properties. -->
@@ -207,11 +207,11 @@
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <AdditionalFiles Include="*.expected"/>
-        <AdditionalFiles Include="$(Morsels)global.json"/>
-        <AdditionalFiles Include="$(Morsels)stylecop.json"/>
-        <Content Include="$(Morsels)Directory.Build.props" Pack="false"/>
-        <Content Include="$(Morsels)Directory.Build.targets" Pack="false"/>
-        <Content Include="$(Morsels)Directory.Build.local.props" Pack="false"/>
+        <AdditionalFiles Include="$([MSBuild]::GetPathOfFileAbove('global.json'))"/>
+        <AdditionalFiles Include="$([MSBuild]::GetPathOfFileAbove('stylecop.json'))"/>
+        <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
+        <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
+        <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
