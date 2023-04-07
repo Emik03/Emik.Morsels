@@ -1,9 +1,56 @@
 <Project>
+    <!-- All of the directories that are system-dependant. -->
     <PropertyGroup>
-        <Ktane>../</Ktane>
-        <Unity>../</Unity>
-        <Celeste>../</Celeste>
-        <Morsels>../</Morsels>
-        <Destination>../</Destination>
+        <!--
+        Specifies the location of the game Keep Talking and Nobody Explodes, for use in referencing the internal code.
+        Required only for .NET Framework 3.5, which is reserved for that game.
+
+        These are the default locations of the game depending on your operating system.
+
+        Windows : C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\
+        Mac     : ~/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/
+        Linux   : ~/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/
+        SteamOS : ~/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/
+
+        If your game is elsewhere, specify the path below in the property, otherwise leave it blank.
+        -->
+        <Ktane></Ktane>
+        <!--
+        Specifies the location of the Unity application, *not* the Unity Hub, for use in referencing its libraries.
+        Required only for .NET Framework 3.5, which is reserved for Unity.
+
+        These are the default locations of the application depending on your operating system.
+
+        Windows : C:\Program Files\Unity\Hub\Editor\<VERSION>\Editor\Data\Managed\
+        Mac     : /Applications/Unity/Hub/Editor/<VERSION>/Editor/Data/Managed/
+        Linux   : ~/Unity/Hub/Editor/<VERSION>/Editor/Data/Managed/
+
+        If your application is elsewhere, specify the path below in the property, otherwise leave it blank.
+        -->
+        <Unity></Unity>
+        <!--
+        Specifies the location of the game Celeste, for use in referencing the internal code.
+        Required only for .NET Framework 4.5.2, which is reserved for that game.
+
+        These are the default locations of the game depending on your operating system.
+
+        Windows : C:\Program Files (x86)\Steam\steamapps\common\Celeste\
+        Mac     : ~/Library/Application Support/Steam/steamapps/common/Celeste/
+        Linux   : ~/.steam/steam/steamapps/common/Celeste/
+        SteamOS : ~/.local/share/Steam/steamapps/common/Celeste/
+
+        If your game is elsewhere, specify the path below in the property, otherwise leave it blank.
+        -->
+        <Celeste></Celeste>
+        <!--
+        Specifies the location of the Emik.Morsels repository, for use in referencing itself, such as static files.
+        Required.
+        -->
+        <Morsels></Morsels>
+        <!--
+        Specifies the location in which to copy the binaries post-build. For use in continuous testing with Unity.
+        Optional, for .NET Framework 3.5 only, which is reserved for Unity.
+        -->
+        <Destination></Destination>
     </PropertyGroup>
 </Project>
