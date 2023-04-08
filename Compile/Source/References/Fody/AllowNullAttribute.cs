@@ -1,5 +1,10 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if WAWA
+#pragma warning disable GlobalUsingsAnalyzer
+global using AllowNullAttribute = NullGuard.AllowNullAttribute;
+
+#pragma warning restore GlobalUsingsAnalyzer
+
 // ReSharper disable once CheckNamespace
 namespace NullGuard;
 

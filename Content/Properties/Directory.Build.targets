@@ -79,10 +79,6 @@
         <PackageReference Include="coverlet.collector" Version="3.2.0" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0-preview-20230223-05" PrivateAssets="all"/>
     </ItemGroup>
-    <!-- All wawa projects have their own global files, this isn't needed. -->
-    <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <PackageReference Remove="GlobalUsingsAnalyzer"/>
-    </ItemGroup>
     <!-- Use System.Memory for frameworks that can import it, but not implicitly. -->
     <ItemGroup Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and ('$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'net451' or '$(TargetFramework)' == 'net452' or '$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net463' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net471' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net481' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.5' or '$(TargetFramework)' == 'netstandard1.6' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netcoreapp2.1' or '$(TargetFramework)' == 'netcoreapp2.2')">
         <PackageReference Include="System.Memory" Version="4.5.5"/>
