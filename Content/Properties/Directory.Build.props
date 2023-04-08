@@ -1,6 +1,5 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildProjectFullPath)../'))"/>
     <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../'))"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
