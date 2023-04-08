@@ -237,8 +237,8 @@
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.6.4" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
+        <PackageReference Include="Fody" Version="6.6.5-beta2" PrivateAssets="all"/>
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all"/>
         <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all"/>
@@ -253,7 +253,7 @@
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.20" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.29" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all"/>
