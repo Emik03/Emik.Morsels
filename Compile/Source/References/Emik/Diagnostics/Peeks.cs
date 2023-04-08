@@ -94,7 +94,7 @@ static partial class Peeks
             (logger ?? Write)(
                 @$"{Stringifier.Stringify((map ?? (x => x))(value))}{(shouldLogExpression ? @$"
         of {expression}" : "")}
-        at {member} in {Path.GetFileName(path)}:line {line}"
+        at {member} in {System.IO.Path.GetFileName(path)}:line {line}"
             );
 
         return value;
