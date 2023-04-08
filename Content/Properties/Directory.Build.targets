@@ -23,7 +23,7 @@
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <FileVersion>3.1.1</FileVersion>
+        <FileVersion>4</FileVersion>
         <Nullable>annotations</Nullable>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
