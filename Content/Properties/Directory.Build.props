@@ -199,7 +199,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
