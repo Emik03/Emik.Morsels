@@ -57,7 +57,7 @@
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for C# in .NET Framework 2.0 - 3.5. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <WeaverConfiguration>
             <Weavers>
                 <Equals/>
@@ -80,7 +80,7 @@
     </PropertyGroup>
     <!-- Use all compatible Fody projects for C# in .NET Framework 4.0. -->
     <PropertyGroup>
-        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' == 'net40'">
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
             <Weavers>
                 <Lazy/>
                 <Equals/>
@@ -101,7 +101,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for C# in .NET Standard 1.0 - 1.6. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
@@ -121,7 +121,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
@@ -144,7 +144,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for F# in .NET Framework 2.0 - 3.5. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <WeaverConfiguration>
             <Weavers>
                 <Equals/>
@@ -164,7 +164,7 @@
     </PropertyGroup>
     <!-- Use all compatible Fody projects for F# in .NET Framework 4.0. -->
     <PropertyGroup>
-        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' == 'net40'">
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
             <Weavers>
                 <Lazy/>
                 <Equals/>
@@ -182,7 +182,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for F# in .NET Standard 1.0 - 1.6. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'netstandard1.0' or '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard1.2' or '$(TargetFramework)' == 'netstandard1.3' or '$(TargetFramework)' == 'netstandard1.4' or '$(TargetFramework)' == 'netstandard1.6')">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
@@ -199,7 +199,7 @@
         </WeaverConfiguration>
     </PropertyGroup>
     <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
-    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'netstandard1.0' and '$(TargetFramework)' != 'netstandard1.1' and '$(TargetFramework)' != 'netstandard1.2' and '$(TargetFramework)' != 'netstandard1.3' and '$(TargetFramework)' != 'netstandard1.4' and '$(TargetFramework)' != 'netstandard1.6'">
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <WeaverConfiguration>
             <Weavers>
                 <Lazy/>
@@ -272,20 +272,20 @@
         <PackageReference Include="JetBrains.Annotations" Version="2023.2.0-eap1" PrivateAssets="all" IncludeAssets="compile"/>
         <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23121.1" PrivateAssets="all"/>
     </ItemGroup>
-    <!-- F# latest for .NET Framework 2.0 - 4.5.2. -->
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40' or '$(TargetFramework)' == 'net45' or '$(TargetFramework)' == 'net451' or '$(TargetFramework)' == 'net452')">
+    <!-- F# latest for .NET Framework 2.0 - 4.6. -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))">
         <PackageReference Include="FSharp.Core" Version="4.1.18"/>
     </ItemGroup>
     <!-- F# latest for .NET Framework 4.6.1+. -->
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and ('$(TargetFramework)' == 'net461' or '$(TargetFramework)' == 'net462' or '$(TargetFramework)' == 'net463' or '$(TargetFramework)' == 'net47' or '$(TargetFramework)' == 'net471' or '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'net48' or '$(TargetFramework)' == 'net481')">
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <PackageReference Include="FSharp.Core" Version="4.7.2"/>
     </ItemGroup>
     <!-- F# latest for .NET Core. -->
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451' and '$(TargetFramework)' != 'net452' and '$(TargetFramework)' != 'net461' and '$(TargetFramework)' != 'net462' and '$(TargetFramework)' == 'net463' and '$(TargetFramework)' != 'net47' and '$(TargetFramework)' != 'net471' and '$(TargetFramework)' != 'net472' and '$(TargetFramework)' != 'net48' and '$(TargetFramework)' != 'net481'">
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <PackageReference Include="FSharp.Core" Version="7.0.0"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.5.1 or less. -->
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451'">
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))">
         <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Application-only references. -->
@@ -293,11 +293,11 @@
         <PackageReference Include="docopt.net" Version="0.8.1"/>
     </ItemGroup>
     <!-- Application-only references that are .NET Standard 2.0 compliant. -->
-    <ItemGroup Condition="'$(OutputType)' == 'Exe' and '$(MSBuildProjectExtension)' == '.fsproj' and '$(TargetFramework)' != 'net20' and '$(TargetFramework)' != 'net30' and '$(TargetFramework)' != 'net35' and '$(TargetFramework)' != 'net40' and '$(TargetFramework)' != 'net45' and '$(TargetFramework)' != 'net451' and '$(TargetFramework)' != 'net452'">
+    <ItemGroup Condition="'$(OutputType)' == 'Exe' and '$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <PackageReference Include="SmallSharp" Version="1.1.7" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references. -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
@@ -307,7 +307,7 @@
         <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
     </ItemGroup>
     <!-- Celeste references. -->
-    <ItemGroup Condition="'$(TargetFramework)' == 'net452'">
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46'))">
         <Reference Include="FNA" HintPath="$(Celeste)/FNA.dll" Private="false"/>
         <Reference Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
         <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
@@ -317,11 +317,11 @@
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 3.5 or less. -->
-    <ItemGroup Condition="!('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35')">
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))">
         <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.0 or less. -->
-    <ItemGroup Condition="!('$(TargetFramework)' == 'net20' or '$(TargetFramework)' == 'net30' or '$(TargetFramework)' == 'net35' or '$(TargetFramework)' == 'net40')">
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))">
         <PackageReference Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
     </ItemGroup>
 </Project>
