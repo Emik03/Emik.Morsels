@@ -10,6 +10,168 @@
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
     </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <TailCall/>
+                <ToString/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+                <Divorce/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.0. -->
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.0. -->
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
     <!-- Properties for Roslyn analyzer projects. -->
     <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
