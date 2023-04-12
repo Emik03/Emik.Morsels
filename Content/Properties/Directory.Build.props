@@ -39,6 +39,11 @@
     </PropertyGroup>
     <!-- Fallback paths. -->
     <PropertyGroup>
+        <Morsels Condition="$(Morsels) == '' and Exists('Emik.Morsels/')">Emik.Morsels/</Morsels>
+        <Morsels Condition="$(Morsels) == '' and Exists('../Emik.Morsels/')">../Emik.Morsels/</Morsels>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../Emik.Morsels/')">../../Emik.Morsels/</Morsels>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../../Emik.Morsels/')">../../../Emik.Morsels/</Morsels>
+        <Morsels Condition="$(Morsels) == '' and Exists('../../../../Emik.Morsels/')">../../../../Emik.Morsels/</Morsels>
         <Unity Condition="$(Unity) == '' and Exists('$(HOME)/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('$(HOME)/Unity/Hub/Editor/')[0])</Unity>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Celeste/')">$(HOME)/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Unity Condition="$(Unity) == '' and Exists('/Applications/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('/Applications/Unity/Hub/Editor/')[0])</Unity>
