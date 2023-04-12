@@ -1,0 +1,311 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
+<Project>
+    <!-- Common and/or default values that reference values in Directory.Build.props. -->
+    <PropertyGroup>
+        <Title>$(AssemblyName)</Title>
+        <Version>$(FileVersion)</Version>
+        <AssemblyVersion>$(FileVersion)</AssemblyVersion>
+        <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
+        <InformationalVersion>$(FileVersion)</InformationalVersion>
+        <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
+        <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <TailCall/>
+                <ToString/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+                <Divorce/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.0. -->
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <TailCall/>
+                <NullGuard/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.0. -->
+    <PropertyGroup>
+        <WeaverConfiguration Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Standard 1.0 - 1.6. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
+                <InlineMethod/>
+                <Absence/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Properties for Roslyn analyzer projects. -->
+    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
+    <!-- Properties for Unit Test projects. -->
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <IsPackable>false</IsPackable>
+        <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
+        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
+    </PropertyGroup>
+    <!-- Properties for wawa projects. -->
+    <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
+        <FileVersion>4</FileVersion>
+        <Nullable>annotations</Nullable>
+        <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
+        <WeaverConfiguration>
+            <Weavers>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <NullGuard Mode="Implicit"/>
+                <Substitute/>
+                <Virtuosity/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="InvariantCulture"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence/>
+                <JetBrainsAnnotations/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Show implicitly added files on Solution Explorer. -->
+    <ItemGroup>
+        <None Remove="Documentation/**"/>
+        <PackageReference Remove="$(AssemblyName)"/>
+        <None Remove="$(AssemblyName).Generated.Tests/**"/>
+        <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
+        <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
+    </ItemGroup>
+    <!-- Roslyn analyzer references. -->
+    <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <PackageReference Include="Gu.Analyzers" Version="2.0.2" PrivateAssets="all"/>
+        <PackageReference Include="IDisposableAnalyzers" Version="4.0.2" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0-1.final" PrivateAssets="all"/>
+    </ItemGroup>
+    <!-- Roslyn analyzer references. -->
+    <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+    </ItemGroup>
+    <!-- Fody projects should reference FodyHelpers, and also not themselves. -->
+    <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))">
+        <PackageReference Remove="$(AssemblyName)"/>
+        <PackageReference Include="FodyHelpers" Version="6.6.4"/>
+    </ItemGroup>
+    <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
+    <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <PackageReference Remove="GlobalUsingsAnalyzer"/>
+        <ProjectReference Include="../*.csproj" PrivateAssets="all"/>
+        <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
+        <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all"/>
+        <PackageReference Include="NUnit.Analyzers" Version="3.6.1" PrivateAssets="all"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" PrivateAssets="all"/>
+        <PackageReference Include="coverlet.collector" Version="3.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0-preview-20230223-05" PrivateAssets="all"/>
+    </ItemGroup>
+    <!-- Item groups for wawa projects. -->
+    <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
+        <Compile Include="$(Morsels)/Compile/Source/References/Fody/AllowNullAttribute.cs" Link="Source/References/Fody/AllowNullAttribute.cs"/>
+        <Compile Include="$(Morsels)/Compile/Source/References/System/Diagnostics/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
+    </ItemGroup>
+    <!-- Use System.Memory for frameworks that can import it, but not implicitly. -->
+    <ItemGroup Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))">
+        <PackageReference Include="System.Memory" Version="4.5.5"/>
+    </ItemGroup>
+    <!-- Only Unit Tests should include additional global imports to make writing doctests barable. -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <Compile Remove="$(Morsels)Compile/Source/References/NUnit/**/*.cs"/>
+    </ItemGroup>
+    <!-- Add explicit references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <Reference Include="System" Private="false"/>
+        <Reference Include="System.Xml" Private="false"/>
+        <Reference Include="System.Core" Private="false"/>
+        <Reference Include="System.Data" Private="false"/>
+        <Reference Include="System.Numerics" Private="false" HintPath="$(Morsels)References/System.Numerics.dll"/>
+        <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(Morsels)References/mscorlib.dll"/>
+    </ItemGroup>
+    <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
+    <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
+        <PropertyGroup>
+            <AliasName>@(PackageReference->'%(Alias)')</AliasName>
+            <AliasPackageReference>@(PackageReference->'%(Identity)')</AliasPackageReference>
+        </PropertyGroup>
+        <ItemGroup>
+            <ReferencePath Condition="'%(FileName)' == '$(AliasPackageReference)'">
+                <Aliases>$(AliasName)</Aliases>
+            </ReferencePath>
+        </ItemGroup>
+    </Target>
+    <!-- Allows mscorlib to have a distinct alias. -->
+    <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
+        <ItemGroup>
+            <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
+                <Aliases>global, ms</Aliases>
+            </ReferencePath>
+        </ItemGroup>
+    </Target>
+    <!-- Creates the missing file, or else the build fails. -->
+    <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
+        <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true"/>
+    </Target>
+    <!-- Compile and run doctests for Windows. -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+        <Exec Command="where -q doctest-csharp || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
+    </Target>
+    <!-- Compile and run doctests for Mac or Linux. -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+        <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory):$(UnitTestFileProject) &amp;&amp; test -f &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
+    </Target>
+    <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
+        <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
+    </Target>
+    <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Mac or Linux. -->
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
+        <Exec Command="cp $(Out) &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
+    </Target>
+    <Target Name="ValidateLocalProperties" BeforeTargets="PreBuildEvent">
+        <Error Condition="'$(Morsels)' == ''" Text="Emik.Morsels link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Emik.Morsels should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and '$(Unity)' == ''" Text="Emik.Morsels reserves .NET Framework 3.5 for use with Unity. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Unity should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) and '$(Celeste)' == ''" Text="Emik.Morsels reserves .NET Framework 4.5.2 for use with Celeste. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Celeste should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and '$(Ktane)' == ''" Text="Emik.Morsels reserves .NET Framework 3.5 for use with Keep Talking and Nobody Explodes. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Keep Talking and Nobody Explodes should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+    </Target>
+</Project>
