@@ -282,24 +282,24 @@
             </ReferencePath>
         </ItemGroup>
     </Target>
-    <!-- Creates the missing file, or else the build fails. -->
+    <!-- Create the missing file, since the build fails without it. -->
     <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true"/>
     </Target>
-    <!-- Compile and run doctests for Windows. -->
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+    <!-- Run doctests for Windows. -->
+    <Target Name="RunDocTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
         <Exec Command="where -q doctest-csharp || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
     </Target>
-    <!-- Compile and run doctests for Mac or Linux. -->
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
+    <!-- Run doctests for Mac or Linux. -->
+    <Target Name="RunDocTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
         <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory):$(UnitTestFileProject) &amp;&amp; test -f &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
     </Target>
-    <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
+    <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
+    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
         <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
     </Target>
-    <!-- Copying files to Keep Talking and Nobody Explodes Modkit repository from Mac or Linux. -->
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
+    <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository from Mac or Linux. -->
+    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
         <Exec Command="cp $(Out) &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
     </Target>
     <!-- We only need to validate the properties that are being used. -->
