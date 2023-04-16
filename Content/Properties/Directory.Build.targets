@@ -286,6 +286,14 @@
     <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
         <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true"/>
     </Target>
+    <!-- Run Constructor.csx on the project for Windows. -->
+    <Target Name="RunConstructorTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
+        <Exec Command="where -q csharprepl || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(ProjectDir)$(OutDir)$(AssemblyName).dll" ContinueOnError="false" IgnoreExitCode="true"/>
+    </Target>
+    <!-- Run Constructor.csx on the project for Mac or Linux. -->
+    <Target Name="RunConstructorTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT'">
+        <Exec Command="command -v csharprepl &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(ProjectDir)$(OutDir)$(AssemblyName).dll" ContinueOnError="false" IgnoreExitCode="true"/>
+    </Target>
     <!-- Run doctests for Windows. -->
     <Target Name="RunDocTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;)))">
         <Exec Command="where -q doctest-csharp || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
