@@ -149,6 +149,13 @@
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <Reference Include="System" Private="false"/>
+        <Reference Include="System.Xml" Private="false"/>
+        <Reference Include="System.Core" Private="false"/>
+        <Reference Include="System.Data" Private="false"/>
+        <Reference Include="System.Drawing" Private="false"/>
+        <Reference Include="System.Xml.Linq" Private="false"/>
+        <Reference Include="System.Runtime.Serialization" Private="false"/>
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
@@ -156,6 +163,10 @@
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
         <Reference Include="mscorlib" Aliases="global, ms" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
         <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
+    </ItemGroup>
+    <!-- F# expects a System.Numerics file which doesn't exist normally. -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <Reference Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46'))">
