@@ -6,19 +6,17 @@ using System.Runtime.CompilerServices;
 if (args is not [var path])
     return;
 
-var dir = Path.GetDirectoryName(path);
-var name = Path.GetFileName(path);
-
-AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
-    new DirectoryInfo(dir)
-        .GetFiles("*.dll")
-        .FirstOrDefault(x => x.Name == $"{args.Name}.dll") is { } dep
-        ? Assembly.LoadFile(dep.FullName)
-        : null;
-
 try
 {
-    var asm = Assembly.LoadFile(path);
+    new FileInfo(path)
+        .Directory
+        .EnumerateFiles("*.dll")
+        .Select(x => x.FullName)
+        .Where(x => x != path)
+        .ToList()
+        .ForEach(Load);
+
+    var asm = Assembly.LoadFrom(path);
 
     Iterate(asm);
 }
@@ -34,16 +32,33 @@ static void Error(string message, Exception ex) => Log("ERROR", message, ex);
 static void Warning(string message, Exception ex) => Log("WARNING", message, ex);
 
 static void Log(string prefix, string message, Exception ex) =>
-    Console.WriteLine($"{prefix}: {message} {ex.GetType()}: {ex.Message}");
+    Console.WriteLine($"{prefix}: {message} {ex.GetType()}: {ex.Message}{(prefix is "ERROR" ? $"\t{ex.StackTrace.Replace('\n', '\t')}" : "")}");
 
 static void Iterate(Assembly asm) =>
     ToTypes(asm)
         .Where(x => x is not null)
         .ToList()
-        .ForEach(x => RunClassConstructor(x));
+        .ForEach(RunClassConstructor);
 
-static void RunClassConstructor(Type type)
+static void Load(string path)
 {
+    try
+    {
+        _ = Assembly.LoadFrom(path);
+    }
+    catch (FileLoadException ex)
+    {
+        Warning($"The assembly \"{path}\" threw a", ex);
+    }
+}
+
+static void RunClassConstructor(Type type) => RunClassConstructor(type, type);
+
+static void RunClassConstructor(Type type, Type originalType)
+{
+    if (type.BaseType is { } baseType)
+        RunClassConstructor(baseType, originalType);
+
     try
     {
         RuntimeHelpers.RunClassConstructor(type.TypeHandle);
@@ -55,7 +70,7 @@ static void RunClassConstructor(Type type)
         if (reason is FileNotFoundException)
             return;
 
-        Error($"The type \"{type.Name}\" threw a", reason);
+        Error($"The type \"{originalType.FullName}\" threw a", reason);
     }
 }
 
