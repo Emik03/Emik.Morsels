@@ -152,10 +152,10 @@
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
-        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
         <Reference Include="mscorlib" Aliases="global, ms" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46'))">

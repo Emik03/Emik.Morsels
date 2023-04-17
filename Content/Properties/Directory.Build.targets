@@ -184,7 +184,7 @@
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <FileVersion>4</FileVersion>
+        <FileVersion>4.0</FileVersion>
         <Nullable>annotations</Nullable>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
@@ -255,7 +255,8 @@
     </ItemGroup>
     <!-- F# expects a System.Numerics file which doesn't exist normally. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
-        <Reference Include="System.Numerics" Private="false" HintPath="$(Morsels)/References/mscorlib.dll"/>
+        <Reference Include="System" HintPath="$(Morsels)/References/System.dll" Private="false"/>
+        <Reference Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
     </ItemGroup>
     <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">

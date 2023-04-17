@@ -38,7 +38,11 @@ static void RunClassConstructor(Type type)
     catch (TypeInitializationException ex)
     {
         var reason = Innermost(ex);
-        Error($"The type {type.Name} threw a", reason);
+
+        if (reason is FileNotFoundException)
+            return;
+
+        Error($"The type \"{type.Name}\" threw a", reason);
     }
 }
 
@@ -46,7 +50,7 @@ static Exception Innermost<T>(T ex)
     where T : Exception =>
     ex.InnerException is var inner && inner is null ? ex : inner is T nested ? Innermost(nested) : inner;
 
-static Type[] ToTypes(Assembly asm)
+static IList<Type> ToTypes(Assembly asm)
 {
     try
     {
@@ -55,7 +59,10 @@ static Type[] ToTypes(Assembly asm)
     catch (ReflectionTypeLoadException ex)
     {
         var reason = Innermost(ex);
-        Warning($"The assembly {asm.GetName().Name} cannot be exhaustively tested due to a", reason);
-        return ex.Types;
+        var types = ex.Types.Where(x => x is not null).ToList();
+        var names = string.Join(", ", types.Select(x => x.Name));
+
+        Warning($"The assembly \"{asm.GetName().Name}\" can only test {types.Count} types ({names}) due to a", reason);
+        return types;
     }
 }
