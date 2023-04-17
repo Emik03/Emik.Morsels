@@ -1,16 +1,5 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <!-- Common and/or default values that reference values in Directory.Build.props. -->
-    <PropertyGroup>
-        <Title>$(AssemblyName)</Title>
-        <Version>$(FileVersion)</Version>
-        <AssemblyVersion>$(FileVersion)</AssemblyVersion>
-        <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
-        <InformationalVersion>$(FileVersion)</InformationalVersion>
-        <AssemblySearchPaths>$(Morsels)/References/;$(AssemblySearchPaths)</AssemblySearchPaths>
-        <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
-        <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
-    </PropertyGroup>
     <!-- Use all compatible Fody projects for C# in .NET Framework 2.0 - 3.5. -->
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <WeaverConfiguration>
@@ -173,19 +162,9 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Properties for Roslyn analyzer projects. -->
-    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    </PropertyGroup>
-    <!-- Properties for Unit Test projects. -->
-    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <IsPackable>false</IsPackable>
-        <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
-        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
-    </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <FileVersion>4.0</FileVersion>
+        <FileVersion>4</FileVersion>
         <Nullable>annotations</Nullable>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
@@ -205,6 +184,27 @@
                 <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Common and/or default values that reference values in Directory.Build.props. -->
+    <PropertyGroup>
+        <Title>$(AssemblyName)</Title>
+        <Version>$(FileVersion)</Version>
+        <AssemblyVersion>$(FileVersion)</AssemblyVersion>
+        <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
+        <InformationalVersion>$(FileVersion)</InformationalVersion>
+        <AssemblySearchPaths>$(Morsels)/References/;$(AssemblySearchPaths)</AssemblySearchPaths>
+        <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
+        <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
+    </PropertyGroup>
+    <!-- Properties for Roslyn analyzer projects. -->
+    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    </PropertyGroup>
+    <!-- Properties for Unit Test projects. -->
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <IsPackable>false</IsPackable>
+        <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
+        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
