@@ -251,16 +251,11 @@
     </ItemGroup>
     <!-- Only Unit Tests should include additional global imports to make writing doctests barable. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <Compile Remove="$(Morsels)Compile/Source/References/NUnit/**/*.cs"/>
+        <Compile Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
     </ItemGroup>
-    <!-- Add explicit references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
-    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
-        <Reference Include="System" Private="false"/>
-        <Reference Include="System.Xml" Private="false"/>
-        <Reference Include="System.Core" Private="false"/>
-        <Reference Include="System.Data" Private="false"/>
-        <Reference Include="System.Numerics" Private="false" HintPath="$(Morsels)References/System.Numerics.dll"/>
-        <Reference Include="mscorlib" Aliases="global, ms" Private="false" HintPath="$(Morsels)References/mscorlib.dll"/>
+    <!-- F# expects a System.Numerics file which doesn't exist normally. -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <Reference Include="System.Numerics" Private="false" HintPath="$(Morsels)/References/mscorlib.dll"/>
     </ItemGroup>
     <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">

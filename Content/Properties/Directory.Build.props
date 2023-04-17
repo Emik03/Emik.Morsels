@@ -56,6 +56,10 @@
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('~/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">~/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
     </PropertyGroup>
+    <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
+    <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
+        <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../$(Morsels)'))</Morsels>
+    </PropertyGroup>
     <!-- F# exclusive properties. -->
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
         <TailCalls>true</TailCalls>
@@ -76,7 +80,7 @@
     </ItemGroup>
     <!-- F# code snippets for F# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
-        <Compile Include="$(Morsels)/Compile/**/*.fs"/>
+        <Compile Include="$(Morsels)/Compile/**/*.fs" Link="Source/Emik.Morsels/*.fs"/>
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>
@@ -125,7 +129,7 @@
     </ItemGroup>
     <!-- F# latest for .NET Core. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
-        <PackageReference Include="FSharp.Core" Version="7.0.0"/>
+        <PackageReference Include="FSharp.Core" Version="7.0.300-beta.23176.1"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.5.1 or less. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))">
@@ -139,15 +143,19 @@
     <ItemGroup Condition="'$(OutputType)' == 'Exe' and '$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
         <PackageReference Include="SmallSharp" Version="1.1.7" PrivateAssets="all"/>
     </ItemGroup>
-    <!-- Keep Talking and Nobody Explodes references. -->
+    <!-- Keep Talking and Nobody Explodes references that F# hates for some reason. -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
+    </ItemGroup>
+    <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
-        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
-        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
+        <Reference Include="mscorlib" Aliases="global, ms" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46'))">

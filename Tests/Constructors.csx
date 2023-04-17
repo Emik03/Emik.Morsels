@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -15,7 +16,12 @@ catch (Exception ex)
 
 Environment.Exit(0);
 
-static void Error(string message, Exception ex) => Console.WriteLine($"ERROR: {message} {ex.GetType()}: {ex.Message}");
+static void Error(string message, Exception ex) => Log("ERROR", message, ex);
+
+static void Warning(string message, Exception ex) => Log("WARNING", message, ex);
+
+static void Log(string prefix, string message, Exception ex) =>
+    Console.WriteLine($"{prefix}: {message} {ex.GetType()}: {ex.Message}");
 
 static void Iterate(Assembly asm) =>
     ToTypes(asm)
@@ -36,8 +42,9 @@ static void RunClassConstructor(Type type)
     }
 }
 
-static Exception Innermost(TypeInitializationException ex) =>
-    ex.InnerException is var inner && inner is TypeInitializationException nested ? Innermost(nested) : inner;
+static Exception Innermost<T>(T ex)
+    where T : Exception =>
+    ex.InnerException is var inner && inner is null ? ex : inner is T nested ? Innermost(nested) : inner;
 
 static Type[] ToTypes(Assembly asm)
 {
@@ -47,6 +54,8 @@ static Type[] ToTypes(Assembly asm)
     }
     catch (ReflectionTypeLoadException ex)
     {
+        var reason = Innermost(ex);
+        Warning($"The assembly {asm.GetName().Name} cannot be exhaustively tested due to a", reason);
         return ex.Types;
     }
 }
