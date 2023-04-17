@@ -1,11 +1,24 @@
 // SPDX-License-Identifier: MPL-2.0
+using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+if (args is not [var path])
+    return;
+
+var dir = Path.GetDirectoryName(path);
+var name = Path.GetFileName(path);
+
+AppDomain.CurrentDomain.AssemblyResolve += (_, args) =>
+    new DirectoryInfo(dir)
+        .GetFiles("*.dll")
+        .FirstOrDefault(x => x.Name == $"{args.Name}.dll") is { } dep
+        ? Assembly.LoadFile(dep.FullName)
+        : null;
+
 try
 {
-    if (args is not [var path] || Assembly.LoadFile(path) is not { } asm)
-        return;
+    var asm = Assembly.LoadFile(path);
 
     Iterate(asm);
 }
