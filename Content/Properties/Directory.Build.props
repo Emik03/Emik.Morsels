@@ -85,8 +85,8 @@
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>
+        <PackageReference Include="Fody" Version="6.7.0" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
-        <PackageReference Include="Fody" Version="6.6.5-beta2" PrivateAssets="all"/>
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.1.1" PrivateAssets="all"/>
         <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all"/>
@@ -101,7 +101,7 @@
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.29" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.34" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.2.0" PrivateAssets="all"/>
@@ -115,9 +115,9 @@
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
         <PackageReference Include="JetBrainsAnnotations.Fody" Version="2.17.0" PrivateAssets="all" IncludeAssets="compile"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23121.1" PrivateAssets="all"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0-eap1" PrivateAssets="all" IncludeAssets="compile"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23121.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" PrivateAssets="all"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0-eap2" PrivateAssets="all" IncludeAssets="compile"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23165.1" PrivateAssets="all"/>
     </ItemGroup>
     <!-- F# latest for .NET Framework 2.0 - 4.6. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))">
