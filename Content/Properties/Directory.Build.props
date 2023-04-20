@@ -24,6 +24,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+        <WarningsAsErrors>$(WarningsAsErrors);EAM001</WarningsAsErrors>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -107,7 +108,6 @@
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.8.1" PrivateAssets="all"/>
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
-        <PackageReference Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="1.0.1.1" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.2.0" PrivateAssets="all"/>
