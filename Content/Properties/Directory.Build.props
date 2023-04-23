@@ -69,8 +69,8 @@
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <AdditionalFiles Include="*.expected"/>
-        <AdditionalFiles Include="$([MSBuild]::GetPathOfFileAbove('global.json'))"/>
-        <AdditionalFiles Include="$([MSBuild]::GetPathOfFileAbove('stylecop.json'))"/>
+        <AdditionalFiles Include="$([MSBuild]::GetPathOfFileAbove('global.json', '$(MSBuildProjectFullPath)../')))"/>
+        <AdditionalFiles Include="$([MSBuild]::GetPathOfFileAbove('stylecop.json', '$(MSBuildProjectFullPath)../')))"/>
         <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
         <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
         <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
