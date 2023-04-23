@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace EmptyNamespace
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace StructCanBeMadeReadOnly
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 0660, 0661, 0809, 8500, CA1066, MA0048
+#pragma warning disable 0660, 0661, 0809, 8500, CA1066, IDE0250, MA0048, MA0102, SA1137
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
@@ -11,7 +11,7 @@ namespace System;
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    unsafe
+unsafe
 #if !NO_REF_STRUCTS
     ref
 #endif
@@ -377,7 +377,7 @@ readonly
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    unsafe
+unsafe
 #if !NO_REF_STRUCTS
     ref
 #endif

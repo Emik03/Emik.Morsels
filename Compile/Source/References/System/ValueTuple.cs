@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable ArrangeAttributes ArrangeNamespaceBody CheckNamespace EmptyNamespace FunctionComplexityOverflow InconsistentNaming SuspiciousTypeConversion.Global
+// ReSharper disable ArrangeAttributes ArrangeNamespaceBody BadPreprocessorIndent CheckNamespace EmptyNamespace FunctionComplexityOverflow InconsistentNaming StructCanBeMadeReadOnly SuspiciousTypeConversion.Global
 // Shamelessly stolen from https://raw.githubusercontent.com/igor-tkachev/Portable.System.ValueTuple/master/Portable.System.ValueTuple.cs
 // and creatively reworked. Which is...
 //
@@ -9,7 +9,7 @@
 //
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-#pragma warning disable CA1200, CA1508, CA2208, CA5394, DOC100, DOC202, IDE0161, MA0012, MA0015, MA0048, MA0051, MA0097, SA1129, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
+#pragma warning disable CA1200, CA1508, CA1710, CA1815, CA2208, CA5394, DOC100, DOC202, IDE0161, IDE0250, IDE0251, MA0012, MA0015, MA0048, MA0051, MA0097, MA0102, SA1129, SA1137, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
 namespace System
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER || NETCOREAPP && !NETCOREAPP2_0_OR_GREATER

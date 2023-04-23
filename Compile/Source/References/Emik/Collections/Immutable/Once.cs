@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
-#pragma warning disable CA1710, CA1815
-
-// ReSharper disable once CheckNamespace
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0102, SA1137
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -27,7 +26,7 @@ static partial class OnceFactory
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Once{T}"/> struct. Prepares enumeration of a single item forever.

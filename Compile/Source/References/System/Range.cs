@@ -1,9 +1,8 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace System;
-
-#pragma warning disable MA0008, MA0048, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649
+#pragma warning disable IDE0250, MA0008, MA0048, MA0102, SA1137, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
 static partial class RangeMethodsWithoutValueTuples
 {
@@ -51,7 +50,7 @@ static partial class RangeMethodsWithoutValueTuples
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Range : IEquatable<Range>
+partial struct Range : IEquatable<Range>
 {
     /// <summary>Construct a Range object using the start and end indexes.</summary>
     /// <param name="start">Represent the inclusive start index of the range.</param>

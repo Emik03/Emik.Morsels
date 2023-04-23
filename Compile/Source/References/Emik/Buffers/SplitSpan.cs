@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
+#pragma warning disable IDE0250, MA0102, SA1137
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
@@ -97,7 +98,7 @@ static partial class SplitFactory
 readonly
 #endif
 #if !NO_REF_STRUCTS
-    ref
+ref
 #endif
     partial struct SplitSpan<T>
 #if UNMANAGED_SPAN

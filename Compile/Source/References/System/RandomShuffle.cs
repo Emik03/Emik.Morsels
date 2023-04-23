@@ -2,7 +2,7 @@
 #if !NET8_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System;
-
+#pragma warning disable CS8500
 /// <summary>The backport of Shuffle methods for <see cref="Random"/>.</summary>
 static partial class RandomShuffle
 {
@@ -14,11 +14,12 @@ static partial class RandomShuffle
     /// <typeparam name="T">The type of array.</typeparam>
     /// <param name="that">The instance of <see cref="Random"/>.</param>
     /// <param name="values">The array to shuffle.</param>
-    public static void Shuffle<T>(this Random that, T[] values)
+    // ReSharper disable once RedundantUnsafeContext
+    public static unsafe void Shuffle<T>(this Random that, T[] values)
     {
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        fixed (var t = values)
-            that.Shuffle(new(t, values.Length));
+        fixed (T* t = values)
+            Shuffle(that, new Span<T>(t, values.Length));
 #else
         Shuffle(that, values.AsSpan());
 #endif

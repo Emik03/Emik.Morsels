@@ -1,8 +1,8 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-
+#pragma warning disable IDE0250, IDE0251, MA0102, SA1137
 using static CollectionAccessType;
 
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
@@ -25,7 +25,7 @@ static partial class YesFactory
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
