@@ -23,7 +23,11 @@ static partial class OnceFactory
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-readonly partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Once{T}"/> struct. Prepares enumeration of a single item forever.

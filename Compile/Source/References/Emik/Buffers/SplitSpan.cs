@@ -93,7 +93,9 @@ static partial class SplitFactory
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="T">The type of element from the span.</typeparam>
 [StructLayout(LayoutKind.Auto)]
+#if !NO_READONLY_STRUCTS
 readonly
+#endif
 #if !NO_REF_STRUCTS
     ref
 #endif

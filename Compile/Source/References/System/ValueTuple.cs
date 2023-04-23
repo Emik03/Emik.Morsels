@@ -122,7 +122,10 @@ namespace System
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
-    readonly partial struct ValueTuple : IEquatable<ValueTuple>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple : IEquatable<ValueTuple>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -440,7 +443,10 @@ namespace System
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
-    readonly partial struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1> : IEquatable<ValueTuple<T1>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -599,7 +605,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -788,7 +797,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2, T3> : IEquatable<ValueTuple<T1, T2, T3>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -997,7 +1009,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2, T3, T4> : IEquatable<ValueTuple<T1, T2, T3, T4>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1229,7 +1244,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2, T3, T4, T5> : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1483,7 +1501,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2, T3, T4, T5, T6> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -1761,7 +1782,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7> : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
@@ -2069,7 +2093,10 @@ namespace System
     [Serializable]
 #endif
     [StructLayout(LayoutKind.Auto)]
-    readonly partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+        partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
         IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,

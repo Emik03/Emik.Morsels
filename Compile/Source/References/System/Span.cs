@@ -8,7 +8,10 @@ namespace System;
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Auto)]
-readonly unsafe
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    unsafe
 #if !NO_REF_STRUCTS
     ref
 #endif
@@ -371,7 +374,10 @@ readonly unsafe
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="ReadOnlySpan{T}"/>.</typeparam>
 [DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Auto)]
-readonly unsafe
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    unsafe
 #if !NO_REF_STRUCTS
     ref
 #endif

@@ -21,7 +21,11 @@ static partial class YesFactory
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-readonly partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
