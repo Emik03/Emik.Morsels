@@ -2,7 +2,7 @@
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-#pragma warning disable 8500, MA0102, SA1114, SA1137
+#pragma warning disable 8500, MA0102, SA1137
 using static Math;
 using static Span;
 
@@ -472,6 +472,10 @@ static partial class Similarity
         comparer ??= EqualityComparer<TItem>.Default.Equals;
 
         var jaro = JaroInner(left, right, leftLength, rightLength, indexer, comparer);
+
+        if (leftLength is 0 || rightLength is 0)
+            return jaro;
+
         var slice = Slice(left, right, leftLength, rightLength, indexer, comparer) * Grade(leftLength, rightLength);
 
         return Max(jaro, slice);
@@ -535,7 +539,7 @@ static partial class Similarity
 
     [MustUseReturnValue, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
-        ref Span<byte> visited,
+        Span<byte> visited,
         (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>) args
     )
     {
@@ -547,7 +551,7 @@ static partial class Similarity
         for (var i = 0; i < leftLength; i++)
             if (InBounds(leftLength, rightLength, i))
                 rightPreviousIndex = Next(
-                    ref visited,
+                    visited,
                     left,
                     right,
                     leftLength,
@@ -580,11 +584,11 @@ static partial class Similarity
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static SpanFunc<byte, (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>), double> Fun<T, TItem>() =>
-        static (span, tuple) => JaroAllocated(ref span, tuple);
+        static (span, tuple) => JaroAllocated(span, tuple);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
-        ref Span<byte> visited,
+        Span<byte> visited,
         T left,
         T right,
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -599,7 +603,7 @@ static partial class Similarity
     {
         for (var rightIndex = 0; rightIndex < rightLength; rightIndex++)
         {
-            if (!ShouldProceed(ref visited, left, right, leftLength, rightLength, leftIndex, rightIndex, comparer, indexer))
+            if (!ShouldProceed(visited, left, right, leftLength, rightLength, leftIndex, rightIndex, comparer, indexer))
                 continue;
 
             visited[rightIndex]++;
@@ -616,7 +620,7 @@ static partial class Similarity
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     static bool ShouldProceed<T, TItem>(
-        ref Span<byte> visited,
+        Span<byte> visited,
         T leftLength,
         T rightLength,
         [ValueRange(2, int.MaxValue)] int aLen,
