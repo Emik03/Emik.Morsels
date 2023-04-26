@@ -102,6 +102,46 @@ sealed partial class Split<T> : ICollection<T>,
     int ICollection<T>.Count => 2;
 
     /// <inheritdoc />
+    [Pure]
+    public ICollection<T> Values => this;
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
+    [Pure]
+    bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int ICollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
+    [Pure]
+    public T this[bool key]
+    {
+        get => key ? Truthy : Falsy;
+        set => _ = key ? Truthy = value : Falsy = value;
+    }
+
+    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<T>.Count => 2;
+
+    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
+
+    /// <inheritdoc />
     public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
         array[arrayIndex] = Truthy;
@@ -135,30 +175,6 @@ sealed partial class Split<T> : ICollection<T>,
     /// <inheritdoc />
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc />
-    [Pure]
-    public ICollection<T> Values => this;
-
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-    [Pure]
-    bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int ICollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
-    [Pure]
-    public T this[bool key]
-    {
-        get => key ? Truthy : Falsy;
-        set => _ = key ? Truthy = value : Falsy = value;
-    }
 
     /// <inheritdoc />
     public void Add(bool key, T value) => _ = key ? Truthy = value : Falsy = value;
@@ -210,22 +226,6 @@ sealed partial class Split<T> : ICollection<T>,
         yield return new(true, Truthy);
         yield return new(false, Falsy);
     }
-
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<T>.Count => 2;
-
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
 
     /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
     [Pure]
