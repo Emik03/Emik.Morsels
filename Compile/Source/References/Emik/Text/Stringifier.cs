@@ -18,13 +18,13 @@ static partial class Stringifier
     const string
         Else = "th",
         False = "false",
-        First = "st",
+        FirstOrd = "st",
         KeyValueSeparator = ": ",
         Negative = "-",
         Null = "null",
-        Second = "nd",
+        SecondOrd = "nd",
         Separator = ", ",
-        Third = "rd",
+        ThirdOrd = "rd",
         True = "true";
 #pragma warning restore CA1823, IDE0051
 
@@ -94,7 +94,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        IEnumerable<T> values,
+            IEnumerable<T> values,
         char separator
     )
     {
@@ -122,7 +122,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        IEnumerable<T> values,
+            IEnumerable<T> values,
         string separator = Separator
     )
     {
@@ -148,7 +148,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        Type? type
+            Type? type
     ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
@@ -163,7 +163,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        int i,
+            int i,
         bool indexByZero = false
     ) =>
         indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
@@ -174,7 +174,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        string source,
+            string source,
         string separator
     ) =>
         source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
@@ -196,7 +196,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        T? source
+            T? source
     ) =>
         Stringify(source, false, true, false);
 
@@ -226,7 +226,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-        T? source,
+            T? source,
         bool isSurrounded,
         bool isRecursive = true,
         bool forceReflection = true
@@ -266,9 +266,9 @@ static partial class Stringifier
     static string ToOrdinal(this int i) =>
         $@"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
         {
-            1 => First,
-            2 => Second,
-            3 => Third,
+            1 => FirstOrd,
+            2 => SecondOrd,
+            3 => ThirdOrd,
             _ => Else,
         }}";
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER

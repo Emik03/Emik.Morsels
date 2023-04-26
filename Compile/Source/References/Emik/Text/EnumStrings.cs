@@ -20,7 +20,7 @@ static partial class EnumStrings
     [Pure]
     public static string AsString<T>(this T value)
         where T : Enum =>
-        Caching<T>.From(value);
+        StringCaching<T>.From(value);
 
     /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
     /// <remarks><para>
@@ -33,9 +33,9 @@ static partial class EnumStrings
     [Pure]
     public static T As<T>(this string value)
         where T : Enum =>
-        Caching<T>.To(value);
+        StringCaching<T>.To(value);
 
-    static class Caching<T>
+    static class StringCaching<T>
         where T : Enum
     {
         public static Converter<T, string> From { get; } = Make<Converter<T, string>>(false);

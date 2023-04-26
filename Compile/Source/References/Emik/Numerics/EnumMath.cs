@@ -34,7 +34,7 @@ static partial class EnumMath
     [Pure]
     public static int AsInt<T>(this T value)
         where T : Enum =>
-        Caching<T>.From(value);
+        MathCaching<T>.From(value);
 
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
     /// <typeparam name="T">The type of enum to get the values from.</typeparam>
@@ -53,7 +53,7 @@ static partial class EnumMath
     [Pure]
     public static T As<T>(this int value)
         where T : Enum =>
-        Caching<T>.To(value);
+        MathCaching<T>.To(value);
 
     /// <summary>Performs a negation operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -177,7 +177,7 @@ static partial class EnumMath
         where T : Enum =>
         op(left.AsInt(), right.AsInt());
 
-    static class Caching<T>
+    static class MathCaching<T>
         where T : Enum
     {
         public static Converter<T, int> From { get; } = Make<Converter<T, int>>(false);

@@ -239,8 +239,12 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer) =>
-        left.Jaro(right, comparer is null ? null : comparer.Equals);
+    public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            left.Jaro(right, comparer is null ? null : comparer.Equals);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -254,7 +258,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN
+#if UNMANAGED_SPAN || CSHARPREPL
         where T : unmanaged
 #endif
     {
@@ -287,8 +291,12 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double
-        JaroEmik<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer) =>
-        left.JaroEmik(right, comparer is null ? null : comparer.Equals);
+        JaroEmik<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            left.JaroEmik(right, comparer is null ? null : comparer.Equals);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -306,7 +314,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN
+#if UNMANAGED_SPAN || CSHARPREPL
         where T : unmanaged
 #endif
     {
@@ -342,8 +350,12 @@ static partial class Similarity
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
-    ) =>
-        left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -361,7 +373,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN
+#if UNMANAGED_SPAN || CSHARPREPL
         where T : unmanaged
 #endif
     {
@@ -779,11 +791,13 @@ static partial class Similarity
 
     /// <summary>Represents a pointer with a length.</summary>
     [StructLayout(LayoutKind.Auto)]
-
 #if !NO_READONLY_STRUCTS
     readonly
 #endif
         unsafe partial struct Fat<T>
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
     {
         const string E = "Value must be non-negative and less than the length.";
 
