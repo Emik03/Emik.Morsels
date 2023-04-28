@@ -218,7 +218,7 @@
         <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
     </ItemGroup>
     <!-- Allow the project to opt-out of this reference. -->
-    <ItemGroup Condition="$(DisableDefaultDocumentation) == 'true'">
+    <ItemGroup Condition="$(DisableDefaultDocumentation) != 'true'">
         <PackageReference Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
