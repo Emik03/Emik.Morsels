@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NET35 && WAWA
 namespace Wawa.Modules;
+#pragma warning disable SA1137
 #else
 // ReSharper disable CheckNamespace
 namespace Emik.Morsels;
@@ -11,7 +12,7 @@ namespace Emik.Morsels;
 #if NET35 && WAWA
 public
 #endif
-static partial class Stringifier
+    static partial class Stringifier
 {
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
@@ -94,7 +95,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            IEnumerable<T> values,
+        IEnumerable<T> values,
         char separator
     )
     {
@@ -122,7 +123,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            IEnumerable<T> values,
+        IEnumerable<T> values,
         string separator = Separator
     )
     {
@@ -148,7 +149,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            Type? type
+        Type? type
     ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
@@ -163,7 +164,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            int i,
+        int i,
         bool indexByZero = false
     ) =>
         indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
@@ -174,7 +175,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            string source,
+        string source,
         string separator
     ) =>
         source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
@@ -196,7 +197,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            T? source
+        T? source
     ) =>
         Stringify(source, false, true, false);
 
@@ -226,7 +227,7 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-            T? source,
+        T? source,
         bool isSurrounded,
         bool isRecursive = true,
         bool forceReflection = true
