@@ -9,12 +9,15 @@ using static Span;
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity
 {
+    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
+
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro(this string? left, string? right) => left.Jaro(right, EqualityComparer<char>.Default);
+    public static double Jaro(this string? left, string? right) =>
+        string.Equals(left, right, DefaultCharComparer) ? 1 : left.Jaro(right, EqualityComparer<char>.Default);
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -43,7 +46,7 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik(this string? left, string? right) =>
-        left.JaroEmik(right, EqualityComparer<char>.Default);
+        string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroEmik(right, EqualityComparer<char>.Default);
 
     /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
     /// <remarks><para>
@@ -78,7 +81,7 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler(this string? left, string? right) =>
-        left.JaroWinkler(right, EqualityComparer<char>.Default);
+        string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroWinkler(right, EqualityComparer<char>.Default);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
     /// <remarks><para>
