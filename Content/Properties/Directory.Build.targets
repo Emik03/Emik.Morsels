@@ -235,7 +235,7 @@
     <!-- Fody projects should reference FodyHelpers, and also not themselves. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))">
         <PackageReference Remove="$(AssemblyName)"/>
-        <PackageReference Include="FodyHelpers" Version="6.6.4"/>
+        <PackageReference Include="FodyHelpers" Version="6.7.0"/>
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
