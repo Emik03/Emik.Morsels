@@ -297,7 +297,7 @@ public
         if (!s_hasMethods.ContainsKey(typeof(T)))
 #pragma warning disable CS0253
             s_hasMethods[typeof(T)] =
-                typeof(object) == typeof(T).GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;
+                typeof(object) != typeof(T).GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;
 #pragma warning restore CS0253
 
         if (s_hasMethods[typeof(T)] || !isRecursive)
