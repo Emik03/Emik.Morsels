@@ -20,7 +20,7 @@ static partial class NullableItems
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="iterator">The item to return with adjusted nullability.</param>
-    /// <returns>The parameter <paramref name="iterator"/>, with <see cref="ItemCanBeNullAttribute"/>.</returns>
+    /// <returns>The parameter <paramref name="iterator"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
