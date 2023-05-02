@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET8_0_OR_GREATER
-// ReSharper disable once CheckNamespace RedundantUnsafeContext
+// ReSharper disable CheckNamespace RedundantUnsafeContext
 namespace System;
 #pragma warning disable CS8500
 /// <summary>The backport of GetItems methods for <see cref="Random"/>.</summary>
