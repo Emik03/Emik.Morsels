@@ -193,6 +193,7 @@
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
+        <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
         <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
     </PropertyGroup>
     <!-- Reference weaved reference dll's from Emik.Morsels. -->

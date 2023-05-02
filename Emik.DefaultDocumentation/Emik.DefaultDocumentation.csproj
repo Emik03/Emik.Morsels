@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <NoTests>true</NoTests>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Remove="UnitGenerator" />
+        <PackageReference Include="DefaultDocumentation.Api" Version="0.8.3-beta1" />
+        <PackageReference Include="DefaultDocumentation.Markdown" Version="0.8.3-beta1" />
+    </ItemGroup>
+</Project>
