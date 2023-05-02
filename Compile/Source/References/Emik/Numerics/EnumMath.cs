@@ -3,8 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+using static System.Linq.Expressions.Expression;
 using static Enum;
-using static Expression;
+using Expression = System.Linq.Expressions.Expression;
 
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
@@ -189,7 +190,7 @@ static partial class EnumMath
         {
             var parameter = Parameter(isReverse ? typeof(int) : typeof(T), nameof(T));
             var underlying = GetUnderlyingType(typeof(T));
-            var cast = isReverse ? (Expression)parameter : Convert(parameter, underlying);
+            Expression cast = isReverse ? parameter : Convert(parameter, underlying);
 
             cast = underlying != typeof(int) ? Convert(parameter, isReverse ? underlying : typeof(int)) : cast;
             cast = isReverse ? Convert(cast, typeof(T)) : cast;

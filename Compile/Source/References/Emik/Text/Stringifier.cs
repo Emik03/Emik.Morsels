@@ -1,11 +1,14 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
+#pragma warning disable SA1137
 #if NET35 && WAWA
 namespace Wawa.Modules;
-#pragma warning disable SA1137
 #else
 // ReSharper disable CheckNamespace
 namespace Emik.Morsels;
 #endif
+
+using static System.Linq.Expressions.Expression;
+using Expression = System.Linq.Expressions.Expression;
 
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
@@ -56,10 +59,10 @@ public
     };
 
     static readonly ConstantExpression
-        s_exEmpty = Expression.Constant(""),
-        s_exFalse = Expression.Constant(false),
-        s_exSeparator = Expression.Constant(Separator),
-        s_exTrue = Expression.Constant(true);
+        s_exEmpty = Constant(""),
+        s_exFalse = Constant(false),
+        s_exSeparator = Constant(Separator),
+        s_exTrue = Constant(true);
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
@@ -322,7 +325,7 @@ public
     [MustUseReturnValue]
     static Func<T, string> GenerateStringifier<T>()
     {
-        var exParam = Expression.Parameter(typeof(T), nameof(T));
+        var exParam = Parameter(typeof(T), nameof(T));
 
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var array = typeof(T)
