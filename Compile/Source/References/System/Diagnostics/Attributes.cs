@@ -6,6 +6,7 @@
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
+using Attribute = System.Attribute;
 
 namespace System.Diagnostics.CodeAnalysis
 {
