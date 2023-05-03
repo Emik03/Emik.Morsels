@@ -5,8 +5,8 @@
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Remove="UnitGenerator" />
-        <PackageReference Include="DefaultDocumentation.Api" Version="0.8.3-beta1" />
-        <PackageReference Include="DefaultDocumentation.Markdown" Version="0.8.3-beta1" />
+        <PackageReference Remove="UnitGenerator"/>
+        <PackageReference Include="DefaultDocumentation.Api" Version="0.8.3-beta1"/>
+        <PackageReference Include="DefaultDocumentation.Markdown" Version="0.8.3-beta1"/>
     </ItemGroup>
 </Project>
