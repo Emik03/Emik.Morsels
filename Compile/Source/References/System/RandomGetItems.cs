@@ -48,7 +48,8 @@ static partial class RandomGetItems
             return GetItems(that, new ReadOnlySpan<T>(t, choices.Length), length);
     }
 #else
-        => GetItems(that, new ReadOnlySpan<T>(choices), length);
+        =>
+            GetItems(that, new ReadOnlySpan<T>(choices), length);
 #endif
 
     /// <summary>Creates an array populated with items chosen at random from the provided set of choices.</summary>

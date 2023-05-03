@@ -21,7 +21,9 @@ static partial class RandomShuffle
         fixed (T* t = values)
             Shuffle(that, new Span<T>(t, values.Length));
 #else
+#pragma warning disable IDE0022
         Shuffle(that, values.AsSpan());
+#pragma warning restore IDE0022
 #endif
     }
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NETFRAMEWORK || NET40_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
 
 using static System.Linq.Expressions.Expression;
