@@ -5,7 +5,7 @@ namespace Emik.DefaultDocumentation;
 [CLSCompliant(false)]
 public sealed class Morsels : AMarkdownFactory
 {
-    static readonly HashSet<string> s_hash = new(StringComparer.Ordinal);
+    static readonly Dictionary<string, DocItem> s_seen = new(StringComparer.Ordinal);
 
     /// <inheritdoc />
     public override string Name => nameof(Morsels);
@@ -18,12 +18,15 @@ public sealed class Morsels : AMarkdownFactory
 
         var name = $"{Parent(item)}{MemberName(item)}{TypeParameters(item)}{Parameters(item)}";
 
-        if (s_hash.Contains(name))
-            throw new IOException($"Duplicate file name: {name}");
+        if (s_seen.TryGetValue(name, out var seen) && item.Id != seen.Id)
+            Throw(item, name, seen);
 
-        s_hash.Add(name);
+        s_seen[name] = item;
         return name;
     }
+
+    static void Throw(DocItem item, string name, DocItem seen) =>
+        throw new IOException($"Duplicate file name \"{name}\" at {seen.Stringify(true)} and {item.Stringify(true)}.");
 
     static string Parent(DocItem item) =>
         item.Parent is EntityDocItem { Entity: { SymbolKind: not SymbolKind.Namespace, Name: var name } } parent
