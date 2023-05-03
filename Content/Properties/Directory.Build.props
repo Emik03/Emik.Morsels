@@ -31,7 +31,7 @@
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <DefaultDocumentationFileNameFactory>Morsels</DefaultDocumentationFileNameFactory>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
-        <DefaultDocumentationInvalidCharReplacement>_</DefaultDocumentationInvalidCharReplacement>
+        <DefaultDocumentationInvalidCharReplacement>~</DefaultDocumentationInvalidCharReplacement>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
         <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
