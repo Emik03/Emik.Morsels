@@ -243,7 +243,7 @@ static partial class Stringifier
     ) =>
         source switch
         {
-#if !NET20 && !NET30
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             _ when forceReflection => source.UseStringifier(),
 #endif
             null => Null,
@@ -257,7 +257,7 @@ static partial class Stringifier
             IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
             ICollection l => $"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
             IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier()}]",
-#if NET20 || NET30
+#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
             _ => source.StringifyObject(isRecursive),
@@ -267,7 +267,7 @@ static partial class Stringifier
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
 
-#if !NET20 && !NET30
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
@@ -396,7 +396,7 @@ static partial class Stringifier
         return builder;
     }
 
-#if !NET20 && !NET30
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static StringBuilder UnfoldedName(this Type? type, StringBuilder sb)
     {
         StringBuilder Append(Type x)

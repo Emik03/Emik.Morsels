@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #pragma warning disable CS8632, MA0048, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 using SecurityAction = System.Security.Permissions.SecurityAction;
 #endif
@@ -104,3 +105,4 @@ static partial class Exit
         throw Unreachable;
     }
 }
+#endif
