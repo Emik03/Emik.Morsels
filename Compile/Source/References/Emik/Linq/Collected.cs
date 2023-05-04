@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
+
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -35,7 +35,9 @@ static partial class Collected
         iterable is null
             ? null
             : iterable as ICollection<T> ??
-            (iterable.TryGetNonEnumeratedCount(out var count) ? new Collection<T>(iterable, count) : iterable.ToList());
+            (iterable.TryGetNonEnumeratedCount(out var count)
+                ? new Collection<T>(iterable, count)
+                : new List<T>(iterable));
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -44,7 +46,7 @@ static partial class Collected
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
+        iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 
     /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
@@ -133,7 +135,15 @@ static partial class Collected
 
         /// <inheritdoc />
         [Pure]
-        public bool Contains(T item) => _enumerable.Any(next => EqualityComparer<T>.Default.Equals(next, item));
+        public bool Contains(T item)
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var next in _enumerable)
+                if (EqualityComparer<T>.Default.Equals(next, item))
+                    return true;
+
+            return false;
+        }
 
         /// <inheritdoc />
         [Pure]
@@ -144,4 +154,3 @@ static partial class Collected
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => _enumerable.GetEnumerator();
     }
 }
-#endif
