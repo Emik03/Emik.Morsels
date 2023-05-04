@@ -76,7 +76,7 @@ static partial class Indexers
         if (!range.Start.IsFromEnd && !range.End.IsFromEnd)
             return Sub(iterable, range);
 
-        if (iterable.TryCount() is { } count && RangeStart(range, count) is var startRange)
+        if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
             return Sub(iterable, startRange);
 
         var arr = iterable.ToList();

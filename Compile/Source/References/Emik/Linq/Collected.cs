@@ -32,7 +32,10 @@ static partial class Collected
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ICollection<T> ?? iterable.ToList();
+        iterable is null
+            ? null
+            : iterable as ICollection<T> ??
+            (iterable.TryGetNonEnumeratedCount(out var count) ? new Collection<T>(iterable, count) : iterable.ToList());
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -61,5 +64,84 @@ static partial class Collected
 #pragma warning disable CS8620 // Checked later, technically could cause problems, but most factory methods are fine.
         (TList?)converter(iterable);
 #pragma warning restore CS8620
+
+    /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
+    sealed class Collection<T> : ICollection, ICollection<T>, IReadOnlyCollection<T>
+    {
+        [ProvidesContext]
+        readonly IEnumerable<T> _enumerable;
+
+        /// <summary>Initializes a new instance of the <see cref="Collection{T}"/> class.</summary>
+        /// <param name="enumerable">The enumerable to encapsulate.</param>
+        /// <param name="count">The pre-computed count.</param>
+        public Collection(IEnumerable<T> enumerable, [NonNegativeValue] int count)
+        {
+            _enumerable = enumerable;
+            Count = count;
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public bool IsSynchronized => true;
+
+        /// <inheritdoc cref="ICollection{T}.Count" />
+        [NonNegativeValue, Pure]
+        public int Count { get; }
+
+        /// <inheritdoc />
+        [Pure]
+        public object SyncRoot => _enumerable;
+
+        /// <inheritdoc />
+        public void CopyTo(Array array, [NonNegativeValue] int index)
+        {
+            var i = 0;
+
+            foreach (var next in _enumerable)
+            {
+                array.SetValue(next, index);
+                _ = checked(i++);
+            }
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator GetEnumerator() => _enumerable.GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        public bool IsReadOnly => true;
+
+        /// <inheritdoc />
+        public void Add(T item) { }
+
+        /// <inheritdoc />
+        public void Clear() { }
+
+        /// <inheritdoc />
+        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+        {
+            var i = 0;
+
+            foreach (var next in _enumerable)
+            {
+                array[arrayIndex] = next;
+                _ = checked(i++);
+            }
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Contains(T item) => _enumerable.Any(next => EqualityComparer<T>.Default.Equals(next, item));
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Remove(T item) => false;
+
+        /// <inheritdoc />
+        [Pure]
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _enumerable.GetEnumerator();
+    }
 }
 #endif

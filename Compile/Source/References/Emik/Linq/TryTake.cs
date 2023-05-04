@@ -6,28 +6,6 @@ namespace Emik.Morsels;
 /// <summary>Extension methods to attempt to grab values from enumerables.</summary>
 static partial class TryTake
 {
-    /// <summary>Attempts to determine the number of elements in a sequence without forcing an enumeration.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
-    /// <param name="source">A sequence that contains elements to be counted.</param>
-    /// <remarks><para>
-    /// The method performs a series of type tests, identifying common subtypes whose
-    /// count can be determined without enumerating; this includes <see cref="ICollection{T}"/>,
-    /// <see cref="ICollection"/>, and <see cref="IReadOnlyCollection{T}"/>.
-    /// </para><para>
-    /// The method is typically a constant-time operation, but ultimately this depends on the complexity
-    /// characteristics of the underlying collection implementation.
-    /// </para></remarks>
-    /// <returns>The length of the collection if pre-computed, or <see langword="null"/>.</returns>
-    [Pure]
-    public static int? TryCount<TSource>([NoEnumeration] this IEnumerable<TSource> source) =>
-        source switch
-        {
-            IReadOnlyCollection<TSource> col => col.Count,
-            ICollection<TSource> col => col.Count,
-            ICollection col => col.Count,
-            _ => null,
-        };
-
     /// <summary>Takes the last item lazily, or a fallback value.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
