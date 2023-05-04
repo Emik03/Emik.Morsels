@@ -14,7 +14,7 @@ public sealed class Morsels : AMarkdownFactory
     protected override string GetMarkdownFileName(IGeneralContext context, DocItem item)
     {
         if (item is AssemblyDocItem)
-            return "README";
+            return "index";
 
         var name = $"{Parent(item)}{MemberName(item)}{TypeParameters(item)}{Parameters(item)}";
 
