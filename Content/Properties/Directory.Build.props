@@ -148,8 +148,8 @@
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
     </ItemGroup>
-    <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
-    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+    <!-- Low .NET Framework versions require explicit references to the standard library. -->
+    <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <Reference Include="System" Private="false"/>
         <Reference Include="System.Xml" Private="false"/>
         <Reference Include="System.Core" Private="false"/>
@@ -157,6 +157,9 @@
         <Reference Include="System.Drawing" Private="false"/>
         <Reference Include="System.Xml.Linq" Private="false"/>
         <Reference Include="System.Runtime.Serialization" Private="false"/>
+    </ItemGroup>
+    <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
