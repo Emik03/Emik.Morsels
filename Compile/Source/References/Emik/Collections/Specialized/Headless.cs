@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -113,3 +113,4 @@ sealed partial class HeadlessList<T> : IList<T>
         return ret;
     }
 }
+#endif

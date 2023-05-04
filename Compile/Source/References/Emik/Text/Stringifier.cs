@@ -5,8 +5,7 @@ namespace Wawa.Modules;
 #else
 namespace Emik.Morsels;
 #if !(NET20 || NET30)
-using static System.Linq.Expressions.Expression;
-using Expression = System.Linq.Expressions.Expression;
+using static Expression;
 #endif
 
 #endif
@@ -16,7 +15,7 @@ using Expression = System.Linq.Expressions.Expression;
 #if NET35 && WAWA
 public
 #endif
-    static partial class Stringifier
+static partial class Stringifier
 {
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
@@ -38,6 +37,7 @@ public
 
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
     {
         [typeof(byte)] = "byte",
@@ -58,7 +58,7 @@ public
         [typeof(ushort)] = "ushort",
         [typeof(void)] = "void",
     };
-
+#endif
     static readonly ConstantExpression
         s_exEmpty = Constant(""),
         s_exFalse = Constant(false),
@@ -99,7 +99,7 @@ public
 #if !WAWA
         this
 #endif
-        IEnumerable<T> values,
+            IEnumerable<T> values,
         char separator
     )
     {
@@ -127,7 +127,7 @@ public
 #if !WAWA
         this
 #endif
-        IEnumerable<T> values,
+            IEnumerable<T> values,
         string separator = Separator
     )
     {
@@ -154,7 +154,7 @@ public
 #if !WAWA
         this
 #endif
-        Type? type
+            Type? type
     ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
@@ -170,7 +170,7 @@ public
 #if !WAWA
         this
 #endif
-        int i,
+            int i,
         bool indexByZero = false
     ) =>
         indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
@@ -181,12 +181,11 @@ public
 #if !WAWA
         this
 #endif
-        string source,
+            string source,
         string separator
     ) =>
         source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
 
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
     /// </summary>
@@ -203,7 +202,7 @@ public
 #if !WAWA
         this
 #endif
-        T? source
+            T? source
     ) =>
         Stringify(source, false, true, false);
 
@@ -233,14 +232,18 @@ public
 #if !WAWA
         this
 #endif
+#pragma warning disable SA1114 RCS1163
         T? source,
         bool isSurrounded,
         bool isRecursive = true,
         bool forceReflection = true
+#pragma warning restore SA1114 RCS1163
     ) =>
         source switch
         {
+#if !NET20 && !NET30
             _ when forceReflection => source.UseStringifier(),
+#endif
             null => Null,
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
@@ -252,12 +255,17 @@ public
             IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
             ICollection l => $"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
             IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier()}]",
+#if NET20 || NET30
+            _ => source.ToString(),
+#else
             _ => source.StringifyObject(isRecursive),
+#endif
         };
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
 
+#if !NET20 && !NET30
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
@@ -279,7 +287,6 @@ public
             _ => Else,
         }}";
 
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [Pure]
     static StringBuilder EnumeratorStringifier(this IEnumerator iterator)
     {
@@ -294,6 +301,7 @@ public
         return builder;
     }
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [MustUseReturnValue]
     static string StringifyObject<T>(this T source, bool isRecursive)
     {
@@ -339,37 +347,37 @@ public
 
         static MethodCallExpression Combine(MethodCallExpression prev, MethodCallExpression curr)
         {
-            var call = Expression.Call(s_combine, prev, s_exSeparator);
-            return Expression.Call(s_combine, call, curr);
+            var call = Call(s_combine, prev, s_exSeparator);
+            return Call(s_combine, call, curr);
         }
 
         Expression exResult = array.Any()
             ? array.Aggregate(Combine)
             : s_exEmpty;
 
-        return Expression
-           .Lambda<Func<T, string>>(exResult, exParam)
+        return Lambda<Func<T, string>>(exResult, exParam)
            .Compile();
     }
 
     [MustUseReturnValue]
     static MethodCallExpression GetMethodCaller(PropertyInfo info, Expression param)
     {
-        var exConstant = Expression.Constant($"{info.Name}{KeyValueSeparator}");
+        var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (info.PropertyType.IsByRefLike)
-            return Expression.Call(s_combine, exConstant, Expression.Call(param, s_toString));
+            return Call(s_combine, exConstant, Call(param, s_toString));
 #endif
 
         var method = s_stringify.MakeGenericMethod(info.PropertyType);
 
         Expression
-            exMember = Expression.MakeMemberAccess(param, info),
-            exCall = Expression.Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
+            exMember = MakeMemberAccess(param, info),
+            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
 
-        return Expression.Call(s_combine, exConstant, exCall);
+        return Call(s_combine, exConstant, exCall);
     }
+#endif
 
     [Pure]
     static StringBuilder DictionaryStringifier(this IDictionary dictionary)
@@ -386,6 +394,7 @@ public
         return builder;
     }
 
+#if !NET20 && !NET30
     static StringBuilder UnfoldedName(this Type? type, StringBuilder sb)
     {
         StringBuilder Append(Type x)
