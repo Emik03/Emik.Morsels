@@ -149,7 +149,7 @@
         <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
     </ItemGroup>
     <!-- Low .NET Framework versions require explicit references to the standard library. -->
-    <ItemGroup Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <Reference Include="System" Private="false"/>
         <Reference Include="System.Xml" Private="false"/>
         <Reference Include="System.Core" Private="false"/>
