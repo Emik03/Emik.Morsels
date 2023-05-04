@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable SA1137
+#pragma warning disable 1696, SA1137
 #if NET35 && WAWA
 namespace Wawa.Modules;
 #else
@@ -233,7 +233,7 @@ static partial class Stringifier
         this
 #endif
 #pragma warning disable SA1114 RCS1163
-        T? source,
+            T? source,
         bool isSurrounded,
         bool isRecursive = true,
         bool forceReflection = true

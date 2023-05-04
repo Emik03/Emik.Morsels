@@ -199,6 +199,7 @@ static partial class Each
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Action<TKey, TValue> action
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value);
@@ -223,6 +224,7 @@ static partial class Each
         TExternal external,
         [InstantHandle] Action<TKey, TValue, TExternal> action
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value, external);
@@ -244,6 +246,7 @@ static partial class Each
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Action<TKey, TValue, int> action
     )
+        where TKey : notnull
     {
         var i = 0;
 
@@ -270,6 +273,7 @@ static partial class Each
         TExternal external,
         [InstantHandle] Action<TKey, TValue, int, TExternal> action
     )
+        where TKey : notnull
     {
         var i = 0;
 

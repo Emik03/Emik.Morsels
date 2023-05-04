@@ -207,6 +207,7 @@ static partial class EachWithControlFlow
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Func<TKey, TValue, ControlFlow> func
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
@@ -232,6 +233,7 @@ static partial class EachWithControlFlow
         TExternal external,
         [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
@@ -254,6 +256,7 @@ static partial class EachWithControlFlow
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Func<TKey, TValue, int, ControlFlow> func
     )
+        where TKey : notnull
     {
         var i = 0;
 
@@ -281,6 +284,7 @@ static partial class EachWithControlFlow
         TExternal external,
         [InstantHandle] Func<TKey, TValue, int, TExternal, ControlFlow> func
     )
+        where TKey : notnull
     {
         var i = 0;
 
