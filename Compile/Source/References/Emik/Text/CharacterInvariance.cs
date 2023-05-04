@@ -153,7 +153,9 @@ static partial class CharacterInvariance
         return "";
     }
 
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
     [Pure]
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
+#endif
 }

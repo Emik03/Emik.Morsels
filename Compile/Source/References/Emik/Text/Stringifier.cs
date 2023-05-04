@@ -3,12 +3,13 @@
 #if NET35 && WAWA
 namespace Wawa.Modules;
 #else
-// ReSharper disable CheckNamespace
 namespace Emik.Morsels;
-#endif
-
+#if !(NET20 || NET30)
 using static System.Linq.Expressions.Expression;
 using Expression = System.Linq.Expressions.Expression;
+#endif
+
+#endif
 
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
@@ -144,6 +145,7 @@ public
         return stringBuilder.ToString();
     }
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
@@ -157,6 +159,7 @@ public
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = type.IsGenericType ? $"{type.UnfoldedName(new())}" : type.Name;
+#endif
 
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
@@ -254,7 +257,6 @@ public
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-#endif
 
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
@@ -262,6 +264,7 @@ public
         p.CanRead &&
         p.GetIndexParameters().Length is 0 &&
         p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
+#endif
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
@@ -275,8 +278,8 @@ public
             3 => ThirdOrd,
             _ => Else,
         }}";
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [Pure]
     static StringBuilder EnumeratorStringifier(this IEnumerator iterator)
     {

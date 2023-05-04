@@ -342,7 +342,7 @@ namespace System.Runtime.CompilerServices
     /// <summary>
     /// Indicates that a method is an extension method, or that a class or assembly contains extension methods.
     /// </summary>
-    [AttributeUsage(Method | Class | AttributeTargets.Assembly)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
     sealed partial class ExtensionAttribute : Attribute { }
 #endif
 #if !NET6_0_OR_GREATER
