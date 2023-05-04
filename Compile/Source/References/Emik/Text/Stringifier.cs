@@ -1,11 +1,13 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 1696, SA1137
+// ReSharper disable CheckNamespace
+#pragma warning disable 1696, SA1137, SA1216
 #if NET35 && WAWA
 namespace Wawa.Modules;
 #else
 namespace Emik.Morsels;
 #if !(NET20 || NET30)
-using static Expression;
+using Expression = System.Linq.Expressions.Expression;
+using static System.Linq.Expressions.Expression;
 #endif
 
 #endif
