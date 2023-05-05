@@ -56,7 +56,7 @@ public sealed class Morsels : AMarkdownFactory
             _ => x.Name,
         };
 
-    static string ParameterName(IType x) => x.Name;
+    static string ParameterName(IType x) => $"{x.Name}{TypeParameters(x)}";
 
     static string MemberName(DocItem item) =>
         item is not EntityDocItem entity ? item.Name :
