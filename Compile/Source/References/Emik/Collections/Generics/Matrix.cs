@@ -16,7 +16,11 @@ static partial class MatrixFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
 
     /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
@@ -26,7 +30,11 @@ static partial class MatrixFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
 }
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>

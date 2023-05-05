@@ -1,15 +1,15 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace
+// ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
 #if NET35 && WAWA
 namespace Wawa.Modules;
 #else
 namespace Emik.Morsels;
+#endif
+
 #if !(NET20 || NET30)
 using Expression = System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
-#endif
-
 #endif
 
 /// <summary>Provides stringification methods.</summary>
@@ -345,8 +345,11 @@ static partial class Stringifier
            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
            .Where(CanUse)
            .Select(p => GetMethodCaller(p, exParam))
+#if WAWA
+           .ToList();
+#else
            .ToCollectionLazily();
-
+#endif
         static MethodCallExpression Combine(MethodCallExpression prev, MethodCallExpression curr)
         {
             var call = Call(s_combine, prev, s_exSeparator);
