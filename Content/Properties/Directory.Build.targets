@@ -197,8 +197,13 @@
         <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
         <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
     </PropertyGroup>
+    <!-- The file 'index.md' may not necessarily exist. In which case the assembly name is probably used. -->
     <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
         <MarkdownIndexFilePath>$(ProjectDir)Documentation/$(AssemblyName).md</MarkdownIndexFilePath>
+    </PropertyGroup>
+    <!-- This is for assemblies whose first letter is lowercase, where namespaces are uppercase instead. -->
+    <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
+        <MarkdownIndexFilePath>$(ProjectDir)Documentation/$(RootNamespace).md</MarkdownIndexFilePath>
     </PropertyGroup>
     <!-- Reference weaved reference dll's from Emik.Morsels. -->
     <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
