@@ -33,13 +33,13 @@ public sealed class Morsels : AMarkdownFactory
             ? $"{name}{TypeParameters(parent)}."
             : "";
 
+    static string Parameters(DocItem item) =>
+        (item as IParameterizedDocItem)?.Parameters.ToCollectionLazily() is { } p && p.Any() ? $"({Join(p)})" : "";
+
     static string TypeParameters(DocItem item) =>
         (item as ITypeParameterizedDocItem)?.TypeParameters.ToCollectionLazily() is { } p && p.Any()
             ? $"{{{Join(p)}}}"
             : "";
-
-    static string Parameters(DocItem item) =>
-        (item as IParameterizedDocItem)?.Parameters.ToCollectionLazily() is { } p && p.Any() ? $"({Join(p)})" : "";
 
     static string TypeParameters(IType item) =>
         ElementType(item).TypeArguments is { } p && p.Any() ? $"{{{Join(p)}}}" : "";
