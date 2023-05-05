@@ -165,7 +165,10 @@ global using static Emik.Results.Please;
 global using static Emik.Results.Result;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+using static System.Linq.Expressions.Expression;
 using static System.Enum;
+using Expression = System.Linq.Expressions.Expression;
+using Expression = System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
 using static System.Math;
@@ -608,7 +611,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NETFRAMEWORK || NET35_OR_GREATER
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace RedundantNameQualifier
 
 
 
@@ -794,7 +797,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         {
             var parameter = Parameter(isReverse ? typeof(int) : typeof(T), nameof(T));
             var underlying = GetUnderlyingType(typeof(T));
-            var cast = isReverse ? (Expression)parameter : Convert(parameter, underlying);
+            Expression cast = isReverse ? parameter : Convert(parameter, underlying);
 
             cast = underlying != typeof(int) ? Convert(parameter, isReverse ? underlying : typeof(int)) : cast;
             cast = isReverse ? Convert(cast, typeof(T)) : cast;
@@ -1150,9 +1153,11 @@ using static JetBrains.Annotations.CollectionAccessType;
         return "";
     }
 
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
     [Pure]
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -1178,12 +1183,15 @@ using static JetBrains.Annotations.CollectionAccessType;
     public const string All = $"{Unicode}{Related}";
 
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable CheckNamespace RedundantNameQualifier
+#pragma warning disable 1696, SA1137, SA1216
 #if NET35 && WAWA
 namespace Wawa.Modules;
-#pragma warning disable SA1137
 #else
-// ReSharper disable CheckNamespace
 
+#endif
+
+#if !(NET20 || NET30)
 #endif
 
 /// <summary>Provides stringification methods.</summary>
@@ -1191,7 +1199,7 @@ namespace Wawa.Modules;
 #if NET35 && WAWA
 public
 #endif
-    
+
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
@@ -1212,6 +1220,7 @@ public
 
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
     {
         [typeof(byte)] = "byte",
@@ -1232,12 +1241,12 @@ public
         [typeof(ushort)] = "ushort",
         [typeof(void)] = "void",
     };
-
+#endif
     static readonly ConstantExpression
-        s_exEmpty = Expression.Constant(""),
-        s_exFalse = Expression.Constant(false),
-        s_exSeparator = Expression.Constant(Separator),
-        s_exTrue = Expression.Constant(true);
+        s_exEmpty = Constant(""),
+        s_exFalse = Constant(false),
+        s_exSeparator = Constant(Separator),
+        s_exTrue = Constant(true);
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
@@ -1273,7 +1282,7 @@ public
 #if !WAWA
         this
 #endif
-        IEnumerable<T> values,
+            IEnumerable<T> values,
         char separator
     )
     {
@@ -1301,7 +1310,7 @@ public
 #if !WAWA
         this
 #endif
-        IEnumerable<T> values,
+            IEnumerable<T> values,
         string separator = Separator
     )
     {
@@ -1319,6 +1328,7 @@ public
         return stringBuilder.ToString();
     }
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
@@ -1327,11 +1337,12 @@ public
 #if !WAWA
         this
 #endif
-        Type? type
+            Type? type
     ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = type.IsGenericType ? $"{type.UnfoldedName(new())}" : type.Name;
+#endif
 
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
@@ -1342,7 +1353,7 @@ public
 #if !WAWA
         this
 #endif
-        int i,
+            int i,
         bool indexByZero = false
     ) =>
         indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
@@ -1353,12 +1364,11 @@ public
 #if !WAWA
         this
 #endif
-        string source,
+            string source,
         string separator
     ) =>
         source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
 
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
     /// </summary>
@@ -1375,7 +1385,7 @@ public
 #if !WAWA
         this
 #endif
-        T? source
+            T? source
     ) =>
         Stringify(source, false, true, false);
 
@@ -1405,14 +1415,18 @@ public
 #if !WAWA
         this
 #endif
-        T? source,
+#pragma warning disable SA1114 RCS1163
+            T? source,
         bool isSurrounded,
         bool isRecursive = true,
         bool forceReflection = true
+#pragma warning restore SA1114 RCS1163
     ) =>
         source switch
         {
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             _ when forceReflection => source.UseStringifier(),
+#endif
             null => Null,
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
@@ -1424,19 +1438,24 @@ public
             IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
             ICollection l => $"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
             IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier()}]",
+#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
+            _ => source.ToString(),
+#else
             _ => source.StringifyObject(isRecursive),
+#endif
         };
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-#endif
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
         p.CanRead &&
         p.GetIndexParameters().Length is 0 &&
         p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
+#endif
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
@@ -1450,7 +1469,6 @@ public
             3 => ThirdOrd,
             _ => Else,
         }}";
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 
     [Pure]
     static StringBuilder EnumeratorStringifier(this IEnumerator iterator)
@@ -1466,6 +1484,7 @@ public
         return builder;
     }
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [MustUseReturnValue]
     static string StringifyObject<T>(this T source, bool isRecursive)
     {
@@ -1500,48 +1519,51 @@ public
     [MustUseReturnValue]
     static Func<T, string> GenerateStringifier<T>()
     {
-        var exParam = Expression.Parameter(typeof(T), nameof(T));
+        var exParam = Parameter(typeof(T), nameof(T));
 
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var array = typeof(T)
            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
            .Where(CanUse)
            .Select(p => GetMethodCaller(p, exParam))
+#if WAWA
+           .ToList();
+#else
            .ToCollectionLazily();
-
+#endif
         static MethodCallExpression Combine(MethodCallExpression prev, MethodCallExpression curr)
         {
-            var call = Expression.Call(s_combine, prev, s_exSeparator);
-            return Expression.Call(s_combine, call, curr);
+            var call = Call(s_combine, prev, s_exSeparator);
+            return Call(s_combine, call, curr);
         }
 
         Expression exResult = array.Any()
             ? array.Aggregate(Combine)
             : s_exEmpty;
 
-        return Expression
-           .Lambda<Func<T, string>>(exResult, exParam)
+        return Lambda<Func<T, string>>(exResult, exParam)
            .Compile();
     }
 
     [MustUseReturnValue]
     static MethodCallExpression GetMethodCaller(PropertyInfo info, Expression param)
     {
-        var exConstant = Expression.Constant($"{info.Name}{KeyValueSeparator}");
+        var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (info.PropertyType.IsByRefLike)
-            return Expression.Call(s_combine, exConstant, Expression.Call(param, s_toString));
+            return Call(s_combine, exConstant, Call(param, s_toString));
 #endif
 
         var method = s_stringify.MakeGenericMethod(info.PropertyType);
 
         Expression
-            exMember = Expression.MakeMemberAccess(param, info),
-            exCall = Expression.Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
+            exMember = MakeMemberAccess(param, info),
+            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
 
-        return Expression.Call(s_combine, exConstant, exCall);
+        return Call(s_combine, exConstant, exCall);
     }
+#endif
 
     [Pure]
     static StringBuilder DictionaryStringifier(this IDictionary dictionary)
@@ -1558,6 +1580,7 @@ public
         return builder;
     }
 
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static StringBuilder UnfoldedName(this Type? type, StringBuilder sb)
     {
         StringBuilder Append(Type x)
@@ -1588,8 +1611,8 @@ public
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK || NET40_OR_GREATER
-// ReSharper disable once CheckNamespace
+#if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace RedundantNameQualifier
 
 
 
@@ -1678,7 +1701,7 @@ public
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="iterator">The item to return with adjusted nullability.</param>
-    /// <returns>The parameter <paramref name="iterator"/>, with <see cref="ItemCanBeNullAttribute"/>.</returns>
+    /// <returns>The parameter <paramref name="iterator"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
@@ -2620,6 +2643,7 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable CS8632, MA0048, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 #endif
 
@@ -2719,6 +2743,7 @@ public
         Environment.Exit(exitCode);
         throw Unreachable;
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
@@ -2883,7 +2908,7 @@ public
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 
 
@@ -2915,6 +2940,7 @@ public
            .SelectMany(Enumerable.AsEnumerable)
            .SelectMany(Enumerable.AsEnumerable)
            .SelectMany(Enumerable.AsEnumerable);
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -2993,7 +3019,7 @@ public
         if (!range.Start.IsFromEnd && !range.End.IsFromEnd)
             return Sub(iterable, range);
 
-        if (iterable.TryCount() is { } count && RangeStart(range, count) is var startRange)
+        if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
             return Sub(iterable, startRange);
 
         var arr = iterable.ToList();
@@ -3248,6 +3274,7 @@ public
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Action<TKey, TValue> action
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value);
@@ -3272,6 +3299,7 @@ public
         TExternal external,
         [InstantHandle] Action<TKey, TValue, TExternal> action
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value, external);
@@ -3293,6 +3321,7 @@ public
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Action<TKey, TValue, int> action
     )
+        where TKey : notnull
     {
         var i = 0;
 
@@ -3319,6 +3348,7 @@ public
         TExternal external,
         [InstantHandle] Action<TKey, TValue, int, TExternal> action
     )
+        where TKey : notnull
     {
         var i = 0;
 
@@ -3488,28 +3518,6 @@ public
 
 
 /// <summary>Extension methods to attempt to grab values from enumerables.</summary>
-
-    /// <summary>Attempts to determine the number of elements in a sequence without forcing an enumeration.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
-    /// <param name="source">A sequence that contains elements to be counted.</param>
-    /// <remarks><para>
-    /// The method performs a series of type tests, identifying common subtypes whose
-    /// count can be determined without enumerating; this includes <see cref="ICollection{T}"/>,
-    /// <see cref="ICollection"/>, and <see cref="IReadOnlyCollection{T}"/>.
-    /// </para><para>
-    /// The method is typically a constant-time operation, but ultimately this depends on the complexity
-    /// characteristics of the underlying collection implementation.
-    /// </para></remarks>
-    /// <returns>The length of the collection if pre-computed, or <see langword="null"/>.</returns>
-    [Pure]
-    public static int? TryCount<TSource>([NoEnumeration] this IEnumerable<TSource> source) =>
-        source switch
-        {
-            IReadOnlyCollection<TSource> col => col.Count,
-            ICollection<TSource> col => col.Count,
-            ICollection col => col.Count,
-            _ => null,
-        };
 
     /// <summary>Takes the last item lazily, or a fallback value.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -4035,7 +4043,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
+
 // ReSharper disable once CheckNamespace
 
 
@@ -4067,7 +4075,12 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ICollection<T> ?? iterable.ToList();
+        iterable is null
+            ? null
+            : iterable as ICollection<T> ??
+            (iterable.TryGetNonEnumeratedCount(out var count)
+                ? new Collection<T>(iterable, count)
+                : new List<T>(iterable));
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -4076,7 +4089,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
+        iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 
     /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
@@ -4096,7 +4109,93 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #pragma warning disable CS8620 // Checked later, technically could cause problems, but most factory methods are fine.
         (TList?)converter(iterable);
 #pragma warning restore CS8620
-#endif
+
+    /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
+    sealed class Collection<T> : ICollection, ICollection<T>, IReadOnlyCollection<T>
+    {
+        [ProvidesContext]
+        readonly IEnumerable<T> _enumerable;
+
+        /// <summary>Initializes a new instance of the <see cref="Collection{T}"/> class.</summary>
+        /// <param name="enumerable">The enumerable to encapsulate.</param>
+        /// <param name="count">The pre-computed count.</param>
+        public Collection(IEnumerable<T> enumerable, [NonNegativeValue] int count)
+        {
+            _enumerable = enumerable;
+            Count = count;
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public bool IsSynchronized => true;
+
+        /// <inheritdoc cref="ICollection{T}.Count" />
+        [NonNegativeValue, Pure]
+        public int Count { get; }
+
+        /// <inheritdoc />
+        [Pure]
+        public object SyncRoot => _enumerable;
+
+        /// <inheritdoc />
+        public void CopyTo(Array array, [NonNegativeValue] int index)
+        {
+            var i = 0;
+
+            foreach (var next in _enumerable)
+            {
+                array.SetValue(next, index);
+                _ = checked(i++);
+            }
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator GetEnumerator() => _enumerable.GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        public bool IsReadOnly => true;
+
+        /// <inheritdoc />
+        public void Add(T item) { }
+
+        /// <inheritdoc />
+        public void Clear() { }
+
+        /// <inheritdoc />
+        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+        {
+            var i = 0;
+
+            foreach (var next in _enumerable)
+            {
+                array[arrayIndex] = next;
+                _ = checked(i++);
+            }
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Contains(T item)
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var next in _enumerable)
+                if (EqualityComparer<T>.Default.Equals(next, item))
+                    return true;
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Remove(T item) => false;
+
+        /// <inheritdoc />
+        [Pure]
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _enumerable.GetEnumerator();
+    }
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -4463,6 +4562,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Func<TKey, TValue, ControlFlow> func
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
@@ -4488,6 +4588,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         TExternal external,
         [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
     )
+        where TKey : notnull
     {
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
@@ -4510,6 +4611,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         [InstantHandle] this IDictionary<TKey, TValue> dictionary,
         [InstantHandle] Func<TKey, TValue, int, ControlFlow> func
     )
+        where TKey : notnull
     {
         var i = 0;
 
@@ -4537,6 +4639,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         TExternal external,
         [InstantHandle] Func<TKey, TValue, int, TExternal, ControlFlow> func
     )
+        where TKey : notnull
     {
         var i = 0;
 
@@ -6067,7 +6170,11 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
 
     /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
@@ -6077,7 +6184,11 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
 /// <typeparam name="T">The type of item within the list.</typeparam>
@@ -6315,7 +6426,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 
 
@@ -6427,6 +6538,7 @@ public sealed partial class HeadlessList<T> : IList<T>
         return ret;
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
