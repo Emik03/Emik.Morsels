@@ -164,11 +164,10 @@ global using JetBrains.Annotations;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
-using Expression = System.Linq.Expressions.Expression;
-using Expression = System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
 using static System.Math;
@@ -612,6 +611,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
 #if !NETFRAMEWORK || NET35_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier
+
 
 
 
@@ -1192,6 +1192,7 @@ namespace Wawa.Modules;
 #endif
 
 #if !(NET20 || NET30)
+
 #endif
 
 /// <summary>Provides stringification methods.</summary>

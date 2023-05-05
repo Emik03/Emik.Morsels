@@ -169,6 +169,7 @@ global using JetBrains.Annotations;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 <#
     static string ToFullName(string x) => x switch
@@ -179,6 +180,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "global using static MethodGroupings;" => "",
         "using static Enum;" => "using static System.Enum;",
         "using static Math;" => "using static System.Math;",
+        "using Expression = System.Linq.Expressions.Expression;" => "",
         "    public static string[] Split(" => "    public static string[] Chop(",
         "using static Expression;" => "using static System.Linq.Expressions.Expression;",
         "using static SecurityAction;" => "using static System.Security.Permissions.SecurityAction;",
