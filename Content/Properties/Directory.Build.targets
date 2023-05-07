@@ -18,7 +18,6 @@
                 <InlineMethod/>
                 <Absence/>
                 <Divorce/>
-                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -40,7 +39,6 @@
                 <Caseless StringComparison="InvariantCulture"/>
                 <InlineMethod/>
                 <Absence/>
-                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -60,7 +58,6 @@
                 <LocalsInit Default="false"/>
                 <InlineMethod/>
                 <Absence/>
-                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -83,7 +80,6 @@
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
                 <InlineMethod/>
                 <Absence/>
-                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -181,7 +177,6 @@
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
-                <JetBrainsAnnotations/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -225,7 +220,6 @@
         <PackageReference Remove="$(AssemblyName)"/>
         <None Remove="$(AssemblyName).Generated.Tests/**"/>
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
-        <Content Include="$(AssemblyName).ExternalAnnotations.xml" CopyToOutputDirectory="PreserveNewest" Pack="true"/>
     </ItemGroup>
     <!-- Allow the project to opt-out of this reference. -->
     <ItemGroup Condition="$(DisableDefaultDocumentation) != 'true'">
@@ -290,10 +284,6 @@
                 <Aliases>global, ms</Aliases>
             </ReferencePath>
         </ItemGroup>
-    </Target>
-    <!-- Create the missing file, since the build fails without it. -->
-    <Target Name="CreateMissingExternalAnnotationsFile" BeforeTargets="BeforeBuild;BeforeRebuild">
-        <WriteLinesToFile File="$(AssemblyName).ExternalAnnotations.xml" Condition="!Exists('$(AssemblyName).ExternalAnnotations.xml')" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xA;&lt;assembly name=&quot;$(AssemblyName)&quot; /&gt;" Overwrite="true"/>
     </Target>
     <!-- Run Constructor.csx on the project for Windows. -->
     <Target Name="RunConstructorTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and $(NoTests) != 'true'">
