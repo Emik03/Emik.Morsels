@@ -155,11 +155,11 @@ ref
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
 
-        /// <inheritdoc cref="IEnumerator.Reset"/>
+        /// <inheritdoc cref="IEnumerator{T}.Reset"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _end = -1;
 
-        /// <inheritdoc cref="IEnumerator.MoveNext"/>
+        /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {

@@ -125,11 +125,11 @@ sealed partial class Split<T> : ICollection<T>,
         set => _ = key ? Truthy = value : Falsy = value;
     }
 
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int IReadOnlyCollection<T>.Count => 2;
 
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
 

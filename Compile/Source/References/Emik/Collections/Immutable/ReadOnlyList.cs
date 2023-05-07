@@ -6,15 +6,15 @@ namespace Emik.Morsels;
 using static CollectionAccessType;
 
 #if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="IReadOnlyList{T}"/>.</summary>
+/// <summary>Extension methods that act as factories for read-only lists.</summary>
 #pragma warning disable MA0048
 static partial class ReadOnlyFactory
 #pragma warning restore MA0048
 {
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="IReadOnlyList{T}"/>.</summary>
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to a read-only list.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="IReadOnlyList{T}"/>.</param>
-    /// <returns>A <see cref="IReadOnlyList{T}"/> of <paramref name="iterable"/>.</returns>
+    /// <param name="iterable">The collection to turn into a read-only list.</param>
+    /// <returns>A read-only list of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>

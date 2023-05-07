@@ -95,7 +95,7 @@ static partial class EachWithControlFlow
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -118,7 +118,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -144,7 +144,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -168,7 +168,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -195,7 +195,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -218,7 +218,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -244,7 +244,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -269,7 +269,7 @@ static partial class EachWithControlFlow
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>

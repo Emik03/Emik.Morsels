@@ -6,16 +6,16 @@ namespace Emik.Morsels;
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumeratorToEnumerable
 {
-    /// <summary>Wraps the <see cref="IEnumerator"/> inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The <see cref="IEnumerator"/> to encapsulate.</param>
+    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
     /// </returns>
     [Pure]
     public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
 
-    /// <summary>Wraps the <see cref="IEnumerator"/> inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The <see cref="IEnumerator"/> to encapsulate.</param>
+    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
     /// </returns>
@@ -66,7 +66,7 @@ static partial class EnumeratorToEnumerable
         readonly IEnumerator _enumerator;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> class.</summary>
-        /// <param name="e">The <see cref="IEnumerator"/> to encapsulate.</param>
+        /// <param name="e">The enumerator to encapsulate.</param>
         public Enumerator(IEnumerator e) => _enumerator = e;
 
         /// <inheritdoc cref="IEnumerator{T}.Current" />

@@ -38,7 +38,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     [CollectionAccess(None), Pure]
     bool ICollection<T>.IsReadOnly => true;
 
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count"/>
+    /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(None), Pure]
     int IReadOnlyCollection<T>.Count => 1;
 
@@ -58,7 +58,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
         [CollectionAccess(None)] set { }
     }
 
-    /// <inheritdoc cref="IReadOnlyList{T}.this[int]"/>
+    /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(Read), Pure]
     T IReadOnlyList<T>.this[int _] => Current;
 

@@ -193,7 +193,7 @@ static partial class Stringifier
     /// </summary>
     /// <remarks><para>
     /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or inherit <see cref="IEnumerable"/>,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
     /// in which case each item within is printed out separately.
     /// </para></remarks>
     /// <typeparam name="T">The type of the source.</typeparam>
@@ -213,7 +213,7 @@ static partial class Stringifier
     /// </summary>
     /// <remarks><para>
     /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or inherit <see cref="IEnumerable"/>,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
     /// in which case each item within is printed out separately.
     /// </para></remarks>
     /// <typeparam name="T">The type of the source.</typeparam>
