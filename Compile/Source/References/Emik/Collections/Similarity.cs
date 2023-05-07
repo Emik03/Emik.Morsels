@@ -256,6 +256,20 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
+    public static double Jaro<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).Jaro(right, comparer);
+
+    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
     public static unsafe double Jaro<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
@@ -282,6 +296,24 @@ static partial class Similarity
         );
     }
 
+    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double Jaro<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        [InstantHandle] Func<T, T, bool>? comparer = null
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).Jaro(right, comparer);
+
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -300,6 +332,24 @@ static partial class Similarity
 #endif
         =>
             left.JaroEmik(right, comparer is null ? null : comparer.Equals);
+
+    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
+    /// but with a bias to common sub-slices.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroEmik<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroEmik(right, comparer);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -338,6 +388,28 @@ static partial class Similarity
         );
     }
 
+    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
+    /// but with a bias to common sub-slices.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroEmik<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        [InstantHandle] Func<T, T, bool>? comparer = null
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroEmik(right, comparer);
+
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -359,6 +431,28 @@ static partial class Similarity
 #endif
         =>
             left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
+    /// but with a bias to common prefixes.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroWinkler<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -396,6 +490,28 @@ static partial class Similarity
             comparer
         );
     }
+
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
+    /// but with a bias to common prefixes.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroWinkler<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        [InstantHandle] Func<T, T, bool>? comparer = null
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -822,4 +938,3 @@ static partial class Similarity
         public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
     }
 }
-#pragma warning restore SA1114
