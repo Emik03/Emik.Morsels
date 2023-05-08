@@ -98,7 +98,7 @@ static partial class SplitFactory
 readonly
 #endif
 #if !NO_REF_STRUCTS
-ref
+    ref
 #endif
     partial struct SplitSpan<T>
 #if UNMANAGED_SPAN
@@ -155,11 +155,17 @@ ref
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
 
-        /// <inheritdoc cref="IEnumerator{T}.Reset"/>
+        /// <summary>
+        /// Sets the enumerator to its initial position, which is before the first element in the collection.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _end = -1;
 
-        /// <inheritdoc cref="IEnumerator{T}.MoveNext"/>
+        /// <summary>Advances the enumerator to the next element of the collection.</summary>
+        /// <returns>
+        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
+        /// <see langword="false"/> if the enumerator has passed the end of the collection.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
