@@ -1375,7 +1375,7 @@ public
     /// </summary>
     /// <remarks><para>
     /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or inherit <see cref="IEnumerable"/>,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
     /// in which case each item within is printed out separately.
     /// </para></remarks>
     /// <typeparam name="T">The type of the source.</typeparam>
@@ -1395,7 +1395,7 @@ public
     /// </summary>
     /// <remarks><para>
     /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or inherit <see cref="IEnumerable"/>,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
     /// in which case each item within is printed out separately.
     /// </para></remarks>
     /// <typeparam name="T">The type of the source.</typeparam>
@@ -2001,6 +2001,20 @@ public
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
+    public static double Jaro<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).Jaro(right, comparer);
+
+    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
     public static unsafe double Jaro<T>(
         this ReadOnlySpan<T> left,
         ReadOnlySpan<T> right,
@@ -2027,6 +2041,24 @@ public
         );
     }
 
+    /// <summary>Calculates the Jaro similarity between two sequences.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double Jaro<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        [InstantHandle] Func<T, T, bool>? comparer = null
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).Jaro(right, comparer);
+
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -2045,6 +2077,24 @@ public
 #endif
         =>
             left.JaroEmik(right, comparer is null ? null : comparer.Equals);
+
+    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
+    /// but with a bias to common sub-slices.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroEmik<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroEmik(right, comparer);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -2083,6 +2133,28 @@ public
         );
     }
 
+    /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
+    /// but with a bias to common sub-slices.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroEmik<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        [InstantHandle] Func<T, T, bool>? comparer = null
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroEmik(right, comparer);
+
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -2104,6 +2176,28 @@ public
 #endif
         =>
             left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
+
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
+    /// but with a bias to common prefixes.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroWinkler<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -2141,6 +2235,28 @@ public
             comparer
         );
     }
+
+    /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
+    /// <remarks><para>
+    /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
+    /// but with a bias to common prefixes.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
+    [Pure, ValueRange(0, 1)]
+    public static double JaroWinkler<T>(
+        this Span<T> left,
+        ReadOnlySpan<T> right,
+        [InstantHandle] Func<T, T, bool>? comparer = null
+    )
+#if UNMANAGED_SPAN || CSHARPREPL
+        where T : unmanaged
+#endif
+        =>
+            ((ReadOnlySpan<T>)left).JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -2566,7 +2682,6 @@ public
 
         public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
     }
-#pragma warning restore SA1114
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -3166,7 +3281,7 @@ public
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3188,7 +3303,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3213,7 +3328,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3236,7 +3351,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3263,7 +3378,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -3285,7 +3400,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -3310,7 +3425,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -3334,7 +3449,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -3673,16 +3788,16 @@ public
 #pragma warning disable MA0048
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 
-    /// <summary>Wraps the <see cref="IEnumerator"/> inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The <see cref="IEnumerator"/> to encapsulate.</param>
+    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
     /// </returns>
     [Pure]
     public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
 
-    /// <summary>Wraps the <see cref="IEnumerator"/> inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The <see cref="IEnumerator"/> to encapsulate.</param>
+    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
     /// </returns>
@@ -3733,7 +3848,7 @@ public
         readonly IEnumerator _enumerator;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> class.</summary>
-        /// <param name="e">The <see cref="IEnumerator"/> to encapsulate.</param>
+        /// <param name="e">The enumerator to encapsulate.</param>
         public Enumerator(IEnumerator e) => _enumerator = e;
 
         /// <inheritdoc cref="IEnumerator{T}.Current" />
@@ -3864,7 +3979,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3877,7 +3992,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3896,7 +4011,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -3909,7 +4024,7 @@ public
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -4451,7 +4566,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -4474,7 +4589,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -4500,7 +4615,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -4524,7 +4639,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
@@ -4551,7 +4666,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -4574,7 +4689,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -4600,7 +4715,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -4625,7 +4740,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable"/> or <see cref="IEnumerable{T}"/> interface.
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
@@ -4911,11 +5026,17 @@ public ref
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
 
-        /// <inheritdoc cref="IEnumerator.Reset"/>
+        /// <summary>
+        /// Sets the enumerator to its initial position, which is before the first element in the collection.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _end = -1;
 
-        /// <inheritdoc cref="IEnumerator.MoveNext"/>
+        /// <summary>Advances the enumerator to the next element of the collection.</summary>
+        /// <returns>
+        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
+        /// <see langword="false"/> if the enumerator has passed the end of the collection.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
@@ -5456,13 +5577,13 @@ public ref
 
 
 #if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="IReadOnlyList{T}"/>.</summary>
+/// <summary>Extension methods that act as factories for read-only lists.</summary>
 #pragma warning disable MA0048
 
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="IReadOnlyList{T}"/>.</summary>
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to a read-only list.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="IReadOnlyList{T}"/>.</param>
-    /// <returns>A <see cref="IReadOnlyList{T}"/> of <paramref name="iterable"/>.</returns>
+    /// <param name="iterable">The collection to turn into a read-only list.</param>
+    /// <returns>A read-only list of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
@@ -5579,7 +5700,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     [CollectionAccess(None), Pure]
     bool ICollection<T>.IsReadOnly => true;
 
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count"/>
+    /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(None), Pure]
     int IReadOnlyCollection<T>.Count => 1;
 
@@ -5599,7 +5720,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
         [CollectionAccess(None)] set { }
     }
 
-    /// <inheritdoc cref="IReadOnlyList{T}.this[int]"/>
+    /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(Read), Pure]
     T IReadOnlyList<T>.this[int _] => Current;
 
@@ -6665,11 +6786,11 @@ public sealed partial class Split<T> : ICollection<T>,
         set => _ = key ? Truthy = value : Falsy = value;
     }
 
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int IReadOnlyCollection<T>.Count => 2;
 
-    /// <inheritdoc cref="IReadOnlyCollection{T}.Count" />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
 
