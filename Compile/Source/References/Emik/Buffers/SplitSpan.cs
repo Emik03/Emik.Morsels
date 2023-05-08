@@ -98,7 +98,7 @@ static partial class SplitFactory
 readonly
 #endif
 #if !NO_REF_STRUCTS
-    ref
+ref
 #endif
     partial struct SplitSpan<T>
 #if UNMANAGED_SPAN
