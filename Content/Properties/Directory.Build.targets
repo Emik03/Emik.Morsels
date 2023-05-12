@@ -180,6 +180,10 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
+    <!-- Disable Fody weaving for faster compile times. -->
+    <PropertyGroup Condition="$(Configuration) == 'Debug'">
+        <WeaverConfiguration/>
+    </PropertyGroup>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
         <Title>$(AssemblyName)</Title>
