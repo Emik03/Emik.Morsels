@@ -207,6 +207,7 @@
     <!-- Properties for Roslyn analyzer projects. -->
     <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <NoTests>true</NoTests>
+        <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
