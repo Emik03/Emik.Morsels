@@ -23,7 +23,6 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
-        <WarningsAsErrors>$(WarningsAsErrors);EAM001</WarningsAsErrors>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
