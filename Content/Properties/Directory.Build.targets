@@ -206,6 +206,7 @@
     </PropertyGroup>
     <!-- Properties for Roslyn analyzer projects. -->
     <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <NoTests>true</NoTests>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
@@ -233,7 +234,6 @@
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <NoTests>true</NoTests>
         <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
         <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
     </ItemGroup>
