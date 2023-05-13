@@ -1,4 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
 #if NET35 && WAWA
@@ -42,6 +43,7 @@ static partial class Stringifier
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
     {
+        [typeof(bool)] = "bool",
         [typeof(byte)] = "byte",
         [typeof(char)] = "char",
         [typeof(decimal)] = "decimal",
