@@ -34,15 +34,14 @@ public sealed class Morsels : AMarkdownFactory
             : "";
 
     static string Parameters(DocItem item) =>
-        (item as IParameterizedDocItem)?.Parameters.ToCollectionLazily() is { } p && p.Any() ? $"({Join(p)})" : "";
+        (item as IParameterizedDocItem)?.Parameters.ToListLazily() is [_, ..] p ? $"({Join(p)})" : "";
 
     static string TypeParameters(DocItem item) =>
-        (item as ITypeParameterizedDocItem)?.TypeParameters.ToCollectionLazily() is { } p && p.Any()
+        (item as ITypeParameterizedDocItem)?.TypeParameters.ToListLazily() is [_, ..] p
             ? $"{{{Join(p)}}}"
             : "";
 
-    static string TypeParameters(IType item) =>
-        ElementType(item).TypeArguments is { } p && p.Any() ? $"{{{Join(p)}}}" : "";
+    static string TypeParameters(IType item) => ElementType(item).TypeArguments is [_, ..] p ? $"{{{Join(p)}}}" : "";
 
     static string Join(IEnumerable<DocItem> parameters) => parameters.Select(ParameterName).Conjoin(",");
 
