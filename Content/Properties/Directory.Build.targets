@@ -180,10 +180,6 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Disable Fody weaving for faster compile times. -->
-    <PropertyGroup Condition="$(Configuration) == 'Debug'">
-        <WeaverConfiguration/>
-    </PropertyGroup>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
         <Title>$(AssemblyName)</Title>
@@ -226,26 +222,6 @@
         <PackageReference Remove="$(AssemblyName)"/>
         <None Remove="$(AssemblyName).Generated.Tests/**"/>
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
-    </ItemGroup>
-    <!-- Disable Fody weaving for faster compile times. -->
-    <ItemGroup Condition="$(Configuration) == 'Debug'">
-        <PackageReference Remove="Fody"/>
-        <PackageReference Remove="Lazy.Fody"/>
-        <PackageReference Remove="Equals.Fody"/>
-        <PackageReference Remove="InfoOf.Fody"/>
-        <PackageReference Remove="Absence.Fody"/>
-        <PackageReference Remove="Divorce.Fody"/>
-        <PackageReference Remove="Caseless.Fody"/>
-        <PackageReference Remove="InlineIL.Fody"/>
-        <PackageReference Remove="ToString.Fody"/>
-        <PackageReference Remove="NullGuard.Fody"/>
-        <PackageReference Remove="LocalsInit.Fody"/>
-        <PackageReference Remove="Substitute.Fody"/>
-        <PackageReference Remove="Virtuosity.Fody"/>
-        <PackageReference Remove="InlineMethod.Fody"/>
-        <PackageReference Remove="ConfigureAwait.Fody"/>
-        <PackageReference Remove="RemoveReference.Fody"/>
-        <PackageReference Remove="PrecompiledRegex.Fody"/>
     </ItemGroup>
     <!-- Allow the project to opt-out of this reference. -->
     <ItemGroup Condition="$(DisableDefaultDocumentation) != 'true'">
