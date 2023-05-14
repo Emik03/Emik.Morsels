@@ -3,6 +3,7 @@
     <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../'))"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
+        <Company/>
         <Authors>Emik</Authors>
         <Nullable>enable</Nullable>
         <OutputPath>bin</OutputPath>
@@ -12,10 +13,14 @@
         <RunAnalyzers>true</RunAnalyzers>
         <LangVersion>preview</LangVersion>
         <Deterministic>true</Deterministic>
+        <RepositoryType>git</RepositoryType>
+        <RollForward>LatestMajor</RollForward>
         <RunCodeAnalysis>false</RunCodeAnalysis>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
@@ -72,6 +77,7 @@
         <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
         <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
         <Content Include="$([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../'))" Pack="false"/>
+        <None Include="$([MSBuild]::GetPathOfFileAbove('README.md', '$(MSBuildProjectFullPath)../'))" Link="README.md" Pack="true" PackagePath="/"/>
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
@@ -114,6 +120,7 @@
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.5.22" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.5-beta1.23165.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" PrivateAssets="all"/>
         <PackageReference Include="JetBrains.Annotations" Version="2023.2.0-eap3" PrivateAssets="all" IncludeAssets="compile"/>
         <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23165.1" PrivateAssets="all"/>
