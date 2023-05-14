@@ -362,8 +362,7 @@ static partial class Stringifier
             ? array.Aggregate(Combine)
             : s_exEmpty;
 
-        return Lambda<Func<T, string>>(exResult, exParam)
-           .Compile();
+        return Lambda<Func<T, string>>(exResult, exParam).Compile();
     }
 
     [MustUseReturnValue]
