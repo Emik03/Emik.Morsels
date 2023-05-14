@@ -351,11 +351,11 @@ unsafe
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _span[_index];
         }
 
-        /// <inheritdoc cref="IEnumerator.Reset" />
+        /// <inheritdoc cref="IEnumerator{T}.Reset" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
 
-        /// <inheritdoc cref="IEnumerator.MoveNext" />
+        /// <inheritdoc cref="IEnumerator{T}.MoveNext" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
@@ -693,11 +693,11 @@ unsafe
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _span[_index];
         }
 
-        /// <inheritdoc cref="IEnumerator.Reset" />
+        /// <inheritdoc cref="IEnumerator{T}.Reset" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
 
-        /// <inheritdoc cref="IEnumerator.MoveNext" />
+        /// <inheritdoc cref="IEnumerator{T}.MoveNext" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
