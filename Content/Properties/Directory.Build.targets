@@ -190,7 +190,6 @@
         <MarkdownIndexFilePath>$(ProjectDir)Documentation/index.md</MarkdownIndexFilePath>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
-        <UnitTestFileProject>$(MSBuildProjectDirectory)/$(AssemblyName).Generated.Tests/$(AssemblyName).Generated.Tests.csproj</UnitTestFileProject>
     </PropertyGroup>
     <!-- The file 'index.md' may not necessarily exist. In which case the assembly name is probably used. -->
     <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
@@ -294,14 +293,6 @@
     <!-- Run Constructor.csx on the project for Mac or Linux. -->
     <Target Name="RunConstructorTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and $(NoTests) != 'true'">
         <Exec Command="command -v csharprepl &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(ProjectDir)$(OutDir)$(AssemblyName).dll" ContinueOnError="false" IgnoreExitCode="true"/>
-    </Target>
-    <!-- Run doctests for Windows. -->
-    <Target Name="RunDocTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;))) and $(NoTests) != 'true'">
-        <Exec Command="where -q doctest-csharp || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory);$(UnitTestFileProject) &amp;&amp; if exist &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
-    </Target>
-    <!-- Run doctests for Mac or Linux. -->
-    <Target Name="RunDocTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(MSBuildProjectExtension)' == '.csproj' and !($(AssemblyName.EndsWith(&quot;.Tests&quot;))) and $(NoTests) != 'true'">
-        <Exec Command="command -v doctest-csharp &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g DoctestCsharp&#xA;doctest-csharp --input-output $(MSBuildProjectDirectory):$(UnitTestFileProject) &amp;&amp; test -f &quot;$(UnitTestFileProject)&quot; &amp;&amp; dotnet test $(UnitTestFileProject)&#xA;exit 0"/>
     </Target>
     <!-- Copy index file to make Documentation folder nicer in GitHub for Windows. -->
     <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and $(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)')">
