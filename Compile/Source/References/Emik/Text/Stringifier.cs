@@ -69,6 +69,7 @@ static partial class Stringifier
 #if !NETFRAMEWORK || NET40_OR_GREATER
         s_exInvalid = Constant($"!<{nameof(InvalidOperationException)}>"),
         s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>"),
+        s_exUnsupportedPlatform = Constant($"!<{nameof(PlatformNotSupportedException)}>"),
 #endif
         s_exSeparator = Constant(Separator),
         s_exTrue = Constant(true);
@@ -350,7 +351,11 @@ static partial class Stringifier
         var array = typeof(T)
            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
            .Where(CanUse)
+#if NETFRAMEWORK && !NET40_OR_GREATER
+           .Select(p => GetMethodCaller<T>(p, exParam))
+#else
            .Select(p => GetMethodCaller(p, exParam))
+#endif
 #if WAWA
            .ToList();
 #else
@@ -370,7 +375,11 @@ static partial class Stringifier
     }
 
     [MustUseReturnValue]
+#if NETFRAMEWORK && !NET40_OR_GREATER
+    static Expression GetMethodCaller<T>(PropertyInfo info, ParameterExpression param)
+#else
     static Expression GetMethodCaller(PropertyInfo info, Expression param)
+#endif
     {
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
@@ -379,20 +388,46 @@ static partial class Stringifier
 #endif
         var method = s_stringify.MakeGenericMethod(info.PropertyType);
 
-        Expression
-            exMember = MakeMemberAccess(param, info),
-            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
-#if !NETFRAMEWORK || NET40_OR_GREATER
+        Expression exMember = MakeMemberAccess(param, info);
+
+#if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
+        var call = Lambda<Func<T, string>>(exMember, param).Compile();
+        Expression<Func<T, string>> wrapped = t => Try(t, call);
+
+        exMember = Invoke(wrapped, param);
+#else
         CatchBlock
             invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
-            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported);
+            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
+            unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
 
-        exCall = TryCatch(exCall, invalid, unsupported);
+        exMember = TryCatch(exMember, invalid, unsupported);
 #endif
+        var exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
         return Call(s_combine, exConstant, exCall);
     }
 #endif
-
+#if NETFRAMEWORK && !NET40_OR_GREATER
+    static string Try<T>(T instance, Func<T, string> stringify)
+    {
+        try
+        {
+            return stringify(instance);
+        }
+        catch (PlatformNotSupportedException)
+        {
+            return $"!<{nameof(PlatformNotSupportedException)}>";
+        }
+        catch (NotSupportedException)
+        {
+            return $"!<{nameof(NotSupportedException)}>";
+        }
+        catch (InvalidOperationException)
+        {
+            return $"!<{nameof(InvalidOperationException)}>";
+        }
+    }
+#endif
     [Pure]
     static StringBuilder DictionaryStringifier(this IDictionary dictionary)
     {
