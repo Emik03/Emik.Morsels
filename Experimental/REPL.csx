@@ -1209,13 +1209,16 @@ public
         Else = "th",
         False = "false",
         FirstOrd = "st",
+        Invalid = $"!<{nameof(InvalidOperationException)}>",
         KeyValueSeparator = ": ",
         Negative = "-",
         Null = "null",
         SecondOrd = "nd",
         Separator = ", ",
         ThirdOrd = "rd",
-        True = "true";
+        True = "true",
+        Unsupported = $"!<{nameof(NotSupportedException)}>",
+        UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
 #pragma warning restore CA1823, IDE0051
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -1250,9 +1253,9 @@ public
         s_exEmpty = Constant(""),
         s_exFalse = Constant(false),
 #if !NETFRAMEWORK || NET40_OR_GREATER
-        s_exInvalid = Constant($"!<{nameof(InvalidOperationException)}>"),
-        s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>"),
-        s_exUnsupportedPlatform = Constant($"!<{nameof(PlatformNotSupportedException)}>"),
+        s_exInvalid = Constant(Invalid),
+        s_exUnsupported = Constant(Unsupported),
+        s_exUnsupportedPlatform = Constant(UnsupportedPlatform),
 #endif
         s_exSeparator = Constant(Separator),
         s_exTrue = Constant(true);
@@ -1599,15 +1602,15 @@ public
         }
         catch (PlatformNotSupportedException)
         {
-            return $"!<{nameof(PlatformNotSupportedException)}>";
+            return UnsupportedPlatform;
         }
         catch (NotSupportedException)
         {
-            return $"!<{nameof(NotSupportedException)}>";
+            return Unsupported;
         }
         catch (InvalidOperationException)
         {
-            return $"!<{nameof(InvalidOperationException)}>";
+            return Invalid;
         }
     }
 #endif
