@@ -401,7 +401,7 @@ static partial class Stringifier
             unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
             unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
 
-        exMember = TryCatch(exMember, invalid, unsupported);
+        exMember = TryCatch(exMember, unsupportedPlatform, unsupported, invalid);
 #endif
         var exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
         return Call(s_combine, exConstant, exCall);
