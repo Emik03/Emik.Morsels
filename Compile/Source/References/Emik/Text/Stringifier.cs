@@ -11,6 +11,7 @@ namespace Emik.Morsels;
 #if !(NET20 || NET30)
 using Expression = System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
+using static System.Linq.Expressions.ExtendedExpression;
 #endif
 
 /// <summary>Provides stringification methods.</summary>
@@ -66,10 +67,11 @@ static partial class Stringifier
     static readonly ConstantExpression
         s_exEmpty = Constant(""),
         s_exFalse = Constant(false),
-#if !NETFRAMEWORK || NET40_OR_GREATER
+// #if !NETFRAMEWORK || NET40_OR_GREATER
         s_exInvalid = Constant($"!<{nameof(InvalidOperationException)}>"),
         s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>"),
-#endif
+        s_exUnsupportedPlatform = Constant($"!<{nameof(PlatformNotSupportedException)}>"),
+// #endif
         s_exSeparator = Constant(Separator),
         s_exTrue = Constant(true);
 
@@ -257,7 +259,7 @@ static partial class Stringifier
             char c => isSurrounded ? $"'{c}'" : $"{c}",
             string s => isSurrounded ? $@"""{s}""" : s,
 #if NET35 && WAWA
-            Object o => o.name,
+            // Object o => o.name,
 #endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
             IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
@@ -382,13 +384,14 @@ static partial class Stringifier
         Expression
             exMember = MakeMemberAccess(param, info),
             exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
-#if !NETFRAMEWORK || NET40_OR_GREATER
+// #if !NETFRAMEWORK || NET40_OR_GREATER
         CatchBlock
             invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
-            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported);
+            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
+            unsupportedPlatform = Catch(typeof(NotSupportedException), s_exUnsupportedPlatform);
 
-        exCall = TryCatch(exCall, invalid, unsupported);
-#endif
+        exCall = TryCatch(exCall, unsupportedPlatform, unsupported, invalid);
+// #endif
         return Call(s_combine, exConstant, exCall);
     }
 #endif
