@@ -171,6 +171,7 @@ global using static Emik.Results.Result;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+
 <#
     static string ToFullName(string x) => x switch
     {
@@ -194,6 +195,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         .GetFiles(Path, "*.cs", SearchOption.AllDirectories)
         .Select(File.ReadAllText)
         .Select(x => x.Replace("namespace Emik.Morsels;", "").Replace("Emik.Morsels.", "").Replace("Whitespaces.", ""))
+        .Select(x => x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)"))
         .Select(
             x => Regex.Replace(x, @"(?<=(?<=static\s*)partial\s*class).*?\{(.*?)\n\}", "$1", RegexOptions.Singleline))
         .Select(x => x.Replace("static partial class", ""))
@@ -229,3 +231,6 @@ static class Stringifier
     public static string Stringify<T>(T? source, bool isSurrounded, bool isRecursive, bool forceReflection)
         => source.Stringify(isSurrounded, isRecursive, forceReflection);
 }
+
+/// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>
+static object None => Emik.Results.Result.None;

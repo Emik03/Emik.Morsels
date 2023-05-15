@@ -66,10 +66,12 @@ static partial class Stringifier
     static readonly ConstantExpression
         s_exEmpty = Constant(""),
         s_exFalse = Constant(false),
+#if !NETFRAMEWORK || NET40_OR_GREATER
         s_exInvalid = Constant($"!<{nameof(InvalidOperationException)}>"),
+        s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>"),
+#endif
         s_exSeparator = Constant(Separator),
-        s_exTrue = Constant(true),
-        s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>");
+        s_exTrue = Constant(true);
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
@@ -371,24 +373,23 @@ static partial class Stringifier
     static Expression GetMethodCaller(PropertyInfo info, Expression param)
     {
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (info.PropertyType.IsByRefLike)
             return Call(s_combine, exConstant, Call(param, s_toString));
 #endif
-
         var method = s_stringify.MakeGenericMethod(info.PropertyType);
 
         Expression
             exMember = MakeMemberAccess(param, info),
-            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse),
-            exConcat = Call(s_combine, exConstant, exCall);
-
+            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
+#if !NETFRAMEWORK || NET40_OR_GREATER
         CatchBlock
             invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
             unsupported = Catch(typeof(NotSupportedException), s_exUnsupported);
 
-        return TryCatch(exConcat, invalid, unsupported);
+        exCall = TryCatch(exCall, invalid, unsupported);
+#endif
+        return Call(s_combine, exConstant, exCall);
     }
 #endif
 

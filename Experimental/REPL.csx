@@ -166,6 +166,7 @@ global using static Emik.Results.Result;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
+
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
@@ -1248,6 +1249,10 @@ public
     static readonly ConstantExpression
         s_exEmpty = Constant(""),
         s_exFalse = Constant(false),
+#if !NETFRAMEWORK || NET40_OR_GREATER
+        s_exInvalid = Constant($"!<{nameof(InvalidOperationException)}>"),
+        s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>"),
+#endif
         s_exSeparator = Constant(Separator),
         s_exTrue = Constant(true);
 
@@ -1534,36 +1539,39 @@ public
 #else
            .ToCollectionLazily();
 #endif
-        static MethodCallExpression Combine(MethodCallExpression prev, MethodCallExpression curr)
+        static MethodCallExpression Combine(Expression prev, Expression curr)
         {
             var call = Call(s_combine, prev, s_exSeparator);
             return Call(s_combine, call, curr);
         }
 
-        Expression exResult = array.Any()
+        var exResult = array.Any()
             ? array.Aggregate(Combine)
             : s_exEmpty;
 
-        return Lambda<Func<T, string>>(exResult, exParam)
-           .Compile();
+        return Lambda<Func<T, string>>(exResult, exParam).Compile();
     }
 
     [MustUseReturnValue]
-    static MethodCallExpression GetMethodCaller(PropertyInfo info, Expression param)
+    static Expression GetMethodCaller(PropertyInfo info, Expression param)
     {
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (info.PropertyType.IsByRefLike)
             return Call(s_combine, exConstant, Call(param, s_toString));
 #endif
-
         var method = s_stringify.MakeGenericMethod(info.PropertyType);
 
         Expression
             exMember = MakeMemberAccess(param, info),
             exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
+#if !NETFRAMEWORK || NET40_OR_GREATER
+        CatchBlock
+            invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
+            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported);
 
+        exCall = TryCatch(exCall, invalid, unsupported);
+#endif
         return Call(s_combine, exConstant, exCall);
     }
 #endif
@@ -5618,15 +5626,15 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     public T this[int index]
     {
         [CollectionAccess(Read)] get => _list[index];
-        [CollectionAccess(None)] set { }
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     public void Add(T item) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     public void Clear() { }
 
     /// <inheritdoc />
@@ -5634,11 +5642,11 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     public void Insert(int index, T item) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     public void RemoveAt(int index) { }
 
     /// <inheritdoc />
@@ -5646,7 +5654,7 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     public bool Contains(T item) => _list.Contains(item);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool Remove(T item) => false;
 
     /// <inheritdoc />
@@ -5699,15 +5707,15 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     public Once([ProvidesContext] T value) => Current = value;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ICollection<T>.IsReadOnly => true;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     int IReadOnlyCollection<T>.Count => 1;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     int ICollection<T>.Count => 1;
 
     /// <summary>Gets the item to use.</summary>
@@ -5719,7 +5727,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     T IList<T>.this[int _]
     {
         [CollectionAccess(Read)] get => Current;
-        [CollectionAccess(None)] set { }
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
 
     /// <inheritdoc cref="IList{T}.this[int]"/>
@@ -5729,7 +5737,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public static implicit operator Once<T>([ProvidesContext] T value) => new(value);
 
     /// <summary>Implicitly calls <see cref="Current"/>.</summary>
@@ -5743,35 +5751,35 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     public void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = Current;
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ICollection<T>.Add(T item) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ICollection<T>.Clear() { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void IList<T>.Insert(int index, T item) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void IList<T>.RemoveAt(int index) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.ExceptWith(IEnumerable<T> other) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.IntersectWith(IEnumerable<T> other) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.SymmetricExceptWith(IEnumerable<T> other) { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.UnionWith(IEnumerable<T> other) { }
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
@@ -5805,11 +5813,11 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     public bool SetEquals([InstantHandle] IEnumerable<T> other) => other.SequenceEqual(this);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ICollection<T>.Remove(T item) => false;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ISet<T>.Add(T item) => false;
 
     /// <inheritdoc />
@@ -5855,7 +5863,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
         /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
-        [CollectionAccess(None), Pure]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
         public static implicit operator Enumerator(T value) => new(value);
 
         /// <summary>Implicitly calls <see cref="Current"/>.</summary>
@@ -5865,15 +5873,15 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
         public static implicit operator T(Enumerator value) => value.Current;
 
         /// <inheritdoc />
-        [CollectionAccess(None)]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         readonly void IDisposable.Dispose() { }
 
         /// <inheritdoc />
-        [CollectionAccess(None)]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public bool MoveNext() => !_hasMoved && (_hasMoved = true);
 
         /// <inheritdoc />
-        [CollectionAccess(None)]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public void Reset() => _hasMoved = false;
     }
 }
@@ -5933,27 +5941,27 @@ public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
     /// <summary>Returns itself.</summary>
     /// <remarks><para>Used to allow <see langword="foreach"/> to be used on <see cref="Yes{T}"/>.</para></remarks>
     /// <returns>Itself.</returns>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public Yes<T> GetEnumerator() => this;
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void IDisposable.Dispose() { }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void IEnumerator.Reset() { }
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool IEnumerator.MoveNext() => true;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
@@ -5993,11 +6001,11 @@ public sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
     public CircularList([ProvidesContext] IList<T> list) => _list = list;
 
     /// <inheritdoc/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => _list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), Pure, ValueRange(1, int.MaxValue)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
     public int Count => _list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
@@ -6091,11 +6099,11 @@ public sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
     public ClippedList([ProvidesContext] IList<T> list) => _list = list;
 
     /// <inheritdoc/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => _list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), Pure, ValueRange(1, int.MaxValue)]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
     public int Count => _list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
@@ -6189,11 +6197,11 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public GuardedList([ProvidesContext] IList<T> list) => _list = list;
 
     /// <inheritdoc/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => _list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), NonNegativeValue, Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
     public int Count => _list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
@@ -6927,3 +6935,6 @@ static class Stringifier
     public static string Stringify<T>(T? source, bool isSurrounded, bool isRecursive, bool forceReflection)
         => source.Stringify(isSurrounded, isRecursive, forceReflection);
 }
+
+/// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>
+static object None => Emik.Results.Result.None;
