@@ -171,16 +171,6 @@
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <Reference Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
     </ItemGroup>
-    <!-- Celeste references. -->
-    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46'))">
-        <Reference Include="FNA" HintPath="$(Celeste)/FNA.dll" Private="false"/>
-        <Reference Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
-        <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
-        <Reference Include="YamlDotNet" HintPath="$(Celeste)/YamlDotNet.dll" Private="false"/>
-        <PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all"/>
-        <Reference Include="MonoMod.Utils" HintPath="$(Celeste)/MonoMod.Utils.dll" Private="false"/>
-        <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
-    </ItemGroup>
     <!-- Does not work on .NET Framework 3.5 or less. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))">
         <PackageReference Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all"/>

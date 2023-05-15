@@ -226,6 +226,16 @@
     <ItemGroup Condition="$(DisableDefaultDocumentation) != 'true'">
         <PackageReference Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
     </ItemGroup>
+    <!-- Celeste references. -->
+    <ItemGroup Condition="$(IsCeleste) == 'true'">
+        <Reference Include="FNA" HintPath="$(Celeste)/FNA.dll" Private="false"/>
+        <Reference Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
+        <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
+        <Reference Include="YamlDotNet" HintPath="$(Celeste)/YamlDotNet.dll" Private="false"/>
+        <!--<PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all"/>-->
+        <Reference Include="MonoMod.Utils" HintPath="$(Celeste)/MonoMod.Utils.dll" Private="false"/>
+        <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
+    </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
