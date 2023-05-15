@@ -66,8 +66,10 @@ static partial class Stringifier
     static readonly ConstantExpression
         s_exEmpty = Constant(""),
         s_exFalse = Constant(false),
+        s_exInvalid = Constant($"!<{nameof(InvalidOperationException)}>"),
         s_exSeparator = Constant(Separator),
-        s_exTrue = Constant(true);
+        s_exTrue = Constant(true),
+        s_exUnsupported = Constant($"!<{nameof(NotSupportedException)}>");
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
@@ -352,13 +354,13 @@ static partial class Stringifier
 #else
            .ToCollectionLazily();
 #endif
-        static MethodCallExpression Combine(MethodCallExpression prev, MethodCallExpression curr)
+        static MethodCallExpression Combine(Expression prev, Expression curr)
         {
             var call = Call(s_combine, prev, s_exSeparator);
             return Call(s_combine, call, curr);
         }
 
-        Expression exResult = array.Any()
+        var exResult = array.Any()
             ? array.Aggregate(Combine)
             : s_exEmpty;
 
@@ -366,7 +368,7 @@ static partial class Stringifier
     }
 
     [MustUseReturnValue]
-    static MethodCallExpression GetMethodCaller(PropertyInfo info, Expression param)
+    static Expression GetMethodCaller(PropertyInfo info, Expression param)
     {
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
 
@@ -379,9 +381,14 @@ static partial class Stringifier
 
         Expression
             exMember = MakeMemberAccess(param, info),
-            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
+            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse),
+            exConcat = Call(s_combine, exConstant, exCall);
 
-        return Call(s_combine, exConstant, exCall);
+        CatchBlock
+            invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
+            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported);
+
+        return TryCatch(exConcat, invalid, unsupported);
     }
 #endif
 
