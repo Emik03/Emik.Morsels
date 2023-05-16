@@ -40,9 +40,7 @@ Emik.Morsels currently supports the following frameworks:
 - .NET Core: 1.0 - 3.1
 - .NET: 5.0 - 8.0
 
-.NET Framework 3.5 is reserved for [Keep Talking and Nobody Explodes](https://keeptalkinggame.com/) and/or [Unity 2017.4](https://unity3d.com/unity/whats-new/2017.4.0).
-
-Different scripts and configurations within this repository will act accordingly to the current framework, such as polyfills, or by taking advantage of .NET 6+'s [`static abstract`](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/static-abstract-interface-methods) features. If you do not own the products, you can simply target another framework. (e.g. .NET Framework 4.5.1)
+Different scripts and configurations within this repository will act accordingly to the current framework, such as polyfills, or by taking advantage of .NET 6+'s [`static abstract`](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/static-abstract-interface-methods) features.
 
 ## Modified Standard Library
 
