@@ -1051,7 +1051,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// </returns>
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
-        value is null || value.All(char.IsWhiteSpace);
+        value?.All(char.IsWhiteSpace) != false;
 #elif !NET20 && !NET30
     /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
     [Pure]
@@ -1187,7 +1187,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 // ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
-#if NET35 && WAWA
+#if WAWA
 namespace Wawa.Modules;
 #else
 
@@ -1199,7 +1199,7 @@ namespace Wawa.Modules;
 
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
-#if NET35 && WAWA
+#if WAWA
 public
 #endif
 
@@ -1268,7 +1268,7 @@ public
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
 
-#if !NET35 // This method purely exists to take advantage of .NET 5's blazingly fast alternative.
+#if NETFRAMEWORK && NET40_OR_GREATER // This method exists to automatically overload to a blazingly fast alternative.
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using <see cref="Conjoin"/> for <see cref="char"/> enumerations.
@@ -1443,7 +1443,7 @@ public
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
             string s => isSurrounded ? $@"""{s}""" : s,
-#if NET35 && WAWA
+#if KTANE
             Object o => o.name,
 #endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
@@ -2795,7 +2795,7 @@ public
 
     [Pure]
     static Func<int, int, int> Rand() =>
-#if NET35
+#if KTANE
         UnityEngine.Random.Range;
 #elif NET6_0_OR_GREATER
         Random.Shared.Next;
@@ -2946,7 +2946,7 @@ public
         Shout;
 #else
         (Action<string>)Shout +
-#if NET35
+#if KTANE
         (Action<string>)UnityEngine.Debug.Log +
 #endif
         (Action<string>)Console.WriteLine;
@@ -3018,7 +3018,7 @@ public
         [CallerMemberName] string? member = null
     )
     {
-        // ReSharper disable once InvokeAsExtensionMethod
+        // ReSharper disable once InvokeAsExtensionMethod RedundantNameQualifier
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
                 @$"{Stringifier.Stringify((map ?? (x => x))(value))}{(shouldLogExpression ? @$"
@@ -6889,6 +6889,7 @@ public sealed partial class Split<T> : ICollection<T>,
     public void Add(bool key, T value) => _ = key ? Truthy = value : Falsy = value;
 
     /// <inheritdoc />
+    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? Truthy = item.Value : Falsy = item.Value;
 
     /// <inheritdoc />
@@ -6899,7 +6900,7 @@ public sealed partial class Split<T> : ICollection<T>,
     }
 
     /// <inheritdoc />
-    [Pure]
+    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public bool Contains(KeyValuePair<bool, T> item) =>
         item.Key
             ? EqualityComparer<T>.Default.Equals(Truthy, item.Value)
