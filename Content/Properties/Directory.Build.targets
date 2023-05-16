@@ -236,6 +236,18 @@
         <Reference Include="MonoMod.Utils" HintPath="$(Celeste)/MonoMod.Utils.dll" Private="false"/>
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
     </ItemGroup>
+    <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
+    <ItemGroup Condition="$(IsKtane) == 'true'">
+        <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
+        <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
+        <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
+        <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
+    </ItemGroup>
+    <!-- Keep Talking and Nobody Explodes references that F# hates for some reason. -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $(IsKtane) == 'true'">
+        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
+    </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
@@ -249,7 +261,6 @@
     </ItemGroup>
     <!-- Fody projects should reference FodyHelpers, and also not themselves. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))">
-        <PackageReference Remove="$(AssemblyName)"/>
         <PackageReference Include="FodyHelpers" Version="6.7.0"/>
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
@@ -323,8 +334,8 @@
     <!-- We only need to validate the properties that are being used. -->
     <Target Name="ValidateLocalProperties" BeforeTargets="PreBuildEvent">
         <Error Condition="'$(Morsels)' == ''" Text="Emik.Morsels link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Emik.Morsels should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
-        <Error Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and '$(Unity)' == ''" Text="Emik.Morsels reserves .NET Framework 3.5 for use with Unity. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Unity should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
-        <Error Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) and '$(Celeste)' == ''" Text="Emik.Morsels reserves .NET Framework 4.5.2 for use with Celeste. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Celeste should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
-        <Error Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and '$(Ktane)' == ''" Text="Emik.Morsels reserves .NET Framework 3.5 for use with Keep Talking and Nobody Explodes. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Keep Talking and Nobody Explodes should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsKtane)' == 'true' and '$(Unity)' == ''" Text="Unity link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Unity should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsCeleste)' == 'true' and '$(Celeste)' == ''" Text="Celeste link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Celeste should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsKtane)' == 'true' and '$(Ktane)' == ''" Text="Keep Talking and Nobody Explodes link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Keep Talking and Nobody Explodes should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
     </Target>
 </Project>
