@@ -14,16 +14,16 @@ namespace System.Diagnostics.CodeAnalysis
 #if !WAWA
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property)]
-    sealed partial class AllowNullAttribute : Attribute { }
+    sealed partial class AllowNullAttribute : Attribute;
 #endif
 
     /// <summary>Specifies that null is disallowed as an input even if the corresponding type allows it.</summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property)]
-    sealed partial class DisallowNullAttribute : Attribute { }
+    sealed partial class DisallowNullAttribute : Attribute;
 
     /// <summary>Applied to a method that will never return under any circumstance.</summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    sealed partial class DoesNotReturnAttribute : Attribute { }
+    sealed partial class DoesNotReturnAttribute : Attribute;
 
     /// <summary>
     /// Specifies that the method will not return if the associated Boolean parameter is passed the specified value.
@@ -52,7 +52,7 @@ namespace System.Diagnostics.CodeAnalysis
     [AttributeUsage(
         AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue
     )]
-    sealed partial class MaybeNullAttribute : Attribute { }
+    sealed partial class MaybeNullAttribute : Attribute;
 
     /// <summary>
     /// Specifies that an output will not be null even if the corresponding type allows it.
@@ -61,7 +61,7 @@ namespace System.Diagnostics.CodeAnalysis
     [AttributeUsage(
         AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue
     )]
-    sealed partial class NotNullAttribute : Attribute { }
+    sealed partial class NotNullAttribute : Attribute;
 
     /// <summary>
     /// Specifies that when a method returns <see cref="ReturnValue"/>,
@@ -212,7 +212,7 @@ namespace System.Diagnostics.CodeAnalysis
     /// and callers do not need to set any required members themselves.
     /// </summary>
     [AttributeUsage(AttributeTargets.Constructor)]
-    sealed partial class SetsRequiredMembersAttribute : Attribute { }
+    sealed partial class SetsRequiredMembersAttribute : Attribute;
 
     /// <summary>Specifies the syntax used in a string.</summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property)]
@@ -295,7 +295,7 @@ namespace System.Diagnostics.CodeAnalysis
         AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Parameter,
         Inherited = false
     )]
-    sealed partial class UnscopedRefAttribute : Attribute { }
+    sealed partial class UnscopedRefAttribute : Attribute;
 #endif
 }
 
@@ -311,7 +311,9 @@ namespace System.Runtime.CompilerServices
         ExcludeFromCodeCoverage,
 #endif
         DebuggerNonUserCode]
-    static class IsExternalInit { }
+#pragma warning disable SA1106
+    static class IsExternalInit;
+#pragma warning restore SA1106
 #endif
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
     /// <summary>
@@ -348,7 +350,7 @@ namespace System.Runtime.CompilerServices
 #if !NET6_0_OR_GREATER
     /// <summary>Indicates the attributed type is to be used as an interpolated string handler.</summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-    sealed partial class InterpolatedStringHandlerAttribute : Attribute { }
+    sealed partial class InterpolatedStringHandlerAttribute : Attribute;
 
     /// <summary>
     /// Indicates which arguments to a method involving an interpolated string handler should be passed to that handler.
@@ -406,7 +408,7 @@ namespace System.Runtime.CompilerServices
     /// https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    sealed partial class ModuleInitializerAttribute : Attribute { }
+    sealed partial class ModuleInitializerAttribute : Attribute;
 #endif
 #if NETFRAMEWORK
     /// <summary>
@@ -419,7 +421,7 @@ namespace System.Runtime.CompilerServices
     /// You can't apply this attribute to parameters that aren't specified as optional.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class CallerFilePathAttribute : Attribute { }
+    sealed partial class CallerFilePathAttribute : Attribute;
 
     /// <summary>Allows you to obtain the line number in the source file at which the method is called.</summary>
     /// <remarks><para>
@@ -428,7 +430,7 @@ namespace System.Runtime.CompilerServices
     /// You can't apply this attribute to parameters that aren't specified as optional.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class CallerLineNumberAttribute : Attribute { }
+    sealed partial class CallerLineNumberAttribute : Attribute;
 
     /// <summary>Allows you to obtain the method or property name of the caller to the method.</summary>
     /// <remarks><para>
@@ -437,7 +439,7 @@ namespace System.Runtime.CompilerServices
     /// You can't apply this attribute to parameters that aren't specified as optional.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Parameter)]
-    sealed partial class CallerMemberNameAttribute : Attribute { }
+    sealed partial class CallerMemberNameAttribute : Attribute;
 #endif
 #if NETFRAMEWORK || NETSTANDARD
     /// <summary>Indicates that a parameter captures the expression passed for another parameter as a string.</summary>
@@ -478,7 +480,7 @@ namespace System.Runtime.CompilerServices
         AttributeTargets.Struct,
         Inherited = false
     )]
-    sealed partial class SkipLocalsInitAttribute : Attribute { }
+    sealed partial class SkipLocalsInitAttribute : Attribute;
 #endif
 #if !NET7_0_OR_GREATER
     /// <summary>
@@ -510,7 +512,7 @@ namespace System.Runtime.CompilerServices
 
     /// <summary>Specifies that a type has required members or that a member is required.</summary>
     [AttributeUsage(AttributeTargets.Constructor)]
-    sealed partial class RequiredMemberAttribute : Attribute { }
+    sealed partial class RequiredMemberAttribute : Attribute;
 #endif
 }
 

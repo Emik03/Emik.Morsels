@@ -7,6 +7,6 @@ using static AttributeTargets;
 
 /// <summary>Used to exclude a class form virtualization.</summary>
 [AttributeUsage(Class)]
-sealed partial class DoNotVirtualizeAttribute : Attribute { }
+sealed partial class DoNotVirtualizeAttribute : Attribute;
 
 #endif
