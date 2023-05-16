@@ -89,7 +89,7 @@ static partial class Peeks
         [CallerMemberName] string? member = null
     )
     {
-        // ReSharper disable once InvokeAsExtensionMethod
+        // ReSharper disable once InvokeAsExtensionMethod RedundantNameQualifier
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
                 @$"{Stringifier.Stringify((map ?? (x => x))(value))}{(shouldLogExpression ? @$"

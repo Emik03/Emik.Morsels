@@ -180,6 +180,7 @@ sealed partial class Split<T> : ICollection<T>,
     public void Add(bool key, T value) => _ = key ? Truthy = value : Falsy = value;
 
     /// <inheritdoc />
+    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? Truthy = item.Value : Falsy = item.Value;
 
     /// <inheritdoc />
@@ -190,7 +191,7 @@ sealed partial class Split<T> : ICollection<T>,
     }
 
     /// <inheritdoc />
-    [Pure]
+    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public bool Contains(KeyValuePair<bool, T> item) =>
         item.Key
             ? EqualityComparer<T>.Default.Equals(Truthy, item.Value)
