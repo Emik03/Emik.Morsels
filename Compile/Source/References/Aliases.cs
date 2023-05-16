@@ -48,7 +48,7 @@ global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFo
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-#if !KTANE
+#if !WAWA
 // ReSharper disable once CheckNamespace
 namespace System.Diagnostics.Contracts;
 
