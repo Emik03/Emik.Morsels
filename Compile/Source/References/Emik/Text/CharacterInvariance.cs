@@ -50,7 +50,7 @@ static partial class CharacterInvariance
     /// </returns>
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
-        value is null || value.All(char.IsWhiteSpace);
+        value?.All(char.IsWhiteSpace) != false;
 #elif !NET20 && !NET30
     /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
     [Pure]

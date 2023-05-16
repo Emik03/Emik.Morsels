@@ -2,7 +2,7 @@
 
 // ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
-#if NET35 && WAWA
+#if WAWA
 namespace Wawa.Modules;
 #else
 namespace Emik.Morsels;
@@ -15,7 +15,7 @@ using static System.Linq.Expressions.Expression;
 
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
-#if NET35 && WAWA
+#if WAWA
 public
 #endif
 static partial class Stringifier
@@ -85,7 +85,7 @@ static partial class Stringifier
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
 
-#if !NET35 // This method purely exists to take advantage of .NET 5's blazingly fast alternative.
+#if NETFRAMEWORK && NET40_OR_GREATER // This method exists to automatically overload to a blazingly fast alternative.
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using <see cref="Conjoin"/> for <see cref="char"/> enumerations.
@@ -260,7 +260,7 @@ static partial class Stringifier
             bool b => b ? True : False,
             char c => isSurrounded ? $"'{c}'" : $"{c}",
             string s => isSurrounded ? $@"""{s}""" : s,
-#if NET35 && WAWA
+#if KTANE
             Object o => o.name,
 #endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),

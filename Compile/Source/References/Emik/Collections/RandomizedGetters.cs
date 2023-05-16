@@ -63,7 +63,7 @@ static partial class RandomizedGetters
 
     [Pure]
     static Func<int, int, int> Rand() =>
-#if NET35
+#if KTANE
         UnityEngine.Random.Range;
 #elif NET6_0_OR_GREATER
         Random.Shared.Next;

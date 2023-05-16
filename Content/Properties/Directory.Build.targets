@@ -180,6 +180,10 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
+    <!-- Defines the constant for Keep Talking and Nobody Explodes projects. -->
+    <PropertyGroup Condition="'$(IsKtane)' == 'true'">
+        <DefineConstants>$(DefineConstants);KTANE</DefineConstants>
+    </PropertyGroup>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
         <Title>$(AssemblyName)</Title>

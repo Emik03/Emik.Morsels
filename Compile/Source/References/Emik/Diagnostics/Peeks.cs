@@ -17,7 +17,7 @@ static partial class Peeks
         Shout;
 #else
         (Action<string>)Shout +
-#if NET35
+#if KTANE
         (Action<string>)UnityEngine.Debug.Log +
 #endif
         (Action<string>)Console.WriteLine;

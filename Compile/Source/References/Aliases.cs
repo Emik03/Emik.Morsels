@@ -5,7 +5,7 @@
 #if NETFRAMEWORK
 extern alias ms;
 #endif
-#if NET35
+#if KTANE
 extern alias unity;
 
 // Curse you Unity for making me do this. Allows Jetbrains.Annotations and UnityEngine to coexist.
@@ -18,7 +18,7 @@ global using ContractAnnotationAttribute = unity::JetBrains.Annotations.Contract
 global using Debug = unity::UnityEngine.Debug;
 #endif
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
-#if NET35
+#if KTANE
 global using ImplicitUseKindFlags = unity::JetBrains.Annotations.ImplicitUseKindFlags;
 global using ImplicitUseTargetFlags = unity::JetBrains.Annotations.ImplicitUseTargetFlags;
 global using InstantHandleAttribute = unity::JetBrains.Annotations.InstantHandleAttribute;
@@ -33,14 +33,14 @@ global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 #endif
-#if NET35 && WAWA
+#if KTANE && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #elif NET40_OR_GREATER
 global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
-#if NET35
+#if KTANE
 #if !WAWA
 global using Range = System.Range;
 #endif
@@ -48,7 +48,7 @@ global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFo
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-#if !NET35 || !WAWA
+#if !KTANE
 // ReSharper disable once CheckNamespace
 namespace System.Diagnostics.Contracts;
 
