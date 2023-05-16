@@ -2097,7 +2097,7 @@ namespace System
     readonly
 #endif
         partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
-        IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
+            IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,
