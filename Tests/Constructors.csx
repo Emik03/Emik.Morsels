@@ -90,7 +90,16 @@ static IList<Type> ToTypes(Assembly asm)
         var types = ex.Types.Where(x => x is not null).ToList();
         var names = string.Join(", ", types.Select(x => x.Name));
 
-        Warning($"The assembly \"{asm.GetName().Name}\" can only test {types.Count} types ({names}) due to a", reason);
+        Warning($"The assembly \"{asm.GetName().Name}\" can only test {types.Count} types due to a", reason);
+        Warning($"The types that were able to be tested include [{names}] due to afforementioned", reason);
+
+        ex
+            .LoaderExceptions
+            .Where(x => x is not null)
+            .GroupBy(x => x.Message)
+            .ToList()
+            .ForEach(x => Warning($"Potentially related exception (found {x.Count()}):", x.First()));
+
         return types;
     }
 }
