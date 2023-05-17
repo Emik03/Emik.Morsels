@@ -285,18 +285,15 @@ static partial class Stringifier
 #if KTANE
             Object x => x.name,
 #endif
+            _ when depth <= 0 =>
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
-            _ when lap <= 0 => source.ToString(),
+                source.ToString(),
 #else
-            _ when depth <= 0 => source.StringifyObject(depth - 1),
+                source.StringifyObject(depth - 1),
 #endif
             IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1)} }}",
             ICollection { Count: var count } x => Count(x, depth, count),
-#if !WAWA
-            IEnumerable x when (x as IEnumerable<object>)?.TryGetNonEnumeratedCount(out var count) ?? false =>
-                Count(x, depth, count),
-#endif
             IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
