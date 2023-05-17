@@ -51,7 +51,7 @@ public sealed class Morsels : AMarkdownFactory
         x switch
         {
             TypeParameterDocItem { TypeParameter.Name: var p } => p,
-            ParameterDocItem { Parameter.Type: var p } => $"{p.Name}{TypeParameters(p)}",
+            ParameterDocItem { Parameter.Type: var p } => $"{ToAlias(p.Name)}{TypeParameters(p)}",
             _ => x.Name,
         };
 
@@ -61,6 +61,26 @@ public sealed class Morsels : AMarkdownFactory
         item is not EntityDocItem entity ? item.Name :
         entity.Entity is IMethod { Name: "op_Implicit" or "op_Explicit" } method ? method.ReturnType.Name :
         entity.Entity.Name;
+
+    static string ToAlias(string name) =>
+        name
+           .Replace(nameof(Boolean), "bool")
+           .Replace(nameof(Byte), "byte")
+           .Replace(nameof(Char), "char")
+           .Replace(nameof(Decimal), "decimal")
+           .Replace(nameof(Double), "double")
+           .Replace(nameof(Single), "float")
+           .Replace(nameof(Int32), "int")
+           .Replace(nameof(Int64), "long")
+           .Replace(nameof(IntPtr), "nint")
+           .Replace(nameof(UIntPtr), "nuint")
+           .Replace(nameof(Object), "object")
+           .Replace(nameof(SByte), "sbyte")
+           .Replace(nameof(Int16), "short")
+           .Replace(nameof(String), "string")
+           .Replace(nameof(UInt32), "uint")
+           .Replace(nameof(UInt64), "ulong")
+           .Replace(nameof(UInt16), "ushort");
 
     static IType ElementType(IType item) => (item as ByReferenceType)?.ElementType ?? item;
 }
