@@ -285,12 +285,18 @@ static partial class Stringifier
 #if KTANE
             Object o => o.name,
 #endif
+#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
+            _ when depth <= 0 => source.ToString(),
+#else
+            _ when depth <= 0 => source.StringifyObject(depth - 1),
+#endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
-            IDictionary d when depth > 0 => $"{{ {d.DictionaryStringifier(depth - 1)} }}",
-            ICollection l when depth > 0 => l.Count is 0
-                ? "[Count: 0]"
-                : $"[Count: {l.Count}; {l.GetEnumerator().EnumeratorStringifier(depth - 1, l.Count)}]",
-            IEnumerable e when depth > 0 => $"[{e.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
+            IDictionary d => $"{{ {d.DictionaryStringifier(depth - 1)} }}",
+            ICollection { Count: var count } l => Count(l, depth, count),
+#if !WAWA
+            IEnumerable<object> e when e.TryGetNonEnumeratedCount(out var count) => Count(e, depth, count),
+#endif
+            IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
@@ -312,6 +318,10 @@ static partial class Stringifier
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
+
+    [Pure]
+    static string Count(IEnumerable e, int depth, int count) =>
+        count is 0 ? "[Count: 0]" : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth - 1, count)}]";
 
     [Pure]
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
