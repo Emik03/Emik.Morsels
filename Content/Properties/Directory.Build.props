@@ -6,7 +6,6 @@
         <Company/>
         <Authors>Emik</Authors>
         <Nullable>enable</Nullable>
-        <OutputPath>bin</OutputPath>
         <FileVersion>1.0</FileVersion>
         <WarningLevel>5</WarningLevel>
         <AnalysisLevel>6</AnalysisLevel>
@@ -29,6 +28,7 @@
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <ArtifactsPath>$(MSBuildProjectFullPath)/../artifacts</ArtifactsPath>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
