@@ -1194,6 +1194,7 @@ namespace Wawa.Modules;
 #endif
 
 #if !(NET20 || NET30)
+
 #endif
 
 /// <summary>Provides stringification methods.</summary>
