@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <NoTests>true</NoTests>
-        <FileVersion>0</FileVersion>
+        <FileVersion>0.0</FileVersion>
         <TargetFramework>netstandard2.0</TargetFramework>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
     </PropertyGroup>
