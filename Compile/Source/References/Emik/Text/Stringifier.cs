@@ -279,24 +279,25 @@ static partial class Stringifier
             _ when forceReflection => source.UseStringifier(),
 #endif
             null => Null,
-            bool b => b ? True : False,
-            char c => isSurrounded ? $"'{c}'" : $"{c}",
-            string s => isSurrounded ? $@"""{s}""" : s,
+            bool x => x ? True : False,
+            char x => isSurrounded ? $"'{x}'" : $"{x}",
+            string x => isSurrounded ? $@"""{x}""" : x,
 #if KTANE
-            Object o => o.name,
+            Object x => x.name,
 #endif
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
-            _ when depth <= 0 => source.ToString(),
+            _ when lap <= 0 => source.ToString(),
 #else
             _ when depth <= 0 => source.StringifyObject(depth - 1),
 #endif
-            IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
-            IDictionary d => $"{{ {d.DictionaryStringifier(depth - 1)} }}",
-            ICollection { Count: var count } l => Count(l, depth, count),
+            IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
+            IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1)} }}",
+            ICollection { Count: var count } x => Count(x, depth, count),
 #if !WAWA
-            IEnumerable<object> e when e.TryGetNonEnumeratedCount(out var count) => Count(e, depth, count),
+            IEnumerable x when (x as IEnumerable<object>)?.TryGetNonEnumeratedCount(out var count) ?? false =>
+                Count(x, depth, count),
 #endif
-            IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
+            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
