@@ -542,13 +542,13 @@ static partial class Stringifier
         if (type.GetElementType() is { } underlying)
         {
             if (type.IsByRef)
-                builder.Append("ref ");
+                builder.Append('r').Append('e').Append('f').Append(' ');
 
             var underlyingName = UnfoldedName(underlying);
             builder.Append(underlyingName);
 
             if (type.IsArray)
-                builder.Append("[]");
+                builder.Append('[').Append(']');
 
             if (type.IsPointer)
                 builder.Append('*');
@@ -565,7 +565,7 @@ static partial class Stringifier
         var types = type.GetGenericArguments();
 
         types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, len).Append('<'));
-        _ = types.Skip(1).Select(Append).LastOrDefault(_ => false);
+        types.Skip(1).Select(Append).Enumerate();
 
         return builder.Append('>');
     }
