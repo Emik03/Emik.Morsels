@@ -226,10 +226,19 @@ sealed partial class InlineAttribute : Attribute
 
 static class Stringifier
 {
+    /// <summary>
+    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
+    /// in which case each item within is printed out separately.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the source.</typeparam>
+    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
+    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
+    [MustUseReturnValue]
     public static string Stringify<T>(T? source) => source.Stringify();
-
-    public static string Stringify<T>(T? source, bool isSurrounded, bool isRecursive, bool forceReflection)
-        => source.Stringify(isSurrounded, isRecursive, forceReflection);
 }
 
 /// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>

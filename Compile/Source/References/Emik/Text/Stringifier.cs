@@ -20,6 +20,8 @@ public
 #endif
 static partial class Stringifier
 {
+    const int MaxIteration = 32, MaxRecursion = 2;
+
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
@@ -75,11 +77,12 @@ static partial class Stringifier
         s_exUnsupportedPlatform = Constant(UnsupportedPlatform),
 #endif
         s_exSeparator = Constant(Separator),
-        s_exTrue = Constant(true);
+        s_exTrue = Constant(true),
+        s_exZero = Constant(0);
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
-        s_stringify = ((Func<bool, bool, bool, bool, string>)Stringify).Method.GetGenericMethodDefinition();
+        s_stringify = ((Func<bool, bool, bool, int, string>)Stringify).Method.GetGenericMethodDefinition();
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
@@ -115,18 +118,29 @@ static partial class Stringifier
         char separator
     )
     {
-        StringBuilder stringBuilder = new();
+        StringBuilder builder = new();
         using var enumerator = values.GetEnumerator();
 
         if (enumerator.MoveNext())
-            stringBuilder.Append(enumerator.Current);
+            builder.Append(enumerator.Current);
         else
             return "";
 
-        while (enumerator.MoveNext())
-            stringBuilder.Append(separator).Append(enumerator.Current);
+        var i = 0;
 
-        return stringBuilder.ToString();
+        while (enumerator.MoveNext())
+        {
+            if (checked(++i) >= MaxIteration)
+            {
+                var etcetera = Etcetera(values is ICollection { Count: var count } ? count - i : null);
+                builder.Append(separator).Append(etcetera);
+                break;
+            }
+
+            builder.Append(separator).Append(enumerator.Current);
+        }
+
+        return builder.ToString();
     }
 
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
@@ -143,18 +157,29 @@ static partial class Stringifier
         string separator = Separator
     )
     {
-        StringBuilder stringBuilder = new();
+        StringBuilder builder = new();
         using var enumerator = values.GetEnumerator();
 
         if (enumerator.MoveNext())
-            stringBuilder.Append(enumerator.Current);
+            builder.Append(enumerator.Current);
         else
             return "";
 
-        while (enumerator.MoveNext())
-            stringBuilder.Append(separator).Append(enumerator.Current);
+        var i = 0;
 
-        return stringBuilder.ToString();
+        while (enumerator.MoveNext())
+        {
+            if (checked(++i) >= MaxIteration)
+            {
+                var etcetera = Etcetera(values is ICollection { Count: var count } ? count - i : null);
+                builder.Append(separator).Append(etcetera);
+                break;
+            }
+
+            builder.Append(separator).Append(enumerator.Current);
+        }
+
+        return builder.ToString();
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -216,7 +241,7 @@ static partial class Stringifier
 #endif
             T? source
     ) =>
-        Stringify(source, false, true, false);
+        Stringify(source, false);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -228,16 +253,13 @@ static partial class Stringifier
     /// </para></remarks>
     /// <typeparam name="T">The type of the source.</typeparam>
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <param name="isSurrounded">
-    /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
-    /// </param>
-    /// <param name="isRecursive">
-    /// Determines whether it re-calls <see cref="Stringify{T}(T, bool, bool, bool)"/>
-    /// on each property in <paramref name="source"/>.
-    /// </param>
     /// <param name="forceReflection">
     /// Determines whether it uses its own reflective stringification regardless of type.
     /// </param>
+    /// <param name="isSurrounded">
+    /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
+    /// </param>
+    /// <param name="depth">Determines how deep the recursive function should go.</param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
     public static string Stringify<T>(
@@ -246,9 +268,9 @@ static partial class Stringifier
 #endif
 #pragma warning disable SA1114 RCS1163
             T? source,
-        bool isSurrounded,
-        bool isRecursive = true,
-        bool forceReflection = true
+        bool forceReflection,
+        bool isSurrounded = true,
+        int depth = MaxRecursion
 #pragma warning restore SA1114 RCS1163
     ) =>
         source switch
@@ -264,13 +286,15 @@ static partial class Stringifier
             Object o => o.name,
 #endif
             IFormattable i => i.ToString(null, CultureInfo.InvariantCulture),
-            IDictionary d => $"{{ {d.DictionaryStringifier()} }}",
-            ICollection l => $"{l.Count} [{l.GetEnumerator().EnumeratorStringifier()}]",
-            IEnumerable e => $"[{e.GetEnumerator().EnumeratorStringifier()}]",
+            IDictionary d when depth > 0 => $"{{ {d.DictionaryStringifier(depth - 1)} }}",
+            ICollection l when depth > 0 => l.Count is 0
+                ? "[Count: 0]"
+                : $"[Count: {l.Count}; {l.GetEnumerator().EnumeratorStringifier(depth - 1, l.Count)}]",
+            IEnumerable e when depth > 0 => $"[{e.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
-            _ => source.StringifyObject(isRecursive),
+            _ => source.StringifyObject(depth - 1),
 #endif
         };
 
@@ -290,7 +314,10 @@ static partial class Stringifier
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
 
     [Pure]
-    static string ToOrdinal(this int i) =>
+    static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
+
+    [Pure]
+    static string ToOrdinal(this in int i) =>
         $@"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
         {
             1 => FirstOrd,
@@ -300,36 +327,41 @@ static partial class Stringifier
         }}";
 
     [Pure]
-    static StringBuilder EnumeratorStringifier(this IEnumerator iterator)
+    static StringBuilder EnumeratorStringifier(this IEnumerator iterator, int depth, int? count = null)
     {
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current));
+            builder.Append(Stringify(iterator.Current, false, depth: depth));
+
+        var i = 0;
 
         while (iterator.MoveNext())
-            builder.Append(Separator).Append(Stringify(iterator.Current));
+        {
+            if (checked(++i) >= MaxIteration)
+            {
+                builder.Append(Separator).Append(Etcetera(count - i));
+                break;
+            }
+
+            builder.Append(Separator).Append(Stringify(iterator.Current, false, depth: depth));
+        }
 
         return builder;
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [MustUseReturnValue]
-    static string StringifyObject<T>(this T source, bool isRecursive)
+    static string StringifyObject<T>(this T source, int depth)
     {
-        if (typeof(T) == typeof(object))
-            return source?.ToString() ?? Null;
-
         if (!s_hasMethods.ContainsKey(typeof(T)))
-#pragma warning disable CS0253
             s_hasMethods[typeof(T)] =
                 typeof(object) != typeof(T).GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;
-#pragma warning restore CS0253
 
-        if (s_hasMethods[typeof(T)] || !isRecursive)
+        if (s_hasMethods[typeof(T)])
             return source?.ToString() ?? Null;
 
-        return UseStringifier(source);
+        return depth <= 0 ? UnfoldedName(source?.GetType()) : UseStringifier(source);
     }
 
     [MustUseReturnValue]
@@ -415,7 +447,7 @@ static partial class Stringifier
 
         Expression
             exMember = MakeMemberAccess(param, info),
-            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
+            exCall = Call(method, exMember, s_exFalse, s_exTrue, s_exZero);
 
 #if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
         var call = Lambda<Func<T, string>>(exCall, param).Compile();
@@ -455,7 +487,7 @@ static partial class Stringifier
     }
 #endif
     [Pure]
-    static StringBuilder DictionaryStringifier(this IDictionary dictionary)
+    static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth)
     {
         var iterator = dictionary.GetEnumerator();
         StringBuilder builder = new();
@@ -463,39 +495,54 @@ static partial class Stringifier
         if (iterator.MoveNext())
             builder.AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
 
+        var i = 0;
+
         while (iterator.MoveNext())
-            builder.Append(Separator).AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
+        {
+            if (checked(++i) >= MaxIteration)
+            {
+                builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
+                break;
+            }
+
+            builder
+               .Append(Separator)
+               .AppendKeyValuePair(
+                    Stringify(iterator.Key, false, depth: depth),
+                    Stringify(iterator.Value, false, depth: depth)
+                );
+        }
 
         return builder;
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static StringBuilder UnfoldedName(this Type? type, StringBuilder sb)
+    static StringBuilder UnfoldedName(this Type? type, StringBuilder builder)
     {
         StringBuilder Append(Type x)
         {
-            sb.Append(',').Append(' ');
-            return x.UnfoldedName(sb);
+            builder.Append(',').Append(' ');
+            return x.UnfoldedName(builder);
         }
 
         if (type is null)
-            return sb;
+            return builder;
 
         if (s_unfoldedNames.TryGetValue(type, out var val))
-            return sb.Append(val);
+            return builder.Append(val);
 
         var name = type.Name;
 
         if (!type.IsGenericType)
-            return sb.Append(name);
+            return builder.Append(name);
 
         var len = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
         var types = type.GetGenericArguments();
 
-        types.FirstOrDefault()?.UnfoldedName(sb.Append(name, 0, len).Append('<'));
+        types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, len).Append('<'));
         _ = types.Skip(1).Select(Append).LastOrDefault(_ => false);
 
-        return sb.Append('>');
+        return builder.Append('>');
     }
 #endif
 }
