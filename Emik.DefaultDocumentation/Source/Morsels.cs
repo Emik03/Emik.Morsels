@@ -51,7 +51,7 @@ public sealed class Morsels : AMarkdownFactory
         x switch
         {
             TypeParameterDocItem { TypeParameter.Name: var p } => p,
-            ParameterDocItem { Parameter.Type: var p } => $"{ToAlias(p.Name)}{TypeParameters(p)}",
+            ParameterDocItem { Parameter.Type: var p } => $"{ToAlias(p)}{TypeParameters(p)}",
             _ => x.Name,
         };
 
@@ -62,8 +62,10 @@ public sealed class Morsels : AMarkdownFactory
         entity.Entity is IMethod { Name: "op_Implicit" or "op_Explicit" } method ? method.ReturnType.Name :
         entity.Entity.Name;
 
-    static string ToAlias(string name) =>
-        name
+    static string ToAlias(INamedElement type) => type.Namespace is "System" ? ToAlias(type.Name) : type.Name;
+
+    static string ToAlias(string typeName) =>
+        typeName
            .Replace(nameof(Boolean), "bool")
            .Replace(nameof(Byte), "byte")
            .Replace(nameof(Char), "char")
