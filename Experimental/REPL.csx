@@ -1525,7 +1525,9 @@ public
             ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
             : UnfoldedName(typeof(T));
 
-        return $"{name} {{ {((Func<T, string>)s_stringifiers[typeof(T)])(source)} }}";
+        return ((Func<T, string>)s_stringifiers[typeof(T)])(source) is not "" and var str
+            ? $"{name} {{ {str} }}"
+            : $"{name};";
     }
 
     [MustUseReturnValue]
