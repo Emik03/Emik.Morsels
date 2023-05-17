@@ -140,7 +140,7 @@ static partial class Stringifier
             builder.Append(separator).Append(enumerator.Current);
         }
 
-        return builder.ToString();
+        return $"{builder}";
     }
 
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
@@ -179,7 +179,7 @@ static partial class Stringifier
             builder.Append(separator).Append(enumerator.Current);
         }
 
-        return builder.ToString();
+        return $"{builder}";
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -195,7 +195,7 @@ static partial class Stringifier
     ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
-        s_unfoldedNames[type] = type.IsGenericType ? $"{type.UnfoldedName(new())}" : type.Name;
+        s_unfoldedNames[type] = $"{type.UnfoldedName(new())}";
 #endif
 
     /// <summary>Converts a number to an ordinal.</summary>
@@ -538,6 +538,23 @@ static partial class Stringifier
 
         if (s_unfoldedNames.TryGetValue(type, out var val))
             return builder.Append(val);
+
+        if (type.GetElementType() is { } underlying)
+        {
+            if (type.IsByRef)
+                builder.Append("ref ");
+
+            var underlyingName = UnfoldedName(underlying);
+            builder.Append(underlyingName);
+
+            if (type.IsArray)
+                builder.Append("[]");
+
+            if (type.IsPointer)
+                builder.Append('*');
+
+            return builder;
+        }
 
         var name = type.Name;
 
