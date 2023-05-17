@@ -350,17 +350,29 @@ static partial class Stringifier
     [MustUseReturnValue]
     static Func<T, string> GenerateStringifier<T>()
     {
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
+
         var exParam = Parameter(typeof(T), nameof(T));
 
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-        var array = typeof(T)
-           .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+        var properties = typeof(T)
+           .GetProperties(Flags)
            .Where(CanUse)
 #if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(p => GetMethodCaller<T>(p, exParam))
+           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exParam, static x => x.PropertyType));
 #else
-           .Select(p => GetMethodCaller(p, exParam))
+           .Select(p => GetMethodCaller(p, exParam, static x => x.PropertyType));
 #endif
+        var fields = typeof(T)
+           .GetFields(Flags)
+#if NETFRAMEWORK && !NET40_OR_GREATER
+           .Select(f => GetMethodCaller<T, FieldInfo>(f, exParam, static x => x.FieldType));
+#else
+           .Select(f => GetMethodCaller(f, exParam, static x => x.FieldType));
+#endif
+
+        var all = fields
+           .Concat(properties)
 #if WAWA
            .ToList();
 #else
@@ -372,48 +384,57 @@ static partial class Stringifier
             return Call(s_combine, call, curr);
         }
 
-        var exResult = array.Any()
-            ? array.Aggregate(Combine)
+        var exResult = all.Any()
+            ? all.Aggregate(Combine)
             : s_exEmpty;
 
         return Lambda<Func<T, string>>(exResult, exParam).Compile();
     }
 
+    // ReSharper disable once SuggestBaseTypeForParameter
     [MustUseReturnValue]
 #if NETFRAMEWORK && !NET40_OR_GREATER
-    static Expression GetMethodCaller<T>(PropertyInfo info, ParameterExpression param)
+    static Expression GetMethodCaller<T, TMember>(
 #else
-    static Expression GetMethodCaller(PropertyInfo info, Expression param)
+    static Expression GetMethodCaller<TMember>(
 #endif
+        TMember info,
+        ParameterExpression param,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
+    )
+        where TMember : MemberInfo
     {
+        var type = selector(info);
+
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (info.PropertyType.IsByRefLike)
+        if (type.IsByRefLike)
             return Call(s_combine, exConstant, Call(param, s_toString));
 #endif
-        var method = s_stringify.MakeGenericMethod(info.PropertyType);
+        var method = s_stringify.MakeGenericMethod(type);
 
-        Expression exMember = MakeMemberAccess(param, info);
+        Expression
+            exMember = MakeMemberAccess(param, info),
+            exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
 
 #if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
-        var call = Lambda<Func<T, string>>(exMember, param).Compile();
-        Expression<Func<T, string>> wrapped = t => Try(t, call);
+        var call = Lambda<Func<T, string>>(exCall, param).Compile();
+        Expression<Func<T, string>> wrapped = t => TryStringify(t, call);
 
-        exMember = Invoke(wrapped, param);
+        exCall = Invoke(wrapped, param);
 #else
         CatchBlock
             invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
             unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
             unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
 
-        exMember = TryCatch(exMember, unsupportedPlatform, unsupported, invalid);
+        exCall = TryCatch(exCall, unsupportedPlatform, unsupported, invalid);
 #endif
-        var exCall = Call(method, exMember, s_exTrue, s_exFalse, s_exFalse);
         return Call(s_combine, exConstant, exCall);
     }
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER
-    static string Try<T>(T instance, Func<T, string> stringify)
+    static string TryStringify<T>(T instance, [InstantHandle] Func<T, string> stringify)
     {
         try
         {
