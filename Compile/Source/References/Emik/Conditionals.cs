@@ -50,8 +50,7 @@ static partial class Conditionals
     /// is <see langword="null"/>; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool IsNull<T>([NotNullWhen(false)] this T? value) =>
-        !typeof(T).IsValueType ||
-        Nullable.GetUnderlyingType(typeof(T)) is not null ||
+        (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null) &&
         EqualityComparer<T>.Default.Equals(value, default);
 
     /// <summary>Conditionally invokes based on a condition.</summary>
