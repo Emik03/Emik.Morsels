@@ -42,6 +42,18 @@ static partial class Conditionals
     ) =>
         that ? throw new UnreachableException(exThat) : false;
 
+    /// <summary>Determines whether the value is null or not.</summary>
+    /// <typeparam name="T">The type of value to check.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is <see langword="null"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    public static bool IsNull<T>([NotNullWhen(false)] this T? value) =>
+        !typeof(T).IsValueType ||
+        Nullable.GetUnderlyingType(typeof(T)) is not null ||
+        EqualityComparer<T>.Default.Equals(value, default);
+
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="that">The value that must be <see langword="true"/>.</param>
     /// <param name="exThat">Filled by the compiler, the expression to assert.</param>
