@@ -256,7 +256,7 @@ static partial class Stringifier
     /// <param name="forceReflection">
     /// Determines whether it uses its own reflective stringification regardless of type.
     /// </param>
-    /// <param name="isSurrounded">
+    /// <param name="useQuotes">
     /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
     /// </param>
     /// <param name="depth">Determines how deep the recursive function should go.</param>
@@ -269,7 +269,7 @@ static partial class Stringifier
 #pragma warning disable SA1114 RCS1163
             T? source,
         bool forceReflection,
-        bool isSurrounded = true,
+        bool useQuotes = true,
         int depth = MaxRecursion
 #pragma warning restore SA1114 RCS1163
     ) =>
@@ -280,8 +280,8 @@ static partial class Stringifier
 #endif
             null => Null,
             bool x => x ? True : False,
-            char x => isSurrounded ? $"'{x}'" : $"{x}",
-            string x => isSurrounded ? $@"""{x}""" : x,
+            char x => useQuotes ? $"'{x}'" : $"{x}",
+            string x => useQuotes ? $@"""{x}""" : x,
 #if KTANE
             Object x => x.name,
 #endif
@@ -292,9 +292,9 @@ static partial class Stringifier
                 source.StringifyObject(depth - 1),
 #endif
             IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
-            IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1)} }}",
-            ICollection { Count: var count } x => Count(x, depth, count),
-            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1)}]",
+            IDictionary x => $"{{ {x.DictionaryStringifier(useQuotes, depth - 1)} }}",
+            ICollection { Count: var count } x => Count(x, useQuotes, depth, count),
+            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)}]",
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
@@ -318,8 +318,10 @@ static partial class Stringifier
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
 
     [Pure]
-    static string Count(IEnumerable e, int depth, int count) =>
-        count is 0 ? "[Count: 0]" : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth - 1, count)}]";
+    static string Count(IEnumerable e, bool useQuotes, int depth, int count) =>
+        count is 0
+            ? "[Count: 0]"
+            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1, count)}]";
 
     [Pure]
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
@@ -335,12 +337,17 @@ static partial class Stringifier
         }}";
 
     [Pure]
-    static StringBuilder EnumeratorStringifier(this IEnumerator iterator, int depth, int? count = null)
+    static StringBuilder EnumeratorStringifier(
+        this IEnumerator iterator,
+        bool useQuotes,
+        int depth,
+        int? count = null
+    )
     {
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, false, depth: depth));
+            builder.Append(Stringify(iterator.Current, false, useQuotes, depth));
 
         var i = 0;
 
@@ -352,7 +359,7 @@ static partial class Stringifier
                 break;
             }
 
-            builder.Append(Separator).Append(Stringify(iterator.Current, false, depth: depth));
+            builder.Append(Separator).Append(Stringify(iterator.Current, false, useQuotes, depth));
         }
 
         return builder;
@@ -495,13 +502,16 @@ static partial class Stringifier
     }
 #endif
     [Pure]
-    static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth)
+    static StringBuilder DictionaryStringifier(this IDictionary dictionary, bool useQuotes, int depth)
     {
         var iterator = dictionary.GetEnumerator();
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
-            builder.AppendKeyValuePair(Stringify(iterator.Key), Stringify(iterator.Value));
+            builder.AppendKeyValuePair(
+                Stringify(iterator.Key, false, useQuotes, depth),
+                Stringify(iterator.Value, false, useQuotes, depth)
+            );
 
         var i = 0;
 
@@ -516,8 +526,8 @@ static partial class Stringifier
             builder
                .Append(Separator)
                .AppendKeyValuePair(
-                    Stringify(iterator.Key, false, depth: depth),
-                    Stringify(iterator.Value, false, depth: depth)
+                    Stringify(iterator.Key, false, useQuotes, depth),
+                    Stringify(iterator.Value, false, useQuotes, depth)
                 );
         }
 
