@@ -10,6 +10,19 @@ namespace Emik.Morsels;
 /// <summary>Methods to get elements of a tuple.</summary>
 static partial class TupleExtracts
 {
+#if !NET47 && !NETSTANDARD2_0 // Unique in the sense that it is the only one that does have tuples, but not ITuple.
+    /// <summary>Gets the enumeration of the tuple.</summary>
+    /// <param name="tuple">The tuple to enumerate.</param>
+    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
+    public static IEnumerable<object?> AsEnumerable(this ITuple tuple) => tuple.Length.For(i => tuple[i]);
+
+    /// <summary>Gets the enumeration of the tuple.</summary>
+    /// <typeparam name="T">The type of tuple.</typeparam>
+    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
+    public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
+        where T : ITuple =>
+        tuple.Length.For(i => tuple[i]);
+#endif
     /// <summary>Gets the first item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
