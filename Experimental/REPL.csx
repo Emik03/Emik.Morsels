@@ -1227,7 +1227,7 @@ namespace Wawa.Modules;
 public
 #endif
 
-    const int MaxIteration = 32, MaxRecursion = 2;
+    const int MaxIteration = 32, MaxRecursion = 4;
 
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
@@ -1493,13 +1493,13 @@ public
 #if KTANE
             Object x => x.name,
 #endif
+            IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
             _ when depth <= 0 =>
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
 #else
                 source.StringifyObject(depth),
 #endif
-            IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
             IDictionary x => $"{{ {x.DictionaryStringifier(useQuotes, depth - 1)} }}",
             ICollection { Count: var count } x => Count(x, useQuotes, depth, count),
             IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)}]",
