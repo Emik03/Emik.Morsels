@@ -279,7 +279,8 @@ static partial class Stringifier
             _ when forceReflection => source.UseStringifier(),
 #endif
             null => Null,
-            bool x => x ? True : False,
+            true => True,
+            false => False,
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
 #if KTANE
