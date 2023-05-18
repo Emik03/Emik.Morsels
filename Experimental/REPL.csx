@@ -502,6 +502,19 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 /// <summary>Methods to get elements of a tuple.</summary>
 
+#if !NET47 && !NETSTANDARD2_0 // Unique in the sense that it is the only one that does have tuples, but not ITuple.
+    /// <summary>Gets the enumeration of the tuple.</summary>
+    /// <param name="tuple">The tuple to enumerate.</param>
+    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
+    public static IEnumerable<object?> AsEnumerable(this ITuple tuple) => tuple.Length.For(i => tuple[i]);
+
+    /// <summary>Gets the enumeration of the tuple.</summary>
+    /// <typeparam name="T">The type of tuple.</typeparam>
+    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
+    public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
+        where T : ITuple =>
+        tuple.Length.For(i => tuple[i]);
+#endif
     /// <summary>Gets the first item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
@@ -1484,12 +1497,15 @@ public
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
 #else
-                source.StringifyObject(depth - 1),
+                source.StringifyObject(depth),
 #endif
             IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
             IDictionary x => $"{{ {x.DictionaryStringifier(useQuotes, depth - 1)} }}",
             ICollection { Count: var count } x => Count(x, useQuotes, depth, count),
             IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)}]",
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)})",
+#endif
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else

@@ -290,12 +290,15 @@ static partial class Stringifier
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
 #else
-                source.StringifyObject(depth - 1),
+                source.StringifyObject(depth),
 #endif
             IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
             IDictionary x => $"{{ {x.DictionaryStringifier(useQuotes, depth - 1)} }}",
             ICollection { Count: var count } x => Count(x, useQuotes, depth, count),
             IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)}]",
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)})",
+#endif
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
