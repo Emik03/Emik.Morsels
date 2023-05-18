@@ -1474,7 +1474,7 @@ public
 #endif
             null => Null,
             bool x => x ? True : False,
-            char x => useQuotes ? $"'{x}'" : $"{x}",
+            char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
 #if KTANE
             Object x => x.name,
@@ -1516,6 +1516,24 @@ public
         count is 0
             ? "[Count: 0]"
             : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1, count)}]";
+
+    [Pure]
+    static string Escape(char c) =>
+        c switch
+        {
+            '\'' => "'\\''",
+            '\"' => "'\\\"'",
+            '\\' => "'\\\\'",
+            '\0' => "'\\0'",
+            '\a' => "'\\a'",
+            '\b' => "'\\b'",
+            '\f' => "'\\f'",
+            '\n' => "'\\n'",
+            '\r' => "'\\r'",
+            '\t' => "'\\t'",
+            '\v' => "'\\v'",
+            _ => $"{c}",
+        };
 
     [Pure]
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
