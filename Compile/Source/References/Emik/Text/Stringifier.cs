@@ -87,7 +87,6 @@ static partial class Stringifier
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
-
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
@@ -96,9 +95,8 @@ static partial class Stringifier
     /// <param name="chars">The enumeration of characters.</param>
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
-    public static string Conjoin(this IEnumerable<char> chars) => string.Concat(chars);
+    public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
 #endif
-
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using
