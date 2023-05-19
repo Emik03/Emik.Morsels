@@ -1295,7 +1295,7 @@ public
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
 
-#if NETFRAMEWORK && NET40_OR_GREATER // This method exists to automatically overload to a blazingly fast alternative.
+#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using <see cref="Conjoin"/> for <see cref="char"/> enumerations.
