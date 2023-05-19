@@ -4,6 +4,7 @@
 #define NET70_OR_GREATER
 #define NET60_OR_GREATER
 #define NET50_OR_GREATER
+#define NETCOREAPP
 #define NETSTANDARD2_1_OR_GREATER
 #define NETSTANDARD2_0_OR_GREATER
 #define NETSTANDARD1_6_OR_GREATER
@@ -13,6 +14,7 @@
 #define NETSTANDARD1_2_OR_GREATER
 #define NETSTANDARD1_1_OR_GREATER
 #define NETSTANDARD1_0_OR_GREATER
+#define NETSTANDARD
 #define CSHARPREPL
 global using System;
 global using System.Buffers;
@@ -1294,7 +1296,6 @@ public
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
-
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
@@ -1303,9 +1304,8 @@ public
     /// <param name="chars">The enumeration of characters.</param>
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
-    public static string Conjoin(this IEnumerable<char> chars) => string.Concat(chars);
+    public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
 #endif
-
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using
