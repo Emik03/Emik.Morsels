@@ -90,13 +90,15 @@ static partial class Stringifier
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
-    /// This method is more efficient than using <see cref="Conjoin"/> for <see cref="char"/> enumerations.
+    /// This method is more efficient than using <see cref="Conjoin{T}(IEnumerable{T}, string)"/>
+    /// for <see cref="char"/> enumerations.
     /// </para></remarks>
     /// <param name="chars">The enumeration of characters.</param>
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
     public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
 #endif
+
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using
@@ -124,19 +126,8 @@ static partial class Stringifier
         else
             return "";
 
-        var i = 0;
-
         while (enumerator.MoveNext())
-        {
-            if (checked(++i) >= MaxIteration)
-            {
-                var etcetera = Etcetera(values is ICollection { Count: var count } ? count - i : null);
-                builder.Append(separator).Append(etcetera);
-                break;
-            }
-
             builder.Append(separator).Append(enumerator.Current);
-        }
 
         return $"{builder}";
     }
@@ -163,19 +154,8 @@ static partial class Stringifier
         else
             return "";
 
-        var i = 0;
-
         while (enumerator.MoveNext())
-        {
-            if (checked(++i) >= MaxIteration)
-            {
-                var etcetera = Etcetera(values is ICollection { Count: var count } ? count - i : null);
-                builder.Append(separator).Append(etcetera);
-                break;
-            }
-
             builder.Append(separator).Append(enumerator.Current);
-        }
 
         return $"{builder}";
     }
