@@ -79,9 +79,7 @@ static partial class CartesianProductFactories
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T">The type of item in the set.</typeparam>
     /// <param name="iterable">The sets to create a cartesian product of.</param>
-    /// <returns>
-    /// The cartesian product of all of the parameter <paramref name="iterable"/>.
-    /// </returns>
+    /// <returns>The cartesian product of all of the parameter <paramref name="iterable"/>.</returns>
     public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> iterable) =>
         iterable.Aggregate(
             Enumerable.Repeat(Enumerable.Empty<T>(), 1),
