@@ -237,7 +237,6 @@
         <Reference Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
         <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
         <Reference Include="YamlDotNet" HintPath="$(Celeste)/YamlDotNet.dll" Private="false"/>
-        <!--<PackageReference Include="RemoveReference.Fody" Version="1.0.5" PrivateAssets="all"/>-->
         <Reference Include="MonoMod.Utils" HintPath="$(Celeste)/MonoMod.Utils.dll" Private="false"/>
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
     </ItemGroup>
