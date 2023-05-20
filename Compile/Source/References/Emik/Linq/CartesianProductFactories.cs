@@ -8,19 +8,22 @@ static partial class CartesianProductFactories
 {
     /// <summary>Creates a cartesian product from two collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
     /// <param name="first">The first set to create a cartesian product of.</param>
     /// <param name="second">The second set to create a cartesian product of.</param>
     /// <returns>
     /// The cartesian product of the parameter <paramref name="first"/> and <paramref name="second"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T, T)> CartesianProduct<T>(this IEnumerable<T> first, IEnumerable<T> second) =>
+    public static IEnumerable<(T1, T2)> CartesianProduct<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second) =>
         first.SelectMany(_ => second, (x, y) => (x, y));
 
     /// <summary>Creates a cartesian product from three collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <typeparam name="T3">The type of item in the third set.</typeparam>
     /// <param name="first">The first set to create a cartesian product of.</param>
     /// <param name="second">The second set to create a cartesian product of.</param>
     /// <param name="third">The third set to create a cartesian product of.</param>
@@ -29,10 +32,10 @@ static partial class CartesianProductFactories
     /// <paramref name="second"/>, and <paramref name="third"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T, T, T)> CartesianProduct<T>(
-        this IEnumerable<T> first,
-        IEnumerable<T> second,
-        IEnumerable<T> third
+    public static IEnumerable<(T1, T2, T3)> CartesianProduct<T1, T2, T3>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second,
+        IEnumerable<T3> third
     ) =>
         first
            .SelectMany(_ => second, (x, y) => (x, y))
@@ -40,7 +43,10 @@ static partial class CartesianProductFactories
 
     /// <summary>Creates a cartesian product from four collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <typeparam name="T3">The type of item in the third set.</typeparam>
+    /// <typeparam name="T4">The type of item in the fourth set.</typeparam>
     /// <param name="first">The first set to create a cartesian product of.</param>
     /// <param name="second">The second set to create a cartesian product of.</param>
     /// <param name="third">The third set to create a cartesian product of.</param>
@@ -50,11 +56,11 @@ static partial class CartesianProductFactories
     /// <paramref name="third"/>, and <paramref name="fourth"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T, T, T, T)> CartesianProduct<T>(
-        this IEnumerable<T> first,
-        IEnumerable<T> second,
-        IEnumerable<T> third,
-        IEnumerable<T> fourth
+    public static IEnumerable<(T1, T2, T3, T4)> CartesianProduct<T1, T2, T3, T4>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second,
+        IEnumerable<T3> third,
+        IEnumerable<T4> fourth
     ) =>
         first
            .SelectMany(_ => second, (x, y) => (x, y))
