@@ -257,7 +257,7 @@
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.6" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0-1.final" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.7.0-1.final" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
@@ -276,8 +276,8 @@
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all"/>
         <PackageReference Include="NUnit.Analyzers" Version="3.6.1" PrivateAssets="all"/>
         <PackageReference Include="coverlet.collector" Version="3.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" PrivateAssets="all"/>
         <PackageReference Include="NUnit3TestAdapter" Version="4.5.0-alpha.4" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0-preview-20230223-05" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
