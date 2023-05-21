@@ -253,7 +253,7 @@
         <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
     </ItemGroup>
     <!-- Remove Roslyn folder if not a Roslyn-based project. -->
-    <ItemGroup Condition="!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+    <ItemGroup Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <Compile Remove="$(Morsels)/Compile/**/Roslyn/**"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
