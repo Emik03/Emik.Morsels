@@ -278,7 +278,7 @@
         <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
         <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all"/>
         <PackageReference Include="NUnit.Analyzers" Version="3.6.1" PrivateAssets="all"/>
-        <PackageReference Include="coverlet.collector" Version="3.2.0" PrivateAssets="all"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.0" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" PrivateAssets="all"/>
         <PackageReference Include="NUnit3TestAdapter" Version="4.5.0-alpha.4" PrivateAssets="all"/>
     </ItemGroup>
