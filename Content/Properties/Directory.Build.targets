@@ -252,13 +252,17 @@
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $(IsKtane) == 'true'">
         <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
     </ItemGroup>
+    <!-- Remove Roslyn folder if not a Roslyn-based project. -->
+    <ItemGroup Condition="!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <Compile Remove="$(Morsels)/Compile/**/Roslyn/**"/>
+    </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.6" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.7.0-1.final" PrivateAssets="all"/>
     </ItemGroup>
-    <!-- Roslyn analyzer references. -->
+    <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
         <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
