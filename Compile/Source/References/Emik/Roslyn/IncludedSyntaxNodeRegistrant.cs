@@ -67,7 +67,10 @@ static partial class IncludedSyntaxNodeRegistrant
             diagnostic.Properties
         );
 
-    /// <inheritdoc cref="AttributeArgumentSyntaxExt.TryGetStringValue(AttributeArgumentSyntax, SemanticModel, CancellationToken, out string)"/>
+    /// <summary>Gets the symbol from a lookup.</summary>
+    /// <param name="context">The context to use.</param>
+    /// <param name="syntax">The syntax to lookup.</param>
+    /// <returns>The symbols that likely define it.</returns>
     public static IEnumerable<ISymbol> Symbols(this SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
         (syntax.MemberName() ?? $"{syntax}") is var name && syntax is PredefinedTypeSyntax
             ? context.Compilation.GetSymbolsWithName(
