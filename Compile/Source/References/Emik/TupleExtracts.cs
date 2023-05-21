@@ -24,6 +24,7 @@ static partial class TupleExtracts
         where T : ITuple =>
         tuple.Length.For(i => tuple[i]);
 #endif
+
     /// <summary>Gets the first item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
