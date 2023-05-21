@@ -18,6 +18,7 @@ static partial class TupleExtracts
 
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <typeparam name="T">The type of tuple.</typeparam>
+    /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
     public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
         where T : ITuple =>
