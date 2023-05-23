@@ -219,7 +219,7 @@ static partial class Stringifier
 #endif
             T? source
     ) =>
-        Stringify(source, false);
+        Stringify(source, false, false);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
