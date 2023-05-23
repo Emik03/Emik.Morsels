@@ -15,18 +15,20 @@ static partial class Heap
 
     /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
     /// <param name="action">The dangerous callback.</param>
+    /// <returns>An exception, if caught.</returns>
     [Inline, Obsolete(NotForProduction)]
-    public static void Swallow([InstantHandle] this Action action)
+    public static Exception? Swallow([InstantHandle] this Action action)
     {
         try
         {
             action();
+            return null;
         }
 #pragma warning disable CA1031
-        catch
+        catch (Exception ex)
 #pragma warning restore CA1031
         {
-            // ignored
+            return ex;
         }
     }
 
