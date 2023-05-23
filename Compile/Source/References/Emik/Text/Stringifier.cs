@@ -382,6 +382,10 @@ static partial class Stringifier
     [MustUseReturnValue]
     static string UseStringifier<T>(this T source)
     {
+        // Method can be called if 'forceReflection' is true.
+        if (!typeof(T).IsValueType && source is null)
+            return Null;
+
         if (!s_stringifiers.ContainsKey(typeof(T)))
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
 
