@@ -30,6 +30,25 @@ static partial class Heap
         }
     }
 
+    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
+    /// <typeparam name="T">The type of return.</typeparam>
+    /// <param name="func">The dangerous callback.</param>
+    /// <returns>The value returned from <paramref name="func"/>, or the exception caught.</returns>
+    [Inline, Obsolete(NotForProduction)]
+    public static (T?, Exception?) Swallow<T>([InstantHandle] this Func<T> func)
+    {
+        try
+        {
+            return (func(), null);
+        }
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            return (default, ex);
+        }
+    }
+
     /// <summary>Gets the amount of bytes a callback uses.</summary>
     /// <remarks><para>
     /// This method temporarily tunes the <see cref="GC"/> to <see cref="GCLatencyMode.LowLatency"/>
