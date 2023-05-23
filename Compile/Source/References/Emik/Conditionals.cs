@@ -90,7 +90,7 @@ static partial class Conditionals
     /// <param name="onTrue">The value to return when <see langword="true"/>.</param>
     /// <returns>
     /// The value <paramref name="onTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, else <see langword="default"/>.
+    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
     /// </returns>
     [Pure]
     public static T? Then<T>(this bool value, T onTrue) => value ? onTrue : default;
@@ -102,7 +102,7 @@ static partial class Conditionals
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <returns>
     /// The value returned from <paramref name="ifTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, else <see langword="default"/>.
+    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
