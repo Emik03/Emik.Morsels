@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+#if !NO_ROSLYN
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -117,3 +118,4 @@ static partial class IncludedSyntaxNodeRegistrant
                 action(context, node);
         };
 }
+#endif

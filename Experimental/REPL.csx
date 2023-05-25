@@ -16,6 +16,7 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define CSHARPREPL
+#define NO_ROSLYN
 global using System;
 global using System.Buffers;
 global using System.Buffers.Binary;
@@ -453,7 +454,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="onTrue">The value to return when <see langword="true"/>.</param>
     /// <returns>
     /// The value <paramref name="onTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, else <see langword="default"/>.
+    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
     /// </returns>
     [Pure]
     public static T? Then<T>(this bool value, T onTrue) => value ? onTrue : default;
@@ -465,7 +466,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <returns>
     /// The value returned from <paramref name="ifTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, else <see langword="default"/>.
+    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
@@ -512,11 +513,13 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <typeparam name="T">The type of tuple.</typeparam>
+    /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
     public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
         where T : ITuple =>
         tuple.Length.For(i => tuple[i]);
 #endif
+
     /// <summary>Gets the first item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
@@ -911,18 +914,39 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
     /// <param name="action">The dangerous callback.</param>
+    /// <returns>An exception, if caught.</returns>
     [Inline, Obsolete(NotForProduction)]
-    public static void Swallow([InstantHandle] this Action action)
+    public static Exception? Swallow([InstantHandle] this Action action)
     {
         try
         {
             action();
+            return null;
         }
 #pragma warning disable CA1031
-        catch
+        catch (Exception ex)
 #pragma warning restore CA1031
         {
-            // ignored
+            return ex;
+        }
+    }
+
+    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
+    /// <typeparam name="T">The type of return.</typeparam>
+    /// <param name="func">The dangerous callback.</param>
+    /// <returns>The value returned from <paramref name="func"/>, or the exception caught.</returns>
+    [Inline, Obsolete(NotForProduction)]
+    public static (T?, Exception?) Swallow<T>([InstantHandle] this Func<T> func)
+    {
+        try
+        {
+            return (func(), null);
+        }
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            return (default, ex);
         }
     }
 
@@ -1299,13 +1323,15 @@ public
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
-    /// This method is more efficient than using <see cref="Conjoin"/> for <see cref="char"/> enumerations.
+    /// This method is more efficient than using <see cref="Conjoin{T}(IEnumerable{T}, string)"/>
+    /// for <see cref="char"/> enumerations.
     /// </para></remarks>
     /// <param name="chars">The enumeration of characters.</param>
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
     public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
 #endif
+
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using
@@ -1333,19 +1359,8 @@ public
         else
             return "";
 
-        var i = 0;
-
         while (enumerator.MoveNext())
-        {
-            if (checked(++i) >= MaxIteration)
-            {
-                var etcetera = Etcetera(values is ICollection { Count: var count } ? count - i : null);
-                builder.Append(separator).Append(etcetera);
-                break;
-            }
-
             builder.Append(separator).Append(enumerator.Current);
-        }
 
         return $"{builder}";
     }
@@ -1372,19 +1387,8 @@ public
         else
             return "";
 
-        var i = 0;
-
         while (enumerator.MoveNext())
-        {
-            if (checked(++i) >= MaxIteration)
-            {
-                var etcetera = Etcetera(values is ICollection { Count: var count } ? count - i : null);
-                builder.Append(separator).Append(etcetera);
-                break;
-            }
-
             builder.Append(separator).Append(enumerator.Current);
-        }
 
         return $"{builder}";
     }
@@ -1448,7 +1452,7 @@ public
 #endif
             T? source
     ) =>
-        Stringify(source, false);
+        Stringify(source, false, false);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -1611,6 +1615,10 @@ public
     [MustUseReturnValue]
     static string UseStringifier<T>(this T source)
     {
+        // Method can be called if 'forceReflection' is true.
+        if (!typeof(T).IsValueType && source is null)
+            return Null;
+
         if (!s_stringifiers.ContainsKey(typeof(T)))
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
 
@@ -4174,6 +4182,50 @@ public
 // ReSharper disable once CheckNamespace
 
 
+/// <summary>Provides methods for creating combinations of items.</summary>
+
+    /// <summary>Generates all combinations of the nested list.</summary>
+    /// <typeparam name="T">The type of nested list.</typeparam>
+    /// <param name="input">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="input"/>.</returns>
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> input)
+#else
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> input)
+#endif
+    {
+        var indices = new int[input.Count];
+        int pos = 0, index = 0;
+
+        while (true)
+        {
+            var result = new T[input.Count];
+
+            while (pos < result.Length)
+            {
+                indices[pos] = index;
+                result[pos] = input[pos][index];
+                index = 0;
+                pos++;
+            }
+
+            yield return result;
+
+            do
+            {
+                if (pos is 0)
+                    yield break;
+
+                index = indices[--pos] + 1;
+            } while (index >= input[pos].Count);
+        }
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 
     /// <summary>
@@ -4521,19 +4573,22 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>Creates a cartesian product from two collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
     /// <param name="first">The first set to create a cartesian product of.</param>
     /// <param name="second">The second set to create a cartesian product of.</param>
     /// <returns>
     /// The cartesian product of the parameter <paramref name="first"/> and <paramref name="second"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T, T)> CartesianProduct<T>(this IEnumerable<T> first, IEnumerable<T> second) =>
+    public static IEnumerable<(T1, T2)> CartesianProduct<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second) =>
         first.SelectMany(_ => second, (x, y) => (x, y));
 
     /// <summary>Creates a cartesian product from three collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <typeparam name="T3">The type of item in the third set.</typeparam>
     /// <param name="first">The first set to create a cartesian product of.</param>
     /// <param name="second">The second set to create a cartesian product of.</param>
     /// <param name="third">The third set to create a cartesian product of.</param>
@@ -4542,10 +4597,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <paramref name="second"/>, and <paramref name="third"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T, T, T)> CartesianProduct<T>(
-        this IEnumerable<T> first,
-        IEnumerable<T> second,
-        IEnumerable<T> third
+    public static IEnumerable<(T1, T2, T3)> CartesianProduct<T1, T2, T3>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second,
+        IEnumerable<T3> third
     ) =>
         first
            .SelectMany(_ => second, (x, y) => (x, y))
@@ -4553,7 +4608,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <summary>Creates a cartesian product from four collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <typeparam name="T3">The type of item in the third set.</typeparam>
+    /// <typeparam name="T4">The type of item in the fourth set.</typeparam>
     /// <param name="first">The first set to create a cartesian product of.</param>
     /// <param name="second">The second set to create a cartesian product of.</param>
     /// <param name="third">The third set to create a cartesian product of.</param>
@@ -4563,11 +4621,11 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <paramref name="third"/>, and <paramref name="fourth"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T, T, T, T)> CartesianProduct<T>(
-        this IEnumerable<T> first,
-        IEnumerable<T> second,
-        IEnumerable<T> third,
-        IEnumerable<T> fourth
+    public static IEnumerable<(T1, T2, T3, T4)> CartesianProduct<T1, T2, T3, T4>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second,
+        IEnumerable<T3> third,
+        IEnumerable<T4> fourth
     ) =>
         first
            .SelectMany(_ => second, (x, y) => (x, y))
@@ -4592,9 +4650,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T">The type of item in the set.</typeparam>
     /// <param name="iterable">The sets to create a cartesian product of.</param>
-    /// <returns>
-    /// The cartesian product of all of the parameter <paramref name="iterable"/>.
-    /// </returns>
+    /// <returns>The cartesian product of all of the parameter <paramref name="iterable"/>.</returns>
     public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> iterable) =>
         iterable.Aggregate(
             Enumerable.Repeat(Enumerable.Empty<T>(), 1),
@@ -5070,6 +5126,126 @@ public enum ControlFlow
     /// <summary>The value indicating that the loop should break.</summary>
     Break,
 }
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NO_ROSLYN
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>
+/// <see cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
+/// with a wrapped callback which filters out ignored contexts.
+/// </summary>
+
+    /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
+    public static string? MemberName(this ExpressionSyntax syntax)
+    {
+        syntax.TryGetMemberName(out var result);
+        return result;
+    }
+
+    /// <inheritdoc cref="AttributeArgumentSyntaxExt.TryGetStringValue(AttributeArgumentSyntax, SemanticModel, CancellationToken, out string)"/>
+    public static string? StringValue(this SyntaxNodeAnalysisContext context, AttributeArgumentSyntax syntax)
+    {
+        syntax.TryGetStringValue(context.SemanticModel, context.CancellationToken, out var result);
+        return result;
+    }
+
+    /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
+    public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
+        this AnalysisContext context,
+        Action<SyntaxNodeAnalysisContext, TSyntaxNode> action,
+        params SyntaxKind[] syntaxKinds
+    )
+        where TSyntaxNode : SyntaxNode =>
+        context.RegisterSyntaxNodeAction(action, ImmutableArray.Create(syntaxKinds));
+
+    /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, ImmutableArray{TLanguageKindEnum})"/>
+    public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
+        this AnalysisContext context,
+        Action<SyntaxNodeAnalysisContext, TSyntaxNode> action,
+        ImmutableArray<SyntaxKind> syntaxKinds
+    )
+        where TSyntaxNode : SyntaxNode
+    {
+        context.RegisterSyntaxNodeAction(Filter(action), syntaxKinds);
+        return context;
+    }
+
+    /// <summary>Adds information to a diagnostic.</summary>
+    /// <typeparam name="T">The type of <paramref name="message"/>.</typeparam>
+    /// <param name="diagnostic">The diagnostic to append.</param>
+    /// <param name="message">The string to append.</param>
+    /// <returns>The diagnostic with added information.</returns>
+    public static Diagnostic And<T>(this Diagnostic diagnostic, T message) =>
+        Diagnostic.Create(
+            new(
+                diagnostic.Descriptor.Id,
+                diagnostic.Descriptor.Title,
+                $"{diagnostic.Descriptor.MessageFormat} {message.Stringify()}",
+                diagnostic.Descriptor.Category,
+                diagnostic.Descriptor.DefaultSeverity,
+                diagnostic.Descriptor.IsEnabledByDefault,
+                $"{diagnostic.Descriptor.Description} {message.Stringify()}",
+                diagnostic.Descriptor.HelpLinkUri,
+                diagnostic.Descriptor.CustomTags.ToArray()
+            ),
+            diagnostic.Location,
+            diagnostic.Severity,
+            diagnostic.AdditionalLocations,
+            diagnostic.Properties
+        );
+
+    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
+    /// <param name="symbol">The symbol to get all of the members of.</param>
+    /// <returns>
+    /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
+    /// interfaces and base types, and any subsequent interfaces and base types from those.
+    /// </returns>
+    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol? symbol) =>
+        symbol
+          ?.GetMembers()
+           .Concat(GetAllMembers(symbol.BaseType))
+           .Concat(symbol.Interfaces.SelectMany(GetAllMembers)) ??
+        Enumerable.Empty<ISymbol>();
+
+    /// <summary>Gets the symbol from a lookup.</summary>
+    /// <param name="context">The context to use.</param>
+    /// <param name="syntax">The syntax to lookup.</param>
+    /// <returns>The symbols that likely define it.</returns>
+    public static IEnumerable<ISymbol> Symbols(this SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
+        (syntax.MemberName() ?? $"{syntax}") is var name && syntax is PredefinedTypeSyntax
+            ? context.Compilation.GetSymbolsWithName(
+                x => x.Contains(name),
+                cancellationToken: context.CancellationToken
+            )
+            : context.SemanticModel.LookupSymbols(syntax.SpanStart, name: name);
+
+    /// <summary>Gets the underlying type symbol of another symbol.</summary>
+    /// <param name="symbol">The symbol to get the underlying type from.</param>
+    /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
+    public static ITypeSymbol? ToUnderlying(this ISymbol? symbol) =>
+        symbol switch
+        {
+            IEventSymbol x => x.Type,
+            IFieldSymbol x => x.Type,
+            ILocalSymbol x => x.Type,
+            IDiscardSymbol x => x.Type,
+            IPropertySymbol x => x.Type,
+            IParameterSymbol x => x.Type,
+            IMethodSymbol x => x.ReturnType,
+            IArrayTypeSymbol x => x.ElementType,
+            _ => null,
+        };
+
+    static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
+        where TSyntaxNode : SyntaxNode =>
+        context =>
+        {
+            if (!context.IsExcludedFromAnalysis() && context.Node is TSyntaxNode node)
+                action(context, node);
+        };
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
