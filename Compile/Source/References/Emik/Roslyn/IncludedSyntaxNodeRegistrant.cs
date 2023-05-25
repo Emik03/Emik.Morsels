@@ -67,6 +67,19 @@ static partial class IncludedSyntaxNodeRegistrant
             diagnostic.Properties
         );
 
+    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
+    /// <param name="symbol">The symbol to get all of the members of.</param>
+    /// <returns>
+    /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
+    /// interfaces and base types, and any subsequent interfaces and base types from those.
+    /// </returns>
+    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol? symbol) =>
+        symbol
+          ?.GetMembers()
+           .Concat(GetAllMembers(symbol.BaseType))
+           .Concat(symbol.Interfaces.SelectMany(GetAllMembers)) ??
+        Enumerable.Empty<ISymbol>();
+
     /// <summary>Gets the symbol from a lookup.</summary>
     /// <param name="context">The context to use.</param>
     /// <param name="syntax">The syntax to lookup.</param>
