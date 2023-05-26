@@ -31,6 +31,9 @@ static partial class Permuted
     public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> list)
 #endif
     {
+        if (list.Any(x => x is []))
+            yield break;
+
         var indices = new int[list.Count];
         int pos = 0, index = 0;
 
