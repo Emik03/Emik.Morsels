@@ -1602,14 +1602,17 @@ public
     [MustUseReturnValue]
     static string StringifyObject<T>(this T source, int depth)
     {
+        if (source is null)
+            return Null;
+
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
-                typeof(object) != typeof(T).GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;
+                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
 
         if (s_hasMethods[typeof(T)])
-            return source?.ToString() ?? Null;
+            return source.ToString() ?? Null;
 
-        return depth <= 0 ? UnfoldedName(source?.GetType()) : UseStringifier(source);
+        return depth <= 0 ? UnfoldedName(source.GetType()) : UseStringifier(source);
     }
 
     [MustUseReturnValue]
