@@ -4199,7 +4199,7 @@ public
 #endif
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
-        iterator.Select(x => x.ToReadOnly()).ToReadOnly();
+        iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
 
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
