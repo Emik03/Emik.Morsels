@@ -16,7 +16,10 @@ static partial class CartesianProductFactories
     /// The cartesian product of the parameter <paramref name="first"/> and <paramref name="second"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T1, T2)> CartesianProduct<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second) =>
+    public static IEnumerable<(T1 First, T2 Second)> CartesianProduct<T1, T2>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second
+    ) =>
         first.SelectMany(_ => second, (x, y) => (x, y));
 
     /// <summary>Creates a cartesian product from three collections.</summary>
@@ -32,7 +35,7 @@ static partial class CartesianProductFactories
     /// <paramref name="second"/>, and <paramref name="third"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T1, T2, T3)> CartesianProduct<T1, T2, T3>(
+    public static IEnumerable<(T1 First, T2 Second, T3 Third)> CartesianProduct<T1, T2, T3>(
         this IEnumerable<T1> first,
         IEnumerable<T2> second,
         IEnumerable<T3> third
@@ -56,7 +59,7 @@ static partial class CartesianProductFactories
     /// <paramref name="third"/>, and <paramref name="fourth"/>.
     /// </returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T1, T2, T3, T4)> CartesianProduct<T1, T2, T3, T4>(
+    public static IEnumerable<(T1 First, T2 Second, T3 Third, T4 Fourth)> CartesianProduct<T1, T2, T3, T4>(
         this IEnumerable<T1> first,
         IEnumerable<T2> second,
         IEnumerable<T3> third,
