@@ -34,21 +34,22 @@ static partial class Permuted
         if (list.Any(x => x is []))
             yield break;
 
-        var indices = new int[list.Count];
-        int pos = 0, index = 0;
+        int count = list.Count, index = 0, pos = 0;
+        var indices = new int[count];
+        var accumulator = new T[count];
 
         while (true)
         {
-            var result = new T[list.Count];
-
-            while (pos < result.Length)
+            while (pos < accumulator.Length)
             {
                 indices[pos] = index;
-                result[pos] = list[pos][index];
+                accumulator[pos] = list[pos][index];
                 index = 0;
                 pos++;
             }
 
+            var result = new T[count];
+            Array.Copy(accumulator, result, count);
             yield return result;
 
             do
