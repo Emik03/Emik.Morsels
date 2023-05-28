@@ -93,6 +93,12 @@ static partial class IncludedSyntaxNodeRegistrant
             )
             : context.SemanticModel.LookupSymbols(syntax.SpanStart, name: name);
 
+    /// <summary>Gets the containing <see cref="INamespaceOrTypeSymbol"/>.</summary>
+    /// <param name="syntax">The syntax to lookup.</param>
+    /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
+    public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
+        syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
+
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
