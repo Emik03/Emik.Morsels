@@ -456,7 +456,7 @@ static partial class Stringifier
         ParameterExpression param,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
-        where TMember : MemberInfo
+        where TMember : System.Reflection.MemberInfo
     {
         var type = selector(info);
 
