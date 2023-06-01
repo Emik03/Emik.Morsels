@@ -185,6 +185,65 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Provides methods for unfolding.</summary>
+
+    /// <summary>Applies a selector and collects the returned items recursively until the value becomes null.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="value">The initial value.</param>
+    /// <param name="converter">The converter to apply.</param>
+    /// <returns>
+    /// The parameter <paramref name="value"/>, followed by each non-null
+    /// returned value from the parameter <paramref name="converter"/>.
+    /// </returns>
+    [Pure]
+    public static IEnumerable<T> FindPathToNull<T>(this T? value, Converter<T, T?> converter)
+        where T : class
+    {
+        if (value is null)
+            yield break;
+
+        do
+            yield return value;
+        while (converter(value) is { } newValue && (value = newValue) is var _);
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [Pure]
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
+        where T : struct
+    {
+        do
+            yield return value;
+        while (converter(value) is { } newValue && (value = newValue) is var _);
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [Pure]
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
+        where T : struct =>
+        value is { } t ? FindPathToEmptyNullable(t, converter) : Enumerable.Empty<T>();
+
+// SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 
@@ -406,6 +465,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     ) =>
         that ? throw new UnreachableException(exThat) : false;
 
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP
     /// <summary>Determines whether the value is null or not.</summary>
     /// <typeparam name="T">The type of value to check.</typeparam>
     /// <param name="value">The value to check.</param>
@@ -416,6 +476,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     public static bool IsNull<T>([NotNullWhen(false)] this T? value) =>
         (!typeof(T).IsValueType || Nullable.GetUnderlyingType(typeof(T)) is not null) &&
         EqualityComparer<T?>.Default.Equals(value, default);
+#endif
 
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="that">The value that must be <see langword="true"/>.</param>
@@ -1689,7 +1750,7 @@ public
         ParameterExpression param,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
-        where TMember : MemberInfo
+        where TMember : System.Reflection.MemberInfo
     {
         var type = selector(info);
 
@@ -5245,6 +5306,12 @@ public enum ControlFlow
                 cancellationToken: context.CancellationToken
             )
             : context.SemanticModel.LookupSymbols(syntax.SpanStart, name: name);
+
+    /// <summary>Gets the containing <see cref="INamespaceOrTypeSymbol"/>.</summary>
+    /// <param name="syntax">The syntax to lookup.</param>
+    /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
+    public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
+        syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
