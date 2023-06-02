@@ -100,13 +100,6 @@ static partial class IncludedSyntaxNodeRegistrant
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
 
     /// <inheritdoc cref="GetAllMembers(INamespaceOrTypeSymbol)" />
-    public static IEnumerable<ISymbol> GetAllMembers(this CompilationReference symbol) =>
-        symbol.Compilation.GetAllMembers();
-
-    /// <inheritdoc cref="GetAllMembers(INamespaceOrTypeSymbol)" />
-    public static IEnumerable<ISymbol> GetAllMembers(this Compilation symbol) => symbol.Assembly.GetAllMembers();
-
-    /// <inheritdoc cref="GetAllMembers(INamespaceOrTypeSymbol)" />
     public static IEnumerable<ISymbol> GetAllMembers(this IAssemblySymbol symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
 
