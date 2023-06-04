@@ -4154,7 +4154,7 @@ public
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> DistinctDuplicates<T>(
-        this IEnumerable<T> source,
+        [NoEnumeration] this IEnumerable<T> source,
         IEqualityComparer<T>? comparer = null
     ) =>
         source.GroupDuplicates(comparer).Select(x => x.Key);
@@ -4169,7 +4169,7 @@ public
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<T> Duplicates<T>(this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
+    public static IEnumerable<T> Duplicates<T>([NoEnumeration] this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
         source.GroupDuplicates(comparer).SelectMany(x => x);
 
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
@@ -4178,8 +4178,9 @@ public
     /// <param name="source">The source to filter.</param>
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    [LinqTunnel, Pure]
     public static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
-        this IEnumerable<T> source,
+        [NoEnumeration] this IEnumerable<T> source,
         IEqualityComparer<T>? comparer = null
     ) =>
         source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
@@ -4193,6 +4194,27 @@ public
     [LinqTunnel, Pure]
     public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.SkipWhile(Not1(predicate));
+
+    /// <summary>Negated <see cref="Enumerable.SelectMany{T}(IEnumerable{T}, Func{T, IEnumerable{T}})"/>.</summary>
+    /// <remarks><para>
+    /// Splits the <see cref="IEnumerable{T}"/> into multiple <see cref="IEnumerable{T}"/>
+    /// instances in at most the specified length.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the <see cref="IEnumerable{T}"/>.</typeparam>
+    /// <param name="source">The <see cref="IEnumerable{T}"/> to chop into slices.</param>
+    /// <param name="count">The maximum length of any given returned <see cref="IEnumerable{T}"/> instances.</param>
+    /// <returns>The wrapper of the parameter <paramref name="source"/> that returns slices of it.</returns>
+    [Pure]
+    public static IEnumerable<IEnumerable<T>> SplitEvery<T>(
+        [InstantHandle] IEnumerable<T> source,
+        [ValueRange(1, int.MaxValue)] int count
+    )
+    {
+        using var e = source.GetEnumerator();
+
+        while (e.MoveNext())
+            yield return SplitEvery(e, count);
+    }
 
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
@@ -4239,6 +4261,16 @@ public
         Func<T, int, bool> predicate
     ) =>
         source.Where(Not2(predicate));
+
+    static IEnumerable<T> SplitEvery<T>(IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
+    {
+        do
+        {
+            yield return e.Current;
+
+            count--;
+        } while (count > 0 && e.MoveNext());
+    }
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
