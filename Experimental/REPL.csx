@@ -3935,11 +3935,20 @@ public
     [MustUseReturnValue]
     public static T FirstOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
     {
-        if (iterable is IList<T> list)
-            return list.Count is 0 ? fallback : list[0];
-
-        using var iterator = iterable.GetEnumerator();
-        return iterator.MoveNext() ? iterator.Current : fallback;
+        switch (iterable)
+        {
+            case string str:
+                return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
+            case IList<T> list:
+                return list.Count is 0 ? fallback : list[0];
+            case IReadOnlyList<T> list:
+                return list.Count is 0 ? fallback : list[0];
+            default:
+            {
+                using var iterator = iterable.GetEnumerator();
+                return iterator.MoveNext() ? iterator.Current : fallback;
+            }
+        }
     }
 
     /// <summary>Takes the last item, or a fallback value.</summary>
@@ -3949,9 +3958,16 @@ public
     /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
     [MustUseReturnValue]
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
-        iterable is IList<T> list // ReSharper disable once UseIndexFromEndExpression
-            ? list.Count is 0 ? fallback : list[list.Count - 1]
-            : iterable.EnumerateOr(fallback);
+        iterable switch
+        {
+            // ReSharper disable once UseIndexFromEndExpression
+#pragma warning disable IDE0056
+            string str => str.Length is 0 ? fallback : Reinterpret<T>(str[str.Length - 1]),
+#pragma warning restore IDE0056
+            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[0],
+            IList<T> list => list.Count is 0 ? fallback : list[0],
+            _ => iterable.EnumerateOr(fallback),
+        };
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
@@ -4023,8 +4039,9 @@ public
 
         return iterable switch
         {
+            string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
+            IReadOnlyList<T> list => index < list.Count ? list[index] : default,
             IList<T> list => index < list.Count ? list[index] : default,
-            IReadOnlyList<T> re => index < re.Count ? re[index] : default,
             _ => iterable.Skip(index).FirstOrDefault(),
         };
     }
@@ -4044,11 +4061,21 @@ public
 
         return iterable switch
         {
-            IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
+            string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
             IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
+            IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             _ when iterable.ToList() is var list => list[list.Count - index - 1],
             _ => throw Unreachable,
         };
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Reinterpret<T>(char c)
+    {
+        Debug.Assert(typeof(T) == typeof(char), "T must be char");
+#pragma warning disable 8500
+        return *(T*)&c;
+#pragma warning restore 8500
     }
 #endif
 
