@@ -10,7 +10,9 @@ static partial class Collected
     /// <typeparam name="T">The type of item within the enumeration.</typeparam>
     /// <param name="iterable">The potentially empty collection.</param>
     /// <param name="fallback">The fallback value.</param>
-    /// <returns>The parameter <paramref name="iterable"/> if non-empty, or <paramref name="fallback"/>.</returns>
+    /// <returns>
+    /// The parameter <paramref name="iterable"/> when non-empty, otherwise; <paramref name="fallback"/>.
+    /// </returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> DefaultIfEmpty<T>(this IEnumerable<T>? iterable, IEnumerable<T> fallback)
     {
@@ -28,7 +30,7 @@ static partial class Collected
     /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="ICollection{T}"/>, or a collected <see cref="Array"/>.</returns>
+    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
@@ -42,11 +44,33 @@ static partial class Collected
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or a collected <see cref="Array"/>.</returns>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
+
+    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
+
+    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <param name="comparer">The comparer to use if one needs to be generated.</param>
+    /// <returns>Itself as <see cref="ISet{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSetLazily<T>(
+        [InstantHandle] this IEnumerable<T>? iterable,
+        IEqualityComparer<T> comparer
+    ) =>
+        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
 
     /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
