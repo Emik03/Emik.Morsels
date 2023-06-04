@@ -4206,14 +4206,18 @@ public
     /// <returns>The wrapper of the parameter <paramref name="source"/> that returns slices of it.</returns>
     [Pure]
     public static IEnumerable<IEnumerable<T>> SplitEvery<T>(
-        [InstantHandle] IEnumerable<T> source,
+        [InstantHandle] this IEnumerable<T> source,
         [ValueRange(1, int.MaxValue)] int count
     )
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (count <= 0)
+            yield break;
+
         using var e = source.GetEnumerator();
 
         while (e.MoveNext())
-            yield return SplitEvery(e, count);
+            yield return e.SplitEvery(count);
     }
 
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
@@ -4262,7 +4266,7 @@ public
     ) =>
         source.Where(Not2(predicate));
 
-    static IEnumerable<T> SplitEvery<T>(IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
+    static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
     {
         do
         {
