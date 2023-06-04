@@ -129,6 +129,23 @@ static partial class IncludedSyntaxNodeRegistrant
             _ => null,
         };
 
+    /// <summary>Gets the underlying symbol if the provided parameter is the nullable type.</summary>
+    /// <param name="symbol">The symbol to get the underlying type from.</param>
+    /// <returns>The underlying type of <paramref name="symbol"/>, if it exists.</returns>
+    public static ITypeSymbol? UnderlyingNullable(this ISymbol? symbol) =>
+        symbol is INamedTypeSymbol
+        {
+            ContainingNamespace: { ContainingNamespace.IsGlobalNamespace: true, Name: nameof(System) },
+            Name: nameof(Nullable),
+            IsValueType: true,
+            TypeArguments:
+            [
+                { } underlying and not { Name: nameof(Nullable) },
+            ],
+        }
+            ? underlying
+            : null;
+
     static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
         where TSyntaxNode : SyntaxNode =>
         context =>
