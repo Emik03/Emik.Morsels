@@ -6418,7 +6418,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T? item) => EqualityComparer<T>.Default.Equals(Current, item);
+    public bool Contains(T item) => EqualityComparer<T>.Default.Equals(Current, item);
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]
