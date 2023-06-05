@@ -6474,7 +6474,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator : IEnumerator<T>, IEnumerator<object>
+    public partial struct Enumerator : IEnumerator<T>
     {
         static readonly object s_fallback = new();
 
@@ -6494,10 +6494,6 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         readonly object IEnumerator.Current => Current ?? s_fallback;
-
-        /// <inheritdoc />
-        [CollectionAccess(Read), Pure]
-        readonly object IEnumerator<object>.Current => Current ?? s_fallback;
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
@@ -6549,7 +6545,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<object>
+public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 {
     static readonly object s_fallback = new();
 
@@ -6566,10 +6562,6 @@ public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<objec
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     object IEnumerator.Current => Current ?? s_fallback;
-
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
-    object IEnumerator<object>.Current => Current ?? s_fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
