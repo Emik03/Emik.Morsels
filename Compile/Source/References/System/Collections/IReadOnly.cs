@@ -13,6 +13,7 @@ partial interface IReadOnlyCollection<
     T> : IEnumerable<T>
 {
     /// <summary>Gets the amount of items on the list.</summary>
+    [Pure]
     int Count { get; }
 }
 
@@ -22,13 +23,16 @@ partial interface IReadOnlyCollection<
 partial interface IReadOnlyDictionary<TKey, TValue> : IReadOnlyCollection<KeyValuePair<TKey, TValue>>
 {
     /// <summary>Gets an enumerable collection that contains the keys in the read-only dictionary.</summary>
+    [Pure]
     IEnumerable<TKey> Keys { get; }
 
     /// <summary>Gets an enumerable collection that contains the values in the read-only dictionary.</summary>
+    [Pure]
     IEnumerable<TValue> Values { get; }
 
     /// <summary>Gets the element that has the specified key in the read-only dictionary.</summary>
     /// <param name="key">The key to locate.</param>
+    [Pure]
     TValue this[TKey key] { get; }
 
     /// <summary>Determines whether the read-only dictionary contains an element that has the specified key.</summary>
@@ -37,6 +41,7 @@ partial interface IReadOnlyDictionary<TKey, TValue> : IReadOnlyCollection<KeyVal
     /// <see langword="true"/> if the read-only dictionary contains an element that has the specified key;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool ContainsKey(TKey key);
 
     /// <summary>Gets the value that is associated with the specified key.</summary>
@@ -50,6 +55,7 @@ partial interface IReadOnlyDictionary<TKey, TValue> : IReadOnlyCollection<KeyVal
     /// <see langword="true"/> if the object that implements the <see cref="IReadOnlyDictionary{TKey,TValue}"/>
     /// interface contains an element that has the specified key; otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool TryGetValue(TKey key, out TValue value);
 }
 
@@ -63,6 +69,7 @@ partial interface IReadOnlyList<
 {
     /// <summary>Performs an index operation on the list.</summary>
     /// <param name="index">The item to retrieve.</param>
+    [Pure]
     T this[int index] { get; }
 }
 #endif
@@ -83,6 +90,7 @@ partial interface IReadOnlySet<T> : IReadOnlyCollection<T>
     /// <see langword="true"/> if the current set is a proper subset of other; otherwise <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentNullException">other is <see langword="null"/>.</exception>
+    [Pure]
     bool IsProperSubsetOf(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set is a proper (strict) superset of a specified collection.</summary>
@@ -91,18 +99,21 @@ partial interface IReadOnlySet<T> : IReadOnlyCollection<T>
     /// <see langword="true"/> if the collection is a proper superset of other; otherwise <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentNullException">other is <see langword="null"/>.</exception>
+    [Pure]
     bool IsProperSupersetOf(IEnumerable<T> other);
 
     /// <summary>Determine whether the current set is a subset of a specified collection.</summary>
     /// <param name="other">The collection to compare to the current set.</param>
     /// <returns><see langword="true"/> if the current set is a subset of other; otherwise <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">other is <see langword="null"/>.</exception>
+    [Pure]
     bool IsSubsetOf(IEnumerable<T> other);
 
     /// <summary>Determine whether the current set is a super set of a specified collection.</summary>
     /// <param name="other">The collection to compare to the current set.</param>
     /// <returns><see langword="true"/> if the current set is a subset of other; otherwise <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">other is <see langword="null"/>.</exception>
+    [Pure]
     bool IsSupersetOf(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set overlaps with the specified collection.</summary>
@@ -112,6 +123,7 @@ partial interface IReadOnlySet<T> : IReadOnlyCollection<T>
     /// otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentNullException">other is <see langword="null"/>.</exception>
+    [Pure]
     bool Overlaps(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set and the specified collection contain the same elements.</summary>
@@ -120,6 +132,7 @@ partial interface IReadOnlySet<T> : IReadOnlyCollection<T>
     /// <see langword="true"/> if the current set is equal to other; otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentNullException">other is <see langword="null"/>.</exception>
+    [Pure]
     bool SetEquals(IEnumerable<T> other);
 }
 #endif
@@ -194,6 +207,7 @@ partial interface ISet<T> : ICollection<T>
     /// <see langword="true"/> if the current set is a proper superset of <paramref name="other"/>;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool IsProperSupersetOf(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set is a proper (strict) subset of a specified collection.</summary>
@@ -213,6 +227,7 @@ partial interface ISet<T> : ICollection<T>
     /// <see langword="true"/> if the current set is a proper subset of <paramref name="other"/>;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool IsProperSubsetOf(IEnumerable<T> other);
 
     /// <summary>Determines whether a set is a subset of a specified collection.</summary>
@@ -229,6 +244,7 @@ partial interface ISet<T> : ICollection<T>
     /// <see langword="true"/> if the current set is a subset of <paramref name="other"/>;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool IsSubsetOf(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set is a superset of a specified collection.</summary>
@@ -245,6 +261,7 @@ partial interface ISet<T> : ICollection<T>
     /// <see langword="true"/> if the current set is a superset of <paramref name="other"/>;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool IsSupersetOf(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set overlaps with the specified collection.</summary>
@@ -255,6 +272,7 @@ partial interface ISet<T> : ICollection<T>
     /// <see langword="true"/> if the current set and <paramref name="other"/> share at least one common element;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool Overlaps(IEnumerable<T> other);
 
     /// <summary>Determines whether the current set and the specified collection contain the same elements.</summary>
@@ -264,6 +282,7 @@ partial interface ISet<T> : ICollection<T>
     /// <see langword="true"/> if the current set is equal to <paramref name="other"/>;
     /// otherwise, <see langword="false"/>.
     /// </returns>
+    [Pure]
     bool SetEquals(IEnumerable<T> other);
 }
 #endif
