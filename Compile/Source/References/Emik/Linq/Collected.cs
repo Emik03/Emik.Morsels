@@ -49,7 +49,7 @@ static partial class Collected
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
-
+#if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -71,6 +71,7 @@ static partial class Collected
         IEqualityComparer<T> comparer
     ) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
+#endif
 
     /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
