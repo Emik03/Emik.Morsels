@@ -166,6 +166,7 @@ global using JetBrains;
 global using JetBrains.Annotations;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
+global using static TextCopy.ClipboardService;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
