@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
 namespace System;
 #pragma warning disable IDE0250, MA0008, MA0048, MA0102, SA1137, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
@@ -81,7 +81,7 @@ partial struct Range : IEquatable<Range>
     [Pure]
     public static Range StartAt(Index start) => new(start, Index.End);
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object?)"/>
     [Pure]
     public override bool Equals([NotNullWhen(true)] object? value) =>
         value is Range r && r.Start.Equals(Start) && r.End.Equals(End);

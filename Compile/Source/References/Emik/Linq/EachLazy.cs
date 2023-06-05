@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -141,6 +142,7 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         }
 
         /// <inheritdoc />
+        // ReSharper disable once AssignNullToNotNullAttribute
         public T Current => _enumerator.Current;
 
         /// <inheritdoc />

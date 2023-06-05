@@ -1,6 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
 #pragma warning disable MA0008, SA1515, SA1611, SA1615, SA1623, SA1642
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 namespace System;
 
@@ -74,7 +75,7 @@ readonly
             ? new(value)
             : throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object?)" />
     [Pure]
     public override bool Equals([NotNullWhen(true)] object? value) => value is Index index && _value == index._value;
 

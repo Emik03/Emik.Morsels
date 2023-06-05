@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -44,7 +45,7 @@ sealed partial class HeadlessList<T> : IList<T>
     /// <param name="list">The list to encapsulate.</param>
     public HeadlessList(IList<T> list) => _list = list;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]
     {
         get => index is not -1 ? _list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
@@ -54,7 +55,7 @@ sealed partial class HeadlessList<T> : IList<T>
     /// <inheritdoc />
     public bool IsReadOnly => _list.IsReadOnly;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IList{T}.Count" />
     public int Count => _list.Count - 1;
 
     /// <inheritdoc />

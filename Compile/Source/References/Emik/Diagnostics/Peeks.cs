@@ -138,7 +138,4 @@ static partial class Peeks
     /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
     public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
         converter(value);
-#if NET20 || NET30 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-    static string Stringify<T>(this T value) => value?.ToString() ?? "";
-#endif
 }

@@ -376,6 +376,7 @@ static partial class Stringifier
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
 
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         if (s_hasMethods[typeof(T)])
             return source.ToString() ?? Null;
 

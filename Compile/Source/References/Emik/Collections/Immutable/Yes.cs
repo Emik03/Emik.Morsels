@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable IDE0250, IDE0251, MA0102, SA1137
 using static CollectionAccessType;

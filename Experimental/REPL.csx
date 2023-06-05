@@ -1677,6 +1677,7 @@ public
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
 
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         if (s_hasMethods[typeof(T)])
             return source.ToString() ?? Null;
 
@@ -3297,9 +3298,6 @@ public
     /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
     public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
         converter(value);
-#if NET20 || NET30 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-    static string Stringify<T>(this T value) => value?.ToString() ?? "";
-#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -4129,6 +4127,7 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable MA0048
@@ -4422,6 +4421,7 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -4561,6 +4561,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         }
 
         /// <inheritdoc />
+        // ReSharper disable once AssignNullToNotNullAttribute
         public T Current => _enumerator.Current;
 
         /// <inheritdoc />
@@ -6213,6 +6214,7 @@ public ref
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -6307,7 +6309,7 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
 #pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0102, SA1137
 
 
@@ -6526,7 +6528,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
 
 #pragma warning disable IDE0250, IDE0251, MA0102, SA1137
 
@@ -6610,6 +6612,7 @@ public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<objec
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -6709,6 +6712,7 @@ public sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -6807,6 +6811,7 @@ public sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -7202,6 +7207,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -7244,7 +7250,7 @@ public sealed partial class HeadlessList<T> : IList<T>
     /// <param name="list">The list to encapsulate.</param>
     public HeadlessList(IList<T> list) => _list = list;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]
     {
         get => index is not -1 ? _list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
@@ -7254,7 +7260,7 @@ public sealed partial class HeadlessList<T> : IList<T>
     /// <inheritdoc />
     public bool IsReadOnly => _list.IsReadOnly;
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IList{T}.Count" />
     public int Count => _list.Count - 1;
 
     /// <inheritdoc />
@@ -7317,6 +7323,7 @@ public sealed partial class HeadlessList<T> : IList<T>
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 #if !NET20 && !NET30

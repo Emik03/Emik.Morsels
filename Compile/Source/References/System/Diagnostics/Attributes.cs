@@ -345,7 +345,7 @@ namespace System.Runtime.CompilerServices
     /// Indicates that a method is an extension method, or that a class or assembly contains extension methods.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
-    sealed partial class ExtensionAttribute : Attribute { }
+    sealed partial class ExtensionAttribute : Attribute;
 #endif
 #if !NET6_0_OR_GREATER
     /// <summary>Indicates the attributed type is to be used as an interpolated string handler.</summary>
