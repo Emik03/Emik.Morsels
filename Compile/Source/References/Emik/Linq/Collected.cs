@@ -110,7 +110,11 @@ static partial class Collected
 
         /// <inheritdoc />
         [Pure]
-        public bool IsSynchronized => true;
+        bool ICollection.IsSynchronized => true;
+
+        /// <inheritdoc />
+        [Pure]
+        bool ICollection<T>.IsReadOnly => true;
 
         /// <inheritdoc cref="ICollection{T}.Count" />
         [NonNegativeValue, Pure]
@@ -133,20 +137,6 @@ static partial class Collected
         }
 
         /// <inheritdoc />
-        [Pure]
-        public IEnumerator GetEnumerator() => _enumerable.GetEnumerator();
-
-        /// <inheritdoc />
-        [Pure]
-        public bool IsReadOnly => true;
-
-        /// <inheritdoc />
-        public void Add(T item) { }
-
-        /// <inheritdoc />
-        public void Clear() { }
-
-        /// <inheritdoc />
         public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
         {
             var i = 0;
@@ -157,6 +147,12 @@ static partial class Collected
                 _ = checked(i++);
             }
         }
+
+        /// <inheritdoc />
+        void ICollection<T>.Add(T? item) { }
+
+        /// <inheritdoc />
+        void ICollection<T>.Clear() { }
 
         /// <inheritdoc />
         [Pure]
@@ -172,10 +168,14 @@ static partial class Collected
 
         /// <inheritdoc />
         [Pure]
-        public bool Remove(T item) => false;
+        bool ICollection<T>.Remove(T? item) => false;
 
         /// <inheritdoc />
         [Pure]
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _enumerable.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _enumerable.GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator<T> GetEnumerator() => _enumerable.GetEnumerator();
     }
 }

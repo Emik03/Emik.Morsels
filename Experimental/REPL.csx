@@ -4721,7 +4721,11 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
         /// <inheritdoc />
         [Pure]
-        public bool IsSynchronized => true;
+        bool ICollection.IsSynchronized => true;
+
+        /// <inheritdoc />
+        [Pure]
+        bool ICollection<T>.IsReadOnly => true;
 
         /// <inheritdoc cref="ICollection{T}.Count" />
         [NonNegativeValue, Pure]
@@ -4744,20 +4748,6 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         }
 
         /// <inheritdoc />
-        [Pure]
-        public IEnumerator GetEnumerator() => _enumerable.GetEnumerator();
-
-        /// <inheritdoc />
-        [Pure]
-        public bool IsReadOnly => true;
-
-        /// <inheritdoc />
-        public void Add(T item) { }
-
-        /// <inheritdoc />
-        public void Clear() { }
-
-        /// <inheritdoc />
         public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
         {
             var i = 0;
@@ -4768,6 +4758,12 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
                 _ = checked(i++);
             }
         }
+
+        /// <inheritdoc />
+        void ICollection<T>.Add(T? item) { }
+
+        /// <inheritdoc />
+        void ICollection<T>.Clear() { }
 
         /// <inheritdoc />
         [Pure]
@@ -4783,11 +4779,15 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
         /// <inheritdoc />
         [Pure]
-        public bool Remove(T item) => false;
+        bool ICollection<T>.Remove(T? item) => false;
 
         /// <inheritdoc />
         [Pure]
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => _enumerable.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => _enumerable.GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator<T> GetEnumerator() => _enumerable.GetEnumerator();
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -6386,7 +6386,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ICollection<T>.Add(T item) { }
+    void ICollection<T>.Add(T? item) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
@@ -6394,7 +6394,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void IList<T>.Insert(int index, T item) { }
+    void IList<T>.Insert(int index, T? item) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
@@ -6402,19 +6402,19 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ISet<T>.ExceptWith(IEnumerable<T> other) { }
+    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ISet<T>.IntersectWith(IEnumerable<T> other) { }
+    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ISet<T>.SymmetricExceptWith(IEnumerable<T> other) { }
+    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ISet<T>.UnionWith(IEnumerable<T> other) { }
+    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
@@ -6448,11 +6448,11 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    bool ICollection<T>.Remove(T item) => false;
+    bool ICollection<T>.Remove(T? item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    bool ISet<T>.Add(T item) => false;
+    bool ISet<T>.Add(T? item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -6706,7 +6706,7 @@ public sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable RedundantExtendsListEntry
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace NullnessAnnotationConflictWithJetBrainsAnnotations
 
 
 

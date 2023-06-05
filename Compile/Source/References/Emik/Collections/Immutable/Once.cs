@@ -80,7 +80,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    void ICollection<T>.Add(T item) { }
+    void ICollection<T>.Add(T? item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None)]
@@ -88,7 +88,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    void IList<T>.Insert(int index, T item) { }
+    void IList<T>.Insert(int index, T? item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None)]
@@ -96,19 +96,19 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    void ISet<T>.ExceptWith(IEnumerable<T> other) { }
+    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    void ISet<T>.IntersectWith(IEnumerable<T> other) { }
+    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    void ISet<T>.SymmetricExceptWith(IEnumerable<T> other) { }
+    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    void ISet<T>.UnionWith(IEnumerable<T> other) { }
+    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
@@ -142,11 +142,11 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    bool ICollection<T>.Remove(T item) => false;
+    bool ICollection<T>.Remove(T? item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    bool ISet<T>.Add(T item) => false;
+    bool ISet<T>.Add(T? item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
