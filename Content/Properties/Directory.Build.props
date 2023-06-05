@@ -70,6 +70,14 @@
         <TailCalls>true</TailCalls>
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     </PropertyGroup>
+    <!-- Sets the icon of the package, if it exists. -->
+    <PropertyGroup Condition="Exists('Images/icon.png')">
+        <PackageIcon>icon.png</PackageIcon>
+    </PropertyGroup>
+    <!-- Ensures the image is packaged, if it exists. -->
+    <ItemGroup Condition="Exists('Images/icon.png')">
+        <None Include="Images/icon.png" Pack="true" PackagePath="/"/>
+    </ItemGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <AdditionalFiles Include="*.expected"/>
