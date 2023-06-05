@@ -186,6 +186,7 @@ static partial class TryTake
             _ => throw Unreachable,
         };
     }
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
@@ -196,5 +197,4 @@ static partial class TryTake
         return *(T*)&c;
 #pragma warning restore 8500
     }
-#endif
 }

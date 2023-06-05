@@ -241,7 +241,13 @@ using static JetBrains.Annotations.CollectionAccessType;
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
-        value is { } t ? FindPathToEmptyNullable(t, converter) : Enumerable.Empty<T>();
+        value is { } t
+            ? FindPathToEmptyNullable(t, converter)
+#if NET20 || NET30
+            : new T[0];
+#else
+            : Enumerable.Empty<T>();
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -566,7 +572,8 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 /// <summary>Methods to get elements of a tuple.</summary>
 
-#if !NET47 && !NETSTANDARD2_0 // Unique in the sense that it is the only one that does have tuples, but not ITuple.
+    // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
+#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
@@ -4108,6 +4115,7 @@ public
             _ => throw Unreachable,
         };
     }
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
@@ -4118,7 +4126,6 @@ public
         return *(T*)&c;
 #pragma warning restore 8500
     }
-#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -4346,7 +4353,7 @@ public
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 
 
@@ -4364,7 +4371,11 @@ public
 #endif
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
+#if NETFRAMEWORK && !NET45_OR_GREATER
+        iterator.Select(x => x.ToListLazily()).ToListLazily().Combinations();
+#else
         iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
+#endif
 
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
@@ -4372,7 +4383,7 @@ public
     /// <returns>Every combination of the items in <paramref name="list"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> input)
+    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> list)
 #else
     public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> list)
 #endif
@@ -4407,6 +4418,7 @@ public
             } while (index >= list[pos].Count);
         }
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -6589,11 +6601,11 @@ public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<objec
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 }
 
 // SPDX-License-Identifier: MPL-2.0

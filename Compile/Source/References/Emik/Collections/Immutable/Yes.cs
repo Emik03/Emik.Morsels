@@ -79,9 +79,9 @@ partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<object>
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 }

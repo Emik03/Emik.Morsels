@@ -56,5 +56,11 @@ static partial class Unfolding
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
-        value is { } t ? FindPathToEmptyNullable(t, converter) : Enumerable.Empty<T>();
+        value is { } t
+            ? FindPathToEmptyNullable(t, converter)
+#if NET20 || NET30
+            : new T[0];
+#else
+            : Enumerable.Empty<T>();
+#endif
 }

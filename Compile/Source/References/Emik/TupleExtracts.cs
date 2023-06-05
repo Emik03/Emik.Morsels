@@ -10,7 +10,8 @@ namespace Emik.Morsels;
 /// <summary>Methods to get elements of a tuple.</summary>
 static partial class TupleExtracts
 {
-#if !NET47 && !NETSTANDARD2_0 // Unique in the sense that it is the only one that does have tuples, but not ITuple.
+    // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
+#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -18,7 +18,11 @@ static partial class Permuted
 #endif
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
+#if NETFRAMEWORK && !NET45_OR_GREATER
+        iterator.Select(x => x.ToListLazily()).ToListLazily().Combinations();
+#else
         iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
+#endif
 
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
@@ -26,7 +30,7 @@ static partial class Permuted
     /// <returns>Every combination of the items in <paramref name="list"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> input)
+    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> list)
 #else
     public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> list)
 #endif
@@ -62,3 +66,4 @@ static partial class Permuted
         }
     }
 }
+#endif
