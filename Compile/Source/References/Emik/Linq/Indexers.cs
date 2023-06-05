@@ -53,6 +53,14 @@ static partial class Indexers
     }
 
     /// <summary>Gets a specific item from a collection.</summary>
+    /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static char? Nth(this string str, Index index) =>
+        index.IsFromEnd ? str.Nth(index.Value) : str.NthLast(index.Value);
+
+    /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
@@ -60,6 +68,19 @@ static partial class Indexers
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, Index index) =>
         index.IsFromEnd ? iterable.NthLast(index.Value) : iterable.Nth(index.Value);
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static string? Nth(this string str, Range index) =>
+        (index.Start.IsFromEnd ? str.Length - index.Start.Value - 1 : index.Start.Value) is var start and >= 0 &&
+        (index.End.IsFromEnd ? str.Length - index.End.Value - 1 : index.End.Value) is var end and >= 0 &&
+        start < str.Length &&
+        end < str.Length
+            ? str[index]
+            : null;
 
     /// <summary>Gets a range of items from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>

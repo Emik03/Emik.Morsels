@@ -124,6 +124,14 @@ static partial class TryTake
     public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
         iterable ?? Enumerable.Empty<T>();
 
+    /// <summary>Gets a specific character from a string.</summary>
+    /// <param name="str">The string to get the character from.</param>
+    /// <param name="index">The index to use.</param>
+    /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
+    // ReSharper disable ConditionIsAlwaysTrueOrFalse
+    public static char? Nth(this string str, [NonNegativeValue] int index) =>
+        index >= 0 && index < str.Length ? str[index] : null;
+
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
@@ -133,7 +141,6 @@ static partial class TryTake
     public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (index < 0)
             return default;
 
@@ -146,6 +153,14 @@ static partial class TryTake
         };
     }
 
+    /// <summary>Gets a specific character from a string.</summary>
+    /// <param name="str">The string to get the character from.</param>
+    /// <param name="index">The index to use.</param>
+    /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
+    // ReSharper disable ConditionIsAlwaysTrueOrFalse
+    public static char? NthLast(this string str, [NonNegativeValue] int index) =>
+        index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
+
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
@@ -155,7 +170,6 @@ static partial class TryTake
     public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (index < 0)
             return default;
 
@@ -172,7 +186,8 @@ static partial class TryTake
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
     {
-        Debug.Assert(typeof(T) == typeof(char), "T must be char");
+        // ReSharper disable once RedundantNameQualifier
+        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
         return *(T*)&c;
 #pragma warning restore 8500
