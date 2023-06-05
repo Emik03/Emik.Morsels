@@ -129,6 +129,7 @@ static partial class TryTake
     /// <param name="index">The index to use.</param>
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
     // ReSharper disable ConditionIsAlwaysTrueOrFalse
+    [Pure]
     public static char? Nth(this string str, [NonNegativeValue] int index) =>
         index >= 0 && index < str.Length ? str[index] : null;
 
@@ -157,9 +158,12 @@ static partial class TryTake
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    // ReSharper disable ConditionIsAlwaysTrueOrFalse
+    // ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+    [Pure]
     public static char? NthLast(this string str, [NonNegativeValue] int index) =>
+#pragma warning disable IDE0056
         index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
+#pragma warning restore IDE0056
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
