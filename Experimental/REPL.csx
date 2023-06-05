@@ -6264,24 +6264,24 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     }
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    public void Add(T item) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    public void Clear() { }
-
-    /// <inheritdoc />
     [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    public void Insert(int index, T item) { }
+    void ICollection<T>.Add(T? item) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    public void RemoveAt(int index) { }
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    void IList<T>.Insert(int index, T? item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    void IList<T>.RemoveAt(int index) { }
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -6289,7 +6289,7 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool Remove(T item) => false;
+    bool ICollection<T>.Remove(T? item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -6418,7 +6418,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => EqualityComparer<T>.Default.Equals(Current, item);
+    public bool Contains(T? item) => EqualityComparer<T>.Default.Equals(Current, item);
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]

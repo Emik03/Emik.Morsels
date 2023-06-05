@@ -53,24 +53,24 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     }
 
     /// <inheritdoc />
-    [CollectionAccess(None)]
-    public void Add(T item) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(None)]
-    public void Clear() { }
-
-    /// <inheritdoc />
     [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    public void Insert(int index, T item) { }
+    void ICollection<T>.Add(T? item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None)]
-    public void RemoveAt(int index) { }
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(None)]
+    void IList<T>.Insert(int index, T? item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(None)]
+    void IList<T>.RemoveAt(int index) { }
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -78,7 +78,7 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    public bool Remove(T item) => false;
+    bool ICollection<T>.Remove(T? item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
