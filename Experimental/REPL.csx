@@ -4646,7 +4646,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
-
+#if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -4668,6 +4668,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         IEqualityComparer<T> comparer
     ) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
+#endif
 
     /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
@@ -6459,8 +6460,10 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator : IEnumerator<T>
+    public partial struct Enumerator : IEnumerator<T>, IEnumerator<object>
     {
+        static readonly object s_fallback = new();
+
         bool _hasMoved;
 
         /// <summary>
@@ -6476,7 +6479,11 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
-        readonly object? IEnumerator.Current => Current;
+        readonly object IEnumerator.Current => Current ?? s_fallback;
+
+        /// <inheritdoc />
+        [CollectionAccess(Read), Pure]
+        readonly object IEnumerator<object>.Current => Current ?? s_fallback;
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
@@ -6528,8 +6535,10 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<object>
 {
+    static readonly object s_fallback = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
     /// </summary>
@@ -6542,7 +6551,11 @@ public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object? IEnumerator.Current => Current;
+    object IEnumerator.Current => Current ?? s_fallback;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    object IEnumerator<object>.Current => Current ?? s_fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>

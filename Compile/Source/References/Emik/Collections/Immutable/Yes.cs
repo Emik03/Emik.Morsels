@@ -25,8 +25,10 @@ static partial class YesFactory
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>, IEnumerator<object>
 {
+    static readonly object s_fallback = new();
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
     /// </summary>
@@ -39,7 +41,11 @@ partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object? IEnumerator.Current => Current;
+    object IEnumerator.Current => Current ?? s_fallback;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    object IEnumerator<object>.Current => Current ?? s_fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>

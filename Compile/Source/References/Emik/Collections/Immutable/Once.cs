@@ -169,8 +169,10 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator : IEnumerator<T>
+    public partial struct Enumerator : IEnumerator<T>, IEnumerator<object>
     {
+        static readonly object s_fallback = new();
+
         bool _hasMoved;
 
         /// <summary>
@@ -186,7 +188,11 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
-        readonly object? IEnumerator.Current => Current;
+        readonly object IEnumerator.Current => Current ?? s_fallback;
+
+        /// <inheritdoc />
+        [CollectionAccess(Read), Pure]
+        readonly object IEnumerator<object>.Current => Current ?? s_fallback;
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
