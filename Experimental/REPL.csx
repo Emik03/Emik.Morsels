@@ -461,18 +461,6 @@ using static JetBrains.Annotations.CollectionAccessType;
         where T : struct =>
         value is { } t && predicate(t);
 
-    /// <summary>Determines whether the value is default.</summary>
-    /// <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
-    /// <param name="value">The value to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
-    /// is <see langword="default"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsDefault<T>(this T value)
-        where T : struct, IEquatable<T> =>
-        EqualityComparer<T>.Default.Equals(value, default);
-
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="that">The value that must be <see langword="false"/>.</param>
     /// <param name="exThat">Filled by the compiler, the expression to assert.</param>
