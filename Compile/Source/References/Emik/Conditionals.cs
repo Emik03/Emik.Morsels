@@ -6,18 +6,6 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for nullable types and booleans.</summary>
 static partial class Conditionals
 {
-    /// <summary>Determines whether the value is default.</summary>
-    /// <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
-    /// <param name="value">The value to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
-    /// is <see langword="default"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsDefault<T>(this T value)
-        where T : struct, IEquatable<T> =>
-        EqualityComparer<T>.Default.Equals(value, default);
-
     /// <summary>Determines whether the inner value of a nullable value matches a given predicate.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to check.</param>
@@ -42,6 +30,18 @@ static partial class Conditionals
     public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate)
         where T : struct =>
         value is { } t && predicate(t);
+
+    /// <summary>Determines whether the value is default.</summary>
+    /// <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
+    /// <param name="value">The value to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is <see langword="default"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsDefault<T>(this T value)
+        where T : struct, IEquatable<T> =>
+        EqualityComparer<T>.Default.Equals(value, default);
 
     /// <summary>Conditionally invokes based on a condition.</summary>
     /// <param name="that">The value that must be <see langword="false"/>.</param>
