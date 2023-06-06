@@ -7,6 +7,55 @@ namespace Emik.Morsels;
 static partial class StringRemoval
 {
     /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, int index, out char popped)
+    {
+        if (index >= 0 && index < str.Length)
+        {
+            popped = str[index];
+            return str.Remove(index, 1);
+        }
+
+        popped = default;
+        return str;
+    }
+
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static string Pop(this string str, Index index, out char popped) =>
+        str.Pop(index.GetOffset(str.Length), out popped);
+
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, Range range, out string popped)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        popped = str[range];
+        return str.Remove(startIndex, length);
+    }
+
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Remove(this string str, Range range)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        return str.Remove(startIndex, length);
+    }
+
+    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
     /// <param name="builder">The builder to take the character from.</param>
     /// <param name="index">The index to remove.</param>
     /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
@@ -56,7 +105,7 @@ static partial class StringRemoval
         for (var i = 0; i < length; i++)
             poppedBuilder[i] = builder[startIndex + i];
 
-        popped = $"{builder}";
+        popped = $"{poppedBuilder}";
 #endif
         return builder.Remove(startIndex, length);
     }
