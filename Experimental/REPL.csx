@@ -2006,7 +2006,7 @@ public
 
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
 
-    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
+    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
     /// <param name="index">The index to remove.</param>
     /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
@@ -2027,7 +2027,7 @@ public
     public static string Pop(this string str, Index index, out char popped) =>
         str.Pop(index.GetOffset(str.Length), out popped);
 
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
     /// <param name="range">The range to remove.</param>
     /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
@@ -2042,7 +2042,7 @@ public
         return str.Remove(startIndex, length);
     }
 
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
     /// <param name="range">The range to remove.</param>
     /// <exception cref="ArgumentOutOfRangeException">
