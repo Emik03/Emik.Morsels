@@ -1971,31 +1971,39 @@ public
 
         public static Converter<string, T> To { get; } = Make<Converter<string, T>>(true);
 
-        static TFunc Make<TFunc>(bool inReverse)
+        static TFunc Make<TFunc>(bool isToT)
             where TFunc : Delegate
         {
-            var parameter = Parameter(typeof(string), nameof(T));
-            var thrower = Thrower(nameof(T));
-            var cases = Cases(inReverse);
+            var parameter = Parameter(isToT ? typeof(string) : typeof(T), nameof(T));
+            var cases = Cases(isToT);
+            var thrower = Thrower(isToT);
             var ret = Switch(parameter, thrower, cases);
 
             return Lambda<TFunc>(ret, parameter).Compile();
         }
 
-        static SwitchCase Case(FieldInfo x, bool inReverse)
+        static SwitchCase Case(FieldInfo x, bool isToT)
         {
             var str = Constant(x.Name, typeof(string));
             var t = Constant(x.GetValue(null), typeof(T));
-            var from = inReverse ? str : t;
-            var to = inReverse ? t : str;
+            var from = isToT ? str : t;
+            var to = isToT ? t : str;
 
-            return SwitchCase(from, to);
+            return SwitchCase(to, from);
         }
 
-        static SwitchCase[] Cases(bool inReverse) => typeof(T).GetFields().Select(x => Case(x, inReverse)).ToArray();
-
-        static UnaryExpression Thrower(string paramName) =>
-            Throw(Constant(new ArgumentOutOfRangeException(paramName), typeof(ArgumentOutOfRangeException)));
+        static SwitchCase[] Cases(bool isToT) =>
+            typeof(T)
+               .GetFields(BindingFlags.Static | BindingFlags.Public)
+               .Select(x => Case(x, isToT))
+               .ToArray();
+#pragma warning disable CA2208, MA0015
+        static UnaryExpression Thrower(bool isToT) =>
+            Throw(
+                Constant(new ArgumentOutOfRangeException(nameof(T)), typeof(ArgumentOutOfRangeException)),
+                isToT ? typeof(T) : typeof(string)
+            );
+#pragma warning restore CA2208, MA0015
     }
 #endif
 
