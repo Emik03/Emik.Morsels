@@ -40,6 +40,8 @@ static partial class Stringifier
 #pragma warning restore CA1823, IDE0051
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+    static readonly Dictionary<Type, bool> s_hasMethods = new();
+
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -80,7 +82,7 @@ static partial class Stringifier
         s_stringify = ((Func<bool, int, bool, string>)Stringify).Method.GetGenericMethodDefinition();
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    static readonly MethodInfo s_toString = ((Func<string?>)s_stringifiers.ToString).Method;
+    static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
@@ -397,9 +399,19 @@ static partial class Stringifier
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [MustUseReturnValue]
-    static string StringifyObject<T>(this T source, int depth) =>
-        source is null ? Null :
-        depth <= 0 ? UnfoldedName(source.GetType()) : UseStringifier(source, depth);
+    static string StringifyObject<T>(this T source, int depth)
+    {
+        if (source is null)
+            return Null;
+
+        if (!s_hasMethods.ContainsKey(typeof(T)))
+            s_hasMethods[typeof(T)] =
+                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
+
+        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        return depth >= 0 ? UseStringifier(source, depth) :
+            s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
+    }
 
     [MustUseReturnValue]
     static string UseStringifier<T>(this T source, int depth)
