@@ -423,7 +423,7 @@ static partial class Stringifier
     [MustUseReturnValue]
     static Func<T, int, string> GenerateStringifier<T>()
     {
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         ParameterExpression
             exInstance = Parameter(typeof(T), nameof(T)),
@@ -434,7 +434,7 @@ static partial class Stringifier
            .GetProperties(Flags)
            .Where(CanUse)
 #if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exParam, static x => x.PropertyType));
+           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exParam, exDepth, static x => x.PropertyType));
 #else
            .Select(p => GetMethodCaller(p, exInstance, exDepth, static x => x.PropertyType));
 #endif
