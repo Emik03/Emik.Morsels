@@ -1591,7 +1591,7 @@ public
             false => False,
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}({System.Convert.ToInt32(x)}) = {x.EnumStringifier()}",
+            Enum x => $"{x.GetType().Name}({System.Convert.ToInt64(x)}) = {x.EnumStringifier()}",
             Type x => x.UnfoldedName(),
 #if KTANE
             Object x => x.name,
@@ -1631,7 +1631,7 @@ public
 
     [Pure]
     static bool IsOneBitSet(this Enum value, Enum next) =>
-        value.HasFlag(next) && System.Convert.ToInt32(next) is not 0 and var i && (i & i - 1) is 0;
+        value.HasFlag(next) && System.Convert.ToInt64(next) is not 0 and var i && (i & i - 1) is 0;
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
