@@ -1359,7 +1359,7 @@ namespace Wawa.Modules;
 public
 #endif
 
-    const int MaxIteration = 32, MaxRecursion = 4;
+    const int MaxIteration = 32, MaxRecursion = 2;
 
     // ReSharper disable UnusedMember.Local UseRawString
 #pragma warning disable CA1823, IDE0051
