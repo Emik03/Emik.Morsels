@@ -1380,8 +1380,6 @@ public
 #pragma warning restore CA1823, IDE0051
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static readonly Dictionary<Type, bool> s_hasMethods = new();
-
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -1422,7 +1420,7 @@ public
         s_stringify = ((Func<bool, int, bool, string>)Stringify).Method.GetGenericMethodDefinition();
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
+    static readonly MethodInfo s_toString = ((Func<string?>)s_stringifiers.ToString).Method;
 #endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
@@ -1591,12 +1589,12 @@ public
             false => False,
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}({System.Convert.ToInt64(x)}) = {x.EnumStringifier()}",
+            Enum x => $"{x.GetType().Name}(0x{System.Convert.ToInt32(x):x}) = {x.EnumStringifier()}",
             Type x => x.UnfoldedName(),
 #if KTANE
             Object x => x.name,
 #endif
-            IFormattable x => x.ToString(null, CultureInfo.InvariantCulture),
+            IConvertible x => x.ToString(CultureInfo.InvariantCulture),
             _ when depth <= 0 =>
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
@@ -1631,7 +1629,7 @@ public
 
     [Pure]
     static bool IsOneBitSet(this Enum value, Enum next) =>
-        value.HasFlag(next) && System.Convert.ToInt64(next) is not 0 and var i && (i & i - 1) is 0;
+        value.HasFlag(next) && System.Convert.ToInt32(next) is not 0 and var i && (i & i - 1) is 0;
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
@@ -1661,14 +1659,39 @@ public
         };
 
     [Pure]
-    static string EnumStringifier(this Enum value) =>
-        value.GetType().IsDefined(typeof(FlagsAttribute))
-            ? Enum
-               .GetValues(value.GetType())
-               .Cast<Enum>()
-               .Where(value.IsOneBitSet)
-               .Conjoin(" | ")
+    static string EnumStringifier(this Enum value)
+    {
+        var values = Enum
+           .GetValues(value.GetType())
+           .Cast<Enum>()
+           .Where(value.IsOneBitSet)
+           .OrderBy(System.Convert.ToInt32)
+           .ToCollectionLazily();
+
+        string BitStringifier(int x) =>
+            values.FirstOrDefault(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+            x is -1 ? "0" : $"1 << {x}";
+
+        return value.GetType().IsDefined(typeof(FlagsAttribute))
+            ? System.Convert.ToInt32(value).Bits().Select(BitStringifier).Conjoin(" | ")
             : $"{value}";
+    }
+
+    static IEnumerable<int> Bits(this int number)
+    {
+        const int BitsInByte = 8;
+
+        if (number is 0)
+        {
+            yield return -1;
+
+            yield break;
+        }
+
+        for (var i = 0; i < sizeof(int) * BitsInByte; i++)
+            if ((number >> i & 1) is not 0)
+                yield return i;
+    }
 
     [Pure]
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
@@ -1714,21 +1737,9 @@ public
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [MustUseReturnValue]
-    static string StringifyObject<T>(this T source, int depth)
-    {
-        if (source is null)
-            return Null;
-
-        if (!s_hasMethods.ContainsKey(typeof(T)))
-            s_hasMethods[typeof(T)] =
-                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
-
-        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-        if (s_hasMethods[typeof(T)])
-            return source.ToString() ?? Null;
-
-        return depth <= 0 ? UnfoldedName(source.GetType()) : UseStringifier(source, depth);
-    }
+    static string StringifyObject<T>(this T source, int depth) =>
+        source is null ? Null :
+        depth <= 0 ? UnfoldedName(source.GetType()) : UseStringifier(source, depth);
 
     [MustUseReturnValue]
     static string UseStringifier<T>(this T source, int depth)
