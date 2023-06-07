@@ -22,7 +22,6 @@ static partial class OnceFactory
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
