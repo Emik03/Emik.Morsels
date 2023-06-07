@@ -9,8 +9,7 @@ namespace Emik.Morsels;
 #endif
 
 #if !(NET20 || NET30)
-using Expression = System.Linq.Expressions.Expression;
-using static System.Linq.Expressions.Expression;
+using static Expression;
 #endif
 
 /// <summary>Provides stringification methods.</summary>
@@ -22,7 +21,7 @@ static partial class Stringifier
 {
     const int MaxIteration = 32, MaxRecursion = 4;
 
-    // ReSharper disable UnusedMember.Local
+    // ReSharper disable UnusedMember.Local UseRawString
 #pragma warning disable CA1823, IDE0051
     const string
         Else = "th",
@@ -70,19 +69,17 @@ static partial class Stringifier
 #endif
     static readonly ConstantExpression
         s_exEmpty = Constant(""),
-        s_exFalse = Constant(false),
 #if !NETFRAMEWORK || NET40_OR_GREATER
         s_exInvalid = Constant(Invalid),
         s_exUnsupported = Constant(Unsupported),
         s_exUnsupportedPlatform = Constant(UnsupportedPlatform),
 #endif
         s_exSeparator = Constant(Separator),
-        s_exTrue = Constant(true),
-        s_exZero = Constant(0);
+        s_exTrue = Constant(true);
 
     static readonly MethodInfo
         s_combine = ((Func<string, string, string>)string.Concat).Method,
-        s_stringify = ((Func<bool, bool, bool, int, string>)Stringify).Method.GetGenericMethodDefinition();
+        s_stringify = ((Func<bool, int, bool, string>)Stringify).Method.GetGenericMethodDefinition();
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
@@ -219,7 +216,7 @@ static partial class Stringifier
 #endif
             T? source
     ) =>
-        Stringify(source, false, false);
+        Stringify(source, MaxRecursion);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -231,13 +228,10 @@ static partial class Stringifier
     /// </para></remarks>
     /// <typeparam name="T">The type of the source.</typeparam>
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <param name="forceReflection">
-    /// Determines whether it uses its own reflective stringification regardless of type.
-    /// </param>
+    /// <param name="depth">Determines how deep the recursive function should go.</param>
     /// <param name="useQuotes">
     /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
     /// </param>
-    /// <param name="depth">Determines how deep the recursive function should go.</param>
     /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
     [MustUseReturnValue]
     public static string Stringify<T>(
@@ -246,21 +240,19 @@ static partial class Stringifier
 #endif
 #pragma warning disable SA1114 RCS1163
             T? source,
-        bool forceReflection,
-        bool useQuotes = true,
-        int depth = MaxRecursion
+        int depth,
+        bool useQuotes = false
 #pragma warning restore SA1114 RCS1163
     ) =>
         source switch
         {
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-            _ when forceReflection => source.UseStringifier(),
-#endif
             null => Null,
             true => True,
             false => False,
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
+            Enum x => $"{x.GetType().Name}({System.Convert.ToInt32(x)}) = {x.EnumStringifier()}",
+            Type x => x.UnfoldedName(),
 #if KTANE
             Object x => x.name,
 #endif
@@ -271,11 +263,12 @@ static partial class Stringifier
 #else
                 source.StringifyObject(depth),
 #endif
-            IDictionary x => $"{{ {x.DictionaryStringifier(useQuotes, depth - 1)} }}",
-            ICollection { Count: var count } x => Count(x, useQuotes, depth, count),
-            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)}]",
+            IDictionary { Count: 0 } => "{ }",
+            IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
+            ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
+            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1)})",
+            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
 #endif
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
@@ -297,13 +290,17 @@ static partial class Stringifier
 #endif
 
     [Pure]
-    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
+    static bool IsOneBitSet(this Enum value, Enum next) =>
+        value.HasFlag(next) && System.Convert.ToInt32(next) is not 0 and var i && (i & i - 1) is 0;
 
     [Pure]
-    static string Count(IEnumerable e, bool useQuotes, int depth, int count) =>
+    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
+
+    [MustUseReturnValue]
+    static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
         count is 0
             ? "[Count: 0]"
-            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(useQuotes, depth - 1, count)}]";
+            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth, useQuotes, count)}]";
 
     [Pure]
     static string Escape(char c) =>
@@ -311,7 +308,7 @@ static partial class Stringifier
         {
             '\'' => "'\\''",
             '\"' => "'\\\"'",
-            '\\' => "'\\\\'",
+            '\\' => @"'\\'",
             '\0' => "'\\0'",
             '\a' => "'\\a'",
             '\b' => "'\\b'",
@@ -324,11 +321,21 @@ static partial class Stringifier
         };
 
     [Pure]
+    static string EnumStringifier(this Enum value) =>
+        value.GetType().IsDefined(typeof(FlagsAttribute))
+            ? Enum
+               .GetValues(value.GetType())
+               .Cast<Enum>()
+               .Where(value.IsOneBitSet)
+               .Conjoin(" | ")
+            : $"{value}";
+
+    [Pure]
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
 
     [Pure]
     static string ToOrdinal(this in int i) =>
-        $@"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
+        $"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
         {
             1 => FirstOrd,
             2 => SecondOrd,
@@ -336,18 +343,18 @@ static partial class Stringifier
             _ => Else,
         }}";
 
-    [Pure]
+    [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
         this IEnumerator iterator,
-        bool useQuotes,
         int depth,
+        bool useQuotes,
         int? count = null
     )
     {
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, false, useQuotes, depth));
+            builder.Append(Stringify(iterator.Current, depth));
 
         var i = 0;
 
@@ -359,7 +366,7 @@ static partial class Stringifier
                 break;
             }
 
-            builder.Append(Separator).Append(Stringify(iterator.Current, false, useQuotes, depth));
+            builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
         }
 
         return builder;
@@ -380,11 +387,11 @@ static partial class Stringifier
         if (s_hasMethods[typeof(T)])
             return source.ToString() ?? Null;
 
-        return depth <= 0 ? UnfoldedName(source.GetType()) : UseStringifier(source);
+        return depth <= 0 ? UnfoldedName(source.GetType()) : UseStringifier(source, depth);
     }
 
     [MustUseReturnValue]
-    static string UseStringifier<T>(this T source)
+    static string UseStringifier<T>(this T source, int depth)
     {
         // Method can be called if 'forceReflection' is true.
         if (!typeof(T).IsValueType && source is null)
@@ -397,17 +404,19 @@ static partial class Stringifier
             ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
             : UnfoldedName(typeof(T));
 
-        return ((Func<T, string>)s_stringifiers[typeof(T)])(source) is not "" and var str
+        return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
             ? $"{name} {{ {str} }}"
-            : $"{name};";
+            : name;
     }
 
     [MustUseReturnValue]
-    static Func<T, string> GenerateStringifier<T>()
+    static Func<T, int, string> GenerateStringifier<T>()
     {
         const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
 
-        var exParam = Parameter(typeof(T), nameof(T));
+        ParameterExpression
+            exInstance = Parameter(typeof(T), nameof(T)),
+            exDepth = Parameter(typeof(int), nameof(Int32));
 
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var properties = typeof(T)
@@ -416,14 +425,14 @@ static partial class Stringifier
 #if NETFRAMEWORK && !NET40_OR_GREATER
            .Select(p => GetMethodCaller<T, PropertyInfo>(p, exParam, static x => x.PropertyType));
 #else
-           .Select(p => GetMethodCaller(p, exParam, static x => x.PropertyType));
+           .Select(p => GetMethodCaller(p, exInstance, exDepth, static x => x.PropertyType));
 #endif
         var fields = typeof(T)
            .GetFields(Flags)
 #if NETFRAMEWORK && !NET40_OR_GREATER
            .Select(f => GetMethodCaller<T, FieldInfo>(f, exParam, static x => x.FieldType));
 #else
-           .Select(f => GetMethodCaller(f, exParam, static x => x.FieldType));
+           .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
 #endif
 
         var all = fields
@@ -443,7 +452,7 @@ static partial class Stringifier
             ? all.Aggregate(Combine)
             : s_exEmpty;
 
-        return Lambda<Func<T, string>>(exResult, exParam).Compile();
+        return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
     }
 
     // ReSharper disable once SuggestBaseTypeForParameter
@@ -454,29 +463,30 @@ static partial class Stringifier
     static Expression GetMethodCaller<TMember>(
 #endif
         TMember info,
-        ParameterExpression param,
+        ParameterExpression exInstance,
+        Expression exDepth,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
-        where TMember : System.Reflection.MemberInfo
+        where TMember : MemberInfo
     {
         var type = selector(info);
 
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (type.IsByRefLike)
-            return Call(s_combine, exConstant, Call(param, s_toString));
+            return Call(s_combine, exConstant, Call(exInstance, s_toString));
 #endif
         var method = s_stringify.MakeGenericMethod(type);
 
         Expression
-            exMember = MakeMemberAccess(param, info),
-            exCall = Call(method, exMember, s_exFalse, s_exTrue, s_exZero);
+            exMember = MakeMemberAccess(exInstance, info),
+            exCall = Call(method, exMember, exDepth, s_exTrue);
 
 #if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
-        var call = Lambda<Func<T, string>>(exCall, param).Compile();
-        Expression<Func<T, string>> wrapped = t => TryStringify(t, call);
+        var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
+        Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
 
-        exCall = Invoke(wrapped, param);
+        exCall = Invoke(wrapped, exInstance, exDepth);
 #else
         CatchBlock
             invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
@@ -489,11 +499,11 @@ static partial class Stringifier
     }
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER
-    static string TryStringify<T>(T instance, [InstantHandle] Func<T, string> stringify)
+    static string TryStringify<T>(T instance, int depth, [InstantHandle] Func<T, int, string> stringify)
     {
         try
         {
-            return stringify(instance);
+            return stringify(instance, depth);
         }
         catch (PlatformNotSupportedException)
         {
@@ -510,15 +520,15 @@ static partial class Stringifier
     }
 #endif
     [Pure]
-    static StringBuilder DictionaryStringifier(this IDictionary dictionary, bool useQuotes, int depth)
+    static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
     {
         var iterator = dictionary.GetEnumerator();
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
             builder.AppendKeyValuePair(
-                Stringify(iterator.Key, false, useQuotes, depth),
-                Stringify(iterator.Value, false, useQuotes, depth)
+                Stringify(iterator.Key, depth, useQuotes),
+                Stringify(iterator.Value, depth, useQuotes)
             );
 
         var i = 0;
@@ -534,8 +544,8 @@ static partial class Stringifier
             builder
                .Append(Separator)
                .AppendKeyValuePair(
-                    Stringify(iterator.Key, false, useQuotes, depth),
-                    Stringify(iterator.Value, false, useQuotes, depth)
+                    Stringify(iterator.Key, depth, useQuotes),
+                    Stringify(iterator.Value, depth, useQuotes)
                 );
         }
 
