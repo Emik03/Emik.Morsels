@@ -5619,7 +5619,7 @@ public enum ControlFlow
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
 
     /// <inheritdoc cref="GetAllMembers(INamespaceOrTypeSymbol)" />
-    public static IEnumerable<ISymbol> GetAllMembers(this IAssemblySymbol symbol) =>
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
 
     /// <summary>Gets all of the types declared by this symbol.</summary>
@@ -5627,7 +5627,7 @@ public enum ControlFlow
     /// <returns>
     /// The <see cref="IEnumerable{T}"/> of all types defined in the parameter <paramref name="symbol"/>.
     /// </returns>
-    public static IEnumerable<ISymbol> GetAllMembers(this INamespaceOrTypeSymbol symbol) =>
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceOrTypeSymbol symbol) =>
         symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
@@ -5673,7 +5673,7 @@ public enum ControlFlow
                 action(context, node);
         };
 
-    static IEnumerable<ISymbol> GetAllNamespaceOrTypeSymbolMembers(ISymbol symbol) =>
+    static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(ISymbol symbol) =>
         symbol is INamespaceOrTypeSymbol x ? x.GetAllMembers() : Enumerable.Empty<INamespaceOrTypeSymbol>();
 #endif
 
