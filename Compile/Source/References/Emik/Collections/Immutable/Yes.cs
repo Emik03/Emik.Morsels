@@ -21,7 +21,6 @@ static partial class YesFactory
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
-
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
