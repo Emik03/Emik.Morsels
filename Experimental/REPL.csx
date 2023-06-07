@@ -1351,7 +1351,6 @@ namespace Wawa.Modules;
 #endif
 
 #if !(NET20 || NET30)
-
 #endif
 
 /// <summary>Provides stringification methods.</summary>
@@ -1592,7 +1591,7 @@ public
             false => False,
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}({System.Convert.ToInt32(x)}) = {x}",
+            Enum x => $"{x.GetType().Name}({System.Convert.ToInt32(x)}) = {x.EnumStringifier()}",
             Type x => x.UnfoldedName(),
 #if KTANE
             Object x => x.name,
@@ -1631,6 +1630,10 @@ public
 #endif
 
     [Pure]
+    static bool IsOneBitSet(this Enum value, Enum next) =>
+        value.HasFlag(next) && System.Convert.ToInt32(next) is not 0 and var i && (i & i - 1) is 0;
+
+    [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
 
     [MustUseReturnValue]
@@ -1656,6 +1659,16 @@ public
             '\v' => "'\\v'",
             _ => $"{c}",
         };
+
+    [Pure]
+    static string EnumStringifier(this Enum value) =>
+        value.GetType().IsDefined(typeof(FlagsAttribute))
+            ? Enum
+               .GetValues(value.GetType())
+               .Cast<Enum>()
+               .Where(value.IsOneBitSet)
+               .Conjoin(" | ")
+            : $"{value}";
 
     [Pure]
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
@@ -1794,7 +1807,7 @@ public
         Expression exDepth,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
-        where TMember : System.Reflection.MemberInfo
+        where TMember : MemberInfo
     {
         var type = selector(info);
 
