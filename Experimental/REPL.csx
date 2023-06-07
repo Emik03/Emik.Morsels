@@ -1938,6 +1938,8 @@ public
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 
+    const string ParameterName = "value";
+
     /// <summary>Converts the value to a constant <see cref="string"/>.</summary>
     /// <remarks><para>
     /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
@@ -1974,7 +1976,7 @@ public
         static TFunc Make<TFunc>(bool isToT)
             where TFunc : Delegate
         {
-            var parameter = Parameter(isToT ? typeof(string) : typeof(T), nameof(T));
+            var parameter = Parameter(isToT ? typeof(string) : typeof(T), ParameterName);
             var cases = Cases(isToT);
             var thrower = Thrower(isToT);
             var ret = Switch(parameter, thrower, cases);
@@ -2000,7 +2002,7 @@ public
 #pragma warning disable CA2208, MA0015
         static UnaryExpression Thrower(bool isToT) =>
             Throw(
-                Constant(new ArgumentOutOfRangeException(nameof(T)), typeof(ArgumentOutOfRangeException)),
+                Constant(new ArgumentOutOfRangeException(ParameterName), typeof(ArgumentOutOfRangeException)),
                 isToT ? typeof(T) : typeof(string)
             );
 #pragma warning restore CA2208, MA0015
