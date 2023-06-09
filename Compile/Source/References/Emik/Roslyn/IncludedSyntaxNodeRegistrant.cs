@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NO_ROSLYN
+#if ROSLYN
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
