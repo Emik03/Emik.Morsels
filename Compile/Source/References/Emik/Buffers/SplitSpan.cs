@@ -9,6 +9,27 @@ namespace Emik.Morsels;
 static partial class SplitFactory
 #pragma warning restore MA0048
 {
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
+        where T : IEquatable<T>
+    {
+        var e1 = left.GetEnumerator();
+        var e2 = right.GetEnumerator();
+
+        while (e1.MoveNext())
+            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
+                return false;
+
+        return !e2.MoveNext();
+    }
+
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitLines(this string s) => s.AsSpan().SplitLines();
@@ -107,6 +128,12 @@ ref
 {
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="span">The line to split.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<T> span)
+        : this(span, default, EqualityComparer<T>.Default.Equals) { }
+
+    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
+    /// <param name="span">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
     /// <param name="comparer">The comparison to determine when to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -176,6 +203,14 @@ ref
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
+            if (_split.Separator.IsEmpty)
+            {
+                var ret = _end is -1;
+                _end = 0;
+                Current = _split.Span;
+                return ret;
+            }
+
             while (true)
             {
                 var start = ++_end;

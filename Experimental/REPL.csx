@@ -1359,9 +1359,9 @@ namespace Wawa.Modules;
 public
 #endif
 
-    const int MaxIteration = 32, MaxRecursion = 2;
+    const int MaxIteration = 32, MaxRecursion = 3;
 
-    // ReSharper disable UnusedMember.Local UseRawString
+    // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
         Else = "th",
@@ -1601,7 +1601,7 @@ public
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
 #else
-                source.StringifyObject(depth),
+                source.StringifyObject(depth - 1),
 #endif
             IDictionary { Count: 0 } => "{ }",
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
@@ -1744,6 +1744,9 @@ public
         if (source is null)
             return Null;
 
+        if (source.GetType() is var t && t != typeof(T))
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
@@ -1775,7 +1778,7 @@ public
     [MustUseReturnValue]
     static Func<T, int, string> GenerateStringifier<T>()
     {
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
 
         ParameterExpression
             exInstance = Parameter(typeof(T), nameof(T)),
@@ -5754,6 +5757,27 @@ public enum ControlFlow
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
+        where T : IEquatable<T>
+    {
+        var e1 = left.GetEnumerator();
+        var e2 = right.GetEnumerator();
+
+        while (e1.MoveNext())
+            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
+                return false;
+
+        return !e2.MoveNext();
+    }
+
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitLines(this string s) => s.AsSpan().SplitLines();
@@ -5851,6 +5875,12 @@ public ref
 {
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="span">The line to split.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<T> span)
+        : this(span, default, EqualityComparer<T>.Default.Equals) { }
+
+    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
+    /// <param name="span">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
     /// <param name="comparer">The comparison to determine when to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -5863,6 +5893,13 @@ public ref
         Comparer = comparer ?? EqualityComparer<T>.Default.Equals;
         Span = span;
         Separator = separator;
+    }
+
+    /// <summary>Gets the empty split span.</summary>
+    public SplitSpan<T> Empty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(default, default, EqualityComparer<T>.Default.Equals);
     }
 
     /// <summary>Gets the comparer that determines when to split.</summary>
@@ -5913,6 +5950,14 @@ public ref
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
+            if (_split.Separator.IsEmpty)
+            {
+                var ret = _end is -1;
+                _end = 0;
+                Current = _split.Span;
+                return ret;
+            }
+
             while (true)
             {
                 var start = ++_end;
