@@ -6054,9 +6054,9 @@ readonly
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(SplitSpan<T> other) =>
-        IsAny == other.IsAny &&
         Body == other.Body &&
         Separator == other.Separator &&
+        IsAny == other.IsAny &&
         Head!.Equals(other.Head);
 
     /// <summary>Attempts to get the head for comparison.</summary>
