@@ -32,7 +32,10 @@ static partial class NegatedEnumerable
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
     /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<T> Duplicates<T>([NoEnumeration] this IEnumerable<T> source, IEqualityComparer<T>? comparer = null) =>
+    public static IEnumerable<T> Duplicates<T>(
+        [NoEnumeration] this IEnumerable<T> source,
+        IEqualityComparer<T>? comparer = null
+    ) =>
         source.GroupDuplicates(comparer).SelectMany(x => x);
 
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>

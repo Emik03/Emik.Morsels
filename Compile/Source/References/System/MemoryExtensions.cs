@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER || ROSLYN)

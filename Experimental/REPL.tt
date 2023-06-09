@@ -199,7 +199,9 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         .GetFiles(Path, "*.cs", SearchOption.AllDirectories)
         .Select(File.ReadAllText)
         .Select(x => x.Replace("namespace Emik.Morsels;", "").Replace("Emik.Morsels.", "").Replace("Whitespaces.", ""))
-        .Select(x => x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)"))
+        .Select(
+            x =>
+                x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)"))
         .Select(
             x => Regex.Replace(x, @"(?<=(?<=static\s*)partial\s*class).*?\{(.*?)\n\}", "$1", RegexOptions.Singleline))
         .Select(x => x.Replace("static partial class", ""))
