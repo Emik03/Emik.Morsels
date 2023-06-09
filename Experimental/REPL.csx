@@ -5782,6 +5782,9 @@ public enum ControlFlow : byte
         where T : IEquatable<T>?
 #endif
     {
+        if (left == right)
+            return true;
+
         var e1 = left.GetEnumerator();
         var e2 = right.GetEnumerator();
 
@@ -6029,15 +6032,42 @@ readonly
     /// <summary>Gets the head.</summary>
     public T Head { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both splits are equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator ==(SplitSpan<T> left, SplitSpan<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether both splits are not equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both splits are not equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(SplitSpan<T> left, SplitSpan<T> right) => !left.Equals(right);
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public override bool Equals(object? other) => false;
+
+    /// <inheritdoc cref="IEquatable{T}.Equals(T?)" />
+    // ReSharper disable NullableWarningSuppressionIsUsed
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool Equals(SplitSpan<T> other) =>
+        IsAny == other.IsAny &&
+        Body == other.Body &&
+        Separator == other.Separator &&
+        Head!.Equals(other.Head);
+
     /// <summary>Attempts to get the head for comparison.</summary>
     /// <param name="head">When the method returns <see langword="true"/>, is set to the head.</param>
     /// <returns>
     /// The value <see langword="true"/> if the <see cref="Separator"/>
     /// is length 0 or 1, otherwise; <see langword="false"/>.
     /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool TryBehead([NotNullWhen(true)] out T? head)
     {
-        // ReSharper disable NullableWarningSuppressionIsUsed
         switch (Separator)
         {
             case []:
@@ -6052,7 +6082,12 @@ readonly
         }
     }
 
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public override int GetHashCode() => unchecked((Head?.GetHashCode() ?? 0) * 31 ^ IsAny.GetHashCode());
+
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
 
