@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
+
+using Range = System.Range;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Indexers

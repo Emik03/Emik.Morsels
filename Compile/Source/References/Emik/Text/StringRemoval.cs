@@ -1,7 +1,9 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
+
+using Range = System.Range;
 
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
 static partial class StringRemoval

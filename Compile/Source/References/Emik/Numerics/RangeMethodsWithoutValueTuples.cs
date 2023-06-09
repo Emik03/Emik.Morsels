@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace
+// ReSharper disable CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
+
+using Range = System.Range;
 
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
 static partial class RangeMethodsWithoutValueTuples
