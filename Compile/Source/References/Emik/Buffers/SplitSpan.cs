@@ -296,22 +296,30 @@ ref
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ControlFlow Break(out int end)
+        {
+            end = 0;
+            return ControlFlow.Break;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ControlFlow Step(out int start, out int end)
         {
             if (_split.IsAny)
             {
                 start = ++_end;
+
+                if (StepAny() is ControlFlow.Break)
+                    return Break(out end);
+
                 end = _end;
-                return StepAny();
+                return ControlFlow.Continue;
             }
 
             start = Math.Max(_end++, 0);
 
             if (StepAll() is ControlFlow.Break)
-            {
-                end = 0;
-                return ControlFlow.Break;
-            }
+                return Break(out end);
 
             var span = _split.Span.Length;
             var separator = _split.Separator.Length;
