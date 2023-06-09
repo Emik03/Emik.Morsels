@@ -298,10 +298,7 @@ readonly
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(SplitSpan<T> other) =>
-        Body == other.Body &&
-        Separator == other.Separator &&
-        IsAny == other.IsAny &&
-        Head!.Equals(other.Head);
+        Body == other.Body && Separator == other.Separator && IsAny == other.IsAny && Head!.Equals(other.Head);
 
     /// <summary>Attempts to get the head for comparison.</summary>
     /// <param name="head">When the method returns <see langword="true"/>, is set to the head.</param>
@@ -310,21 +307,13 @@ readonly
     /// is length 0 or 1, otherwise; <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool TryBehead([NotNullWhen(true)] out T? head)
-    {
-        switch (Separator)
+    public bool TryBehead([NotNullWhen(true)] out T? head) =>
+        Separator switch
         {
-            case []:
-                head = Head!;
-                return true;
-            case [var x]:
-                head = x!;
-                return true;
-            default:
-                head = default;
-                return false;
-        }
-    }
+            [] => (head = Head!) is var _,
+            [var x] => (head = x!) is var _,
+            _ => !((head = default) is var _),
+        };
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
