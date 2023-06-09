@@ -19,9 +19,9 @@ public
 #endif
 static partial class Stringifier
 {
-    const int MaxIteration = 32, MaxRecursion = 2;
+    const int MaxIteration = 32, MaxRecursion = 3;
 
-    // ReSharper disable UnusedMember.Local UseRawString
+    // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
         Else = "th",
@@ -261,7 +261,7 @@ static partial class Stringifier
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
 #else
-                source.StringifyObject(depth),
+                source.StringifyObject(depth - 1),
 #endif
             IDictionary { Count: 0 } => "{ }",
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
@@ -404,6 +404,9 @@ static partial class Stringifier
         if (source is null)
             return Null;
 
+        if (source.GetType() is var t && t != typeof(T))
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
@@ -435,7 +438,7 @@ static partial class Stringifier
     [MustUseReturnValue]
     static Func<T, int, string> GenerateStringifier<T>()
     {
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
 
         ParameterExpression
             exInstance = Parameter(typeof(T), nameof(T)),
