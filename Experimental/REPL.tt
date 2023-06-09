@@ -180,6 +180,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
     static string ToFullName(string x) => x switch
     {
         "using static Span;" => "",
+        "using Range = System.Range;" => "",
         "global using static Unforgiving;" => "",
         "global using static TupleExtracts;" => "",
         "global using static MethodGroupings;" => "",
