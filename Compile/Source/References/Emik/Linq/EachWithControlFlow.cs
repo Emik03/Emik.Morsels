@@ -392,7 +392,7 @@ static partial class EachWithControlFlow
 
 /// <summary>Determines control flow for loops in <see cref="Each"/>.</summary>
 #pragma warning disable MA0048
-enum ControlFlow
+enum ControlFlow : byte
 #pragma warning restore MA0048
 {
     /// <summary>The value indicating that the loop should continue.</summary>
