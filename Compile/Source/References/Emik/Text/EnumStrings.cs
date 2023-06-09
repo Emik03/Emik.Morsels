@@ -4,6 +4,7 @@
 namespace Emik.Morsels;
 
 using static Expression;
+using FieldInfo = System.Reflection.FieldInfo;
 
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]

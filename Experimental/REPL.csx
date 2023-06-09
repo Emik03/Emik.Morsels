@@ -175,6 +175,7 @@ using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
+using FieldInfo = System.Reflection.FieldInfo;
 using static System.Math;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
