@@ -3,7 +3,6 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable IDE0250, MA0102, SA1137
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 static partial class SplitFactory
@@ -19,9 +18,9 @@ static partial class SplitFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
 #if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
+        where T : unmanaged, IEquatable<T>?
 #else
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
 #endif
     {
         var e1 = left.GetEnumerator();
@@ -33,7 +32,7 @@ static partial class SplitFactory
 
         return !e2.MoveNext();
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Splits{T}(ReadOnlySpan{T}, T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> Splits(this string span, char separator) => span.AsSpan().Splits(separator);
@@ -89,6 +88,7 @@ static partial class SplitFactory
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+#endif
 
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -202,7 +202,6 @@ static partial class SplitFactory
         return ret;
     }
 }
-#endif
 
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -215,9 +214,9 @@ ref
 #endif
     partial struct SplitSpan<T>
 #if UNMANAGED_SPAN
-    where T : unmanaged, IEquatable<T>
+    where T : unmanaged, IEquatable<T>?
 #else
-    where T : IEquatable<T>
+    where T : IEquatable<T>?
 #endif
 {
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
@@ -402,11 +401,9 @@ ref
         {
             var span = _split.Span.Length;
 
-#pragma warning disable 8604
             for (; _end < span; _end++)
                 if (_split.Span[_end].Equals(_split.Head))
                     return ControlFlow.Continue;
-#pragma warning restore 8604
 
             return _end > span ? ControlFlow.Break : ControlFlow.Continue;
         }
