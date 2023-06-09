@@ -1,5 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP)
+// ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 
 /// <summary>
