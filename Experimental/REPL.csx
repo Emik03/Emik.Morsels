@@ -5998,7 +5998,7 @@ public ref
     public SplitSpan<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => new(default, default, false);
+        get => new(default);
     }
 
     /// <summary>
