@@ -168,6 +168,18 @@ ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
 
+    /// <summary>Gets the <see cref="IList{T}"/> out of this instance.</summary>
+    /// <returns>The list of this instance.</returns>
+    public List<T[]> ToList()
+    {
+        List<T[]> ret = new();
+
+        foreach (var next in this)
+            ret.Add(next.ToArray());
+
+        return ret;
+    }
+
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
     public
