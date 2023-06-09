@@ -313,9 +313,10 @@ ref
                 if (Step(out var start, out var end) is ControlFlow.Break)
                     return false;
 
-                if ((Current = _split.Span[start..end]).IsEmpty)
+                if (start == end)
                     continue;
 
+                Current = _split.Span[start..end];
                 return true;
             }
         }
@@ -328,28 +329,25 @@ ref
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly ControlFlow Continue(out int end)
+        {
+            end = _end;
+            return ControlFlow.Continue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         ControlFlow Step(out int start, out int end)
         {
             if (_split.Separator.IsEmpty)
             {
                 start = ++_end;
-
-                if (StepSingle() is ControlFlow.Break)
-                    return Break(out end);
-
-                end = _end;
-                return ControlFlow.Continue;
+                return StepSingle() is ControlFlow.Break ? Break(out end) : Continue(out end);
             }
 
             if (_split.IsAny)
             {
                 start = ++_end;
-
-                if (StepAny() is ControlFlow.Break)
-                    return Break(out end);
-
-                end = _end;
-                return ControlFlow.Continue;
+                return StepAny() is ControlFlow.Break ? Break(out end) : Continue(out end);
             }
 
             start = Math.Max(_end++, 0);
@@ -360,7 +358,7 @@ ref
             var span = _split.Span.Length;
             var separator = _split.Separator.Length;
 
-            end = _end != span || _split.Span[(_end - separator).._end].SequenceEqual(_split.Separator)
+            end = _end != span || _split.Span[^separator..].SequenceEqual(_split.Separator)
                 ? _end - separator
                 : _end;
 
