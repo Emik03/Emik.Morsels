@@ -2,7 +2,9 @@
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-#pragma warning disable IDE0250, MA0102, SA1137
+#pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
+using static Span;
+
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 static partial class SplitFactory
@@ -32,63 +34,6 @@ static partial class SplitFactory
 
         return !e2.MoveNext();
     }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Splits{T}(ReadOnlySpan{T}, T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> Splits(this string span, char separator) => span.AsSpan().Splits(separator);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAny(separator);
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAll(separator);
-
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this string span) => span.AsSpan().SplitLines();
-
-    /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Whitespaces.Breaking"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
-        new(span, Whitespaces.Breaking.AsSpan(), true);
-
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this string span) => span.AsSpan().SplitWhitespace();
-
-    /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Whitespaces.Unicode"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
-        new(span, Whitespaces.Unicode.AsSpan(), true);
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
-#endif
 
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -201,16 +146,76 @@ static partial class SplitFactory
 
         return ret;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Splits{T}(ReadOnlySpan{T}, T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> Splits(this string span, char separator) => span.AsSpan().Splits(separator);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAny(this string span, string separator) =>
+        span.AsSpan().SplitAny(separator.AsSpan());
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitAny(separator);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAll(this string span, string separator) =>
+        span.AsSpan().SplitAll(separator.AsSpan());
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitAll(separator);
+
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this string span) => span.AsSpan().SplitLines();
+
+    /// <summary>Splits a span by line breaks.</summary>
+    /// <remarks><para>Line breaks are considered any character in <see cref="Whitespaces.Breaking"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
+        new(span, Whitespaces.Breaking.AsSpan(), true);
+
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this string span) => span.AsSpan().SplitWhitespace();
+
+    /// <summary>Splits a span by whitespace.</summary>
+    /// <remarks><para>Whitespace is considered any character in <see cref="Whitespaces.Unicode"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
+        new(span, Whitespaces.Unicode.AsSpan(), true);
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+#endif
 }
 
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="T">The type of element from the span.</typeparam>
 [StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
 #if !NO_REF_STRUCTS
-ref
+    ref
 #endif
     partial struct SplitSpan<T>
 #if UNMANAGED_SPAN
@@ -220,37 +225,37 @@ ref
 #endif
 {
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
-    /// <param name="span">The line to split.</param>
+    /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> span) => Span = span;
+    public SplitSpan(ReadOnlySpan<T> body) => Body = body;
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
-    /// <param name="span">The line to split.</param>
+    /// <param name="body">The line to split.</param>
     /// <param name="head">The head used as a separator.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> span, T head)
+    public SplitSpan(ReadOnlySpan<T> body, T head)
     {
-        Span = span;
+        Body = body;
         Head = head;
+        IsAny = true;
     }
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
-    /// <param name="span">The line to split.</param>
+    /// <param name="body">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
     /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> span, ReadOnlySpan<T> separator, bool isAny)
+    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator, bool isAny)
     {
         IsAny = isAny;
         Separator = separator;
-        Span = span;
+        Body = body;
     }
 
     /// <summary>Gets the empty split span.</summary>
     public SplitSpan<T> Empty
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
     }
 
     /// <summary>
@@ -260,13 +265,45 @@ ref
     public bool IsAny { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
     /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Span { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+    public ReadOnlySpan<T> Body { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
     /// <summary>Gets the separator.</summary>
     public ReadOnlySpan<T> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
     /// <summary>Gets the head.</summary>
-    public T? Head { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+    public T Head { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+
+    /// <summary>Attempts to get the head for comparison.</summary>
+    /// <param name="head">When the method returns <see langword="true"/>, is set to the head.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the <see cref="Separator"/>
+    /// is length 0 or 1, otherwise; <see langword="false"/>.
+    /// </returns>
+    public bool TryBehead([NotNullWhen(true)] out T? head)
+    {
+        if (Head?.Equals(default) ?? true)
+        {
+            head = default;
+            return false;
+        }
+
+        head = Head;
+        return true;
+
+        // ReSharper disable NullableWarningSuppressionIsUsed
+        switch (Separator)
+        {
+            case []:
+                head = Head!;
+                return true;
+            case [var x]:
+                head = x!;
+                return true;
+            default:
+                head = default;
+                return false;
+        }
+    }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -309,103 +346,108 @@ ref
         {
             while (true)
             {
-                if (Step(out var start, out var end) is ControlFlow.Break)
+                if (Step(out var start) is ControlFlow.Break)
                     return false;
 
-                if (start == end)
+                if (start == _end)
                     continue;
 
-                Current = _split.Span[start..end];
+                Current = _split.Body[start.._end];
                 return true;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static ControlFlow Break(out int end)
+        ControlFlow Step(out int start) =>
+            _split.TryBehead(out var head) ? StepSingle(head, out start) :
+            _split.IsAny ? StepAny(out start) : StepAll(out start);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ControlFlow StepAny(out int start)
         {
-            end = 0;
+            start = ++_end;
+            var span = _split.Body.Length;
+
+            if (_end >= span)
+                return ControlFlow.Break;
+
+            goto Begin;
+
+        Increment:
+            start = ++_end;
+
+        Begin:
+            var min = -1;
+
+            foreach (var next in _split.Separator)
+                switch (_split.Body[_end..].IndexOf(next))
+                {
+                    case -1: continue;
+                    case 0: goto Increment;
+                    case var i when i < min || min is -1:
+                        min = i;
+                        continue;
+                }
+
+            _end = min is -1 ? span : _end + min;
+            return ControlFlow.Continue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        ControlFlow StepAll(out int start)
+        {
+            start = _end is -1 ? _end = 0 : _end += _split.Separator.Length;
+            var span = _split.Body.Length;
+            var separator = _split.Separator.Length;
+
+            if (span == separator)
+            {
+                if (_split.Body.SequenceEqual(_split.Separator))
+                    return ControlFlow.Break;
+
+                _end = span;
+                return ControlFlow.Continue;
+            }
+
+            while (_end <= span)
+                switch (_split.Body[_end..].IndexOf(_split.Separator))
+                {
+                    case -1:
+                        _end = span;
+                        return ControlFlow.Continue;
+                    case 0:
+                        _end = start += separator;
+                        continue;
+                    case var i:
+                        _end += i;
+                        return ControlFlow.Continue;
+                }
+
             return ControlFlow.Break;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        readonly ControlFlow Continue(out int end)
+        ControlFlow StepSingle(T head, out int start)
         {
-            end = _end;
-            return ControlFlow.Continue;
-        }
+            start = ++_end;
+            var span = _split.Body.Length;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ControlFlow Step(out int start, out int end)
-        {
-            if (_split.Separator.IsEmpty)
-            {
-                start = ++_end;
-                return StepSingle() is ControlFlow.Break ? Break(out end) : Continue(out end);
-            }
-
-            if (_split.IsAny)
-            {
-                start = ++_end;
-                return StepAny() is ControlFlow.Break ? Break(out end) : Continue(out end);
-            }
-
-            start = Math.Max(_end++, 0);
-
-            if (StepAll() is ControlFlow.Break)
-                return Break(out end);
-
-            var span = _split.Span.Length;
-            var separator = _split.Separator.Length;
-
-            end = _end != span || _split.Span[^separator..].SequenceEqual(_split.Separator)
-                ? _end - separator
-                : _end;
-
-            return ControlFlow.Continue;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ControlFlow StepAny()
-        {
-            var span = _split.Span.Length;
-
-            for (; _end < span; _end++)
-                foreach (var t in _split.Separator)
-                    if (_split.Span[_end].Equals(t))
+            while (_end <= span)
+                switch (_split.Body[_end..].IndexOf(head))
+                {
+                    case -1:
+                        _end = span;
                         return ControlFlow.Continue;
+                    case 0:
+                        _end++;
+                        start++;
+                        continue;
+                    case var i:
+                        _end += i;
+                        return ControlFlow.Continue;
+                }
 
-            return _end > span ? ControlFlow.Break : ControlFlow.Continue;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ControlFlow StepAll()
-        {
-            var span = _split.Span.Length;
-            var separator = _split.Separator.Length;
-
-            if (span < separator || span == separator && _split.Span.SequenceEqual(_split.Separator))
-                return ControlFlow.Break;
-
-            if (_end is 0)
-                _end = separator;
-
-            for (; _end < span; _end++)
-                if (_split.Span[(_end - separator).._end].SequenceEqual(_split.Separator))
-                    return ControlFlow.Continue;
-
-            return _end > span ? ControlFlow.Break : ControlFlow.Continue;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        ControlFlow StepSingle()
-        {
-            var span = _split.Span.Length;
-
-            for (; _end < span; _end++)
-                if (_split.Span[_end].Equals(_split.Head))
-                    return ControlFlow.Continue;
-
-            return _end > span ? ControlFlow.Break : ControlFlow.Continue;
+            return ControlFlow.Break;
         }
     }
 }
