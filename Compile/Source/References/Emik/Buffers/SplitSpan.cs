@@ -121,6 +121,13 @@ ref
         Separator = separator;
     }
 
+    /// <summary>Gets the empty split span.</summary>
+    public SplitSpan<T> Empty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => new(default, default, EqualityComparer<T>.Default.Equals);
+    }
+
     /// <summary>Gets the comparer that determines when to split.</summary>
     public Func<T, T, bool> Comparer { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
