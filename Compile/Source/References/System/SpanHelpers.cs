@@ -146,7 +146,7 @@ static partial class SpanHelpers
         Debug.Assert(searchSpaceLength >= 0);
         Debug.Assert(valueLength >= 0);
 
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0; // A zero-length sequence is always treated as "found" at the start of the search space.
 
         var valueTail = value + 1;
@@ -197,8 +197,9 @@ static partial class SpanHelpers
         nint index = 0; // Use nint for arithmetic to avoid unnecessary 64->32->64 truncations
 
         // ReSharper disable CompareNonConstrainedGenericWithNull
-        if (default(T) != null || value != null)
+        if (default(T) is not null || value is not null)
         {
+#pragma warning disable 8602
             Debug.Assert(value is not null);
 
             while (length >= 8)
@@ -259,6 +260,7 @@ static partial class SpanHelpers
                 index += 1;
                 length--;
             }
+#pragma warning restore 8602
         }
         else
         {
