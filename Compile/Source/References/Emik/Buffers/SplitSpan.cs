@@ -311,26 +311,29 @@ readonly
             if (separator.IsEmpty)
                 return Current.IsEmpty && (Current = body) is var _;
 
-            while (true)
-            {
-                if (Step(body, separator, out var start) is ControlFlow.Break)
-                    return false;
+            while (Step(_split.IsAny, body, separator, ref _end, out var start) is ControlFlow.Continue)
+                if (start != _end)
+                    return (Current = body[start.._end]) is var _;
 
-                if (start == _end)
-                    continue;
-
-                return (Current = body[start.._end]) is var _;
-            }
+            return false;
         }
 
         /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
         /// <param name="body">The reference to its body.</param>
         /// <param name="separator">The reference to its separator.</param>
-        /// <param name="start">The start index of the slice.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
         /// <returns>Whether or not to continue looping.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ControlFlow Step(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, out int start) =>
-            _split.IsAny ? StepAny(body, separator, ref _end, out start) : StepAll(body, separator, ref _end, out start);
+        static ControlFlow Step(
+            bool isAny,
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
+            ref int end,
+            out int start
+        ) =>
+            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ControlFlow StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
