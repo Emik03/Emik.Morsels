@@ -5783,6 +5783,9 @@ public enum ControlFlow : byte
         if (left == right)
             return true;
 
+        if (left.Separator.IsEmpty && right.Separator.IsEmpty)
+            return left.Body.SequenceEqual(right.Body);
+
         var e1 = left.GetEnumerator();
         var e2 = right.GetEnumerator();
 
