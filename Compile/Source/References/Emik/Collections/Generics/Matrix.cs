@@ -124,7 +124,7 @@ sealed partial class Matrix<T> : IList<IList<T>>
         [Pure] get => List.IsReadOnly;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [NonNegativeValue]
     public int Count
     {
@@ -184,6 +184,7 @@ sealed partial class Matrix<T> : IList<IList<T>>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
+    [Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() =>
         List.Take(List.Count / CountPerList * CountPerList).GetEnumerator();
 
