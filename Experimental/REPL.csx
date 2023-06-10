@@ -6067,29 +6067,32 @@ readonly
             if (separator.IsEmpty)
                 return Current.IsEmpty && (Current = body) is var _;
 
-            while (true)
-            {
-                if (Step(body, separator, out var start) is ControlFlow.Break)
-                    return false;
+            while (Step(_split.IsAny, body, separator, ref _end, out var start))
+                if (start != _end)
+                    return (Current = body[start.._end]) is var _;
 
-                if (start == _end)
-                    continue;
-
-                return (Current = body[start.._end]) is var _;
-            }
+            return false;
         }
 
         /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
         /// <param name="body">The reference to its body.</param>
         /// <param name="separator">The reference to its separator.</param>
-        /// <param name="start">The start index of the slice.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
         /// <returns>Whether or not to continue looping.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ControlFlow Step(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, out int start) =>
-            _split.IsAny ? StepAny(body, separator, ref _end, out start) : StepAll(body, separator, ref _end, out start);
+        static bool Step(
+            bool isAny,
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
+            ref int end,
+            out int start
+        ) =>
+            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static ControlFlow StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
         {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.SkipInit(out start);
@@ -6100,11 +6103,11 @@ readonly
             if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
             {
                 if (body.SequenceEqual(separator))
-                    return ControlFlow.Break;
+                    return false;
 
                 start = 0;
                 end = bodyLength;
-                return ControlFlow.Continue;
+                return true;
             }
 
             start = end is -1 ? ++end : end += length;
@@ -6114,20 +6117,20 @@ readonly
                 {
                     case -1:
                         end = bodyLength;
-                        return ControlFlow.Continue;
+                        return true;
                     case 0:
                         end = start += length;
                         continue;
                     case var i:
                         end += i;
-                        return ControlFlow.Continue;
+                        return true;
                 }
 
-            return ControlFlow.Break;
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static ControlFlow StepAny(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAny(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
         {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.SkipInit(out start);
@@ -6136,7 +6139,7 @@ readonly
 #endif
 
             if (body.Length is var bodyLength && ++end >= bodyLength)
-                return ControlFlow.Break;
+                return false;
 
             start = end;
             goto Begin;
@@ -6159,7 +6162,7 @@ readonly
                 }
 
             end = min is int.MaxValue ? bodyLength : end + min;
-            return ControlFlow.Continue;
+            return true;
         }
     }
 }
