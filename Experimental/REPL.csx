@@ -7432,7 +7432,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
     /// <param name="countPerList">The length per count.</param>
-    public Matrix(IList<T> list, [NonNegativeValue] int countPerList)
+    public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
     {
         // Explicitly check, in case someone ignores the warning, or uses a variable.
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
@@ -7455,7 +7455,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
     /// <param name="countPerList">The length per count.</param>
-    public Matrix(Func<IList<T>> list, [NonNegativeValue] int countPerList)
+    public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
     {
         // Explicitly check, in case someone ignores the warning, or uses a variable.
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
@@ -7504,7 +7504,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
         [Pure] get => List.IsReadOnly;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [NonNegativeValue]
     public int Count
     {
@@ -7552,7 +7552,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 
     /// <inheritdoc />
     [Pure, ValueRange(-1, int.MaxValue)]
-    public int IndexOf(IList<T>? item) => item is null or { Count: 0 } ? -1 : List.IndexOf(item[0]);
+    public int IndexOf(IList<T>? item) => item is [var x, ..] ? List.IndexOf(x) : -1;
 
     /// <inheritdoc />
     [Pure]
@@ -7562,6 +7562,11 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     /// <inheritdoc />
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() =>
+        List.Take(List.Count / CountPerList * CountPerList).GetEnumerator();
 
     /// <summary>Represents a slice of a matrix.</summary>
     sealed class Slice : IList<T>
