@@ -7563,11 +7563,6 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() =>
-        List.Take(List.Count / CountPerList * CountPerList).GetEnumerator();
-
     /// <summary>Represents a slice of a matrix.</summary>
     sealed class Slice : IList<T>
     {
