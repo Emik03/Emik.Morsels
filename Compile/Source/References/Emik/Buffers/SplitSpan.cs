@@ -44,18 +44,13 @@ static partial class SplitFactory
             reader1 = writer1.IsEmpty ? e1.Current : writer1,
             reader2 = writer2.IsEmpty ? e2.Current : writer2;
 
-        if (writer2.IsEmpty)
-            length2++;
-
-        if (writer1.IsEmpty)
-            length1++;
-        else
+        if (!writer1.IsEmpty)
             do
             {
                 e1.Current.CopyTo(writer1);
                 writer1 = writer1[e1.Current.Length..];
 
-                if (length1 - writer1.Length > length2)
+                if (reader1.Length - writer1.Length > reader2.Length)
                     return false;
             } while (e1.MoveNext());
 
@@ -65,7 +60,7 @@ static partial class SplitFactory
                 e2.Current.CopyTo(writer2);
                 writer2 = writer2[e2.Current.Length..];
 
-                if (length2 - writer2.Length > length1)
+                if (reader2.Length - writer2.Length > reader1.Length)
                     return false;
             } while (e2.MoveNext());
 
