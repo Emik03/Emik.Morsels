@@ -5775,7 +5775,7 @@ public enum ControlFlow : byte
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEquals<T>(this SplitSpan<T> left, SplitSpan<T> right)
+    public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
         where T : unmanaged, IEquatable<T>
     {
         if (left == right)
