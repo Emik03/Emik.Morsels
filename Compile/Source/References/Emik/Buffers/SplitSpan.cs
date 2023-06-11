@@ -1,13 +1,77 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
+using static Span;
+
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 static partial class SplitFactory
 #pragma warning restore MA0048
 {
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool ConcatEquals<T>(this SplitSpan<T> left, SplitSpan<T> right)
+        where T : unmanaged, IEquatable<T>
+    {
+        if (left == right)
+            return true;
+
+        if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
+            return !e2.MoveNext();
+
+        if (!e2.MoveNext())
+            return false;
+
+        // SplitSpan<T>.Enumerator must return slices that when combined are at least 1 entry shorter.
+        int length1 = left.Body.Length - 1,
+            length2 = right.Body.Length - 1;
+
+        Span<T>
+            writer1 = e1.Current.Length > length1 ? default :
+                length1 <= Stackalloc ? stackalloc T[length1] : new T[length1],
+            writer2 = e2.Current.Length > length2 ? default :
+                length2 <= Stackalloc ? stackalloc T[length2] : new T[length2];
+
+        ReadOnlySpan<T>
+            reader1 = writer1.IsEmpty ? e1.Current : writer1,
+            reader2 = writer2.IsEmpty ? e2.Current : writer2;
+
+        if (writer2.IsEmpty)
+            length2++;
+
+        if (writer1.IsEmpty)
+            length1++;
+        else
+            do
+            {
+                e1.Current.CopyTo(writer1);
+                writer1 = writer1[e1.Current.Length..];
+
+                if (length1 - writer1.Length > length2)
+                    return false;
+            } while (e1.MoveNext());
+
+        if (!writer2.IsEmpty)
+            do
+            {
+                e2.Current.CopyTo(writer2);
+                writer2 = writer2[e2.Current.Length..];
+
+                if (length2 - writer2.Length > length1)
+                    return false;
+            } while (e2.MoveNext());
+
+        return reader1[..^writer1.Length].SequenceEqual(reader2[..^writer2.Length]);
+    }
+
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -25,9 +89,6 @@ static partial class SplitFactory
     {
         if (left == right)
             return true;
-
-        if (left.Separator.IsEmpty && right.Separator.IsEmpty)
-            return left.Body.SequenceEqual(right.Body);
 
         var e1 = left.GetEnumerator();
         var e2 = right.GetEnumerator();
@@ -260,9 +321,9 @@ readonly
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(SplitSpan<T> other) =>
-        Body == other.Body &&
-        Separator == other.Separator &&
-        IsAny == other.IsAny;
+        Body.IsEmpty && other.Body.IsEmpty ||
+        Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
+        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
