@@ -89,11 +89,11 @@ static partial class MethodGroupings
 
     sealed class Comparer<T, TResult> : IComparer<T>
     {
-        readonly Comparer<TResult> _comparer;
+        readonly IComparer<TResult> _comparer;
 
         readonly Converter<T?, TResult> _converter;
 
-        public Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
+        public Comparer(Converter<T?, TResult> converter, IComparer<TResult> comparer)
         {
             _converter = converter;
             _comparer = comparer;
