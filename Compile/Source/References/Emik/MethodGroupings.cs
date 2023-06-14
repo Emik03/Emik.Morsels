@@ -76,7 +76,7 @@ static partial class MethodGroupings
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="converter"/>.</returns>
     public static IComparer<T> Comparing<T, TResult>(
         Converter<T?, TResult> converter,
-        Comparer<TResult>? comparer = null
+        IComparer<TResult>? comparer = null
     ) =>
         new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
 
