@@ -587,8 +587,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="tuple">The tuple to get the value from.</param>
     /// <returns>The field <see cref="ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.</returns>
     public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
-    // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
-#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0
+#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0 // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
@@ -680,7 +679,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="converter"/>.</returns>
     public static IComparer<T> Comparing<T, TResult>(
         Converter<T?, TResult> converter,
-        Comparer<TResult>? comparer = null
+        IComparer<TResult>? comparer = null
     ) =>
         new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
 
@@ -693,11 +692,11 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     sealed class Comparer<T, TResult> : IComparer<T>
     {
-        readonly Comparer<TResult> _comparer;
+        readonly IComparer<TResult> _comparer;
 
         readonly Converter<T?, TResult> _converter;
 
-        public Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
+        public Comparer(Converter<T?, TResult> converter, IComparer<TResult> comparer)
         {
             _converter = converter;
             _comparer = comparer;
@@ -1747,8 +1746,9 @@ public
             return Null;
 
         if (source.GetType() is var t && t != typeof(T))
+#pragma warning disable CS8600, CS8603 // Will never be null, we have access to this function.
             return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
-
+#pragma warning restore CS8600, CS8603
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
@@ -4358,7 +4358,7 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once RedundantNameQualifier
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
         return *(T*)&c;
@@ -7388,9 +7388,7 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void CopyTo(T?[] array, int arrayIndex)
     {
         if (Count <= array.Length - arrayIndex)
-#pragma warning disable CS8620
-            _list.CopyTo(array, arrayIndex);
-#pragma warning restore CS8620
+            _list.CopyTo(array as T[], arrayIndex);
     }
 
     /// <inheritdoc/>
