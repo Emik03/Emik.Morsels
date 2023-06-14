@@ -75,9 +75,7 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void CopyTo(T?[] array, int arrayIndex)
     {
         if (Count <= array.Length - arrayIndex)
-#pragma warning disable CS8620
-            _list.CopyTo(array, arrayIndex);
-#pragma warning restore CS8620
+            _list.CopyTo(array as T[], arrayIndex);
     }
 
     /// <inheritdoc/>
