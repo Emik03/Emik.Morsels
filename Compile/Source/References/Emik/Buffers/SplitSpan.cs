@@ -335,17 +335,14 @@ readonly
 #if !NO_REF_STRUCTS
         ref
 #endif
-        partial struct Enumerator
+        partial struct Enumerator(SplitSpan<T> split)
     {
-        readonly SplitSpan<T> _split;
+        readonly SplitSpan<T> _split = split;
 
         [ValueRange(-1, int.MaxValue)]
+#pragma warning disable IDE0044
         int _end = -1;
-
-        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
-        /// <param name="split">Tne entry to enumerate.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Enumerator(SplitSpan<T> split) => _split = split;
+#pragma warning restore IDE0044
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }

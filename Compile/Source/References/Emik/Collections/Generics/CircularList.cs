@@ -27,76 +27,69 @@ static partial class CircularFactory
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.
 /// </summary>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
+sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="CircularList{T}"/> class.</summary>
-    /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-    /// <exception cref="ArgumentOutOfRangeException"><see cref="Count"/> returns a non-positive number.</exception>
-    public CircularList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc/>
     [CollectionAccess(None), Pure]
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
     {
-        [CollectionAccess(Read)] get => _list[Mod(index)];
-        [CollectionAccess(ModifyExistingContent)] set => _list[Mod(index)] = value;
+        [CollectionAccess(Read)] get => list[Mod(index)];
+        [CollectionAccess(ModifyExistingContent)] set => list[Mod(index)] = value;
     }
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
-    public void Add(T item) => _list.Add(item);
+    public void Add(T item) => list.Add(item);
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc/>
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
-    public void Insert(int index, T item) => _list.Insert(Mod(index), item);
+    public void Insert(int index, T item) => list.Insert(Mod(index), item);
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void RemoveAt(int index) => _list.RemoveAt(Mod(index));
+    public void RemoveAt(int index) => list.RemoveAt(Mod(index));
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T item) => _list.Remove(item);
+    public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => _list.IndexOf(item);
+    public int IndexOf(T item) => list.IndexOf(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 
     [NonNegativeValue, Pure]
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;

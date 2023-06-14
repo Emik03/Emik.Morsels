@@ -405,7 +405,9 @@ static partial class Stringifier
             return Null;
 
         if (source.GetType() is var t && t != typeof(T))
+#pragma warning disable CS8600, CS8603 // Will never be null, we have access to this function.
             return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+#pragma warning restore CS8600, CS8603
 
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =

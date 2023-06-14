@@ -87,19 +87,9 @@ static partial class MethodGroupings
     /// <inheritdoc cref="Invoke"/>
     public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
 
-    sealed class Comparer<T, TResult> : IComparer<T>
+    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
     {
-        readonly Comparer<TResult> _comparer;
-
-        readonly Converter<T?, TResult> _converter;
-
-        public Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
-        {
-            _converter = converter;
-            _comparer = comparer;
-        }
-
         /// <inheritdoc />
-        public int Compare(T? x, T? y) => _comparer.Compare(_converter(x), _converter(y));
+        public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
 }

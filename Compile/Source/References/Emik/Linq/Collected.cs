@@ -93,21 +93,15 @@ static partial class Collected
 #pragma warning restore CS8620
 
     /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
+    /// <param name="enumerable">The enumerable to encapsulate.</param>
+    /// <param name="count">The pre-computed count.</param>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
-    sealed class Collection<T> : ICollection, ICollection<T>, IReadOnlyCollection<T>
+#pragma warning disable IDE0044
+    sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) : ICollection,
+#pragma warning restore IDE0044
+        ICollection<T>,
+        IReadOnlyCollection<T>
     {
-        [ProvidesContext]
-        readonly IEnumerable<T> _enumerable;
-
-        /// <summary>Initializes a new instance of the <see cref="Collection{T}"/> class.</summary>
-        /// <param name="enumerable">The enumerable to encapsulate.</param>
-        /// <param name="count">The pre-computed count.</param>
-        public Collection(IEnumerable<T> enumerable, [NonNegativeValue] int count)
-        {
-            _enumerable = enumerable;
-            Count = count;
-        }
-
         /// <inheritdoc />
         [Pure]
         bool ICollection.IsSynchronized => true;
@@ -118,18 +112,18 @@ static partial class Collected
 
         /// <inheritdoc cref="ICollection{T}.Count" />
         [NonNegativeValue, Pure]
-        public int Count { get; }
+        public int Count => count;
 
         /// <inheritdoc />
         [Pure]
-        public object SyncRoot => _enumerable;
+        public object SyncRoot => enumerable;
 
         /// <inheritdoc />
         public void CopyTo(Array array, [NonNegativeValue] int index)
         {
             var i = 0;
 
-            foreach (var next in _enumerable)
+            foreach (var next in enumerable)
             {
                 array.SetValue(next, index);
                 _ = checked(i++);
@@ -141,7 +135,7 @@ static partial class Collected
         {
             var i = 0;
 
-            foreach (var next in _enumerable)
+            foreach (var next in enumerable)
             {
                 array[arrayIndex] = next;
                 _ = checked(i++);
@@ -149,7 +143,9 @@ static partial class Collected
         }
 
         /// <inheritdoc />
+#pragma warning disable RCS1163
         void ICollection<T>.Add(T? item) { }
+#pragma warning restore RCS1163
 
         /// <inheritdoc />
         void ICollection<T>.Clear() { }
@@ -159,7 +155,7 @@ static partial class Collected
         public bool Contains(T item)
         {
             // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var next in _enumerable)
+            foreach (var next in enumerable)
                 if (EqualityComparer<T>.Default.Equals(next, item))
                     return true;
 
@@ -168,14 +164,16 @@ static partial class Collected
 
         /// <inheritdoc />
         [Pure]
+#pragma warning disable RCS1163
         bool ICollection<T>.Remove(T? item) => false;
+#pragma warning restore RCS1163
 
         /// <inheritdoc />
         [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => _enumerable.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => enumerable.GetEnumerator();
 
         /// <inheritdoc />
         [Pure]
-        public IEnumerator<T> GetEnumerator() => _enumerable.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
     }
 }

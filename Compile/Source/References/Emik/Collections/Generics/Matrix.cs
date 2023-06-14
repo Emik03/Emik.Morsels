@@ -184,55 +184,39 @@ sealed partial class Matrix<T> : IList<IList<T>>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>Represents a slice of a matrix.</summary>
-    sealed class Slice : IList<T>
+    /// <param name="matrix">The matrix to reference.</param>
+    /// <param name="ordinal">The first index of the matrix.</param>
+#pragma warning disable IDE0044
+    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
+#pragma warning restore IDE0044
     {
-        [ProvidesContext]
-        readonly Matrix<T> _matrix;
-
-        [NonNegativeValue]
-        readonly int _ordinal;
-
-        /// <summary>Initializes a new instance of the <see cref="Slice"/> class.</summary>
-        /// <param name="matrix">The matrix to reference.</param>
-        /// <param name="ordinal">The first index of the matrix.</param>
-        public Slice(Matrix<T> matrix, [NonNegativeValue] int ordinal)
-        {
-            _matrix = matrix;
-
-            // Explicitly check, in case someone ignores the warning, or uses a variable.
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            _ordinal = ordinal >= 0
-                ? ordinal
-                : throw new ArgumentOutOfRangeException(nameof(ordinal), ordinal, "Value must be at least 0.");
-        }
-
         /// <inheritdoc />
         public bool IsReadOnly
         {
-            [Pure] get => _matrix.List.IsReadOnly;
+            [Pure] get => matrix.List.IsReadOnly;
         }
 
         /// <inheritdoc />
         public int Count
         {
-            [Pure] get => _matrix.CountPerList;
+            [Pure] get => matrix.CountPerList;
         }
 
         /// <inheritdoc />
         public T this[[NonNegativeValue] int index]
         {
-            [Pure] get => _matrix.List[Count * _ordinal + index];
-            set => _matrix.List[Count * _ordinal + index] = value;
+            [Pure] get => matrix.List[Count * ordinal + index];
+            set => matrix.List[Count * ordinal + index] = value;
         }
 
         /// <inheritdoc />
-        public void Add(T item) => _matrix.List.Add(item);
+        public void Add(T item) => matrix.List.Add(item);
 
         /// <inheritdoc />
         public void Clear()
         {
             for (var i = 0; i < Count; i++)
-                _matrix.List.RemoveAt(Count * _ordinal);
+                matrix.List.RemoveAt(Count * ordinal);
         }
 
         /// <inheritdoc />
@@ -243,26 +227,28 @@ sealed partial class Matrix<T> : IList<IList<T>>
         }
 
         /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, T item) => _matrix.List.Insert(Count * _ordinal + index, item);
+        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
 
         /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => _matrix.List.RemoveAt(Count * _ordinal + index);
+        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
 
         /// <inheritdoc />
         [Pure]
         public bool Contains(T item) =>
-            Enumerable.Range(0, Count).Any(x => EqualityComparer<T>.Default.Equals(_matrix.List[Count * _ordinal + x]));
+            Enumerable
+               .Range(0, Count)
+               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
 
         /// <inheritdoc />
-        public bool Remove(T item) => Contains(item) && _matrix.List.Remove(item);
+        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
 
         /// <inheritdoc />
         [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(T item) => Contains(item) ? _matrix.List.IndexOf(item) - Count * _ordinal : -1;
+        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
 
         /// <inheritdoc />
         [Pure]
-        public IEnumerator<T> GetEnumerator() => _matrix.List.Skip(Count * _ordinal).Take(Count).GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
 
         /// <inheritdoc />
         [Pure]
