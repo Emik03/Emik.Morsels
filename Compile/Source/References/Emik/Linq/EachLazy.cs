@@ -109,7 +109,7 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// </param>
     /// <param name="external">The context element.</param>
     /// <param name="action">The <see cref="Delegate"/> to invoke on iteration.</param>
-    Enumerable(IEnumerable<T> enumerable, TExternal external, Delegate action)
+    Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Delegate action)
     {
         _enumerable = enumerable;
         _external = external;
