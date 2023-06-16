@@ -4732,19 +4732,19 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     readonly TExternal _external;
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
@@ -4768,7 +4768,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    sealed class Enumerator(IEnumerator<T> enumerator, TExternal external, Delegate action) : IEnumerator<T>
+    sealed class Enumerator([ProvidesContext] IEnumerator<T> enumerator, TExternal external, Delegate action) : IEnumerator<T>
     {
         int _index;
 
