@@ -44,7 +44,7 @@ static partial class EnumeratorToEnumerable
 
         /// <summary>Initializes a new instance of the <see cref="Enumerable{T}"/> class.</summary>
         /// <param name="e">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-        public Enumerable(IEnumerator<T> e) => _enumerator = e;
+        public Enumerable([ProvidesContext] IEnumerator<T> e) => _enumerator = e;
 
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
@@ -68,7 +68,7 @@ static partial class EnumeratorToEnumerable
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> class.</summary>
         /// <param name="e">The enumerator to encapsulate.</param>
-        public Enumerator(IEnumerator e) => _enumerator = e;
+        public Enumerator([ProvidesContext] IEnumerator e) => _enumerator = e;
 
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         [Pure]

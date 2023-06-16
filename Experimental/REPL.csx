@@ -4410,7 +4410,7 @@ public
 
         /// <summary>Initializes a new instance of the <see cref="Enumerable{T}"/> class.</summary>
         /// <param name="e">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-        public Enumerable(IEnumerator<T> e) => _enumerator = e;
+        public Enumerable([ProvidesContext] IEnumerator<T> e) => _enumerator = e;
 
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
@@ -4434,7 +4434,7 @@ public
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> class.</summary>
         /// <param name="e">The enumerator to encapsulate.</param>
-        public Enumerator(IEnumerator e) => _enumerator = e;
+        public Enumerator([ProvidesContext] IEnumerator e) => _enumerator = e;
 
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         [Pure]
@@ -4955,7 +4955,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         /// <summary>Initializes a new instance of the <see cref="Collection{T}"/> class.</summary>
         /// <param name="enumerable">The enumerable to encapsulate.</param>
         /// <param name="count">The pre-computed count.</param>
-        public Collection(IEnumerable<T> enumerable, [NonNegativeValue] int count)
+        public Collection([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count)
         {
             _enumerable = enumerable;
             Count = count;
@@ -7748,11 +7748,12 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 public sealed partial class HeadlessList<T> : IList<T>
 #pragma warning restore MA0048
 {
+    [ProvidesContext]
     readonly IList<T> _list;
 
     /// <summary>Initializes a new instance of the <see cref="HeadlessList{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
-    public HeadlessList(IList<T> list) => _list = list;
+    public HeadlessList([ProvidesContext] IList<T> list) => _list = list;
 
     /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]

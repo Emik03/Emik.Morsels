@@ -102,7 +102,7 @@ static partial class Collected
         /// <summary>Initializes a new instance of the <see cref="Collection{T}"/> class.</summary>
         /// <param name="enumerable">The enumerable to encapsulate.</param>
         /// <param name="count">The pre-computed count.</param>
-        public Collection(IEnumerable<T> enumerable, [NonNegativeValue] int count)
+        public Collection([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count)
         {
             _enumerable = enumerable;
             Count = count;

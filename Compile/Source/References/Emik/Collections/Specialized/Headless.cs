@@ -39,11 +39,12 @@ static partial class Headless
 sealed partial class HeadlessList<T> : IList<T>
 #pragma warning restore MA0048
 {
+    [ProvidesContext]
     readonly IList<T> _list;
 
     /// <summary>Initializes a new instance of the <see cref="HeadlessList{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
-    public HeadlessList(IList<T> list) => _list = list;
+    public HeadlessList([ProvidesContext] IList<T> list) => _list = list;
 
     /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]
