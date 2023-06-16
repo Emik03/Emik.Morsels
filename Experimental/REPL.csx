@@ -587,8 +587,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="tuple">The tuple to get the value from.</param>
     /// <returns>The field <see cref="ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.</returns>
     public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
-    // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
-#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0
+#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0 // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
@@ -691,20 +690,10 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <inheritdoc cref="Invoke"/>
     public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
 
-    sealed class Comparer<T, TResult> : IComparer<T>
+    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
     {
-        readonly Comparer<TResult> _comparer;
-
-        readonly Converter<T?, TResult> _converter;
-
-        public Comparer(Converter<T?, TResult> converter, Comparer<TResult> comparer)
-        {
-            _converter = converter;
-            _comparer = comparer;
-        }
-
         /// <inheritdoc />
-        public int Compare(T? x, T? y) => _comparer.Compare(_converter(x), _converter(y));
+        public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -1747,7 +1736,9 @@ public
             return Null;
 
         if (source.GetType() is var t && t != typeof(T))
+#pragma warning disable CS8600, CS8603 // Will never be null, we have access to this function.
             return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+#pragma warning restore CS8600, CS8603
 
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
@@ -2266,12 +2257,14 @@ public
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
-#pragma warning disable 8500, MA0102, SA1137
+#pragma warning disable 8500, IDE0044, MA0102, SA1137
 
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 
     const StringComparison DefaultCharComparer = StringComparison.Ordinal;
+
+    const string E = "Value must be non-negative and less than the length.";
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -3175,29 +3168,24 @@ public
 #if !NO_READONLY_STRUCTS
     readonly
 #endif
-        unsafe partial struct Fat<T>
+        unsafe partial struct Fat<T>(void* pointer, [NonNegativeValue] int length)
 #if UNMANAGED_SPAN || CSHARPREPL
         where T : unmanaged
 #endif
     {
-        const string E = "Value must be non-negative and less than the length.";
-
-        readonly void* _pointer;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Fat(void* pointer, [NonNegativeValue] int length)
-        {
-            _pointer = pointer;
-            Length = length;
-        }
-
+        /// <summary>Takes the element corresponding to the passed in index. A bounds check is performed.</summary>
+        /// <param name="i">The index to take.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The parameter <paramref name="i"/> is outside the range.
+        /// </exception>
         public T this[int i]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get => (uint)i < (uint)Length ? ((T*)_pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
+            get => (uint)i < (uint)Length ? ((T*)pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
         }
 
-        public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
+        /// <summary>Gets the length.</summary>
+        public int Length => length;
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -4358,7 +4346,7 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once RedundantNameQualifier
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
         return *(T*)&c;
@@ -4401,53 +4389,47 @@ public
     [LinqTunnel, Pure]
     public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) => new Enumerable<T>(enumerator);
 
-    /// <summary>Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.</summary>
+    /// <summary>
+    /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
+    /// </summary>
+    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
-    sealed partial class Enumerable<T> : IEnumerable<T>
+    sealed partial class Enumerable<T>([ProvidesContext] IEnumerator<T> enumerator) : IEnumerable<T>
     {
-        [ProvidesContext]
-        readonly IEnumerator<T> _enumerator;
-
-        /// <summary>Initializes a new instance of the <see cref="Enumerable{T}"/> class.</summary>
-        /// <param name="e">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-        public Enumerable(IEnumerator<T> e) => _enumerator = e;
-
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
-        public IEnumerator<T> GetEnumerator() => _enumerator;
+        public IEnumerator<T> GetEnumerator() => enumerator;
 
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+#pragma warning disable SA1643
         /// <summary>Finalizes an instance of the <see cref="Enumerable{T}"/> class.</summary>
+#pragma warning restore SA1643
 #pragma warning disable MA0055, IDISP007, IDISP023
-        ~Enumerable() => _enumerator.Dispose();
+        ~Enumerable() => enumerator.Dispose();
 #pragma warning restore MA0055, IDISP007, IDISP023
     }
 
-    /// <summary>Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.</summary>
-    sealed partial class Enumerator : IEnumerator<object?>
+    /// <summary>
+    /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
+    /// </summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
+    sealed partial class Enumerator([ProvidesContext] IEnumerator enumerator) : IEnumerator<object?>
     {
-        [ProvidesContext]
-        readonly IEnumerator _enumerator;
-
-        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> class.</summary>
-        /// <param name="e">The enumerator to encapsulate.</param>
-        public Enumerator(IEnumerator e) => _enumerator = e;
-
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         [Pure]
-        public object? Current => _enumerator.Current;
+        public object? Current => enumerator.Current;
 
         /// <inheritdoc />
-        public void Reset() => _enumerator.Reset();
+        public void Reset() => enumerator.Reset();
 
         /// <inheritdoc />
         public void Dispose() { }
 
         /// <inheritdoc />
-        public bool MoveNext() => _enumerator.MoveNext();
+        public bool MoveNext() => enumerator.MoveNext();
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -4771,7 +4753,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// </param>
     /// <param name="external">The context element.</param>
     /// <param name="action">The <see cref="Delegate"/> to invoke on iteration.</param>
-    Enumerable(IEnumerable<T> enumerable, TExternal external, Delegate action)
+    Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Delegate action)
     {
         _enumerable = enumerable;
         _external = external;
@@ -4786,51 +4768,38 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    sealed class Enumerator : IEnumerator<T>
+    sealed class Enumerator(IEnumerator<T> enumerator, TExternal external, Delegate action) : IEnumerator<T>
     {
-        readonly Delegate _action;
-
-        readonly IEnumerator<T> _enumerator;
-
-        readonly TExternal _external;
-
         int _index;
-
-        public Enumerator(IEnumerator<T> enumerator, TExternal external, Delegate action)
-        {
-            _enumerator = enumerator;
-            _external = external;
-            _action = action;
-        }
 
         /// <inheritdoc />
         // ReSharper disable once AssignNullToNotNullAttribute
-        public T Current => _enumerator.Current;
+        public T Current => enumerator.Current;
 
         /// <inheritdoc />
-        object? IEnumerator.Current => ((IEnumerator)_enumerator).Current;
+        object? IEnumerator.Current => ((IEnumerator)enumerator).Current;
 
         /// <inheritdoc />
         public void Reset()
         {
-            _enumerator.Reset();
+            enumerator.Reset();
             _index = 0;
         }
 
         /// <inheritdoc />
 #pragma warning disable IDISP007
-        public void Dispose() => _enumerator.Dispose();
+        public void Dispose() => enumerator.Dispose();
 #pragma warning restore IDISP007
 
         /// <inheritdoc />
         public bool MoveNext()
         {
-            if (!_enumerator.MoveNext())
+            if (!enumerator.MoveNext())
                 return false;
 
             var current = Current;
 
-            switch (_action)
+            switch (action)
             {
                 case Action<T> action:
                     action(current);
@@ -4839,10 +4808,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
                     action(current, _index);
                     break;
                 case Action<T, TExternal> action:
-                    action(current, _external);
+                    action(current, external);
                     break;
                 case Action<T, int, TExternal> action:
-                    action(current, _index, _external);
+                    action(current, _index, external);
                     break;
             }
 
@@ -4946,21 +4915,15 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #pragma warning restore CS8620
 
     /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
+    /// <param name="enumerable">The enumerable to encapsulate.</param>
+    /// <param name="count">The pre-computed count.</param>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
-    sealed class Collection<T> : ICollection, ICollection<T>, IReadOnlyCollection<T>
+#pragma warning disable IDE0044
+    sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) : ICollection,
+#pragma warning restore IDE0044
+        ICollection<T>,
+        IReadOnlyCollection<T>
     {
-        [ProvidesContext]
-        readonly IEnumerable<T> _enumerable;
-
-        /// <summary>Initializes a new instance of the <see cref="Collection{T}"/> class.</summary>
-        /// <param name="enumerable">The enumerable to encapsulate.</param>
-        /// <param name="count">The pre-computed count.</param>
-        public Collection(IEnumerable<T> enumerable, [NonNegativeValue] int count)
-        {
-            _enumerable = enumerable;
-            Count = count;
-        }
-
         /// <inheritdoc />
         [Pure]
         bool ICollection.IsSynchronized => true;
@@ -4971,18 +4934,18 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
         /// <inheritdoc cref="ICollection{T}.Count" />
         [NonNegativeValue, Pure]
-        public int Count { get; }
+        public int Count => count;
 
         /// <inheritdoc />
         [Pure]
-        public object SyncRoot => _enumerable;
+        public object SyncRoot => enumerable;
 
         /// <inheritdoc />
         public void CopyTo(Array array, [NonNegativeValue] int index)
         {
             var i = 0;
 
-            foreach (var next in _enumerable)
+            foreach (var next in enumerable)
             {
                 array.SetValue(next, index);
                 _ = checked(i++);
@@ -4994,7 +4957,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         {
             var i = 0;
 
-            foreach (var next in _enumerable)
+            foreach (var next in enumerable)
             {
                 array[arrayIndex] = next;
                 _ = checked(i++);
@@ -5002,7 +4965,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         }
 
         /// <inheritdoc />
+#pragma warning disable RCS1163
         void ICollection<T>.Add(T? item) { }
+#pragma warning restore RCS1163
 
         /// <inheritdoc />
         void ICollection<T>.Clear() { }
@@ -5012,7 +4977,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         public bool Contains(T item)
         {
             // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var next in _enumerable)
+            foreach (var next in enumerable)
                 if (EqualityComparer<T>.Default.Equals(next, item))
                     return true;
 
@@ -5021,15 +4986,17 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
         /// <inheritdoc />
         [Pure]
+#pragma warning disable RCS1163
         bool ICollection<T>.Remove(T? item) => false;
+#pragma warning restore RCS1163
 
         /// <inheritdoc />
         [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => _enumerable.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => enumerable.GetEnumerator();
 
         /// <inheritdoc />
         [Pure]
-        public IEnumerator<T> GetEnumerator() => _enumerable.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -6091,17 +6058,14 @@ readonly
 #if !NO_REF_STRUCTS
         ref
 #endif
-        partial struct Enumerator
+        partial struct Enumerator(SplitSpan<T> split)
     {
-        readonly SplitSpan<T> _split;
+        readonly SplitSpan<T> _split = split;
 
         [ValueRange(-1, int.MaxValue)]
+#pragma warning disable IDE0044
         int _end = -1;
-
-        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
-        /// <param name="split">Tne entry to enumerate.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Enumerator(SplitSpan<T> split) => _split = split;
+#pragma warning restore IDE0044
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
@@ -6752,35 +6716,29 @@ readonly
 #endif
 
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
+/// <param name="list">The list to encapsulate.</param>
 /// <typeparam name="T">The type of element in the list.</typeparam>
-public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
+public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="ReadOnlyList{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    public ReadOnlyList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc />
     [Pure]
     public bool IsReadOnly => true;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(Read), Pure]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this" />
     [Pure]
     public T this[int index]
     {
-        [CollectionAccess(Read)] get => _list[index];
+        [CollectionAccess(Read)] get => list[index];
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
@@ -6800,7 +6758,7 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -6808,11 +6766,11 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => _list.IndexOf(item);
+    public int IndexOf(T item) => list.IndexOf(item);
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -6820,18 +6778,17 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 }
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0102, SA1137
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
 
 
 
 /// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
-#pragma warning disable MA0048
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -6841,19 +6798,14 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     public static Once<T> Yield<T>(this T source) => source;
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
+/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Once{T}"/> struct. Prepares enumeration of a single item forever.
-    /// </summary>
-    /// <param name="value">The item to use.</param>
-    public Once([ProvidesContext] T value) => Current = value;
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ICollection<T>.IsReadOnly => true;
@@ -6868,19 +6820,19 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext, Pure]
-    public T Current { get; }
+    public T Current => value;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     T IList<T>.this[int _]
     {
-        [CollectionAccess(Read)] get => Current;
+        [CollectionAccess(Read)] get => value;
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
 
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(Read), Pure]
-    T IReadOnlyList<T>.this[int _] => Current;
+    T IReadOnlyList<T>.this[int _] => value;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -6896,7 +6848,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = Current;
+    public void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = value;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
@@ -6932,7 +6884,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => EqualityComparer<T>.Default.Equals(Current, item);
+    public bool Contains(T item) => EqualityComparer<T>.Default.Equals(value, item);
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]
@@ -6954,7 +6906,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
-    public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Contains(Current);
+    public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Contains(value);
 
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(Read), Pure]
@@ -6977,7 +6929,7 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), Pure]
-    public Enumerator GetEnumerator() => new(Current);
+    public Enumerator GetEnumerator() => new(value);
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -6988,27 +6940,21 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
+    /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator : IEnumerator<T>
+    public partial struct Enumerator(T value) : IEnumerator<T>
     {
         static readonly object s_fallback = new();
 
         bool _hasMoved;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Enumerator"/> struct.
-        /// Prepares enumeration of a single item forever.
-        /// </summary>
-        /// <param name="value">The item to use.</param>
-        public Enumerator(T value) => Current = value;
+        /// <inheritdoc />
+        [CollectionAccess(Read), Pure]
+        public readonly T Current => value;
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
-        public T Current { get; }
-
-        /// <inheritdoc />
-        [CollectionAccess(Read), Pure]
-        readonly object IEnumerator.Current => Current ?? s_fallback;
+        readonly object IEnumerator.Current => value ?? s_fallback;
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
@@ -7054,28 +7000,23 @@ public partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISe
     public static Yes<T> Forever<T>(this T source) => source;
 
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
+/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     static readonly object s_fallback = new();
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
-    /// </summary>
-    /// <param name="value">The item to use.</param>
-    public Yes([ProvidesContext] T value) => Current = value;
-
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
-    public T Current { get; }
+    public T Current => value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => Current ?? s_fallback;
+    object IEnumerator.Current => value ?? s_fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -7141,76 +7082,69 @@ public partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.
 /// </summary>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-public sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
+public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="CircularList{T}"/> class.</summary>
-    /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-    /// <exception cref="ArgumentOutOfRangeException"><see cref="Count"/> returns a non-positive number.</exception>
-    public CircularList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
     {
-        [CollectionAccess(Read)] get => _list[Mod(index)];
-        [CollectionAccess(ModifyExistingContent)] set => _list[Mod(index)] = value;
+        [CollectionAccess(Read)] get => list[Mod(index)];
+        [CollectionAccess(ModifyExistingContent)] set => list[Mod(index)] = value;
     }
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
-    public void Add(T item) => _list.Add(item);
+    public void Add(T item) => list.Add(item);
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc/>
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
-    public void Insert(int index, T item) => _list.Insert(Mod(index), item);
+    public void Insert(int index, T item) => list.Insert(Mod(index), item);
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void RemoveAt(int index) => _list.RemoveAt(Mod(index));
+    public void RemoveAt(int index) => list.RemoveAt(Mod(index));
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T item) => _list.Remove(item);
+    public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => _list.IndexOf(item);
+    public int IndexOf(T item) => list.IndexOf(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 
     [NonNegativeValue, Pure]
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
@@ -7240,76 +7174,69 @@ public sealed partial class CircularList<T> : IList<T>, IReadOnlyList<T>
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-public sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
+public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="ClippedList{T}"/> class.</summary>
-    /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-    /// <exception cref="ArgumentOutOfRangeException"><see cref="Count"/> returns a non-positive number.</exception>
-    public ClippedList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
     {
-        [CollectionAccess(Read)] get => _list[Clamp(index)];
-        [CollectionAccess(ModifyExistingContent)] set => _list[Clamp(index)] = value;
+        [CollectionAccess(Read)] get => list[Clamp(index)];
+        [CollectionAccess(ModifyExistingContent)] set => list[Clamp(index)] = value;
     }
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
-    public void Add(T item) => _list.Add(item);
+    public void Add(T item) => list.Add(item);
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc/>
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
-    public void Insert(int index, T item) => _list.Insert(Clamp(index), item);
+    public void Insert(int index, T item) => list.Insert(Clamp(index), item);
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void RemoveAt(int index) => _list.RemoveAt(Clamp(index));
+    public void RemoveAt(int index) => list.RemoveAt(Clamp(index));
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T item) => _list.Remove(item);
+    public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => _list.IndexOf(item);
+    public int IndexOf(T item) => list.IndexOf(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 
     [NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
@@ -7340,34 +7267,28 @@ public sealed partial class ClippedList<T> : IList<T>, IReadOnlyList<T>
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
 /// an out of range value will always give the <see langword="default"/> value.
 /// </summary>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
+public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="GuardedList{T}"/> class.</summary>
-    /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-    public GuardedList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T? this[int index]
     {
-        [CollectionAccess(Read)] get => IsIn(index) ? _list[index] : default;
+        [CollectionAccess(Read)] get => IsIn(index) ? list[index] : default;
         [CollectionAccess(ModifyExistingContent)]
         set
         {
             if (value is not null && IsIn(index))
-                _list[index] = value;
+                list[index] = value;
         }
     }
 
@@ -7376,21 +7297,19 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void Add(T? item)
     {
         if (item is not null)
-            _list.Add(item);
+            list.Add(item);
     }
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc/>
     [CollectionAccess(Read)]
     public void CopyTo(T?[] array, int arrayIndex)
     {
         if (Count <= array.Length - arrayIndex)
-#pragma warning disable CS8620
-            _list.CopyTo(array, arrayIndex);
-#pragma warning restore CS8620
+            list.CopyTo(array as T[], arrayIndex);
     }
 
     /// <inheritdoc/>
@@ -7398,7 +7317,7 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void Insert(int index, T? item)
     {
         if (item is not null && IsIn(index))
-            _list.Insert(index, item);
+            list.Insert(index, item);
     }
 
     /// <inheritdoc/>
@@ -7406,35 +7325,35 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void RemoveAt(int index)
     {
         if (IsIn(index))
-            _list.RemoveAt(index);
+            list.RemoveAt(index);
     }
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T? item) => item is not null && _list.Contains(item);
+    public bool Contains(T? item) => item is not null && list.Contains(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T? item) => item is not null && _list.Remove(item);
+    public bool Remove(T? item) => item is not null && list.Remove(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T? item) => item is null ? -1 : _list.IndexOf(item);
+    public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
 #if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
 #pragma warning disable CS8619
 #endif
-    public IEnumerator<T?> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 
     [Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
@@ -7623,55 +7542,39 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>Represents a slice of a matrix.</summary>
-    sealed class Slice : IList<T>
+    /// <param name="matrix">The matrix to reference.</param>
+    /// <param name="ordinal">The first index of the matrix.</param>
+#pragma warning disable IDE0044
+    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
+#pragma warning restore IDE0044
     {
-        [ProvidesContext]
-        readonly Matrix<T> _matrix;
-
-        [NonNegativeValue]
-        readonly int _ordinal;
-
-        /// <summary>Initializes a new instance of the <see cref="Slice"/> class.</summary>
-        /// <param name="matrix">The matrix to reference.</param>
-        /// <param name="ordinal">The first index of the matrix.</param>
-        public Slice(Matrix<T> matrix, [NonNegativeValue] int ordinal)
-        {
-            _matrix = matrix;
-
-            // Explicitly check, in case someone ignores the warning, or uses a variable.
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            _ordinal = ordinal >= 0
-                ? ordinal
-                : throw new ArgumentOutOfRangeException(nameof(ordinal), ordinal, "Value must be at least 0.");
-        }
-
         /// <inheritdoc />
         public bool IsReadOnly
         {
-            [Pure] get => _matrix.List.IsReadOnly;
+            [Pure] get => matrix.List.IsReadOnly;
         }
 
         /// <inheritdoc />
         public int Count
         {
-            [Pure] get => _matrix.CountPerList;
+            [Pure] get => matrix.CountPerList;
         }
 
         /// <inheritdoc />
         public T this[[NonNegativeValue] int index]
         {
-            [Pure] get => _matrix.List[Count * _ordinal + index];
-            set => _matrix.List[Count * _ordinal + index] = value;
+            [Pure] get => matrix.List[Count * ordinal + index];
+            set => matrix.List[Count * ordinal + index] = value;
         }
 
         /// <inheritdoc />
-        public void Add(T item) => _matrix.List.Add(item);
+        public void Add(T item) => matrix.List.Add(item);
 
         /// <inheritdoc />
         public void Clear()
         {
             for (var i = 0; i < Count; i++)
-                _matrix.List.RemoveAt(Count * _ordinal);
+                matrix.List.RemoveAt(Count * ordinal);
         }
 
         /// <inheritdoc />
@@ -7682,26 +7585,28 @@ public sealed partial class Matrix<T> : IList<IList<T>>
         }
 
         /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, T item) => _matrix.List.Insert(Count * _ordinal + index, item);
+        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
 
         /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => _matrix.List.RemoveAt(Count * _ordinal + index);
+        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
 
         /// <inheritdoc />
         [Pure]
         public bool Contains(T item) =>
-            Enumerable.Range(0, Count).Any(x => EqualityComparer<T>.Default.Equals(_matrix.List[Count * _ordinal + x]));
+            Enumerable
+               .Range(0, Count)
+               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
 
         /// <inheritdoc />
-        public bool Remove(T item) => Contains(item) && _matrix.List.Remove(item);
+        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
 
         /// <inheritdoc />
         [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(T item) => Contains(item) ? _matrix.List.IndexOf(item) - Count * _ordinal : -1;
+        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
 
         /// <inheritdoc />
         [Pure]
-        public IEnumerator<T> GetEnumerator() => _matrix.List.Skip(Count * _ordinal).Take(Count).GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
 
         /// <inheritdoc />
         [Pure]
@@ -7747,33 +7652,27 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 /// <summary>Represents a list with no head.</summary>
 /// <typeparam name="T">The type of list to encapsulate.</typeparam>
 #pragma warning disable MA0048
-public sealed partial class HeadlessList<T> : IList<T>
+public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="HeadlessList{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    public HeadlessList(IList<T> list) => _list = list;
-
     /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]
     {
-        get => index is not -1 ? _list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
-        set => _list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
+        get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
+        set => list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
     }
 
     /// <inheritdoc />
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="IList{T}.Count" />
-    public int Count => _list.Count - 1;
+    public int Count => list.Count - 1;
 
     /// <inheritdoc />
-    public void Add(T item) => _list.Add(item);
+    public void Add(T item) => list.Add(item);
 
     /// <inheritdoc />
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex)
@@ -7788,7 +7687,7 @@ public sealed partial class HeadlessList<T> : IList<T>
         if (index is -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        _list.Insert(index + 1, item);
+        list.Insert(index + 1, item);
     }
 
     /// <inheritdoc />
@@ -7797,22 +7696,22 @@ public sealed partial class HeadlessList<T> : IList<T>
         if (index is not -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        _list.RemoveAt(index + 1);
+        list.RemoveAt(index + 1);
     }
 
     /// <inheritdoc />
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
-    public bool Remove(T item) => _list.Remove(item);
+    public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc />
-    public int IndexOf(T item) => _list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
+    public int IndexOf(T item) => list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator()
     {
-        var ret = ((IEnumerable)_list).GetEnumerator();
+        var ret = ((IEnumerable)list).GetEnumerator();
         ret.MoveNext();
         return ret;
     }
@@ -7820,7 +7719,7 @@ public sealed partial class HeadlessList<T> : IList<T>
     /// <inheritdoc />
     public IEnumerator<T> GetEnumerator()
     {
-        var ret = _list.GetEnumerator();
+        var ret = list.GetEnumerator();
         ret.MoveNext();
         return ret;
     }
@@ -7889,8 +7788,10 @@ public sealed partial class HeadlessList<T> : IList<T>
 #endif
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
+/// <param name="truthy">The value representing a <see langword="true"/> value.</param>
+/// <param name="falsy">The value representing a <see langword="false"/> value.</param>
 /// <typeparam name="T">The type of item in the collection.</typeparam>
-public sealed partial class Split<T> : ICollection<T>,
+public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IDictionary<bool, T>,
     IReadOnlyCollection<T>,
     IReadOnlyDictionary<bool, T>
@@ -7898,27 +7799,28 @@ public sealed partial class Split<T> : ICollection<T>,
     [ProvidesContext]
     static readonly bool[] s_booleans = { true, false };
 
+#pragma warning disable SA1642
     /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
     /// <param name="value">The value representing both values.</param>
+#pragma warning restore SA1642
     public Split(T value)
         : this(value, value) { }
 
-    /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
-    /// <param name="truthy">The value representing a <see langword="true"/> value.</param>
-    /// <param name="falsy">The value representing a <see langword="false"/> value.</param>
-    public Split(T truthy, T falsy)
-    {
-        Truthy = truthy;
-        Falsy = falsy;
-    }
-
     /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
     [Pure]
-    public T Falsy { get; set; }
+    public T Falsy
+    {
+        get => falsy;
+        set => falsy = value;
+    }
 
     /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
     [Pure]
-    public T Truthy { get; set; }
+    public T Truthy
+    {
+        get => truthy;
+        set => truthy = value;
+    }
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
     [Pure]
@@ -7948,8 +7850,8 @@ public sealed partial class Split<T> : ICollection<T>,
     [Pure]
     public T this[bool key]
     {
-        get => key ? Truthy : Falsy;
-        set => _ = key ? Truthy = value : Falsy = value;
+        get => key ? truthy : falsy;
+        set => _ = key ? truthy = value : falsy = value;
     }
 
     /// <inheritdoc cref="ICollection{T}.Count" />
@@ -7971,22 +7873,22 @@ public sealed partial class Split<T> : ICollection<T>,
     /// <inheritdoc />
     public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
-        array[arrayIndex] = Truthy;
-        array[arrayIndex + 1] = Falsy;
+        array[arrayIndex] = truthy;
+        array[arrayIndex + 1] = falsy;
     }
 
     /// <inheritdoc />
     [Pure]
     public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(Truthy, item) ||
-        EqualityComparer<T>.Default.Equals(Falsy, item);
+        EqualityComparer<T>.Default.Equals(truthy, item) ||
+        EqualityComparer<T>.Default.Equals(falsy, item);
 
     /// <inheritdoc />
     [Pure]
     public IEnumerator<T> GetEnumerator()
     {
-        yield return Truthy;
-        yield return Falsy;
+        yield return truthy;
+        yield return falsy;
     }
 
     /// <inheritdoc />
@@ -8004,31 +7906,31 @@ public sealed partial class Split<T> : ICollection<T>,
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    public void Add(bool key, T value) => _ = key ? Truthy = value : Falsy = value;
+    public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
 
     /// <inheritdoc />
     // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
-    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? Truthy = item.Value : Falsy = item.Value;
+    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
 
     /// <inheritdoc />
     public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
     {
-        array[arrayIndex] = new(true, Truthy);
-        array[arrayIndex + 1] = new(false, Falsy);
+        array[arrayIndex] = new(true, truthy);
+        array[arrayIndex + 1] = new(false, falsy);
     }
 
     /// <inheritdoc />
     [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public bool Contains(KeyValuePair<bool, T> item) =>
         item.Key
-            ? EqualityComparer<T>.Default.Equals(Truthy, item.Value)
-            : EqualityComparer<T>.Default.Equals(Falsy, item.Value);
+            ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
+            : EqualityComparer<T>.Default.Equals(falsy, item.Value);
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
     [Pure]
     public bool TryGetValue(bool key, out T value)
     {
-        value = key ? Truthy : Falsy;
+        value = key ? truthy : falsy;
         return true;
     }
 
@@ -8051,8 +7953,8 @@ public sealed partial class Split<T> : ICollection<T>,
     [Pure]
     IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
     {
-        yield return new(true, Truthy);
-        yield return new(false, Falsy);
+        yield return new(true, truthy);
+        yield return new(false, falsy);
     }
 
     /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
@@ -8060,17 +7962,17 @@ public sealed partial class Split<T> : ICollection<T>,
     bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
 
     /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
-    /// <param name="truthy">The value to get assigned as <see cref="Truthy"/>.</param>
-    /// <param name="falsy">The value to get assigned as <see cref="Falsy"/>.</param>
-    public void Deconstruct(out T truthy, out T falsy)
+    /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
+    /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
+    public void Deconstruct(out T t, out T f)
     {
-        truthy = Truthy;
-        falsy = Falsy;
+        t = truthy;
+        f = falsy;
     }
 
     /// <inheritdoc />
     [Pure]
-    public override string ToString() => $"Split({Truthy}, {Falsy})";
+    public override string ToString() => $"Split({truthy}, {falsy})";
 }
 
 /// <summary>Method to inline.</summary>
