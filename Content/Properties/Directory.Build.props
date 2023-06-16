@@ -28,6 +28,7 @@
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <FodyDependsOnTargets>RunConstructorTests</FodyDependsOnTargets>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

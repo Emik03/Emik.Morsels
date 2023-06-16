@@ -317,27 +317,27 @@
         </ItemGroup>
     </Target>
     <!-- Run Constructor.csx on the project for Windows. -->
-    <Target Name="RunConstructorTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and $(NoTests) != 'true'">
-        <Exec Command="where -q csharprepl || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(OutDir)$(AssemblyName).dll" ContinueOnError="false" IgnoreExitCode="true"/>
+    <Target Name="RunConstructorTests" Condition="'$(OS)' == 'Windows_NT' and $(NoTests) != 'true' and '$(RebuildingWithoutJetBrainsAnnotations)' != 'true'">
+        <Exec Command="where -q csharprepl || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(IntermediateOutputPath)$(AssemblyName).dll"/>
     </Target>
     <!-- Run Constructor.csx on the project for Mac or Linux. -->
-    <Target Name="RunConstructorTests" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and $(NoTests) != 'true'">
-        <Exec Command="command -v csharprepl &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(OutDir)$(AssemblyName).dll" ContinueOnError="false" IgnoreExitCode="true"/>
+    <Target Name="RunConstructorTests" Condition="'$(OS)' != 'Windows_NT' and $(NoTests) != 'true' and '$(RebuildingWithoutJetBrainsAnnotations)' != 'true'">
+        <Exec Command="command -v csharprepl &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Tests/Constructors.csx')) -- $(IntermediateOutputPath)$(AssemblyName).dll"/>
     </Target>
     <!-- Copy index file to make Documentation folder nicer in GitHub for Windows. -->
-    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and $(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)')">
+    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and $(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)') and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
         <Exec Command="xcopy &quot;$(MarkdownIndexFilePath)&quot; &quot;$(ProjectDir)Documentation/README.md&quot;"/>
     </Target>
     <!-- Copy index file to make Documentation folder nicer in GitHub for Mac or Linux. -->
-    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and $(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)')">
+    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and $(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)') and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
         <Exec Command="cp &quot;$(MarkdownIndexFilePath)&quot; &quot;$(ProjectDir)Documentation/README.md&quot;"/>
     </Target>
     <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
-    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
+    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != '' and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
         <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
     </Target>
     <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository from Mac or Linux. -->
-    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != ''">
+    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != '' and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
         <Exec Command="cp $(Out) &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
     </Target>
     <!-- We only need to validate the properties that are being used. -->
