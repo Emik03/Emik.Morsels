@@ -4241,7 +4241,7 @@ public
     public static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
     {
 #if NETCOREAPP || ROSLYN
-        if (iterable is ImmutableArray<T> { IsDefault: true })
+        if (iterable is ImmutableArray<T> { IsDefaultOrEmpty: true })
             return fallback;
 #endif
         using var iterator = iterable.GetEnumerator();
@@ -4277,6 +4277,8 @@ public
                 return list.Count is 0 ? fallback : list[0];
             case IReadOnlyList<T> list:
                 return list.Count is 0 ? fallback : list[0];
+            case var _ when iterable.TryGetNonEnumeratedCount(out var count):
+                return count is 0 ? fallback : iterable.First();
             default:
             {
                 using var iterator = iterable.GetEnumerator();
@@ -4301,6 +4303,7 @@ public
 #endif
             IReadOnlyList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
             IList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
+            _ when iterable.TryGetNonEnumeratedCount(out var count) => count is 0 ? fallback : iterable.Last(),
             _ => iterable.EnumerateOr(fallback),
         };
 #pragma warning restore IDE0056
@@ -4432,8 +4435,9 @@ public
 #endif
             IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
-            _ when iterable.ToList() is var list => list[list.Count - index - 1],
-            _ => throw Unreachable,
+            _ when iterable.TryGetNonEnumeratedCount(out var count) =>
+                index < count ? iterable.Skip(count - index - 1).FirstOrDefault() : default,
+            _ => iterable.Reverse().Skip(index).FirstOrDefault(),
         };
     }
 #endif
