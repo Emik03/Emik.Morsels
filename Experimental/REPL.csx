@@ -437,13 +437,72 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 /// <summary>Extension methods for nullable types and booleans.</summary>
 
+#if NETCOREAPP || ROSLYN
+    /// <summary>Determines whether two sequences are equal.</summary>
+    /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
+    /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
+    /// <param name="first">The first <see cref="ImmutableArray{TBase}"/> to compare.</param>
+    /// <param name="second">The second <see cref="ImmutableArray{TDerived}"/> to compare.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if both sequences have the same
+    /// values, or are both default; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static bool GuardedSequenceEqual<TDerived, TBase>(
+        this ImmutableArray<TBase> first,
+        ImmutableArray<TDerived> second
+    )
+        where TDerived : TBase =>
+        first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault : first.SequenceEqual(second);
+
+    /// <summary>Determines whether two sequences are equal according to an equality comparer.</summary>
+    /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
+    /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
+    /// <param name="first">The first <see cref="ImmutableArray{TBase}"/> to compare.</param>
+    /// <param name="second">The second <see cref="ImmutableArray{TDerived}"/> to compare.</param>
+    /// <param name="comparer">The comparer to use to check for equality.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if both sequences have the same
+    /// values, or are both default; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static bool GuardedSequenceEqual<TDerived, TBase>(
+        this ImmutableArray<TBase> first,
+        ImmutableArray<TDerived> second,
+        Func<TBase, TBase, bool>? comparer
+    )
+        where TDerived : TBase =>
+        first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
+        comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
+
+    /// <summary>Determines whether two sequences are equal according to an equality comparer.</summary>
+    /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
+    /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
+    /// <param name="first">The first <see cref="ImmutableArray{TBase}"/> to compare.</param>
+    /// <param name="second">The second <see cref="ImmutableArray{TDerived}"/> to compare.</param>
+    /// <param name="comparer">The comparer to use to check for equality.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if both sequences have the same
+    /// values, or are both default; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static bool GuardedSequenceEqual<TDerived, TBase>(
+        this ImmutableArray<TBase> first,
+        ImmutableArray<TDerived> second,
+        IEqualityComparer<TBase>? comparer
+    )
+        where TDerived : TBase =>
+        first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
+        comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
+#endif
+
     /// <summary>Determines whether the inner value of a nullable value matches a given predicate.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to check.</param>
     /// <param name="predicate">The predicate to determine the return value.</param>
     /// <returns>
     /// The value <see langword="true"/> if <paramref name="value"/> is not <see langword="null"/>
-    /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
+    /// and returned <see langword="true"/> from the predicate; otherwise, <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
     public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate) =>
@@ -455,7 +514,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="predicate">The predicate to determine the return value.</param>
     /// <returns>
     /// The value <see langword="true"/> if <paramref name="value"/> is not <see langword="null"/>
-    /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
+    /// and returned <see langword="true"/> from the predicate; otherwise, <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
     public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate)
@@ -523,7 +582,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="onTrue">The value to return when <see langword="true"/>.</param>
     /// <returns>
     /// The value <paramref name="onTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
+    /// is <see langword="true"/>; otherwise, <see langword="default"/>.
     /// </returns>
     [Pure]
     public static T? Then<T>(this bool value, T onTrue) => value ? onTrue : default;
@@ -535,7 +594,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <returns>
     /// The value returned from <paramref name="ifTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
+    /// is <see langword="true"/>; otherwise, <see langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
@@ -4168,7 +4227,7 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 
 
 /// <summary>Extension methods to attempt to grab values from enumerables.</summary>
@@ -4181,6 +4240,10 @@ public
     [Pure]
     public static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
     {
+#if NETCOREAPP || ROSLYN
+        if (iterable is ImmutableArray<T> { IsDefault: true })
+            return fallback;
+#endif
         using var iterator = iterable.GetEnumerator();
 
         if (!iterator.MoveNext())
@@ -4206,6 +4269,10 @@ public
         {
             case string str:
                 return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
+#if NETCOREAPP || ROSLYN
+            case ImmutableArray<T> array:
+                return array.IsDefaultOrEmpty ? fallback : array[0];
+#endif
             case IList<T> list:
                 return list.Count is 0 ? fallback : list[0];
             case IReadOnlyList<T> list:
@@ -4225,16 +4292,18 @@ public
     /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
     [MustUseReturnValue]
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
+#pragma warning disable IDE0056
         iterable switch
         {
-            // ReSharper disable once UseIndexFromEndExpression
-#pragma warning disable IDE0056
             string str => str.Length is 0 ? fallback : Reinterpret<T>(str[str.Length - 1]),
-#pragma warning restore IDE0056
-            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[0],
-            IList<T> list => list.Count is 0 ? fallback : list[0],
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array => array.IsDefaultOrEmpty ? fallback : array[array.Length - 1],
+#endif
+            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
+            IList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
             _ => iterable.EnumerateOr(fallback),
         };
+#pragma warning restore IDE0056
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
@@ -4246,6 +4315,15 @@ public
     public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Reinterpret<T>(char c)
+    {
+        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
+#pragma warning disable 8500
+        return *(T*)&c;
+#pragma warning restore 8500
+    }
 
 #if !NET20 && !NET30
     /// <summary>Returns the item, or a fallback.</summary>
@@ -4295,7 +4373,6 @@ public
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    // ReSharper disable ConditionIsAlwaysTrueOrFalse
     [Pure]
     public static char? Nth(this string str, [NonNegativeValue] int index) =>
         index >= 0 && index < str.Length ? str[index] : null;
@@ -4305,7 +4382,7 @@ public
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [MustUseReturnValue]
     public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
@@ -4315,6 +4392,9 @@ public
         return iterable switch
         {
             string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
+#endif
             IReadOnlyList<T> list => index < list.Count ? list[index] : default,
             IList<T> list => index < list.Count ? list[index] : default,
             _ => iterable.Skip(index).FirstOrDefault(),
@@ -4325,7 +4405,6 @@ public
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    // ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
     [Pure]
     public static char? NthLast(this string str, [NonNegativeValue] int index) =>
 #pragma warning disable IDE0056
@@ -4337,7 +4416,7 @@ public
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [MustUseReturnValue]
     public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
@@ -4347,6 +4426,10 @@ public
         return iterable switch
         {
             string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array =>
+                !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
+#endif
             IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             _ when iterable.ToList() is var list => list[list.Count - index - 1],
@@ -4354,16 +4437,6 @@ public
         };
     }
 #endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Reinterpret<T>(char c)
-    {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
-        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
-#pragma warning disable 8500
-        return *(T*)&c;
-#pragma warning restore 8500
-    }
 
 // SPDX-License-Identifier: MPL-2.0
 

@@ -6,13 +6,72 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for nullable types and booleans.</summary>
 static partial class Conditionals
 {
+#if NETCOREAPP || ROSLYN
+    /// <summary>Determines whether two sequences are equal.</summary>
+    /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
+    /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
+    /// <param name="first">The first <see cref="ImmutableArray{TBase}"/> to compare.</param>
+    /// <param name="second">The second <see cref="ImmutableArray{TDerived}"/> to compare.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if both sequences have the same
+    /// values, or are both default; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static bool GuardedSequenceEqual<TDerived, TBase>(
+        this ImmutableArray<TBase> first,
+        ImmutableArray<TDerived> second
+    )
+        where TDerived : TBase =>
+        first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault : first.SequenceEqual(second);
+
+    /// <summary>Determines whether two sequences are equal according to an equality comparer.</summary>
+    /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
+    /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
+    /// <param name="first">The first <see cref="ImmutableArray{TBase}"/> to compare.</param>
+    /// <param name="second">The second <see cref="ImmutableArray{TDerived}"/> to compare.</param>
+    /// <param name="comparer">The comparer to use to check for equality.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if both sequences have the same
+    /// values, or are both default; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static bool GuardedSequenceEqual<TDerived, TBase>(
+        this ImmutableArray<TBase> first,
+        ImmutableArray<TDerived> second,
+        Func<TBase, TBase, bool>? comparer
+    )
+        where TDerived : TBase =>
+        first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
+        comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
+
+    /// <summary>Determines whether two sequences are equal according to an equality comparer.</summary>
+    /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
+    /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
+    /// <param name="first">The first <see cref="ImmutableArray{TBase}"/> to compare.</param>
+    /// <param name="second">The second <see cref="ImmutableArray{TDerived}"/> to compare.</param>
+    /// <param name="comparer">The comparer to use to check for equality.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if both sequences have the same
+    /// values, or are both default; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static bool GuardedSequenceEqual<TDerived, TBase>(
+        this ImmutableArray<TBase> first,
+        ImmutableArray<TDerived> second,
+        IEqualityComparer<TBase>? comparer
+    )
+        where TDerived : TBase =>
+        first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
+        comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
+#endif
+
     /// <summary>Determines whether the inner value of a nullable value matches a given predicate.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to check.</param>
     /// <param name="predicate">The predicate to determine the return value.</param>
     /// <returns>
     /// The value <see langword="true"/> if <paramref name="value"/> is not <see langword="null"/>
-    /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
+    /// and returned <see langword="true"/> from the predicate; otherwise, <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
     public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate) =>
@@ -24,7 +83,7 @@ static partial class Conditionals
     /// <param name="predicate">The predicate to determine the return value.</param>
     /// <returns>
     /// The value <see langword="true"/> if <paramref name="value"/> is not <see langword="null"/>
-    /// and returned <see langword="true"/> from the predicate, otherwise <see langword="false"/>.
+    /// and returned <see langword="true"/> from the predicate; otherwise, <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
     public static bool IsAnd<T>([NotNullWhen(true)] this T? value, [InstantHandle] Predicate<T> predicate)
@@ -92,7 +151,7 @@ static partial class Conditionals
     /// <param name="onTrue">The value to return when <see langword="true"/>.</param>
     /// <returns>
     /// The value <paramref name="onTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
+    /// is <see langword="true"/>; otherwise, <see langword="default"/>.
     /// </returns>
     [Pure]
     public static T? Then<T>(this bool value, T onTrue) => value ? onTrue : default;
@@ -104,7 +163,7 @@ static partial class Conditionals
     /// <param name="ifTrue">The value to invoke when <see langword="true"/>.</param>
     /// <returns>
     /// The value returned from <paramref name="ifTrue"/> if <paramref name="value"/>
-    /// is <see langword="true"/>, otherwise; <see langword="default"/>.
+    /// is <see langword="true"/>; otherwise, <see langword="default"/>.
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;

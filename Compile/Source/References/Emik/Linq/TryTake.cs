@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to attempt to grab values from enumerables.</summary>
@@ -14,6 +14,10 @@ static partial class TryTake
     [Pure]
     public static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
     {
+#if NETCOREAPP || ROSLYN
+        if (iterable is ImmutableArray<T> { IsDefault: true })
+            return fallback;
+#endif
         using var iterator = iterable.GetEnumerator();
 
         if (!iterator.MoveNext())
@@ -39,6 +43,10 @@ static partial class TryTake
         {
             case string str:
                 return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
+#if NETCOREAPP || ROSLYN
+            case ImmutableArray<T> array:
+                return array.IsDefaultOrEmpty ? fallback : array[0];
+#endif
             case IList<T> list:
                 return list.Count is 0 ? fallback : list[0];
             case IReadOnlyList<T> list:
@@ -58,16 +66,18 @@ static partial class TryTake
     /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
     [MustUseReturnValue]
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
+#pragma warning disable IDE0056
         iterable switch
         {
-            // ReSharper disable once UseIndexFromEndExpression
-#pragma warning disable IDE0056
             string str => str.Length is 0 ? fallback : Reinterpret<T>(str[str.Length - 1]),
-#pragma warning restore IDE0056
-            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[0],
-            IList<T> list => list.Count is 0 ? fallback : list[0],
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array => array.IsDefaultOrEmpty ? fallback : array[array.Length - 1],
+#endif
+            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
+            IList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
             _ => iterable.EnumerateOr(fallback),
         };
+#pragma warning restore IDE0056
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
@@ -79,6 +89,15 @@ static partial class TryTake
     public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Reinterpret<T>(char c)
+    {
+        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
+#pragma warning disable 8500
+        return *(T*)&c;
+#pragma warning restore 8500
+    }
 
 #if !NET20 && !NET30
     /// <summary>Returns the item, or a fallback.</summary>
@@ -128,7 +147,6 @@ static partial class TryTake
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    // ReSharper disable ConditionIsAlwaysTrueOrFalse
     [Pure]
     public static char? Nth(this string str, [NonNegativeValue] int index) =>
         index >= 0 && index < str.Length ? str[index] : null;
@@ -138,7 +156,7 @@ static partial class TryTake
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [MustUseReturnValue]
     public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
@@ -148,6 +166,9 @@ static partial class TryTake
         return iterable switch
         {
             string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
+#endif
             IReadOnlyList<T> list => index < list.Count ? list[index] : default,
             IList<T> list => index < list.Count ? list[index] : default,
             _ => iterable.Skip(index).FirstOrDefault(),
@@ -158,7 +179,6 @@ static partial class TryTake
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    // ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
     [Pure]
     public static char? NthLast(this string str, [NonNegativeValue] int index) =>
 #pragma warning disable IDE0056
@@ -170,7 +190,7 @@ static partial class TryTake
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [MustUseReturnValue]
     public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
         // Runtime check.
@@ -180,6 +200,10 @@ static partial class TryTake
         return iterable switch
         {
             string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array =>
+                !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
+#endif
             IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
             _ when iterable.ToList() is var list => list[list.Count - index - 1],
@@ -187,14 +211,4 @@ static partial class TryTake
         };
     }
 #endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Reinterpret<T>(char c)
-    {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
-        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
-#pragma warning disable 8500
-        return *(T*)&c;
-#pragma warning restore 8500
-    }
 }
