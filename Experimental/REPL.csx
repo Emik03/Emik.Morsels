@@ -1543,6 +1543,9 @@ public
         string separator = Separator
     )
     {
+        if (values is string value && separator is "")
+            return value;
+
         StringBuilder builder = new();
         using var enumerator = values.GetEnumerator();
 
@@ -1662,6 +1665,11 @@ public
                 source.ToString(),
 #else
                 source.StringifyObject(depth - 1),
+#endif
+#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
+            IEnumerable<char> x => useQuotes ? $@"""{x.Concat()}""" : x.Concat(),
+#else
+            IEnumerable<char> x => useQuotes ? $@"""{Conjoin(x, "")}""" : Conjoin(x, ""),
 #endif
             IDictionary { Count: 0 } => "{ }",
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
@@ -1893,7 +1901,7 @@ public
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
     }
 
-    // ReSharper disable once SuggestBaseTypeForParameter
+    // ReSharper disable SuggestBaseTypeForParameter
     [MustUseReturnValue]
 #if NETFRAMEWORK && !NET40_OR_GREATER
     static Expression GetMethodCaller<T, TMember>(
