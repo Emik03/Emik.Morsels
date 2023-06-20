@@ -191,35 +191,25 @@ static partial class SplitFactory
 
         if (length1 < length2)
         {
-            if (!reader1[..length2].SequenceEqual(reader2))
+            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
             {
                 ret = false;
                 return true;
             }
 
-            if (!e1.MoveNext())
-            {
-                ret = length2 == length1 && !e2.MoveNext();
-                return true;
-            }
-
             reader1 = e1.Current;
+            reader2 = reader2[length1..];
             return false;
         }
 
-        if (!reader1.SequenceEqual(reader2[..length1]))
+        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
         {
             ret = false;
             return true;
         }
 
-        if (!e1.MoveNext())
-        {
-            ret = length2 == length1 && !e2.MoveNext();
-            return true;
-        }
-
-        reader1 = e1.Current;
+        reader1 = reader1[length2..];
+        reader2 = e2.Current;
         return false;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
