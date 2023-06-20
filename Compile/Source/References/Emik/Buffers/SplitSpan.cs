@@ -18,7 +18,11 @@ static partial class SplitFactory
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
-        where T : unmanaged, IEquatable<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
     {
         if (left == right)
             return true;
@@ -160,7 +164,11 @@ static partial class SplitFactory
         ref SplitSpan<T>.Enumerator e2,
         out bool ret
     )
-        where T : unmanaged, IEquatable<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
     {
         Skip.Init(out ret);
 
@@ -360,6 +368,23 @@ readonly
     // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
+
+    /// <summary>Gets the first element.</summary>
+    /// <returns>The first span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+
+    /// <summary>Gets the last element.</summary>
+    /// <returns>The last span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> Last()
+    {
+        var e = GetEnumerator();
+
+        while (e.MoveNext()) { }
+
+        return e.Current;
+    }
 
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
