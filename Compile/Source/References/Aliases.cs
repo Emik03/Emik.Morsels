@@ -8,7 +8,7 @@ extern alias ms;
 #if KTANE
 extern alias unity;
 
-// Curse you Unity for making me do this. Allows Jetbrains.Annotations and UnityEngine to coexist.
+// Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
