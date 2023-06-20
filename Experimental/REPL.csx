@@ -5958,7 +5958,11 @@ public enum ControlFlow : byte
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
-        where T : unmanaged, IEquatable<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
     {
         if (left == right)
             return true;
@@ -6100,7 +6104,11 @@ public enum ControlFlow : byte
         ref SplitSpan<T>.Enumerator e2,
         out bool ret
     )
-        where T : unmanaged, IEquatable<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
     {
         Skip.Init(out ret);
 
@@ -6244,6 +6252,28 @@ readonly
         _isAny = isAny;
     }
 
+    /// <summary>Gets the specified index.</summary>
+    /// <param name="index">The index to get.</param>
+    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
+    public ReadOnlySpan<T> this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+
+            var e = GetEnumerator();
+
+            for (var i = 0; i <= index; i++)
+                if (!e.MoveNext())
+                    return default;
+
+            return e.Current;
+        }
+    }
+
     /// <summary>Gets the empty split span.</summary>
     public static SplitSpan<T> Empty
     {
@@ -6291,6 +6321,20 @@ readonly
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
         IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
 
+    /// <summary>Computes the length.</summary>
+    /// <returns>The length.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public int Count()
+    {
+        var e = GetEnumerator();
+        var count = 0;
+
+        while (e.MoveNext())
+            count++;
+
+        return count;
+    }
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
@@ -6299,6 +6343,23 @@ readonly
     // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
+
+    /// <summary>Gets the first element.</summary>
+    /// <returns>The first span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+
+    /// <summary>Gets the last element.</summary>
+    /// <returns>The last span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> Last()
+    {
+        var e = GetEnumerator();
+
+        while (e.MoveNext()) { }
+
+        return e.Current;
+    }
 
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]

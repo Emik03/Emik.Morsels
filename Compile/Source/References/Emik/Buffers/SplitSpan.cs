@@ -313,6 +313,28 @@ readonly
         _isAny = isAny;
     }
 
+    /// <summary>Gets the specified index.</summary>
+    /// <param name="index">The index to get.</param>
+    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
+    public ReadOnlySpan<T> this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+
+            var e = GetEnumerator();
+
+            for (var i = 0; i <= index; i++)
+                if (!e.MoveNext())
+                    return default;
+
+            return e.Current;
+        }
+    }
+
     /// <summary>Gets the empty split span.</summary>
     public static SplitSpan<T> Empty
     {
@@ -359,6 +381,20 @@ readonly
         Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
         IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
+
+    /// <summary>Computes the length.</summary>
+    /// <returns>The length.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public int Count()
+    {
+        var e = GetEnumerator();
+        var count = 0;
+
+        while (e.MoveNext())
+            count++;
+
+        return count;
+    }
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
