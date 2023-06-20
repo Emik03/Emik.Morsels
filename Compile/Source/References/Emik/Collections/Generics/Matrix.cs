@@ -172,7 +172,7 @@ sealed partial class Matrix<T> : IList<IList<T>>
 
     /// <inheritdoc />
     [Pure, ValueRange(-1, int.MaxValue)]
-    public int IndexOf(IList<T>? item) => item is [var x, ..] ? List.IndexOf(x) : -1;
+    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
 
     /// <inheritdoc />
     [Pure]
