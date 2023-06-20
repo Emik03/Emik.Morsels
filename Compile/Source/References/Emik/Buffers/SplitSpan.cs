@@ -170,7 +170,7 @@ static partial class SplitFactory
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
 #endif
     {
         List<T[]> ret = new();
@@ -368,7 +368,7 @@ readonly
             var separator = _split.Separator;
 
             if (separator.IsEmpty)
-                return Current.IsEmpty && (Current = body) is var _;
+                return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
 
             while (Step(_split.IsAny, body, separator, ref _end, out var start))
                 if (start != _end)

@@ -100,6 +100,77 @@ static partial class Peeks
         return value;
     }
 
+    /// <inheritdoc cref="Debug{T}(T, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    public static Span<T> Debug<T>(
+        this Span<T> value,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value.ToArray().Debug(shouldLogExpression, map, filter, logger, expression, path, line, member);
+
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    public static SplitSpan<T> Debug<T>(
+        this SplitSpan<T> value,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<List<T[]>, object?>? map = null,
+        [InstantHandle] Predicate<List<T[]>>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value.ToList().Debug(shouldLogExpression, map, filter, logger, expression, path, line, member);
+
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    public static ReadOnlySpan<T> Debug<T>(
+        this ReadOnlySpan<T> value,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value.ToArray().Debug(shouldLogExpression, map, filter, logger, expression, path, line, member);
+
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and action parameter.</typeparam>
     /// <param name="value">The value to pass into the callback.</param>
@@ -111,7 +182,6 @@ static partial class Peeks
 
         return value;
     }
-
 #if !NETFRAMEWORK
     /// <summary>Executes a <see langword="delegate"/> pointer, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and delegate pointer parameter.</typeparam>
@@ -127,7 +197,6 @@ static partial class Peeks
 
         return value;
     }
-
 #endif
 
     /// <summary>Executes the function, and returns the result.</summary>
