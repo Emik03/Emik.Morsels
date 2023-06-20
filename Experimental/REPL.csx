@@ -1652,7 +1652,7 @@ public
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
             Enum x => $"{x.GetType().Name}(0x{System.Convert.ToInt32(x):x}) = {x.EnumStringifier()}",
-            Type x => x.UnfoldedName(),
+            Type x => UnfoldedName(x),
 #if KTANE
             Object x => x.name,
 #endif
@@ -1691,7 +1691,10 @@ public
 
     [Pure]
     static bool IsOneBitSet(this Enum value, Enum next) =>
-        value.HasFlag(next) && System.Convert.ToInt32(next) is not 0 and var i && (i & i - 1) is 0;
+        System.Convert.ToInt32(next) is not 0 and var filter &&
+        (filter & filter - 1) is 0 &&
+        System.Convert.ToInt32(value) is var bits &&
+        (bits & filter) is not 0;
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
@@ -1728,14 +1731,22 @@ public
            .Cast<Enum>()
            .Where(value.IsOneBitSet)
            .OrderBy(System.Convert.ToInt32)
+#if WAWA
+           .ToList();
+#else
            .ToCollectionLazily();
+#endif
 
         string BitStringifier(int x) =>
+#if WAWA
+            values.Find(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+#else
             values.FirstOrDefault(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+#endif
             x is -1 ? "0" : $"1 << {x}";
 
-        return value.GetType().IsDefined(typeof(FlagsAttribute))
-            ? System.Convert.ToInt32(value).Bits().Select(BitStringifier).Conjoin(" | ")
+        return value.GetType().IsDefined(typeof(FlagsAttribute), false)
+            ? Conjoin(System.Convert.ToInt32(value).Bits().Select(BitStringifier), " | ")
             : $"{value}";
     }
 
@@ -1812,7 +1823,7 @@ public
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
 
-        // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         return depth >= 0 ? UseStringifier(source, depth) :
             s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
     }
@@ -1850,14 +1861,14 @@ public
            .GetProperties(Flags)
            .Where(CanUse)
 #if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exParam, exDepth, static x => x.PropertyType));
+           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exInstance, exDepth, static x => x.PropertyType));
 #else
            .Select(p => GetMethodCaller(p, exInstance, exDepth, static x => x.PropertyType));
 #endif
         var fields = typeof(T)
            .GetFields(Flags)
 #if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(f => GetMethodCaller<T, FieldInfo>(f, exParam, static x => x.FieldType));
+           .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
 #else
            .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
 #endif
@@ -1891,7 +1902,7 @@ public
 #endif
         TMember info,
         ParameterExpression exInstance,
-        Expression exDepth,
+        ParameterExpression exDepth,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
         where TMember : MemberInfo
@@ -7686,7 +7697,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 
     /// <inheritdoc />
     [Pure, ValueRange(-1, int.MaxValue)]
-    public int IndexOf(IList<T>? item) => item is [var x, ..] ? List.IndexOf(x) : -1;
+    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
 
     /// <inheritdoc />
     [Pure]
