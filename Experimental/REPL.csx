@@ -5924,10 +5924,27 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Provides the method to skip initialization.</summary>
+
+    /// <summary>Skips initialization based on framework.</summary>
+    /// <typeparam name="T">The type of value to skip initialization.</typeparam>
+    /// <param name="ret">The value to skip initialization.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Init<T>(out T ret) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        Unsafe.SkipInit(out ret);
+#else
+        ret = default;
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
 
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
-
 
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
@@ -5952,41 +5969,13 @@ public enum ControlFlow : byte
         if (!e2.MoveNext())
             return false;
 
-        // SplitSpan<T>.Enumerator must return slices that when combined are at least 1 entry shorter.
-        int length1 = left.Body.Length - 1,
-            length2 = right.Body.Length - 1;
-
-        Span<T>
-            writer1 = e1.Current.Length > length1 ? default :
-                length1 <= Stackalloc ? stackalloc T[length1] : new T[length1],
-            writer2 = e2.Current.Length > length2 ? default :
-                length2 <= Stackalloc ? stackalloc T[length2] : new T[length2];
-
         ReadOnlySpan<T>
-            reader1 = writer1.IsEmpty ? e1.Current : writer1,
-            reader2 = writer2.IsEmpty ? e2.Current : writer2;
+            reader1 = e1.Current,
+            reader2 = e2.Current;
 
-        if (!writer1.IsEmpty)
-            do
-            {
-                e1.Current.CopyTo(writer1);
-                writer1 = writer1[e1.Current.Length..];
-
-                if (reader1.Length - writer1.Length > reader2.Length)
-                    return false;
-            } while (e1.MoveNext());
-
-        if (!writer2.IsEmpty)
-            do
-            {
-                e2.Current.CopyTo(writer2);
-                writer2 = writer2[e2.Current.Length..];
-
-                if (reader2.Length - writer2.Length > reader1.Length)
-                    return false;
-            } while (e2.MoveNext());
-
-        return reader1[..^writer1.Length].SequenceEqual(reader2[..^writer2.Length]);
+        while (true)
+            if (Next(ref reader1, ref reader2, ref e1, ref e2, out var ret))
+                return ret;
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
@@ -6101,6 +6090,77 @@ public enum ControlFlow : byte
             ret.Add(next.ToArray());
 
         return ret;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool Next<T>(
+        ref ReadOnlySpan<T> reader1,
+        ref ReadOnlySpan<T> reader2,
+        ref SplitSpan<T>.Enumerator e1,
+        ref SplitSpan<T>.Enumerator e2,
+        out bool ret
+    )
+        where T : unmanaged, IEquatable<T>
+    {
+        Skip.Init(out ret);
+
+        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
+        {
+            if (!reader1.SequenceEqual(reader2))
+            {
+                ret = false;
+                return true;
+            }
+
+            if (!e1.MoveNext())
+            {
+                ret = !e2.MoveNext();
+                return true;
+            }
+
+            if (!e2.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader1 = e1.Current;
+            reader2 = e2.Current;
+            return false;
+        }
+
+        if (length1 < length2)
+        {
+            if (!reader1[..length2].SequenceEqual(reader2))
+            {
+                ret = false;
+                return true;
+            }
+
+            if (!e1.MoveNext())
+            {
+                ret = length2 == length1 && !e2.MoveNext();
+                return true;
+            }
+
+            reader1 = e1.Current;
+            return false;
+        }
+
+        if (!reader1.SequenceEqual(reader2[..length1]))
+        {
+            ret = false;
+            return true;
+        }
+
+        if (!e1.MoveNext())
+        {
+            ret = length2 == length1 && !e2.MoveNext();
+            return true;
+        }
+
+        reader1 = e1.Current;
+        return false;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
@@ -6318,11 +6378,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
         {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            Unsafe.SkipInit(out start);
-#else
-            start = 0;
-#endif
+            Skip.Init(out start);
 
             if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
             {
