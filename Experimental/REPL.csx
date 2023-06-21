@@ -6110,7 +6110,7 @@ public enum ControlFlow : byte
         where T : IEquatable<T>?
 #endif
     {
-        Skip.Init(out ret);
+        Init(out ret);
 
         if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
         {
@@ -6429,7 +6429,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
         {
-            Skip.Init(out start);
+            Init(out start);
 
             if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
             {
@@ -7825,6 +7825,15 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     {
         [Pure] get => new Slice(this, index);
         set => Add(value);
+    }
+
+    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
+    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
+    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
+    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
+    {
+        [Pure] get => List[Count * x + y];
+        set => List[Count * x + y] = value;
     }
 
     /// <inheritdoc />
