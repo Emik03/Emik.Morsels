@@ -205,7 +205,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
                 x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)"))
         .Select(
             x => Regex.Replace(x, @"(?<=(?<=static\s*)partial\s*class).*?\{(.*?)\n\}", "$1", RegexOptions.Singleline))
-        .Select(x => x.Replace("static partial class", ""))
+        .Select(x => x.Replace("static partial class", "").Replace("Skip.Init(out ", "Init(out "))
         .SelectMany(x => x.Split(Environment.NewLine.ToCharArray()))
         .Select(ToFullName)
         .Select(
