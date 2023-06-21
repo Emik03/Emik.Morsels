@@ -117,7 +117,7 @@ sealed partial class Matrix<T> : IList<IList<T>>
         [Pure] get => new Slice(this, index);
         set => Add(value);
     }
-
+#if !WAWA
     /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
     /// <param name="x">The <c>x</c> position, which is the list to take.</param>
     /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
@@ -126,6 +126,7 @@ sealed partial class Matrix<T> : IList<IList<T>>
         [Pure] get => List[Count * x + y];
         set => List[Count * x + y] = value;
     }
+#endif
 
     /// <inheritdoc />
     public bool IsReadOnly
