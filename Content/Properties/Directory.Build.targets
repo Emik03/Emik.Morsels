@@ -7,7 +7,6 @@
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
-                <TailCall/>
                 <ToString/>
                 <NullGuard/>
                 <Substitute/>
@@ -30,7 +29,6 @@
                 <InfoOf/>
                 <InlineIL/>
                 <ToString/>
-                <TailCall/>
                 <NullGuard/>
                 <Substitute/>
                 <Virtuosity/>
@@ -50,7 +48,6 @@
                 <Equals/>
                 <InfoOf/>
                 <InlineIL/>
-                <TailCall/>
                 <NullGuard/>
                 <Substitute/>
                 <Virtuosity/>
@@ -70,7 +67,6 @@
                 <InfoOf/>
                 <InlineIL/>
                 <ToString/>
-                <TailCall/>
                 <NullGuard/>
                 <Substitute/>
                 <Virtuosity/>
