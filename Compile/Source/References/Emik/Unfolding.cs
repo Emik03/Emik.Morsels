@@ -18,12 +18,12 @@ static partial class Unfolding
     public static IEnumerable<T> FindPathToNull<T>(this T? value, Converter<T, T?> converter)
         where T : class
     {
-        if (value is null)
-            yield break;
-
-        do
+        while (value is not null)
+        {
             yield return value;
-        while (converter(value) is { } newValue && (value = newValue) is var _);
+
+            value = converter(value);
+        }
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
@@ -39,9 +39,10 @@ static partial class Unfolding
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
     {
-        do
-            yield return value;
-        while (converter(value) is { } newValue && (value = newValue) is var _);
+        yield return value;
+
+        while (converter(value) is { } next)
+            yield return next;
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
