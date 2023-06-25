@@ -5045,6 +5045,16 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
             foreach (var b in fallback)
                 yield return b;
     }
+#if !NETFRAMEWORK || NET35_OR_GREATER
+    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
+#endif
 
     /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
