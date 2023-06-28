@@ -7980,9 +7980,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 _rest = s_three;
                 break;
             default:
-                var rest = Rest ?? new List<T>();
-                rest.Add(item);
-                _rest = rest;
+                EnsureMutability().Add(item);
                 break;
         }
     }
@@ -8032,21 +8030,24 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ => _rest,
         };
 
+        if (count >= InlinedLength)
+            EnsureMutability().Insert(0, _third!);
+
         switch (index)
         {
-            case > InlinedLength when Rest is [_, ..]:
-                Rest[0] = _third!;
-                break;
-            case 0 or 1 or 2:
+            case 0:
                 _third = _second;
+                _second = _first;
+                _first = item;
+                break;
+            case 1:
+                _third = _second;
+                _second = item;
+                break;
+            case 2:
+                _third = item;
                 break;
         }
-
-        if (index is 0 or 1)
-            _second = _first;
-
-        if (index is 0)
-            _first = item;
     }
 
     /// <inheritdoc />
@@ -8055,6 +8056,18 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     {
         BoundsCheck(index, out var count);
 
+        if (index is 0)
+            _first = _second;
+
+        if (index is 0 or 1)
+            _second = _third;
+
+        if (index < InlinedLength && Rest is [var head, ..])
+            _third = head;
+
+        if (count > InlinedLength)
+            EnsureMutability().RemoveAt(Math.Max(index - InlinedLength, 0));
+
         _rest = count switch
         {
             1 => null,
@@ -8062,22 +8075,6 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             3 => s_two,
             _ => _rest,
         };
-
-        if (index is 0)
-            _first = _second;
-
-        if (index is 0 or 1)
-            _second = _third;
-
-        switch (index)
-        {
-            case 0 or 1 or 2 when Rest is [var head, ..]:
-                _third = head;
-                break;
-            case > InlinedLength:
-                Rest?.RemoveAt(index - InlinedLength);
-                break;
-        }
     }
 
     /// <inheritdoc />
@@ -8085,94 +8082,41 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public readonly bool Contains(T item) =>
         Count switch
         {
-            0 => EqualityComparer<T>.Default.Equals(_first, item),
-            1 => EqualityComparer<T>.Default.Equals(_first, item) || EqualityComparer<T>.Default.Equals(_second, item),
-            2 => EqualityComparer<T>.Default.Equals(_first, item) ||
-                EqualityComparer<T>.Default.Equals(_second, item) ||
-                EqualityComparer<T>.Default.Equals(_third, item),
-            _ => EqualityComparer<T>.Default.Equals(_first, item) ||
-                EqualityComparer<T>.Default.Equals(_second, item) ||
-                EqualityComparer<T>.Default.Equals(_third, item) ||
-                (Rest?.Contains(item) ?? false),
+            0 => Eq(_first, item),
+            1 => Eq(_first, item) || Eq(_second, item),
+            2 => Eq(_first, item) || Eq(_second, item) || Eq(_third, item),
+            _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || (Rest?.Contains(item) ?? false),
         };
 
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent)]
-    public bool Remove(T item)
-    {
-        switch (Count)
+    public bool Remove(T item) =>
+        Count switch
         {
-            case 0: return false;
-            case 1:
-                if (!EqualityComparer<T>.Default.Equals(_first, item))
-                    return false;
-
-                _rest = null;
-                return true;
-            case 2:
-                if (EqualityComparer<T>.Default.Equals(_first, item))
-                {
-                    _rest = s_one;
-                    _first = _second;
-                    return true;
-                }
-
-                if (!EqualityComparer<T>.Default.Equals(_second, item))
-                    return false;
-
-                _rest = s_one;
-                return true;
-            default:
-                if (EqualityComparer<T>.Default.Equals(_first, item))
-                {
-                    _first = _second;
-
-                    if (Rest is { } rest)
-                        _third = rest[0];
-                    else
-                        _rest = s_two;
-
-                    return true;
-                }
-
-                if (EqualityComparer<T>.Default.Equals(_second, item))
-                {
-                    _second = _third;
-
-                    if (Rest is { } rest)
-                        _third = rest[0];
-                    else
-                        _rest = s_two;
-
-                    return true;
-                }
-
-                if (!EqualityComparer<T>.Default.Equals(_third, item))
-                    return Rest?.Remove(item) ?? false;
-
-                if (Rest is { } resty)
-                    _third = resty[0];
-                else
-                    _rest = s_two;
-
-                return true;
-        }
-    }
+            0 => false,
+            1 => Eq(_first, item) && (_rest = null) is var _,
+            2 => Eq(_first, item)
+                ? (_rest = s_one) is var _ && (_first = _second) is var _
+                : Eq(_second, item) && (_rest = s_one) is var _,
+            _ => Eq(_first, item) ? RemoveHead(_first = _second) :
+                Eq(_second, item) ? RemoveHead(_second = _third) :
+                Eq(_third, item) ? RemoveHead() : EnsureMutability().Remove(item),
+        };
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public readonly int IndexOf(T item) =>
         Count switch
         {
-            0 => EqualityComparer<T>.Default.Equals(_first, item) ? 0 : -1,
-            1 => EqualityComparer<T>.Default.Equals(_first, item) ? 0 :
-                EqualityComparer<T>.Default.Equals(_second, item) ? 1 : -1,
-            2 => EqualityComparer<T>.Default.Equals(_first, item) ? 0 :
-                EqualityComparer<T>.Default.Equals(_second, item) ? 1 :
-                EqualityComparer<T>.Default.Equals(_third, item) ? 2 : -1,
-            _ => EqualityComparer<T>.Default.Equals(_first, item) ? 0 :
-                EqualityComparer<T>.Default.Equals(_second, item) ? 1 :
-                EqualityComparer<T>.Default.Equals(_third, item) ? 2 : Rest?.IndexOf(item) ?? -1,
+            0 => Eq(_first, item) ? 0 : -1,
+            1 => Eq(_first, item) ? 0 :
+                Eq(_second, item) ? 1 : -1,
+            2 => Eq(_first, item) ? 0 :
+                Eq(_second, item) ? 1 :
+                Eq(_third, item) ? 2 : -1,
+            _ => Eq(_first, item) ? 0 :
+                Eq(_second, item) ? 1 :
+                Eq(_third, item) ? 2 : Rest?.IndexOf(item) ?? -1,
         };
 
     /// <inheritdoc />
@@ -8184,7 +8128,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             1 => $"[{_first}]",
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
-            _ when Rest is List<T> rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
+            _ when Rest is { } rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
 
@@ -8218,12 +8162,41 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    static bool Eq(T? left, T? right) => EqualityComparer<T>.Default.Equals(left, right);
+
     readonly void BoundsCheck(int index, [ValueRange(1, int.MaxValue)] out int count)
     {
         count = Count;
 
         if (unchecked((uint)index >= count))
             throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be between 0 and {count}");
+    }
+
+    // ReSharper disable once UnusedParameter.Local
+    bool RemoveHead(T? _ = default)
+    {
+        if (Rest is [var head, ..])
+        {
+            _third = head;
+            EnsureMutability().RemoveAt(0);
+        }
+        else
+            _rest = s_two;
+
+        return true;
+    }
+
+    IList<T> EnsureMutability()
+    {
+        var rest = Rest switch
+        {
+            { IsReadOnly: true } x => x.ToList(),
+            { } x => x,
+            _ => new List<T>(),
+        };
+
+        _rest = rest;
+        return rest;
     }
 }
 
