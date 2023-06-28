@@ -33,6 +33,35 @@ static partial class SmallFactory
 [StructLayout(LayoutKind.Auto)]
 partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 {
+    /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
+    /// <remarks><para>
+    /// And Saint Attila raised the <see cref="SmallList{T}"/> up on high, saying, "O Lord, bless this Thy
+    /// <see cref="SmallList{T}"/> that, with it, Thou mayest blow Thine allocation costs to tiny bits in Thy mercy.".
+    /// </para><para>
+    /// And the Lord did grin, and the people did feast upon the lambs and sloths and carp and anchovies and orangutans
+    /// and breakfast cereals and fruit bats and large chu...
+    /// </para><para>
+    /// And the Lord spake, saying, "First shalt thou recreate the <c>smallvec</c> (https://crates.io/crates/smallvec)
+    /// crate. Then, shalt thou keep three inline. No more. No less. Three shalt be the number thou shalt keep inline,
+    /// and the number to keep inline shalt be three. Four shalt thou not keep inline, nor either keep inline thou two,
+    /// excepting that thou then proceed to three. Five is right out. Once the number three,  being the third number,
+    /// be reached, then, lobbest thou thy <see cref="SmallList{T}"/> towards thy heap, who, being slow and
+    /// cache-naughty in My sight, shall snuff it.".
+    /// </para><para>
+    /// (Source: https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373).
+    /// </para></remarks>
+    public const int InlinedLength = 3;
+
+    static readonly object
+        s_one = new(),
+        s_two = new(),
+        s_three = new();
+
+    [ProvidesContext]
+    object? _rest;
+
+    T? _first, _second, _third;
+
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
     public SmallList() { }
 
@@ -134,16 +163,6 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         _rest = rest;
     }
 
-    static readonly object
-        s_one = new(),
-        s_two = new(),
-        s_three = new();
-
-    [ProvidesContext]
-    object? _rest;
-
-    T? _first, _second, _third;
-
     /// <summary>Gets the empty list.</summary>
     public static SmallList<T> Empty => default;
 
@@ -160,10 +179,10 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         _rest switch
         {
             null => 0,
-            IList<T> list => list.Count + 3,
+            IList<T> list => list.Count + InlinedLength,
             _ when ReferenceEquals(_rest, s_one) => 1,
             _ when ReferenceEquals(_rest, s_two) => 2,
-            _ => 3,
+            _ => InlinedLength,
         };
 
     /// <inheritdoc cref="IList{T}.this" />
@@ -179,7 +198,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 0 => _first!,
                 1 => _second!,
                 2 => _third!,
-                _ => Rest![index - 3],
+                _ => Rest![index - InlinedLength],
             };
         }
         [CollectionAccess(ModifyExistingContent)]
@@ -192,7 +211,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 0 => _first = value,
                 1 => _second = value,
                 2 => _third = value,
-                _ => Rest![index - 3] = value,
+                _ => Rest![index - InlinedLength] = value,
             };
         }
     }
@@ -274,7 +293,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 array[arrayIndex] = _first!;
                 array[arrayIndex + 1] = _second!;
                 array[arrayIndex + 2] = _third!;
-                Rest?.CopyTo(array, arrayIndex + 3);
+                Rest?.CopyTo(array, arrayIndex + InlinedLength);
                 break;
         }
     }
@@ -295,7 +314,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
         switch (index)
         {
-            case > 3 when Rest is [_, ..]:
+            case > InlinedLength when Rest is [_, ..]:
                 Rest[0] = _third!;
                 break;
             case 0 or 1 or 2:
@@ -335,8 +354,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             case 0 or 1 or 2 when Rest is [var head, ..]:
                 _third = head;
                 break;
-            case > 3:
-                Rest?.RemoveAt(index - 3);
+            case > InlinedLength:
+                Rest?.RemoveAt(index - InlinedLength);
                 break;
         }
     }
@@ -445,6 +464,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             1 => $"[{_first}]",
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
+            _ when Rest is List<T> rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
 
