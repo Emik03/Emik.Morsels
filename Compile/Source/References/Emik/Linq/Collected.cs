@@ -49,7 +49,11 @@ static partial class Collected
             : iterable as ICollection<T> ??
             (iterable.TryGetNonEnumeratedCount(out var count)
                 ? new Collection<T>(iterable, count)
+#if NETFRAMEWORK && NET40_OR_GREATER
                 : new List<T>(iterable));
+#else
+                : iterable.ToList());
+#endif
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -58,7 +62,11 @@ static partial class Collected
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+#if NETFRAMEWORK && NET40_OR_GREATER
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
+#else
+        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
+#endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
