@@ -7902,6 +7902,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public readonly bool IsReadOnly => false;
 
+    /// <inheritdoc cref="ICollection{T}.Count" />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public readonly int Count =>
         _rest switch
@@ -7944,6 +7945,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         }
     }
 #pragma warning disable MA0102
+    /// <summary>Gets or sets the first element.</summary>
     [CollectionAccess(Read), Pure]
     public T First
     {
@@ -7951,6 +7953,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         set => this[0] = value;
     }
 
+    /// <summary>Gets or sets the second element.</summary>
     [CollectionAccess(Read), Pure]
     public T Second
     {
@@ -7958,6 +7961,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         set => this[1] = value;
     }
 
+    /// <summary>Gets or sets the third element.</summary>
     [CollectionAccess(Read), Pure]
     public T Third
     {
@@ -7966,6 +7970,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     }
 #pragma warning restore MA0102
 
+    /// <summary>Gets the rest of the elements.</summary>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), ProvidesContext, Pure]
     public readonly IList<T>? Rest => _rest as IList<T>;
 
