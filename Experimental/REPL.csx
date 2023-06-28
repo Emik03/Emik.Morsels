@@ -7778,7 +7778,9 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// </para><para>
     /// (Source: https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373).
     /// </para></remarks>
+#pragma warning disable RCS1158
     public const int InlinedLength = 3;
+#pragma warning restore RCS1158
 
     static readonly object
         s_one = new(),
@@ -8145,31 +8147,13 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
 
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public readonly Enumerator GetEnumerator() => new(this);
+
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public readonly IEnumerator<T> GetEnumerator()
-    {
-        if (Count is var count && count is 0)
-            yield break;
-
-        yield return _first!;
-
-        if (count is 1)
-            yield break;
-
-        yield return _second!;
-
-        if (count is 2)
-            yield break;
-
-        yield return _third!;
-
-        if (Rest is not { } rest)
-            yield break;
-
-        foreach (var next in rest)
-            yield return next;
-    }
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -8210,6 +8194,57 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
         _rest = rest;
         return rest;
+    }
+
+    /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>
+    [StructLayout(LayoutKind.Auto)]
+    public struct Enumerator : IEnumerator<T>
+    {
+        readonly SmallList<T> _list;
+
+        readonly IEnumerator<T>? _enumerator;
+
+        readonly int _count;
+
+        int _state = -1;
+
+        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
+        /// <param name="list">The <see cref="SmallList{T}"/> to enumerate over.</param>
+        public Enumerator(SmallList<T> list)
+        {
+            _list = list;
+            _count = list.Count;
+            _enumerator = list.Rest?.GetEnumerator();
+        }
+
+        /// <inheritdoc />
+        public T Current { get; private set; } = default!;
+
+        /// <inheritdoc />
+        readonly object? IEnumerator.Current => Current;
+
+        /// <inheritdoc />
+        public readonly void Dispose() => _enumerator?.Dispose();
+
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _state = -1;
+            _enumerator?.Reset();
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext() =>
+            ++_state < _count &&
+            _state < InlinedLength &&
+            (_enumerator?.MoveNext() ?? false) ==
+            (Current = _state switch
+            {
+                0 => _list.First,
+                1 => _list.Second,
+                2 => _list.Third,
+                _ => _enumerator is null ? default! : _enumerator.Current,
+            }) is var _;
     }
 }
 
