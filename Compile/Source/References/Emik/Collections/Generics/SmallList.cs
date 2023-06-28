@@ -157,10 +157,14 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
     [CollectionAccess(None), Pure]
     public readonly int Count =>
-        _rest is null ? 0 :
-        _rest is IList<T> list ? 3 + list.Count :
-        ReferenceEquals(_rest, s_one) ? 1 :
-        ReferenceEquals(_rest, s_two) ? 2 : 3;
+        _rest switch
+        {
+            null => 0,
+            IList<T> list => list.Count + 3,
+            _ when ReferenceEquals(_rest, s_one) => 1,
+            _ when ReferenceEquals(_rest, s_two) => 2,
+            _ => 3,
+        };
 
     /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
