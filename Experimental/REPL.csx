@@ -1490,7 +1490,7 @@ public
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
-    public static string Prettify(this string s) => Prettify(s, 4);
+    public static string Prettify(this string s) => Prettify(s, ',');
 
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
@@ -1501,16 +1501,13 @@ public
     /// <returns>The prettified string.</returns>
     public static string Prettify(
         this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
-        [NonNegativeValue] int indent = 4,
         char separator = ',',
         string start = "([{<",
-        string end = ")]}>"
+        string end = ")]}>",
+        string indent = "|   "
     )
 #pragma warning disable CA1508
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        indent = indent < 0 ? 4 : indent;
-
         // Source: https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7
         var seen = false;
         var nest = 0;
@@ -1868,12 +1865,12 @@ public
     }
 #if !WAWA
     [MustUseReturnValue]
-    static StringBuilder Indent(this StringBuilder sb, [NonNegativeValue] int indent, int nest)
+    static StringBuilder Indent(this StringBuilder sb, string indent, int nest)
     {
         sb.AppendLine();
 
         for (var i = 0; i < nest && nest >= 0; i++)
-            sb.Append('|').Append(' ', indent);
+            sb.Append(indent);
 
         return sb;
     }
