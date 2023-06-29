@@ -1490,20 +1490,20 @@ public
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
-    public static string Prettify(this string s) => Prettify(s, ',');
+    public static string Prettify(this string s) => Prettify(s, separator: ",");
 
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
-    /// <param name="indent">The amount of spaces for indentation.</param>
-    /// <param name="separator">The characters considered to be separators.</param>
     /// <param name="start">The characters considered to be starting blocks.</param>
     /// <param name="end">The characters considered to be ending blocks.</param>
+    /// <param name="separator">The characters considered to be separators.</param>
+    /// <param name="indent">The amount of spaces for indentation.</param>
     /// <returns>The prettified string.</returns>
     public static string Prettify(
         this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
-        char separator = ',',
         string start = "([{<",
         string end = ")]}>",
+        string separator = ",",
         string indent = "|   "
     )
 #pragma warning disable CA1508
@@ -1521,7 +1521,7 @@ public
                     (seen, ++nest, sb.Append(s[i]).Indent(indent, nest)),
                 _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>
                     (seen, --nest, sb.Indent(indent, nest).Append(s[i])),
-                _ when s[i] == separator => (true, nest, sb.Append(separator)),
+                _ when separator.Contains(s[i]) => (true, nest, sb.Append(separator)),
                 ' ' when seen && nest > 0 ||
                     s.Nth(i - 1) is { } prev && start.Contains(prev) ||
                     s.Nth(i + 1) is { } next && end.Contains(next) => (seen, nest, sb),
