@@ -114,15 +114,19 @@ static partial class Stringifier
         var nest = 0;
         StringBuilder sb = new();
 
-        foreach (var c in s)
-            (seen, nest, sb) = c switch
+        for (var i = 0; i < s.Length; i++)
+            (seen, nest, sb) = s[i] switch
             {
                 not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => throw Unreachable,
-                _ when start.Contains(c) => (seen, ++nest, sb.Append(c).Indent(indent, nest)),
-                _ when end.Contains(c) => (seen, --nest, sb.Indent(indent, nest).Append(c)),
-                _ when c == separator => (true, nest, sb.Append(separator)),
-                ' ' when seen && nest > 0 => (seen, nest, sb),
-                _ => (seen, nest, sb.Append(c)),
+                _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
+                    (seen, ++nest, sb.Append(s[i]).Indent(indent, nest)),
+                _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>
+                    (seen, --nest, sb.Indent(indent, nest).Append(s[i])),
+                _ when s[i] == separator => (true, nest, sb.Append(separator)),
+                ' ' when seen && nest > 0 ||
+                    s.Nth(i - 1) is { } prev && start.Contains(prev) ||
+                    s.Nth(i + 1) is { } next && end.Contains(next) => (seen, nest, sb),
+                _ => (seen, nest, sb.Append(s[i])),
             };
 
         return $"{sb}";
