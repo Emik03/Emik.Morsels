@@ -214,6 +214,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         };
 
     /// <summary>Gets the number of head elements used.</summary>
+    [CollectionAccess(None), Pure]
     public readonly int HeadCount => Math.Min(Count, 3);
 
     /// <inheritdoc cref="IList{T}.this" />
@@ -408,6 +409,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="func">The function to use.</param>
+    [CollectionAccess(Read)]
     public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> func)
     {
         fixed (SmallList<T>* ptr = &this)
@@ -418,6 +420,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="func">The function to use.</param>
+    [CollectionAccess(Read)]
     public unsafe void HeadSpan<TParam>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> func
@@ -431,6 +434,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="func">The function to use.</param>
+    [CollectionAccess(Read)]
     public unsafe void HeadSpan<TParam>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> func
@@ -444,6 +448,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="func">The function to use.</param>
+    [CollectionAccess(Read)]
     public unsafe void HeadSpan<TParam>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> func
@@ -591,6 +596,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="func">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> func)
     {
         fixed (SmallList<T>* ptr = &this)
@@ -603,6 +609,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="func">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> func
@@ -618,6 +625,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="func">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> func
@@ -633,6 +641,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="func">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> func
