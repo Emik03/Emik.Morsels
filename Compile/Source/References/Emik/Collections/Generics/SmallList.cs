@@ -499,7 +499,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         count = Count;
 
         if (unchecked((uint)index >= count))
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be between 0 and {count}");
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be between 0 and {count - 1}");
     }
 
     // ReSharper disable once UnusedParameter.Local
