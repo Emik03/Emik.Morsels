@@ -12,6 +12,24 @@ using static CollectionAccessType;
 static partial class SmallFactory
 #pragma warning restore MA0048
 {
+    /// <summary>Creates the <see cref="SmallList{T}"/> with the specified capacity.</summary>
+    /// <typeparam name="T">The type of list.</typeparam>
+    /// <param name="length">The capacity.</param>
+    /// <param name="item">The item to repeat.</param>
+    /// <returns>
+    /// The <see cref="SmallList{T}"/> with the capacity specified according to <paramref name="length"/>.
+    /// </returns>
+    [Pure]
+    public static SmallList<T> AsSmallList<T>(this int length, T item) =>
+        length switch
+        {
+            <= 0 => default,
+            1 => new(item),
+            2 => new(item, item),
+            3 => new(item, item, item),
+            _ => new(item, item, item, Enumerable.Repeat(item, length - SmallList<T>.InlinedLength).ToListLazily()),
+        };
+
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
