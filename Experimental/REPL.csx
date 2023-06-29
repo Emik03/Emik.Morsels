@@ -7915,10 +7915,10 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     // DO NOT PLACE BELOW _rest BELOW GENERICS;
     // Doing so will cause only unmanaged generics to be mapped before the object,
     // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
-    // See the following link for an example:
+    // See the following link for a lengthier explanation and example:
     //
     // ReSharper disable CommentTypo
-    // https://sharplab.io/#v2:EYLgtghglgdgNAFxAJwK4wD4GIAOyIDmkABAO4TIywHEAmUAzhMADYCmxAHAKwAMvAWABQwgAK9iogIwA6AEroEUMGxkBJGAjbIA9jgDK2gG5QAxmwYBuMROkA2SbIWblqjVt0HjZizIAyEACeOqgIANKwtNYiQgD0scQAqjCQMIRstGQ6yADWDMTIbAQUtOwM+ToAZmQAFtocCHXEOsAAVmymCMSMxDgsEOa0MsLCRhTEzDpGbO7EALzEMGykxACCwFNsADywCAB8ABRScMQATACU0WPIxMBsLDqkswtLKwBC9487mofHZ5cjIToJiVNjCADewmI0OI8WIbx0jWIYxYqAsE0KxEaHCYKhOEHybAAHjgOlohlCYQcDrsAFTnABkk2m7nOAG0qJoZPooAAvDgJBh8thVGmac4AXXUMAYpM6BwARAAJNgQTJVNYbabffZkKBIqqVBhsLq8IlSBUAoQw4jUumMu4PJ7ijm7bnC2HEIX80W7SXS2VkxUqtXNaofJ06vZ6g2VI0m4hmi1WgC+gLhGmIqXSmRqjzY02QJ2xzTaZO6+T6AwydDYpJg9BgNB0MG61X1FYmBTYoMKMHMWMCpOGMWuEy1bH0CGQ1Hmi2Wms2W2kvEOCsqUGQDAQCpOCuNphbtEtV3GjseU5nTbnr3hn1Iy6kq8VG63O73B6PJ8BwIgoIhlLQtSK70kyE6XtQ7Kcgg7r8p63oipUBwrpKgE2sQAZyggwaquq4b3o+q4xjUYbxqa5rfjENpwqsLAsGGXYMKgtC0Gw8CkcaXRSF6CB6PkpDZDk1AAIRocBT6geepAQU2UFujycGCsKoooRKaE2phQbKrhDHrEuK7RqQ+okYanGJhRVpoXCADycZmRIPSoMamSwNuuEjja4m8JJ94yQQ7K8Gp1rodCmnytpoYanp2oGcRHEJmavCUWmMRspeqCdAEwShAchgAI5oi4EAsKhQjbmgnSLtqAAqhzVcQr7bic9Wfg25wAcF0ItO0nQAPzEAA+oU243ssByWZ1xDVf1A2NV0CxzScA2tZkCwrdEKXCGl04ZQgWUhNh+WFUoxWleVu13pGtUHPVi1TV6HRHu1QiQpN02DXNc53ctj0NnO62Aja3VkjNw3zfOpDjRtQA
+    // https://sharplab.io/#v2:EYLgtghglgdgPgYgA4CcIHNIAIDuEUyzpYAmUAzhMADYCmWAHAKwAMLAsAFBcACLWPAIwA6AEoBXGABcoYWsICS02igD2SAMoqAblADGtcgG5e/IQDYBIidNnylUleq0pdB8sIAyEAJ6rxUgDSsCQm3JwA9BFYALIQMBi0JLiqKADW5FgQmbQAHki0eo4kIFxRWADkAILAqtq0FVgotACO4lDNmfFYqgBmveS0UljAhRDig1hSABb0qsAAVoXDeqpymb0d5FLCZdEVAEK01Ko4jc1tHYZYMKo9/YPDo3rjkzNzi8tYq+tZvY4oXbhbT4LK1eoaKQoLAAXhutBwWBqdVoAB4hCwAHwACgARJsUNtcQAaLC4warGAkXEASjCIOhoxOOEh0LhMARWCOzPRgixeIJRNJ5MKqiptLCXEklF6tC4AG8uFhlVhsdiMQAqGkAMioKNZNIA2gwALqKGDkApFPEACVoEGSfS5x1OvKxuCgM3uAyGWBYuRYDAlSpVas1OqZpwNhpYZqUluWtvtjt6SPBaIxmI9Xr6PuG/rYwc4AF8uHssABVGCQBLoJJYCi4WbNKazBswSnkCiODs+LDUKCGUqRfbI+qNHCpDKt+iUORZTKjXqpeTlw4us5ZajUe5ZLDkcQkEi0GBNVrtTrex5+0iGJCe+ijIi3vTUfD1wU7MucBlglEOWF4URMc0VgKQcUEUkACY6S4X9IxwAD2U5blXTAiDoNg8JpQgWUFRDZU1TArVdXTBwjSguMLStKQkwdXcQNRdDs2mK9fQLIMsJVVVsWIiMN3ImMqITa1cTteinVQnAmOkLMcE9Vjc2vAsWCLAisHKAB5B52IDBgUnSchSS7Dt6EY5j4mSKSZPArIW22FBxCKcQ0G3Hx1PKKBj1sF4d1uHBSWPS0HxfN80BkMUehQY9oUcbdnz8cQeneFB5MGIFuKI6QSIQwTKPNETaLE5Nd2s5j5JzHT8z0otS3CQ1WScqRvES2itDaE8ZAgagaRNLgHKatMUVRAAVHERqwT9SQmikxRIGl8M4bj5iWIoAH4sAAfU6YZkJwbEsPUkaNs2z9AKmrbZqpQCrtCLg6q4BqoSalr/Da89Oqgbrev656imdHkxuxCaLpm0UqQWzhFSWlVjq2s64Quzbbpu8G7vCZbPnWradsAjl9qw4sgA==
     // ReSharper restore CommentTypo
 
     [ProvidesContext]
@@ -8130,6 +8130,48 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public static implicit operator SmallList<T>((T First, T Second, T Third) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third);
 
+    /// <summary>Skips initialization of inlined elements.</summary>
+    /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
+    /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
+    public static SmallList<T> Uninit(int length)
+    {
+        Init(out SmallList<T> output);
+
+        output._rest = length switch
+        {
+            0 => null,
+            1 => s_one,
+            2 => s_two,
+            3 => s_empty,
+            _ => new T[length - InlinedLength],
+        };
+
+        return output;
+    }
+
+    /// <summary>Skips initialization of unreachable inlined elements.</summary>
+    /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
+    /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
+    public static SmallList<T> Zeroed(int length)
+    {
+        var output = Uninit(length);
+
+        switch (length)
+        {
+            case >= 3:
+                output._third = default!;
+                goto case 2;
+            case 2:
+                output._second = default!;
+                goto case 1;
+            case 1:
+                output._first = default!;
+                break;
+        }
+
+        return output;
+    }
+
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent)]
     public void Add(T item)
@@ -8137,16 +8179,13 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         switch (Count)
         {
             case 0:
-                _first = item;
-                _rest = s_one;
+                (_first, _rest) = (item, s_one);
                 break;
             case 1:
-                _second = item;
-                _rest = s_two;
+                (_second, _rest) = (item, s_two);
                 break;
             case 2:
-                _third = item;
-                _rest = s_empty;
+                (_third, _rest) = (item, s_empty);
                 break;
             default:
                 EnsureMutability().Add(item);
@@ -8500,6 +8539,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    [Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
 
     readonly void BoundsCheck(int index, [ValueRange(1, int.MaxValue)] out int count)
@@ -8511,6 +8551,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     }
 
     // ReSharper disable once UnusedParameter.Local
+    [MustUseReturnValue]
     bool RemoveHead(T? _ = default)
     {
         if (Rest is [var head, ..])
@@ -8524,6 +8565,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         return true;
     }
 
+    [MustUseReturnValue]
     IList<T> EnsureMutability()
     {
         var rest = Rest switch
@@ -8559,9 +8601,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         }
 
         /// <inheritdoc />
+        [Pure]
         public T Current { get; private set; } = default!;
 
         /// <inheritdoc />
+        [Pure]
         readonly object? IEnumerator.Current => Current;
 
         /// <inheritdoc />

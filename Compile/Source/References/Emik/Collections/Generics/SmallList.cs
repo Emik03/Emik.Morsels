@@ -302,6 +302,48 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public static implicit operator SmallList<T>((T First, T Second, T Third) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third);
 
+    /// <summary>Skips initialization of inlined elements.</summary>
+    /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
+    /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
+    public static SmallList<T> Uninit(int length)
+    {
+        Skip.Init(out SmallList<T> output);
+
+        output._rest = length switch
+        {
+            0 => null,
+            1 => s_one,
+            2 => s_two,
+            3 => s_empty,
+            _ => new T[length - InlinedLength],
+        };
+
+        return output;
+    }
+
+    /// <summary>Skips initialization of unreachable inlined elements.</summary>
+    /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
+    /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
+    public static SmallList<T> Zeroed(int length)
+    {
+        var output = Uninit(length);
+
+        switch (length)
+        {
+            case >= 3:
+                output._third = default!;
+                goto case 2;
+            case 2:
+                output._second = default!;
+                goto case 1;
+            case 1:
+                output._first = default!;
+                break;
+        }
+
+        return output;
+    }
+
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent)]
     public void Add(T item)
@@ -309,16 +351,13 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         switch (Count)
         {
             case 0:
-                _first = item;
-                _rest = s_one;
+                (_first, _rest) = (item, s_one);
                 break;
             case 1:
-                _second = item;
-                _rest = s_two;
+                (_second, _rest) = (item, s_two);
                 break;
             case 2:
-                _third = item;
-                _rest = s_empty;
+                (_third, _rest) = (item, s_empty);
                 break;
             default:
                 EnsureMutability().Add(item);
@@ -672,6 +711,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(None), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    [Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
 
     readonly void BoundsCheck(int index, [ValueRange(1, int.MaxValue)] out int count)
@@ -683,6 +723,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     }
 
     // ReSharper disable once UnusedParameter.Local
+    [MustUseReturnValue]
     bool RemoveHead(T? _ = default)
     {
         if (Rest is [var head, ..])
@@ -696,6 +737,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         return true;
     }
 
+    [MustUseReturnValue]
     IList<T> EnsureMutability()
     {
         var rest = Rest switch
@@ -731,9 +773,11 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         }
 
         /// <inheritdoc />
+        [Pure]
         public T Current { get; private set; } = default!;
 
         /// <inheritdoc />
+        [Pure]
         readonly object? IEnumerator.Current => Current;
 
         /// <inheritdoc />
