@@ -13,23 +13,13 @@ using static Span;
 static partial class SmallFactory
 #pragma warning restore MA0048
 {
-    /// <summary>Creates the <see cref="SmallList{T}"/> with the specified capacity.</summary>
-    /// <typeparam name="T">The type of list.</typeparam>
-    /// <param name="length">The capacity.</param>
-    /// <param name="item">The item to repeat.</param>
-    /// <returns>
-    /// The <see cref="SmallList{T}"/> with the capacity specified according to <paramref name="length"/>.
-    /// </returns>
+    /// <inheritdoc cref="SmallList{T}.Uninit"/>
     [Pure]
-    public static SmallList<T> AsSmallList<T>(this int length, T item) =>
-        length switch
-        {
-            <= 0 => default,
-            1 => new(item),
-            2 => new(item, item),
-            3 => new(item, item, item),
-            _ => new(item, item, item, Enumerable.Repeat(item, length - SmallList<T>.InlinedLength).ToListLazily()),
-        };
+    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
+
+    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
+    [Pure]
+    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
 
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
@@ -225,6 +215,17 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <summary>Gets the number of head elements used.</summary>
     [CollectionAccess(None), Pure]
     public readonly int HeadCount => Math.Min(Count, 3);
+
+    /// <summary>Gets the deep clone of this instance.</summary>
+    public readonly SmallList<T> Cloned
+    {
+        get
+        {
+            var clone = Uninit(Count);
+            CopyTo(ref clone);
+            return clone;
+        }
+    }
 
     /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
