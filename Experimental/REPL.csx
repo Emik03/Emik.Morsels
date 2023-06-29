@@ -7837,6 +7837,8 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
 
 
+
+
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
@@ -7876,7 +7878,7 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
-[StructLayout(LayoutKind.Auto)]
+[StructLayout(LayoutKind.Sequential)]
 public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 {
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
@@ -7911,10 +7913,10 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         Array.Empty<T>();
 #endif
 
+    T? _first, _second, _third;
+
     [ProvidesContext]
     object? _rest;
-
-    T? _first, _second, _third;
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
     public SmallList() { }
@@ -8235,10 +8237,10 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="func">The function to use.</param>
-    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] Span.SpanAction<T> func)
+    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> func)
     {
-        fixed (T* x = &this)
-            func(new(x, HeadCount));
+        fixed (SmallList<T>* ptr = &this)
+            func(new(ptr, HeadCount));
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -8247,11 +8249,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="func">The function to use.</param>
     public unsafe void HeadSpan<TParam>(
         TParam param,
-        [InstantHandle, RequireStaticDelegate] Span.SpanAction<T, TParam> func
+        [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> func
     )
     {
-        fixed (T* x = &this)
-            func(new(x, HeadCount), param);
+        fixed (SmallList<T>* ptr = &this)
+            func(new(ptr, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -8260,11 +8262,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="func">The function to use.</param>
     public unsafe void HeadSpan<TParam>(
         ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] Span.SpanActionReadOnlySpan<T, TParam> func
+        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> func
     )
     {
-        fixed (T* x = &this)
-            func(new(x, HeadCount), param);
+        fixed (SmallList<T>* ptr = &this)
+            func(new(ptr, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -8273,11 +8275,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="func">The function to use.</param>
     public unsafe void HeadSpan<TParam>(
         Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] Span.SpanActionSpan<T, TParam> func
+        [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> func
     )
     {
-        fixed (T* x = &this)
-            func(new(x, HeadCount), param);
+        fixed (SmallList<T>* ptr = &this)
+            func(new(ptr, HeadCount), param);
     }
 #pragma warning restore 8500
 
@@ -8418,10 +8420,10 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="func">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
-    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] Span.SpanFunc<T, TResult> func)
+    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> func)
     {
-        fixed (T* x = &this)
-            return func(new(x, HeadCount));
+        fixed (SmallList<T>* ptr = &this)
+            return func(new(ptr, HeadCount));
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -8432,11 +8434,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
     public unsafe TResult HeadSpan<TParam, TResult>(
         TParam param,
-        [InstantHandle, RequireStaticDelegate] Span.SpanFunc<T, TParam, TResult> func
+        [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> func
     )
     {
-        fixed (T* x = &this)
-            return func(new(x, HeadCount), param);
+        fixed (SmallList<T>* ptr = &this)
+            return func(new(ptr, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -8447,11 +8449,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
     public unsafe TResult HeadSpan<TParam, TResult>(
         ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] Span.SpanFuncReadOnlySpan<T, TParam, TResult> func
+        [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> func
     )
     {
-        fixed (T* x = &this)
-            return func(new(x, HeadCount), param);
+        fixed (SmallList<T>* ptr = &this)
+            return func(new(ptr, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -8462,11 +8464,11 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <returns>The result of the parameter <paramref name="func"/>.</returns>
     public unsafe TResult HeadSpan<TParam, TResult>(
         Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] Span.SpanFuncSpan<T, TParam, TResult> func
+        [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> func
     )
     {
-        fixed (T* x = &this)
-            return func(new(x, HeadCount), param);
+        fixed (SmallList<T>* ptr = &this)
+            return func(new(ptr, HeadCount), param);
     }
 #pragma warning restore CS8500
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
