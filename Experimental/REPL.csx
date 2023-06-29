@@ -1519,7 +1519,7 @@ public
         foreach (var c in s)
             (seen, nest, sb) = c switch
             {
-                not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => (seen, nest, sb),
+                not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => throw Unreachable,
                 _ when start.Contains(c) => (seen, ++nest, sb.Append(c).Indent(indent, nest)),
                 _ when end.Contains(c) => (seen, --nest, sb.Indent(indent, nest).Append(c)),
                 _ when c == separator => (true, nest, sb.Append(separator)),
