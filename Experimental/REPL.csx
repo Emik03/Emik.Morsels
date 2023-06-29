@@ -7784,8 +7784,14 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
     static readonly object
         s_one = new(),
-        s_two = new(),
-        s_three = new();
+        s_two = new();
+
+    static readonly T[] s_empty =
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+        new T[0];
+#else
+        Array.Empty<T>();
+#endif
 
     [ProvidesContext]
     object? _rest;
@@ -7833,7 +7839,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
         if (!enumerator.MoveNext())
         {
-            _rest = s_three;
+            _rest = s_empty;
             return;
         }
 
@@ -7862,7 +7868,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
     public SmallList(T first, T second, T third)
-        : this(first, second, third, s_three) { }
+        : this(first, second, third, s_empty) { }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <param name="first">The first element.</param>
@@ -7913,7 +7919,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             IList<T> list => list.Count + InlinedLength,
             _ when ReferenceEquals(_rest, s_one) => 1,
             _ when ReferenceEquals(_rest, s_two) => 2,
-            _ => InlinedLength,
+            _ => 0,
         };
 
     /// <inheritdoc cref="IList{T}.this" />
@@ -7992,7 +7998,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 break;
             case 2:
                 _third = item;
-                _rest = s_three;
+                _rest = s_empty;
                 break;
             default:
                 EnsureMutability().Add(item);
@@ -8026,7 +8032,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 array[arrayIndex] = _first!;
                 array[arrayIndex + 1] = _second!;
                 array[arrayIndex + 2] = _third!;
-                Rest?.CopyTo(array, arrayIndex + InlinedLength);
+                Rest!.CopyTo(array, arrayIndex + InlinedLength);
                 break;
         }
     }
@@ -8041,7 +8047,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         {
             0 => s_one,
             1 => s_two,
-            2 => s_three,
+            2 => s_empty,
             _ => _rest,
         };
 
@@ -8103,6 +8109,23 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || (Rest?.Contains(item) ?? false),
         };
 
+    /// <summary>Determines whether the item exists in the collection.</summary>
+    /// <param name="item">The item to check.</param>
+    /// <param name="comparer">The comparer to use.</param>
+    /// <returns>The value determining whether the parameter <paramref name="item"/> exists in the collection.</returns>
+    [CollectionAccess(Read), Pure]
+    public readonly bool Contains(T item, IEqualityComparer<T?> comparer) =>
+        Count switch
+        {
+            0 => comparer.Equals(_first, item),
+            1 => comparer.Equals(_first, item) || comparer.Equals(_second, item),
+            2 => comparer.Equals(_first, item) || comparer.Equals(_second, item) || comparer.Equals(_third, item),
+            _ => comparer.Equals(_first, item) ||
+                comparer.Equals(_second, item) ||
+                comparer.Equals(_third, item) ||
+                (Rest?.Contains(item, comparer) ?? false),
+        };
+
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent)]
     public bool Remove(T item) =>
@@ -8159,7 +8182,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    static bool Eq(T? left, T? right) => EqualityComparer<T>.Default.Equals(left, right);
+    static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
 
     readonly void BoundsCheck(int index, [ValueRange(1, int.MaxValue)] out int count)
     {
@@ -8187,8 +8210,8 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     {
         var rest = Rest switch
         {
-            { IsReadOnly: true } x => x.ToList(),
-            { } x => x,
+            { IsReadOnly: true, Count: not 0 } x => x.ToList(),
+            { Count: not 0 } x => x,
             _ => new List<T>(),
         };
 
@@ -8236,8 +8259,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         /// <inheritdoc />
         public bool MoveNext() =>
             ++_state < _count &&
-            _state < InlinedLength &&
-            (_enumerator?.MoveNext() ?? false) ==
+            (_state < InlinedLength || (_enumerator?.MoveNext() ?? false)) ==
             (Current = _state switch
             {
                 0 => _list.First,
