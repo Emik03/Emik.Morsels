@@ -188,10 +188,10 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         _rest switch
         {
             null => 0,
-            IList<T> list => list.Count + InlinedLength,
-            _ when ReferenceEquals(_rest, s_one) => 1,
-            _ when ReferenceEquals(_rest, s_two) => 2,
-            _ => 0,
+            _ when _rest == s_one => 1,
+            _ when _rest == s_two => 2,
+            _ when _rest == s_empty => 3,
+            _ => Rest!.Count + InlinedLength,
         };
 
     /// <inheritdoc cref="IList{T}.this" />
