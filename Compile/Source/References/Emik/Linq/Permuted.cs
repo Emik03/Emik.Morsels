@@ -84,8 +84,8 @@ static partial class Permuted
                 yield break;
 
         int count = lists.Count, index = 0, pos = 0;
-        var indices = count.AsSmallList(0);
-        var accumulator = count.AsSmallList(default(T)!);
+        var indices = count.AsUninitSmallList<int>();
+        var accumulator = count.AsUninitSmallList<T>();
 
         while (true)
         {
@@ -97,9 +97,7 @@ static partial class Permuted
                 pos++;
             }
 
-            var result = count.AsSmallList(default(T)!);
-            accumulator.CopyTo(ref result);
-            yield return result;
+            yield return accumulator.Cloned;
 
             do
             {
