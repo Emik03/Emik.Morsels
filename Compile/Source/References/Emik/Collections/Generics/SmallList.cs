@@ -84,10 +84,19 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         Array.Empty<T>();
 #endif
 
-    T? _first, _second, _third;
+    // DO NOT PLACE BELOW _rest BELOW GENERICS;
+    // Doing so will cause only unmanaged generics to be mapped before the object,
+    // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
+    // See the following link for an example:
+    //
+    // ReSharper disable CommentTypo
+    // https://sharplab.io/#v2:EYLgtghglgdgNAFxAJwK4wD4GIAOyIDmkABAO4TIywHEAmUAzhMADYCmxAHAKwAMvAWABQwgAK9iogIwA6AEroEUMGxkBJGAjbIA9jgDK2gG5QAxmwYBuMROkA2SbIWblqjVt0HjZizIAyEACeOqgIANKwtNYiQgD0scQAqjCQMIRstGQ6yADWDMTIbAQUtOwM+ToAZmQAFtocCHXEOsAAVmymCMSMxDgsEOa0MsLCRhTEzDpGbO7EALzEMGykxACCwFNsADywCAB8ABRScMQATACU0WPIxMBsLDqkswtLKwBC9487mofHZ5cjIToJiVNjCADewmI0OI8WIbx0jWIYxYqAsE0KxEaHCYKhOEHybAAHjgOlohlCYQcDrsAFTnABkk2m7nOAG0qJoZPooAAvDgJBh8thVGmac4AXXUMAYpM6BwARAAJNgQTJVNYbabffZkKBIqqVBhsLq8IlSBUAoQw4jUumMu4PJ7ijm7bnC2HEIX80W7SXS2VkxUqtXNaofJ06vZ6g2VI0m4hmi1WgC+gLhGmIqXSmRqjzY02QJ2xzTaZO6+T6AwydDYpJg9BgNB0MG61X1FYmBTYoMKMHMWMCpOGMWuEy1bH0CGQ1Hmi2Wms2W2kvEOCsqUGQDAQCpOCuNphbtEtV3GjseU5nTbnr3hn1Iy6kq8VG63O73B6PJ8BwIgoIhlLQtSK70kyE6XtQ7Kcgg7r8p63oipUBwrpKgE2sQAZyggwaquq4b3o+q4xjUYbxqa5rfjENpwqsLAsGGXYMKgtC0Gw8CkcaXRSF6CB6PkpDZDk1AAIRocBT6geepAQU2UFujycGCsKoooRKaE2phQbKrhDHrEuK7RqQ+okYanGJhRVpoXCADycZmRIPSoMamSwNuuEjja4m8JJ94yQQ7K8Gp1rodCmnytpoYanp2oGcRHEJmavCUWmMRspeqCdAEwShAchgAI5oi4EAsKhQjbmgnSLtqAAqhzVcQr7bic9Wfg25wAcF0ItO0nQAPzEAA+oU243ssByWZ1xDVf1A2NV0CxzScA2tZkCwrdEKXCGl04ZQgWUhNh+WFUoxWleVu13pGtUHPVi1TV6HRHu1QiQpN02DXNc53ctj0NnO62Aja3VkjNw3zfOpDjRtQA
+    // ReSharper restore CommentTypo
 
     [ProvidesContext]
     object? _rest;
+
+    T? _first, _second, _third;
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
     public SmallList() { }
@@ -413,7 +422,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> func)
     {
         fixed (SmallList<T>* ptr = &this)
-            func(new(ptr, HeadCount));
+            func(new((object*)ptr + 1, HeadCount));
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -427,7 +436,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
     {
         fixed (SmallList<T>* ptr = &this)
-            func(new(ptr, HeadCount), param);
+            func(new((object*)ptr + 1, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -441,7 +450,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
     {
         fixed (SmallList<T>* ptr = &this)
-            func(new(ptr, HeadCount), param);
+            func(new((object*)ptr + 1, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -455,7 +464,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
     {
         fixed (SmallList<T>* ptr = &this)
-            func(new(ptr, HeadCount), param);
+            func(new((object*)ptr + 1, HeadCount), param);
     }
 #pragma warning restore 8500
 
@@ -600,7 +609,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> func)
     {
         fixed (SmallList<T>* ptr = &this)
-            return func(new(ptr, HeadCount));
+            return func(new((object*)ptr + 1, HeadCount));
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -616,7 +625,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
     {
         fixed (SmallList<T>* ptr = &this)
-            return func(new(ptr, HeadCount), param);
+            return func(new((object*)ptr + 1, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -632,7 +641,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
     {
         fixed (SmallList<T>* ptr = &this)
-            return func(new(ptr, HeadCount), param);
+            return func(new((object*)ptr + 1, HeadCount), param);
     }
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -648,7 +657,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
     {
         fixed (SmallList<T>* ptr = &this)
-            return func(new(ptr, HeadCount), param);
+            return func(new((object*)ptr + 1, HeadCount), param);
     }
 #pragma warning restore CS8500
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
