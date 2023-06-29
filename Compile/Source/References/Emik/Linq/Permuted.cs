@@ -26,19 +26,19 @@ static partial class Permuted
 
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
-    /// <param name="list">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="list"/>.</returns>
+    /// <param name="lists">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
     public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> list)
 #else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> list)
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> lists)
 #endif
     {
-        if (list.Any(x => x is []))
+        if (lists.Any(x => x is []))
             yield break;
 
-        int count = list.Count, index = 0, pos = 0;
+        int count = lists.Count, index = 0, pos = 0;
         var indices = new int[count];
         var accumulator = new T[count];
 
@@ -47,7 +47,7 @@ static partial class Permuted
             while (pos < accumulator.Length)
             {
                 indices[pos] = index;
-                accumulator[pos] = list[pos][index];
+                accumulator[pos] = lists[pos][index];
                 index = 0;
                 pos++;
             }
@@ -62,8 +62,71 @@ static partial class Permuted
                     yield break;
 
                 index = indices[--pos] + 1;
-            } while (index >= list[pos].Count);
+            } while (index >= lists[pos].Count);
         }
     }
+
+    /// <summary>Generates all combinations of the nested list.</summary>
+    /// <typeparam name="T">The type of nested list.</typeparam>
+    /// <param name="lists">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
+    [Pure]
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> SmallCombinations<T>(this IList<IList<T>> list)
+#else
+    public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
+#endif
+    {
+        // ReSharper disable NullableWarningSuppressionIsUsed
+        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var list in lists)
+            if (list.IsEmpty)
+                yield break;
+
+        int count = lists.Count, index = 0, pos = 0;
+        var indices = count.AsSmallList(0);
+        var accumulator = count.AsSmallList(default(T)!);
+
+        while (true)
+        {
+            while (pos < accumulator.Count)
+            {
+                indices[pos] = index;
+                accumulator[pos] = lists[pos][index];
+                index = 0;
+                pos++;
+            }
+
+            var result = count.AsSmallList(default(T)!);
+            accumulator.CopyTo(ref result);
+            yield return result;
+
+            do
+            {
+                if (pos is 0)
+                    yield break;
+
+                index = indices[--pos] + 1;
+            } while (index >= lists[pos].Count);
+        }
+    }
+
+    /// <summary>Generates all combinations of the nested enumerable.</summary>
+    /// <typeparam name="T">The type of nested enumerable.</typeparam>
+    /// <param name="iterator">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
+    [Pure]
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>(
+#else
+    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
+#endif
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
+#if NETFRAMEWORK && !NET45_OR_GREATER
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+#else
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+#endif
 }
 #endif

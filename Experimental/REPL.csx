@@ -4845,19 +4845,19 @@ public
 
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
-    /// <param name="list">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="list"/>.</returns>
+    /// <param name="lists">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
     public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> list)
 #else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> list)
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> lists)
 #endif
     {
-        if (list.Any(x => x is []))
+        if (lists.Any(x => x is []))
             yield break;
 
-        int count = list.Count, index = 0, pos = 0;
+        int count = lists.Count, index = 0, pos = 0;
         var indices = new int[count];
         var accumulator = new T[count];
 
@@ -4866,7 +4866,7 @@ public
             while (pos < accumulator.Length)
             {
                 indices[pos] = index;
-                accumulator[pos] = list[pos][index];
+                accumulator[pos] = lists[pos][index];
                 index = 0;
                 pos++;
             }
@@ -4881,9 +4881,72 @@ public
                     yield break;
 
                 index = indices[--pos] + 1;
-            } while (index >= list[pos].Count);
+            } while (index >= lists[pos].Count);
         }
     }
+
+    /// <summary>Generates all combinations of the nested list.</summary>
+    /// <typeparam name="T">The type of nested list.</typeparam>
+    /// <param name="lists">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
+    [Pure]
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> SmallCombinations<T>(this IList<IList<T>> list)
+#else
+    public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
+#endif
+    {
+        // ReSharper disable NullableWarningSuppressionIsUsed
+        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var list in lists)
+            if (list.IsEmpty)
+                yield break;
+
+        int count = lists.Count, index = 0, pos = 0;
+        var indices = count.AsSmallList(0);
+        var accumulator = count.AsSmallList(default(T)!);
+
+        while (true)
+        {
+            while (pos < accumulator.Count)
+            {
+                indices[pos] = index;
+                accumulator[pos] = lists[pos][index];
+                index = 0;
+                pos++;
+            }
+
+            var result = count.AsSmallList(default(T)!);
+            accumulator.CopyTo(ref result);
+            yield return result;
+
+            do
+            {
+                if (pos is 0)
+                    yield break;
+
+                index = indices[--pos] + 1;
+            } while (index >= lists[pos].Count);
+        }
+    }
+
+    /// <summary>Generates all combinations of the nested enumerable.</summary>
+    /// <typeparam name="T">The type of nested enumerable.</typeparam>
+    /// <param name="iterator">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
+    [Pure]
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>(
+#else
+    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
+#endif
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
+#if NETFRAMEWORK && !NET45_OR_GREATER
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+#else
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+#endif
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -6586,46 +6649,35 @@ readonly
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <param name="span">The allocated span.</param>
-    public delegate void SpanAction<TSpan>(Span<TSpan> span)
-        where TSpan : unmanaged;
+    public delegate void SpanAction<TSpan>(Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
-    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
-        where TSpan : unmanaged;
+    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param)
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        where TSpan : unmanaged;
+    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param)
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        where TSpan : unmanaged;
+    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param);
 
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span)
-        where TSpan : unmanaged;
+    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -6634,8 +6686,7 @@ readonly
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
-        where TSpan : unmanaged;
+    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -6647,11 +6698,7 @@ readonly
     public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
         Span<TSpan> span,
         ReadOnlySpan<TParam> param
-    )
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        where TSpan : unmanaged;
+    );
 
     /// <summary>
     /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
@@ -6662,11 +6709,7 @@ readonly
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param)
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        where TSpan : unmanaged;
+    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param);
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
     /// <remarks><para>
@@ -7997,6 +8040,9 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ => Rest!.Count + InlinedLength,
         };
 
+    /// <summary>Gets the number of head elements used.</summary>
+    public readonly int HeadCount => Math.Min(Count, 3);
+
     /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
@@ -8101,32 +8147,68 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(ModifyExistingContent)]
     public void Clear() => _rest = null;
 
+    /// <summary>Copies all values onto the destination.</summary>
+    /// <param name="list">The destination.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="list"/> has less elements than itself.
+    /// </exception>
+    [CollectionAccess(Read)]
+    public readonly void CopyTo(ref SmallList<T> list)
+    {
+        var count = Count;
+        list.BoundsCheck(count - 1, out _);
+
+        // Takes advantage of fallthrough in switch-cases.
+        switch (2 - count)
+        {
+            case < 0:
+                IList<T>
+                    from = Rest!,
+                    to = list.Rest!;
+
+                for (var i = 0; i < from.Count; i++)
+                    to[i] = from[i];
+
+                goto case 0;
+            case 0:
+                list._third = _third!;
+                goto case 1;
+            case 1:
+                list._second = _second!;
+                goto case 2;
+            case 2:
+                list._first = _first!;
+                break;
+        }
+    }
+
     /// <inheritdoc />
     [CollectionAccess(Read)]
     public readonly void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
-        switch (Count)
+        // Takes advantage of fallthrough in switch-cases.
+        switch (2 - Count)
         {
+            case < 0:
+                Rest!.CopyTo(array, arrayIndex + InlinedLength);
+                goto case 0;
             case 0:
-                array[arrayIndex] = _first!;
-                break;
+                array[arrayIndex + 2] = _third!;
+                goto case 1;
             case 1:
-                array[arrayIndex] = _first!;
                 array[arrayIndex + 1] = _second!;
-                break;
+                goto case 2;
             case 2:
                 array[arrayIndex] = _first!;
-                array[arrayIndex + 1] = _second!;
-                array[arrayIndex + 2] = _third!;
-                break;
-            default:
-                array[arrayIndex] = _first!;
-                array[arrayIndex + 1] = _second!;
-                array[arrayIndex + 2] = _third!;
-                Rest!.CopyTo(array, arrayIndex + InlinedLength);
                 break;
         }
     }
+
+    /// <summary>Deconstructs this instance with its properties.</summary>
+    /// <param name="head">The first three elements.</param>
+    /// <param name="tail">The remaining elements.</param>
+    public readonly void Deconstruct(out (T? First, T? Second, T? Third) head, out IList<T> tail) =>
+        Deconstruct(out head.First, out head.Second, out head.Third, out tail);
 
     /// <summary>Deconstructs this instance with the 3 first elements.</summary>
     /// <param name="first">The first element.</param>
@@ -8149,6 +8231,55 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         Deconstruct(out first, out second, out third);
         rest = Rest ?? s_empty;
     }
+
+#pragma warning disable 8500
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <param name="func">The function to use.</param>
+    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] Span.SpanAction<T> func)
+    {
+        fixed (T* x = &this)
+            func(new(x, HeadCount));
+    }
+
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
+    /// <param name="param">The reference parameter to pass into the function.</param>
+    /// <param name="func">The function to use.</param>
+    public unsafe void HeadSpan<TParam>(
+        TParam param,
+        [InstantHandle, RequireStaticDelegate] Span.SpanAction<T, TParam> func
+    )
+    {
+        fixed (T* x = &this)
+            func(new(x, HeadCount), param);
+    }
+
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
+    /// <param name="param">The reference parameter to pass into the function.</param>
+    /// <param name="func">The function to use.</param>
+    public unsafe void HeadSpan<TParam>(
+        ReadOnlySpan<TParam> param,
+        [InstantHandle, RequireStaticDelegate] Span.SpanActionReadOnlySpan<T, TParam> func
+    )
+    {
+        fixed (T* x = &this)
+            func(new(x, HeadCount), param);
+    }
+
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
+    /// <param name="param">The reference parameter to pass into the function.</param>
+    /// <param name="func">The function to use.</param>
+    public unsafe void HeadSpan<TParam>(
+        Span<TParam> param,
+        [InstantHandle, RequireStaticDelegate] Span.SpanActionSpan<T, TParam> func
+    )
+    {
+        fixed (T* x = &this)
+            func(new(x, HeadCount), param);
+    }
+#pragma warning restore 8500
 
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent)]
@@ -8282,7 +8413,62 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ when Rest is { } rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
+#pragma warning disable CS8500
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
+    /// <param name="func">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] Span.SpanFunc<T, TResult> func)
+    {
+        fixed (T* x = &this)
+            return func(new(x, HeadCount));
+    }
 
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
+    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
+    /// <param name="param">The reference parameter to pass into the function.</param>
+    /// <param name="func">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    public unsafe TResult HeadSpan<TParam, TResult>(
+        TParam param,
+        [InstantHandle, RequireStaticDelegate] Span.SpanFunc<T, TParam, TResult> func
+    )
+    {
+        fixed (T* x = &this)
+            return func(new(x, HeadCount), param);
+    }
+
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
+    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
+    /// <param name="param">The reference parameter to pass into the function.</param>
+    /// <param name="func">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    public unsafe TResult HeadSpan<TParam, TResult>(
+        ReadOnlySpan<TParam> param,
+        [InstantHandle, RequireStaticDelegate] Span.SpanFuncReadOnlySpan<T, TParam, TResult> func
+    )
+    {
+        fixed (T* x = &this)
+            return func(new(x, HeadCount), param);
+    }
+
+    /// <summary>Creates the temporary span to be passed into the function.</summary>
+    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
+    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
+    /// <param name="param">The reference parameter to pass into the function.</param>
+    /// <param name="func">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    public unsafe TResult HeadSpan<TParam, TResult>(
+        Span<TParam> param,
+        [InstantHandle, RequireStaticDelegate] Span.SpanFuncSpan<T, TParam, TResult> func
+    )
+    {
+        fixed (T* x = &this)
+            return func(new(x, HeadCount), param);
+    }
+#pragma warning restore CS8500
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
@@ -8375,9 +8561,9 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             (_state < InlinedLength || (_enumerator?.MoveNext() ?? false)) ==
             (Current = _state switch
             {
-                0 => _list.First,
-                1 => _list.Second,
-                2 => _list.Third,
+                0 => _list._first!,
+                1 => _list._second!,
+                2 => _list._third!,
                 _ => _enumerator is null ? default! : _enumerator.Current,
             }) is var _;
     }
