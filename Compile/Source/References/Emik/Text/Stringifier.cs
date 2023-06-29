@@ -102,11 +102,11 @@ static partial class Stringifier
         string start = "([{<",
         string end = ")]}>",
         string separator = ",",
-        string indent = "|   "
+        string indent = "    "
     )
 #pragma warning disable CA1508
     {
-        // Source: https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7
+        // Inspired by https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7.
         var seen = false;
         var nest = 0;
         StringBuilder sb = new();
