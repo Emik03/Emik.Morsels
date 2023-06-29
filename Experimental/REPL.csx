@@ -7830,7 +7830,7 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
 
@@ -8283,55 +8283,75 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <param name="func">The function to use.</param>
+    /// <param name="del">The function to use.</param>
     [CollectionAccess(Read)]
-    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> func)
+    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del)
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            func(new((object*)ptr + 1, HeadCount));
+            del(new((object*)ptr + 1, HeadCount));
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
+#endif
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="func">The function to use.</param>
+    /// <param name="del">The function to use.</param>
     [CollectionAccess(Read)]
     public unsafe void HeadSpan<TParam>(
         TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> func
+        [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> del
     )
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            func(new((object*)ptr + 1, HeadCount), param);
+            del(new((object*)ptr + 1, HeadCount), param);
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="func">The function to use.</param>
+    /// <param name="del">The function to use.</param>
     [CollectionAccess(Read)]
     public unsafe void HeadSpan<TParam>(
         ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> func
+        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> del
     )
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            func(new((object*)ptr + 1, HeadCount), param);
+            del(new((object*)ptr + 1, HeadCount), param);
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="func">The function to use.</param>
+    /// <param name="del">The function to use.</param>
     [CollectionAccess(Read)]
     public unsafe void HeadSpan<TParam>(
         Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> func
+        [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> del
     )
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            func(new((object*)ptr + 1, HeadCount), param);
+            del(new((object*)ptr + 1, HeadCount), param);
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 #pragma warning restore 8500
 
     /// <inheritdoc />
@@ -8469,62 +8489,82 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #pragma warning disable CS8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
-    /// <param name="func">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    /// <param name="del">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MustUseReturnValue]
-    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> func)
+    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del)
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            return func(new((object*)ptr + 1, HeadCount));
+            return del(new((object*)ptr + 1, HeadCount));
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
+#endif
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="func">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    /// <param name="del">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> func
+        [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> del
     )
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            return func(new((object*)ptr + 1, HeadCount), param);
+            return del(new((object*)ptr + 1, HeadCount), param);
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="func">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    /// <param name="del">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> func
+        [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> del
     )
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            return func(new((object*)ptr + 1, HeadCount), param);
+            return del(new((object*)ptr + 1, HeadCount), param);
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="func">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="func"/>.</returns>
+    /// <param name="del">The function to use.</param>
+    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> func
+        [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> del
     )
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (void* ptr = &this)
-            return func(new((object*)ptr + 1, HeadCount), param);
+            return del(new((object*)ptr + 1, HeadCount), param);
     }
+#else
+        =>
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 #pragma warning restore CS8500
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
