@@ -84,6 +84,51 @@ static partial class Stringifier
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #endif
+#if !WAWA
+    /// <summary>Creates the prettified form of the string.</summary>
+    /// <param name="s">The string to prettify.</param>
+    /// <returns>The prettified string.</returns>
+    public static string Prettify(this string s) => Prettify(s, 4);
+
+    /// <summary>Creates the prettified form of the string.</summary>
+    /// <param name="s">The string to prettify.</param>
+    /// <param name="indent">The amount of spaces for indentation.</param>
+    /// <param name="separator">The characters considered to be separators.</param>
+    /// <param name="start">The characters considered to be starting blocks.</param>
+    /// <param name="end">The characters considered to be ending blocks.</param>
+    /// <returns>The prettified string.</returns>
+    public static string Prettify(
+        this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
+        [NonNegativeValue] int indent = 4,
+        char separator = ',',
+        string start = "([{<",
+        string end = ")]}>"
+    )
+#pragma warning disable CA1508
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        indent = indent < 0 ? 4 : indent;
+
+        // Source: https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7
+        var seen = false;
+        var nest = 0;
+        StringBuilder sb = new();
+
+        foreach (var c in s)
+            (seen, nest, sb) = c switch
+            {
+                not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => (seen, nest, sb),
+                _ when start.Contains(c) => (seen, ++nest, sb.Append(c).Indent(indent, nest)),
+                _ when end.Contains(c) => (seen, --nest, sb.Indent(indent, nest).Append(c)),
+                _ when c == separator => (true, nest, sb.Append(separator)),
+                ' ' when seen && nest > 0 => (seen, nest, sb),
+                _ => (seen, nest, sb.Append(c)),
+            };
+
+        return $"{sb}";
+    }
+#pragma warning restore CA1508
+#endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
@@ -390,9 +435,9 @@ static partial class Stringifier
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
         this IEnumerator iterator,
-        int depth,
+        [NonNegativeValue] int depth,
         bool useQuotes,
-        int? count = null
+        [NonNegativeValue] int? count = null
     )
     {
         StringBuilder builder = new();
@@ -415,7 +460,18 @@ static partial class Stringifier
 
         return builder;
     }
+#if !WAWA
+    [MustUseReturnValue]
+    static StringBuilder Indent(this StringBuilder sb, [NonNegativeValue] int indent, int nest)
+    {
+        sb.AppendLine();
 
+        for (var i = 0; i < nest && nest >= 0; i++)
+            sb.Append('|').Append(' ', indent);
+
+        return sb;
+    }
+#endif
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     [MustUseReturnValue]
     static string StringifyObject<T>(this T source, int depth)
