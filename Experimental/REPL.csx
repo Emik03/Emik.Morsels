@@ -2642,7 +2642,7 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2656,7 +2656,7 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2674,7 +2674,7 @@ public
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -2707,7 +2707,7 @@ public
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2726,7 +2726,7 @@ public
     [Pure, ValueRange(0, 1)]
     public static double
         JaroEmik<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2744,7 +2744,7 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2766,7 +2766,7 @@ public
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -2803,7 +2803,7 @@ public
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2825,7 +2825,7 @@ public
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2847,7 +2847,7 @@ public
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -2869,7 +2869,7 @@ public
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -2906,7 +2906,7 @@ public
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -3313,7 +3313,7 @@ public
     readonly
 #endif
         unsafe partial struct Fat<T>
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -8287,7 +8287,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(Read)]
     public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> func)
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             func(new((object*)ptr + 1, HeadCount));
     }
 
@@ -8301,7 +8301,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> func
     )
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             func(new((object*)ptr + 1, HeadCount), param);
     }
 
@@ -8315,7 +8315,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> func
     )
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             func(new((object*)ptr + 1, HeadCount), param);
     }
 
@@ -8329,7 +8329,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> func
     )
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             func(new((object*)ptr + 1, HeadCount), param);
     }
 #pragma warning restore 8500
@@ -8474,7 +8474,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(Read), MustUseReturnValue]
     public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> func)
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             return func(new((object*)ptr + 1, HeadCount));
     }
 
@@ -8490,7 +8490,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> func
     )
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             return func(new((object*)ptr + 1, HeadCount), param);
     }
 
@@ -8506,7 +8506,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> func
     )
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             return func(new((object*)ptr + 1, HeadCount), param);
     }
 
@@ -8522,7 +8522,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> func
     )
     {
-        fixed (SmallList<T>* ptr = &this)
+        fixed (void* ptr = &this)
             return func(new((object*)ptr + 1, HeadCount), param);
     }
 #pragma warning restore CS8500

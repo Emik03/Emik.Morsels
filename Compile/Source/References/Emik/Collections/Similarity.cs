@@ -243,7 +243,7 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -257,7 +257,7 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -275,7 +275,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -308,7 +308,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -327,7 +327,7 @@ static partial class Similarity
     [Pure, ValueRange(0, 1)]
     public static double
         JaroEmik<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -345,7 +345,7 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -367,7 +367,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -404,7 +404,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -426,7 +426,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -448,7 +448,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -470,7 +470,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
@@ -507,7 +507,7 @@ static partial class Similarity
         ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
@@ -914,7 +914,7 @@ static partial class Similarity
     readonly
 #endif
         unsafe partial struct Fat<T>
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
