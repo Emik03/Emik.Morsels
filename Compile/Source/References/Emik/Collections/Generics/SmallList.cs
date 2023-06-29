@@ -254,6 +254,22 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(None), ProvidesContext, Pure]
     public readonly IList<T>? Rest => _rest as IList<T>;
 
+    /// <summary>Creates the collection with 1 item in it.</summary>
+    /// <param name="value">The single item to use.</param>
+    /// <returns>The collection with 1 item.</returns>
+    public static implicit operator SmallList<T>(T value) => new(value);
+
+    /// <summary>Creates the collection with 2 items in it.</summary>
+    /// <param name="tuple">The tuple containing 2 items to destructure and use.</param>
+    /// <returns>The collection with 2 items.</returns>
+    public static implicit operator SmallList<T>((T First, T Second) tuple) => new(tuple.First, tuple.Second);
+
+    /// <summary>Creates the collection with 3 items in it.</summary>
+    /// <param name="tuple">The tuple containing 3 items to destructure and use.</param>
+    /// <returns>The collection with 3 items.</returns>
+    public static implicit operator SmallList<T>((T First, T Second, T Third) tuple) =>
+        new(tuple.First, tuple.Second, tuple.Third);
+
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent)]
     public void Add(T item)
@@ -307,6 +323,28 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
                 Rest!.CopyTo(array, arrayIndex + InlinedLength);
                 break;
         }
+    }
+
+    /// <summary>Deconstructs this instance with the 3 first elements.</summary>
+    /// <param name="first">The first element.</param>
+    /// <param name="second">The second element.</param>
+    /// <param name="third">The third element.</param>
+    public readonly void Deconstruct(out T? first, out T? second, out T? third)
+    {
+        first = _first;
+        second = _second;
+        third = _third;
+    }
+
+    /// <summary>Deconstructs this instance with its properties.</summary>
+    /// <param name="first">The first element.</param>
+    /// <param name="second">The second element.</param>
+    /// <param name="third">The third element.</param>
+    /// <param name="rest">The remaining elements.</param>
+    public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest)
+    {
+        Deconstruct(out first, out second, out third);
+        rest = Rest ?? s_empty;
     }
 
     /// <inheritdoc />
