@@ -6070,10 +6070,6 @@ public enum ControlFlow : byte
 /// <summary>Provides the method to convert spans.</summary>
 
 #if !CSHARPREPL
-#pragma warning disable CA1065 // The method should become unused from Inline.Fody, then trimmed by Absence.Fody.
-    static Allocator() => throw new TypeLoadException($"The compiler couldn't inline {nameof(Allocator)}.");
-#pragma warning restore CA1065
-
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
     /// <remarks><para>
     /// This method is aggressively inlined.
@@ -6089,7 +6085,12 @@ public enum ControlFlow : byte
         where T : unmanaged
 #endif
         =>
-            length <= StackallocSize / sizeof(T) ? length.Stackalloc<T>() : new T[length];
+            length switch
+            {
+                <= 0 => default, // No allocation needed
+                _ when length <= StackallocSize / sizeof(T) => length.Stackalloc<T>(), // Stack-allocated buffer
+                _ => new T[length], // Heap-allocated buffer
+            };
 
     /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
     /// <remarks><para>This method is aggressively inlined.</para></remarks>
