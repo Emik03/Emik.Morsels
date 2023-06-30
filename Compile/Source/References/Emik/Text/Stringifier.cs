@@ -298,6 +298,8 @@ static partial class Stringifier
             null => Null,
             true => True,
             false => False,
+            nint x => $"{x}",
+            nuint x => $"{x}",
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
             Enum x => $"{x.GetType().Name}(0x{System.Convert.ToInt32(x):x}) = {x.EnumStringifier()}",
