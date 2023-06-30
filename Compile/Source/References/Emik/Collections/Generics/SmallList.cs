@@ -747,6 +747,11 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [CollectionAccess(None), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
+    /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
+    /// <returns>The backwards enumerator.</returns>
+    [CollectionAccess(None), Pure]
+    public readonly Enumerator GetReversedEnumerator() => new(this, true);
+
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -799,21 +804,22 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     [StructLayout(LayoutKind.Auto)]
     public struct Enumerator : IEnumerator<T>
     {
-        readonly SmallList<T> _list;
-
-        readonly IEnumerator<T>? _enumerator;
+        readonly bool _isReversed;
 
         readonly int _count;
+
+        readonly SmallList<T> _list;
 
         int _state = -1;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="list">The <see cref="SmallList{T}"/> to enumerate over.</param>
-        public Enumerator(SmallList<T> list)
+        /// <param name="isReversed">Determines whether to go backwards.</param>
+        public Enumerator(SmallList<T> list, bool isReversed = false)
         {
             _list = list;
+            _isReversed = isReversed;
             _count = list.Count;
-            _enumerator = list.Rest?.GetEnumerator();
         }
 
         /// <inheritdoc />
@@ -825,25 +831,20 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         readonly object? IEnumerator.Current => Current;
 
         /// <inheritdoc />
-        public readonly void Dispose() => _enumerator?.Dispose();
+        public readonly void Dispose() { }
 
         /// <inheritdoc />
-        public void Reset()
-        {
-            _state = -1;
-            _enumerator?.Reset();
-        }
+        public void Reset() => _state = -1;
 
         /// <inheritdoc />
         public bool MoveNext() =>
             ++_state < _count &&
-            (_state < InlinedLength || (_enumerator?.MoveNext() ?? false)) ==
-            (Current = _state switch
+            (Current = (_isReversed ? _count - _state - 1 : _state) switch
             {
                 0 => _list._first!,
                 1 => _list._second!,
                 2 => _list._third!,
-                _ => _enumerator is null ? default! : _enumerator.Current,
+                var x => _list.Rest![x - InlinedLength],
             }) is var _;
     }
 }
