@@ -6105,7 +6105,7 @@ public enum ControlFlow : byte
         var pointer = stackalloc byte[unchecked(sizeof(T) * length)];
         Span<T> ret;
         *(byte**)&ret = pointer;
-        *((nint*)&ret + 1) = length;
+        *(int*)((nint*)&ret + 1) = length;
         return ret;
     }
 #endif
@@ -6176,7 +6176,7 @@ public enum ControlFlow : byte
     {
         Span<byte> ret;
         *(Span<T>**)&ret = &value;
-        *((nint*)&ret + 1) = sizeof(Span<T>);
+        *(int*)((nint*)&ret + 1) = sizeof(Span<T>);
         return ret.ToArray();
     }
 
@@ -6191,7 +6191,7 @@ public enum ControlFlow : byte
     {
         Span<byte> ret;
         *(SplitSpan<T>**)&ret = &value;
-        *((nint*)&ret + 1) = sizeof(SplitSpan<T>);
+        *(int*)((nint*)&ret + 1) = sizeof(SplitSpan<T>);
         return ret.ToArray();
     }
 
@@ -6201,7 +6201,7 @@ public enum ControlFlow : byte
     {
         Span<byte> ret;
         *(ReadOnlySpan<T>**)&ret = &value;
-        *((nint*)&ret + 1) = sizeof(ReadOnlySpan<T>);
+        *(int*)((nint*)&ret + 1) = sizeof(ReadOnlySpan<T>);
         return ret.ToArray();
     }
 
@@ -6214,7 +6214,7 @@ public enum ControlFlow : byte
     {
         Span<byte> ret;
         *(T**)&ret = &value;
-        *((nint*)&ret + 1) = sizeof(T);
+        *(int*)((nint*)&ret + 1) = sizeof(T);
         return ret.ToArray();
     }
 
