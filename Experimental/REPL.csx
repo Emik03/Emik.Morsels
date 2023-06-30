@@ -6119,8 +6119,11 @@ public enum ControlFlow : byte
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe Span<T> As<T>(this in Span<nint> span)
-        where T : class =>
-        *(Span<T>*)&span;
+        where T : class
+    {
+        fixed (Span<nint>* ptr = &span)
+            return *(Span<T>*)ptr;
+    }
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6131,8 +6134,41 @@ public enum ControlFlow : byte
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe Span<T> As<T>(this in Span<nuint> span)
-        where T : class =>
-        *(Span<T>*)&span;
+        where T : class
+    {
+        fixed (Span<nuint>* ptr = &span)
+            return *(Span<T>*)ptr;
+    }
+
+    /// <summary>Reinterprets the span as a series of managed types.</summary>
+    /// <typeparam name="T">The type of span to convert to.</typeparam>
+    /// <param name="span">The span to convert.</param>
+    /// <returns>
+    /// The span that points to the same region as <paramref name="span"/>
+    /// but with each time assumed to be <typeparamref name="T"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nint> span)
+        where T : class
+    {
+        fixed (ReadOnlySpan<nint>* ptr = &span)
+            return *(ReadOnlySpan<T>*)ptr;
+    }
+
+    /// <summary>Reinterprets the span as a series of managed types.</summary>
+    /// <typeparam name="T">The type of span to convert to.</typeparam>
+    /// <param name="span">The span to convert.</param>
+    /// <returns>
+    /// The span that points to the same region as <paramref name="span"/>
+    /// but with each time assumed to be <typeparamref name="T"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nuint> span)
+        where T : class
+    {
+        fixed (ReadOnlySpan<nuint>* ptr = &span)
+            return *(ReadOnlySpan<T>*)ptr;
+    }
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
