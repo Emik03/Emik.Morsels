@@ -6104,10 +6104,7 @@ public enum ControlFlow : byte
 #endif
     {
         var pointer = stackalloc byte[unchecked(sizeof(T) * length)];
-        Span<T> ret;
-        *(byte**)&ret = pointer;
-        *(int*)((nint*)&ret + 1) = length;
-        return ret;
+        return MemoryMarshal.CreateSpan(ref *(T*)pointer, length);
     }
 #endif
 
@@ -6120,11 +6117,8 @@ public enum ControlFlow : byte
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe Span<T> As<T>(this in Span<nint> span)
-        where T : class
-    {
-        fixed (Span<nint>* ptr = &span)
-            return *(Span<T>*)ptr;
-    }
+        where T : class =>
+        MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6135,11 +6129,8 @@ public enum ControlFlow : byte
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe Span<T> As<T>(this in Span<nuint> span)
-        where T : class
-    {
-        fixed (Span<nuint>* ptr = &span)
-            return *(Span<T>*)ptr;
-    }
+        where T : class =>
+        MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6149,12 +6140,8 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nint> span)
-        where T : class
-    {
-        fixed (ReadOnlySpan<nint>* ptr = &span)
-            return *(ReadOnlySpan<T>*)ptr;
-    }
+    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nint> span) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6164,22 +6151,13 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nuint> span)
-        where T : class
-    {
-        fixed (ReadOnlySpan<nuint>* ptr = &span)
-            return *(ReadOnlySpan<T>*)ptr;
-    }
+    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nuint> span) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(Span<T> value)
-    {
-        Span<byte> ret;
-        *(Span<T>**)&ret = &value;
-        *(int*)((nint*)&ret + 1) = sizeof(Span<T>);
-        return ret.ToArray();
-    }
+    public static unsafe byte[] Raw<T>(Span<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -6189,35 +6167,21 @@ public enum ControlFlow : byte
 #else
         where T : IEquatable<T>?
 #endif
-    {
-        Span<byte> ret;
-        *(SplitSpan<T>**)&ret = &value;
-        *(int*)((nint*)&ret + 1) = sizeof(SplitSpan<T>);
-        return ret.ToArray();
-    }
+        =>
+            MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(ReadOnlySpan<T> value)
-    {
-        Span<byte> ret;
-        *(ReadOnlySpan<T>**)&ret = &value;
-        *(int*)((nint*)&ret + 1) = sizeof(ReadOnlySpan<T>);
-        return ret.ToArray();
-    }
+    public static unsafe byte[] Raw<T>(ReadOnlySpan<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
 
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(T value)
-    {
-        Span<byte> ret;
-        *(T**)&ret = &value;
-        *(int*)((nint*)&ret + 1) = sizeof(T);
-        return ret.ToArray();
-    }
+    public static unsafe byte[] Raw<T>(T value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(T)).ToArray();
 
 // SPDX-License-Identifier: MPL-2.0
 
