@@ -6064,6 +6064,128 @@ public enum ControlFlow : byte
 
 // ReSharper disable once CheckNamespace
 
+#pragma warning disable 8500
+
+
+/// <summary>Provides the method to convert spans.</summary>
+
+#if !CSHARPREPL
+#pragma warning disable CA1065 // The method should become unused from Inline.Fody, then trimmed by Absence.Fody.
+    static Allocator() => throw new TypeLoadException($"The compiler couldn't inline {nameof(Allocator)}.");
+#pragma warning restore CA1065
+
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>
+    /// This method is aggressively inlined.
+    /// </para><para>
+    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe Span<T> Alloc<T>(this int length)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            length <= StackallocSize / sizeof(T) ? length.Stackalloc<T>() : new T[length];
+
+    /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
+    /// <remarks><para>This method is aggressively inlined.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <returns>The stack-allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe Span<T> Stackalloc<T>(this int length)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        var pointer = stackalloc byte[unchecked(sizeof(T) * length)];
+        Span<T> ret;
+        *(byte**)&ret = pointer;
+        *((nint*)&ret + 1) = length;
+        return ret;
+    }
+#endif
+
+    /// <summary>Reinterprets the span as a series of managed types.</summary>
+    /// <typeparam name="T">The type of span to convert to.</typeparam>
+    /// <param name="span">The span to convert.</param>
+    /// <returns>
+    /// The span that points to the same region as <paramref name="span"/>
+    /// but with each time assumed to be <typeparamref name="T"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe Span<T> As<T>(this in Span<nint> span)
+        where T : class =>
+        *(Span<T>*)&span;
+
+    /// <summary>Reinterprets the span as a series of managed types.</summary>
+    /// <typeparam name="T">The type of span to convert to.</typeparam>
+    /// <param name="span">The span to convert.</param>
+    /// <returns>
+    /// The span that points to the same region as <paramref name="span"/>
+    /// but with each time assumed to be <typeparamref name="T"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe Span<T> As<T>(this in Span<nuint> span)
+        where T : class =>
+        *(Span<T>*)&span;
+
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(Span<T> value)
+    {
+        Span<byte> ret;
+        *(Span<T>**)&ret = &value;
+        *((nint*)&ret + 1) = sizeof(Span<T>);
+        return ret.ToArray();
+    }
+
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(SplitSpan<T> value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        Span<byte> ret;
+        *(SplitSpan<T>**)&ret = &value;
+        *((nint*)&ret + 1) = sizeof(SplitSpan<T>);
+        return ret.ToArray();
+    }
+
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(ReadOnlySpan<T> value)
+    {
+        Span<byte> ret;
+        *(ReadOnlySpan<T>**)&ret = &value;
+        *((nint*)&ret + 1) = sizeof(ReadOnlySpan<T>);
+        return ret.ToArray();
+    }
+
+    /// <summary>Reads the raw memory of the object.</summary>
+    /// <typeparam name="T">The type of value to read.</typeparam>
+    /// <param name="value">The value to read.</param>
+    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(T value)
+    {
+        Span<byte> ret;
+        *(T**)&ret = &value;
+        *((nint*)&ret + 1) = sizeof(T);
+        return ret.ToArray();
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
 
 /// <summary>Provides the method to skip initialization.</summary>
 
@@ -6642,7 +6764,7 @@ readonly
 
 
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
-/// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+/// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
 
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -6719,10 +6841,10 @@ readonly
     /// vulnerability if you aren't careful. The methods in <c>Span</c> will automatically switch to unmanaged heap
     /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
     /// </para></remarks>
-    public const int Stackalloc = 1 << 10;
+    public const int StackallocSize = 1 << 10;
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="del">The callback to invoke.</param>
     public static void Allocate(
@@ -6732,7 +6854,7 @@ readonly
         Allocate<byte>(length, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="del">The callback to invoke.</param>
@@ -6758,7 +6880,7 @@ readonly
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="param">The parameter to pass in.</param>
@@ -6771,7 +6893,7 @@ readonly
         Allocate<byte, TParam>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -6801,7 +6923,7 @@ readonly
 
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
-    /// See <see cref="Stackalloc"/> for details about stack- and heap-allocation.
+    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
     /// </para></remarks>
     /// <typeparam name="T">The type of array.</typeparam>
     /// <param name="length">The amount of items.</param>
@@ -6811,7 +6933,7 @@ readonly
     [Pure]
     public static bool IsStack<T>(int length)
         where T : unmanaged =>
-        InBytes<T>(length) <= Stackalloc;
+        InBytes<T>(length) <= StackallocSize;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -6825,7 +6947,7 @@ readonly
         length * sizeof(T);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TResult">The return type.</typeparam>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="del">The callback to invoke.</param>
@@ -6838,7 +6960,7 @@ readonly
         Allocate<byte, TResult>(length, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -6866,7 +6988,7 @@ readonly
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -6882,7 +7004,7 @@ readonly
         Allocate<byte, TParam, TResult>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
@@ -6913,7 +7035,7 @@ readonly
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="param">The parameter to pass in.</param>
@@ -6930,7 +7052,7 @@ readonly
             Allocate<byte, TParam>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -6962,7 +7084,7 @@ readonly
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="param">The parameter to pass in.</param>
@@ -6979,7 +7101,7 @@ readonly
             Allocate<byte, TParam>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -7011,7 +7133,7 @@ readonly
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -7031,7 +7153,7 @@ readonly
             Allocate<byte, TParam, TResult>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
@@ -7065,7 +7187,7 @@ readonly
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
     /// <param name="length">The length of the buffer.</param>
@@ -7085,7 +7207,7 @@ readonly
             Allocate<byte, TParam, TResult>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="Stackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <typeparam name="TResult">The return type.</typeparam>
@@ -8280,7 +8402,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         Deconstruct(out first, out second, out third);
         rest = Rest ?? s_empty;
     }
-
+#if !UNMANAGED_SPAN
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="del">The function to use.</param>
@@ -8351,6 +8473,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #else
         =>
             del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 #endif
 #pragma warning restore 8500
 
@@ -8487,6 +8610,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
 #pragma warning disable CS8500
+#if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="del">The function to use.</param>
@@ -8564,6 +8688,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #else
         =>
             del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 #endif
 #pragma warning restore CS8500
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
