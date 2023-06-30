@@ -454,7 +454,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         Deconstruct(out first, out second, out third);
         rest = Rest ?? s_empty;
     }
-
+#if !UNMANAGED_SPAN
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="del">The function to use.</param>
@@ -525,6 +525,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #else
         =>
             del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 #endif
 #pragma warning restore 8500
 
@@ -661,6 +662,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
 #pragma warning disable CS8500
+#if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="del">The function to use.</param>
@@ -738,6 +740,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 #else
         =>
             del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+#endif
 #endif
 #pragma warning restore CS8500
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
