@@ -227,10 +227,14 @@ using static JetBrains.Annotations.CollectionAccessType;
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
     {
-        yield return value;
+        T? maybe = value;
 
-        while (converter(value) is { } next)
-            yield return next;
+        while (maybe is { } yes)
+        {
+            yield return yes;
+
+            maybe = converter(yes);
+        }
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
@@ -252,6 +256,61 @@ using static JetBrains.Annotations.CollectionAccessType;
 #else
             : Enumerable.Empty<T>();
 #endif
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [Pure]
+    public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
+        where T : class
+    {
+        SmallList<T> output = default;
+
+        while (value is not null)
+        {
+            output.Add(value);
+            value = converter(value);
+        }
+
+        return output;
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [Pure]
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
+        where T : struct
+    {
+        SmallList<T> output = default;
+        T? maybe = value;
+
+        while (maybe is { } yes)
+        {
+            output.Add(yes);
+            maybe = converter(yes);
+        }
+
+        return output;
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    [Pure]
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
+        where T : struct =>
+        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : default;
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -1700,6 +1759,8 @@ public
             null => Null,
             true => True,
             false => False,
+            nint x => $"{x}",
+            nuint x => $"{x}",
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
             Enum x => $"{x.GetType().Name}(0x{System.Convert.ToInt32(x):x}) = {x.EnumStringifier()}",
