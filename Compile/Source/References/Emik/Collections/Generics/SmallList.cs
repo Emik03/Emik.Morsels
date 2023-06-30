@@ -74,7 +74,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
         Array.Empty<T>();
 #endif
 
-    // DO NOT PLACE BELOW _rest BELOW GENERICS;
+    // DO NOT PLACE _rest BELOW GENERICS;
     // Doing so will cause only unmanaged generics to be mapped before the object,
     // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
     // See the following link for a lengthier explanation and example:
