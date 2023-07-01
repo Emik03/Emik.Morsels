@@ -11,9 +11,9 @@ static partial class Skip
     /// <param name="ret">The value to skip initialization.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Init<T>(out T ret) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        Unsafe.SkipInit(out ret);
-#else
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         ret = default;
+#else
+        Unsafe.SkipInit(out ret);
 #endif
 }

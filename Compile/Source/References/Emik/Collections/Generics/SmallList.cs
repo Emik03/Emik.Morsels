@@ -462,8 +462,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del)
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            del(new((object*)ptr + 1, HeadCount));
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
     }
 #else
         =>
@@ -481,8 +481,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            del(new((object*)ptr + 1, HeadCount), param);
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -500,8 +500,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            del(new((object*)ptr + 1, HeadCount), param);
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -519,8 +519,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            del(new((object*)ptr + 1, HeadCount), param);
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -671,8 +671,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del)
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            return del(new((object*)ptr + 1, HeadCount));
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -692,8 +692,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            return del(new((object*)ptr + 1, HeadCount), param);
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -713,8 +713,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            return del(new((object*)ptr + 1, HeadCount), param);
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -734,8 +734,8 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     )
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
-        fixed (void* ptr = &this)
-            return del(new((object*)ptr + 1, HeadCount), param);
+        fixed (SmallList<T>* unused = &this)
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
