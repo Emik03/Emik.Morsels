@@ -81,9 +81,7 @@ static partial class Stringifier
         s_combine = ((Func<string, string, string>)string.Concat).Method,
         s_stringify = ((Func<bool, int, bool, string>)Stringify).Method.GetGenericMethodDefinition();
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
-#endif
 #if !WAWA
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
@@ -575,18 +573,21 @@ static partial class Stringifier
         where TMember : MemberInfo
     {
         var type = selector(info);
-
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (type.IsByRefLike)
-            return Call(s_combine, exConstant, Call(exInstance, s_toString));
+        if (type.IsByRef || type.IsByRefLike)
+#else
+        if (type.IsByRef)
 #endif
+            return Call(s_combine, exConstant, Call(exInstance, s_toString));
+
         var method = s_stringify.MakeGenericMethod(type);
 
+        // ReSharper disable once NullableWarningSuppressionIsUsed
         Expression
             exMember = MakeMemberAccess(exInstance, info),
             exCall = Call(method, exMember, exDepth, s_exTrue);
-
 #if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
         var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
         Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
