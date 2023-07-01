@@ -6246,24 +6246,6 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Provides the method to skip initialization.</summary>
-
-    /// <summary>Skips initialization based on framework.</summary>
-    /// <typeparam name="T">The type of value to skip initialization.</typeparam>
-    /// <param name="ret">The value to skip initialization.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Init<T>(out T ret) =>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        ret = default;
-#else
-        Unsafe.SkipInit(out ret);
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
 
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
@@ -6432,7 +6414,7 @@ public enum ControlFlow : byte
         where T : IEquatable<T>?
 #endif
     {
-        Init(out ret);
+        Unsafe.SkipInit(out ret);
 
         if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
         {
@@ -6683,6 +6665,12 @@ readonly
         return e.Current;
     }
 
+    /// <summary>Gets the single element.</summary>
+    /// <returns>The single span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> Single() =>
+        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
     public
@@ -6751,7 +6739,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
         {
-            Init(out start);
+            Unsafe.SkipInit(out start);
 
             if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
             {
@@ -8318,7 +8306,7 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
     public static SmallList<T> Uninit(int length)
     {
-        Init(out SmallList<T> output);
+        Unsafe.SkipInit(out SmallList<T> output);
 
         output._rest = length switch
         {

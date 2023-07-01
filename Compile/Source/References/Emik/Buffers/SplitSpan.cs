@@ -422,6 +422,12 @@ readonly
         return e.Current;
     }
 
+    /// <summary>Gets the single element.</summary>
+    /// <returns>The single span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> Single() =>
+        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
     public
