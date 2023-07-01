@@ -308,7 +308,7 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
     public static SmallList<T> Uninit(int length)
     {
-        Skip.Init(out SmallList<T> output);
+        Unsafe.SkipInit(out SmallList<T> output);
 
         output._rest = length switch
         {

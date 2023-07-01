@@ -170,7 +170,7 @@ static partial class SplitFactory
         where T : IEquatable<T>?
 #endif
     {
-        Skip.Init(out ret);
+        Unsafe.SkipInit(out ret);
 
         if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
         {
@@ -490,7 +490,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
         {
-            Skip.Init(out start);
+            Unsafe.SkipInit(out start);
 
             if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
             {
