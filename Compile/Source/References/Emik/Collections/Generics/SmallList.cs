@@ -40,7 +40,7 @@ static partial class SmallFactory
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
 [StructLayout(LayoutKind.Sequential)]
-partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
+partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
 {
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
     /// <remarks><para>
@@ -754,11 +754,80 @@ partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly bool IConvertible.ToBoolean(IFormatProvider provider) => !IsEmpty;
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly byte IConvertible.ToByte(IFormatProvider provider) => unchecked((byte)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly char IConvertible.ToChar(IFormatProvider provider) => unchecked((char)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly DateTime IConvertible.ToDateTime(IFormatProvider provider) => new(Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly decimal IConvertible.ToDecimal(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly double IConvertible.ToDouble(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly short IConvertible.ToInt16(IFormatProvider provider) => unchecked((short)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly int IConvertible.ToInt32(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly long IConvertible.ToInt64(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly sbyte IConvertible.ToSByte(IFormatProvider provider) => unchecked((sbyte)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly float IConvertible.ToSingle(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    readonly string IConvertible.ToString(IFormatProvider provider) => ToString();
+
+    /// <inheritdoc />
+    [DoesNotReturn]
+    readonly object IConvertible.ToType(Type conversionType, IFormatProvider provider) =>
+        throw new InvalidOperationException();
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly ushort IConvertible.ToUInt16(IFormatProvider provider) => unchecked((ushort)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly uint IConvertible.ToUInt32(IFormatProvider provider) => unchecked((uint)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly ulong IConvertible.ToUInt64(IFormatProvider provider) => (ulong)Count;
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(None), Pure]
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     [Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);

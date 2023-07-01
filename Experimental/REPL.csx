@@ -6126,49 +6126,8 @@ public enum ControlFlow : byte
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable 8500
-
-
 /// <summary>Provides the method to convert spans.</summary>
 
-#if !CSHARPREPL
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>
-    /// This method is aggressively inlined.
-    /// </para><para>
-    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Alloc<T>(this int length)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            length switch
-            {
-                <= 0 => default, // No allocation needed
-                _ when length <= StackallocSize / sizeof(T) => length.Stackalloc<T>(), // Stack-allocated buffer
-                _ => new T[length], // Heap-allocated buffer
-            };
-
-    /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
-    /// <remarks><para>This method is aggressively inlined.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <returns>The stack-allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Stackalloc<T>(this int length)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        var pointer = stackalloc byte[unchecked(sizeof(T) * length)];
-        return MemoryMarshal.CreateSpan(ref *(T*)pointer, length);
-    }
-#endif
-
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
     /// <param name="span">The span to convert.</param>
@@ -6177,7 +6136,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> As<T>(this in Span<nint> span)
+    public static unsafe Span<T> Reinterpret<T>(this scoped in Span<nint> span)
         where T : class =>
         MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
@@ -6189,7 +6148,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> As<T>(this in Span<nuint> span)
+    public static unsafe Span<T> Reinterpret<T>(this scoped in Span<nuint> span)
         where T : class =>
         MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
@@ -6201,7 +6160,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nint> span) =>
+    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped in ReadOnlySpan<nint> span) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
@@ -6212,7 +6171,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> As<T>(this in ReadOnlySpan<nuint> span) =>
+    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped in ReadOnlySpan<nuint> span) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <inheritdoc cref="Raw{T}(T)" />
@@ -8038,7 +7997,7 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
 [StructLayout(LayoutKind.Sequential)]
-public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
+public partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
 {
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
     /// <remarks><para>
@@ -8752,11 +8711,80 @@ public partial struct SmallList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly bool IConvertible.ToBoolean(IFormatProvider provider) => !IsEmpty;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly byte IConvertible.ToByte(IFormatProvider provider) => unchecked((byte)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly char IConvertible.ToChar(IFormatProvider provider) => unchecked((char)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly DateTime IConvertible.ToDateTime(IFormatProvider provider) => new(Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly decimal IConvertible.ToDecimal(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly double IConvertible.ToDouble(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly short IConvertible.ToInt16(IFormatProvider provider) => unchecked((short)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly int IConvertible.ToInt32(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly long IConvertible.ToInt64(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly sbyte IConvertible.ToSByte(IFormatProvider provider) => unchecked((sbyte)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly float IConvertible.ToSingle(IFormatProvider provider) => Count;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    readonly string IConvertible.ToString(IFormatProvider provider) => ToString();
+
+    /// <inheritdoc />
+    [DoesNotReturn]
+    readonly object IConvertible.ToType(Type conversionType, IFormatProvider provider) =>
+        throw new InvalidOperationException();
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly ushort IConvertible.ToUInt16(IFormatProvider provider) => unchecked((ushort)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly uint IConvertible.ToUInt32(IFormatProvider provider) => unchecked((uint)Count);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly ulong IConvertible.ToUInt64(IFormatProvider provider) => (ulong)Count;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     [Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
