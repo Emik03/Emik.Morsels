@@ -819,7 +819,7 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
-    readonly ulong IConvertible.ToUInt64(IFormatProvider provider) => (ulong)Count;
+    readonly ulong IConvertible.ToUInt64(IFormatProvider provider) => unchecked((ulong)Count);
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
