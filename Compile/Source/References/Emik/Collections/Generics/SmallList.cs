@@ -745,7 +745,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         start = Math.Max(start, 0);
         length = Math.Min(length, count - start);
 
-        if (length is 0)
+        if (length <= 0)
             return default;
 
         if (start is 0 && length == count)
