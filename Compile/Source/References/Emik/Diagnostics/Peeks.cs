@@ -79,7 +79,7 @@ static partial class Peeks
     [return: NotNullIfNotNull(nameof(value))]
     public static T Debug<T>(
         this T value,
-        bool shouldLogExpression = false,
+        bool shouldLogExpression = true,
         [InstantHandle] Converter<T, object?>? map = null,
         [InstantHandle] Predicate<T>? filter = null,
         [InstantHandle] Action<string>? logger = null,
