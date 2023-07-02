@@ -1,6 +1,2 @@
-Directory.Build.local.props
-References/Emik.DefaultDocumentation.pdb
-References/Emik.DefaultDocumentation.xml
-References/Emik.DefaultDocumentation.deps.json
-/References/Emik.DefaultDocumentation.ExternalAnnotations.xml
+**/Directory.Build.local.props
 
