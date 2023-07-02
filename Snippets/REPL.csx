@@ -8621,7 +8621,7 @@ public partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
             _ when Rest is { } rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
-#pragma warning disable CS8500
+
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
@@ -8630,6 +8630,7 @@ public partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
     /// <returns>The backwards enumerator.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public readonly Enumerator GetReversedEnumerator() => new(this, true);
+#pragma warning disable CS8500
 #if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
