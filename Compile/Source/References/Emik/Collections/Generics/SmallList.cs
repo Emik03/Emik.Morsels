@@ -378,7 +378,9 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
     [CollectionAccess(Read)]
     public readonly void CopyTo(ref SmallList<T> list)
     {
-        var count = Count;
+        if (Count is var count && count is 0)
+            return;
+
         list.BoundsCheck(count - 1, out _);
 
         // Takes advantage of fallthrough in switch-cases.
