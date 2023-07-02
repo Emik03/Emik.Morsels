@@ -430,18 +430,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(IEnumerable<T>? collection)
     {
-        if (collection is null)
-            return;
-
-        if (collection is not ICollection<T> { Count: var count } c)
-        {
-            foreach (var item in collection)
-                Add(item);
-
-            return;
-        }
-
-        if (count is 0)
+        if (collection?.ToCollectionLazily() is not { Count: var count and not 0 } c)
             return;
 
         if (InlinedLength - HeadCount is var stackExpand && stackExpand is not 0)
@@ -459,7 +448,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
             return;
 
         var rest = _rest as List<T> ?? Rest!.ToList();
-        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand));
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToCollectionLazily());
         _rest = rest;
     }
 
