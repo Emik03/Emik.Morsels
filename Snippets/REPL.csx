@@ -3676,6 +3676,7 @@ public
     /// <summary>Quick and dirty debugging function.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to stringify and return.</param>
+    /// <param name="shouldPrettify">Determines whether to prettify the resulting <see cref="string"/>.</param>
     /// <param name="shouldLogExpression">Determines whether <paramref name="expression"/> is logged.</param>
     /// <param name="map">The map callback.</param>
     /// <param name="filter">The filter callback.</param>
@@ -3692,6 +3693,7 @@ public
     [return: NotNullIfNotNull(nameof(value))]
     public static T Debug<T>(
         this T value,
+        bool shouldPrettify = true,
         bool shouldLogExpression = true,
         [InstantHandle] Converter<T, object?>? map = null,
         [InstantHandle] Predicate<T>? filter = null,
@@ -3705,19 +3707,22 @@ public
         // ReSharper disable once InvokeAsExtensionMethod RedundantNameQualifier
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
-                @$"{((map ?? (x => x))(value) is var i && i is string
-                    ? i
-                    : Stringifier.Stringify(i).Prettify())}{(shouldLogExpression ? @$"
+                @$"{((map ?? (x => x))(value) is var mapped && mapped is string
+                    ? mapped
+                    : Stringifier.Stringify(mapped) is var stringy && shouldPrettify
+                        ? stringy.Prettify()
+                        : stringy)}{(shouldLogExpression ? @$"
         of {expression}" : "")}
-        at {member} in {System.IO.Path.GetFileName(path)}:line {line}"
+        at {member} in {Path.GetFileName(path)}:line {line}"
             );
 
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
+        bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T[], object?>? map = null,
         [InstantHandle] Predicate<T[]>? filter = null,
@@ -3732,15 +3737,18 @@ public
 #endif
     {
         // ReSharper disable ExplicitCallerInfoArgument
-        _ = value.ToArray().Debug(shouldLogExpression, map, filter, logger, expression, path, line, member);
+        _ = value
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static SplitSpan<T> Debug<T>(
         this SplitSpan<T> value,
+        bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<List<T[]>, object?>? map = null,
         [InstantHandle] Predicate<List<T[]>>? filter = null,
@@ -3757,15 +3765,18 @@ public
 #endif
     {
         // ReSharper disable ExplicitCallerInfoArgument
-        _ = value.ToList().Debug(shouldLogExpression, map, filter, logger, expression, path, line, member);
+        _ = value
+           .ToList()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
+        bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T[], object?>? map = null,
         [InstantHandle] Predicate<T[]>? filter = null,
@@ -3780,7 +3791,9 @@ public
 #endif
     {
         // ReSharper disable ExplicitCallerInfoArgument
-        _ = value.ToArray().Debug(shouldLogExpression, map, filter, logger, expression, path, line, member);
+        _ = value
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
