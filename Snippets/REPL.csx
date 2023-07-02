@@ -3705,7 +3705,9 @@ public
         // ReSharper disable once InvokeAsExtensionMethod RedundantNameQualifier
         if ((filter ?? (_ => true))(value))
             (logger ?? Write)(
-                @$"{Stringifier.Stringify((map ?? (x => x))(value))}{(shouldLogExpression ? @$"
+                @$"{((map ?? (x => x))(value) is var i && i is string
+                    ? i
+                    : Stringifier.Stringify(i).Prettify())}{(shouldLogExpression ? @$"
         of {expression}" : "")}
         at {member} in {System.IO.Path.GetFileName(path)}:line {line}"
             );
