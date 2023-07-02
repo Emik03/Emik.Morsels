@@ -787,17 +787,17 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 
         Unsafe.SkipInit(out SmallList<T> output);
 
-        if (Rest?.Skip(start).Take(length).ToList() is { } list)
+        if (length >= InlinedLength && Rest?.Skip(start).Take(length - InlinedLength).ToList() is { } list)
             output._rest = list;
         else
             RestFromLength(length, out output._rest);
 
         switch (length)
         {
-            case >= 2:
+            case >= 3:
                 output._third = start is 0 ? _third : Rest![start - 1];
-                goto case 1;
-            case 1:
+                goto case 2;
+            case 2:
                 output._second = start switch
                 {
                     0 => _second,
@@ -805,8 +805,8 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
                     _ => Rest![start - 2],
                 };
 
-                goto case 0;
-            case 0:
+                goto case 1;
+            case 1:
                 output._first = start switch
                 {
                     0 => _first,
