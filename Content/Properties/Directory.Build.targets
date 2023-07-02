@@ -288,6 +288,11 @@
     <ItemGroup Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))">
         <PackageReference Include="System.Memory" Version="4.5.5"/>
     </ItemGroup>
+    <!-- Remove the template if all necessary item groups are filled. -->
+    <ItemGroup Condition="'$(Morsels)' != '' and ('$(IsCeleste)' != 'true' or '$(Celeste)') != '' and ('$(IsKtane)' != 'true' or '$(Unity)' != '')">
+        <Content Remove="$(Morsels)/Content/Properties/Directory.Build.local.props.template"/>
+        <AdditionalFiles Remove="$(Morsels)/Content/Properties/Directory.Build.local.props.template"/>
+    </ItemGroup>
     <!-- Only Unit Tests should include additional global imports to make writing doctests barable. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <Compile Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
