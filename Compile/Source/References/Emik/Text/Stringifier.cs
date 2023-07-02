@@ -300,7 +300,9 @@ static partial class Stringifier
             nuint x => $"{x}",
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}(0x{System.Convert.ToInt32(x):x}) = {x.EnumStringifier()}",
+            Enum x => $"{x.GetType().Name}({(
+                x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
+            )}) = {x.EnumStringifier()}",
             Type x => UnfoldedName(x),
 #if KTANE
             Object x => x.name,
@@ -342,6 +344,9 @@ static partial class Stringifier
         p.GetIndexParameters().Length is 0 &&
         p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
 #endif
+
+    [Pure]
+    static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
 
     [Pure]
     static bool IsOneBitSet(this Enum value, Enum next) =>
@@ -399,7 +404,7 @@ static partial class Stringifier
 #endif
             x is -1 ? "0" : $"1 << {x}";
 
-        return value.GetType().IsDefined(typeof(FlagsAttribute), false)
+        return value.IsFlagsDefined()
             ? Conjoin(System.Convert.ToInt32(value).Bits().Select(BitStringifier), " | ")
             : $"{value}";
     }
