@@ -1885,7 +1885,7 @@ public
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
 
     [Pure]
-    static string ToOrdinal(this in int i) =>
+    static string ToOrdinal(this int i) =>
         $"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
         {
             1 => FirstOrd,
@@ -2703,7 +2703,11 @@ public
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double Jaro<T>(
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -2717,7 +2721,7 @@ public
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double Jaro<T>(this scoped Span<T> left, scoped ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -2732,8 +2736,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static unsafe double Jaro<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -2765,8 +2769,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -2786,8 +2790,11 @@ public
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double
-        JaroEmik<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double JaroEmik<T>(
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -2805,7 +2812,11 @@ public
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double JaroEmik<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double JaroEmik<T>(
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -2824,8 +2835,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static unsafe double JaroEmik<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -2861,8 +2872,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -2883,8 +2894,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
 #if UNMANAGED_SPAN
@@ -2905,8 +2916,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
 #if UNMANAGED_SPAN
@@ -2927,8 +2938,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static unsafe double JaroWinkler<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -2964,8 +2975,8 @@ public
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -3131,7 +3142,7 @@ public
 
     [MustUseReturnValue, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
-        Span<byte> visited,
+        scoped Span<byte> visited,
         (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>) args
     )
     {
@@ -3180,7 +3191,7 @@ public
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
-        Span<byte> visited,
+        scoped Span<byte> visited,
         T left,
         T right,
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -6137,7 +6148,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Reinterpret<T>(this scoped in Span<nint> span)
+    public static unsafe Span<T> Reinterpret<T>(this scoped Span<nint> span)
         where T : class =>
         MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
@@ -6149,7 +6160,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Reinterpret<T>(this scoped in Span<nuint> span)
+    public static unsafe Span<T> Reinterpret<T>(this scoped Span<nuint> span)
         where T : class =>
         MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
@@ -6161,7 +6172,7 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped in ReadOnlySpan<nint> span) =>
+    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped ReadOnlySpan<nint> span) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
@@ -6172,17 +6183,17 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped in ReadOnlySpan<nuint> span) =>
+    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped ReadOnlySpan<nuint> span) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(Span<T> value) =>
+    public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(SplitSpan<T> value)
+    public static unsafe byte[] Raw<T>(scoped SplitSpan<T> value)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>?
 #else
@@ -6193,7 +6204,7 @@ public enum ControlFlow : byte
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(ReadOnlySpan<T> value) =>
+    public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
 
     /// <summary>Reads the raw memory of the object.</summary>
@@ -6554,10 +6565,18 @@ readonly
     }
 
     /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Body { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+    public ReadOnlySpan<T> Body
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
 
     /// <summary>Gets the separator.</summary>
-    public ReadOnlySpan<T> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+    public ReadOnlySpan<T> Separator
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
 
     /// <summary>Determines whether both splits are equal.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -6573,6 +6592,27 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(SplitSpan<T> left, SplitSpan<T> right) => !left.Equals(right);
 
+    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
+    /// <param name="head">The first element of this enumeration.</param>
+    /// <param name="tail">The rest of this enumeration.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Deconstruct(out ReadOnlySpan<T> head, out SplitSpan<T> tail)
+    {
+        if (GetEnumerator() is var e && !e.MoveNext())
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = e.Current;
+
+        tail = this with
+        {
+            Body = Body[e.Index..],
+        };
+    }
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override bool Equals(object? other) => false;
@@ -6580,7 +6620,7 @@ readonly
     /// <inheritdoc cref="IEquatable{T}.Equals(T?)" />
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(SplitSpan<T> other) =>
+    public bool Equals(scoped SplitSpan<T> other) =>
         Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
         IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
@@ -6641,13 +6681,18 @@ readonly
     {
         readonly SplitSpan<T> _split;
 
-        [ValueRange(-1, int.MaxValue)]
         int _end = -1;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="split">Tne entry to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(SplitSpan<T> split) => _split = split;
+
+        /// <summary>Gets the current index.</summary>
+        public readonly int Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
+        }
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
@@ -6689,15 +6734,20 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Step(
             bool isAny,
-            in ReadOnlySpan<T> body,
-            in ReadOnlySpan<T> separator,
-            ref int end,
+            scoped ReadOnlySpan<T> body,
+            scoped ReadOnlySpan<T> separator,
+            scoped ref int end,
             out int start
         ) =>
             isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAll(
+            scoped ReadOnlySpan<T> body,
+            scoped ReadOnlySpan<T> separator,
+            scoped ref int end,
+            out int start
+        )
         {
             Unsafe.SkipInit(out start);
 
@@ -6731,7 +6781,7 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
         {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.SkipInit(out start);
@@ -6779,35 +6829,35 @@ readonly
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <param name="span">The allocated span.</param>
-    public delegate void SpanAction<TSpan>(Span<TSpan> span);
+    public delegate void SpanAction<TSpan>(scoped Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
-    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param);
+    public delegate void SpanAction<TSpan, in TParam>(scoped Span<TSpan> span, TParam param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param);
+    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(scoped Span<TSpan> span, ReadOnlySpan<TParam> param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param);
+    public delegate void SpanActionSpan<TSpan, TParam>(scoped Span<TSpan> span, Span<TParam> param);
 
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span);
+    public delegate TResult SpanFunc<TSpan, out TResult>(scoped Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -6816,7 +6866,7 @@ readonly
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param);
+    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(scoped Span<TSpan> span, TParam param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -6826,7 +6876,7 @@ readonly
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        Span<TSpan> span,
+        scoped Span<TSpan> span,
         ReadOnlySpan<TParam> param
     );
 
@@ -6839,7 +6889,7 @@ readonly
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param);
+    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(scoped Span<TSpan> span, Span<TParam> param);
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
     /// <remarks><para>
@@ -7052,7 +7102,7 @@ readonly
     /// <param name="del">The callback to invoke.</param>
     public static void Allocate<TParam>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<byte, TParam> del
     )
 #if UNMANAGED_SPAN
@@ -7070,7 +7120,7 @@ readonly
     /// <param name="del">The callback to invoke.</param>
     public static unsafe void Allocate<TSpan, TParam>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
@@ -7101,7 +7151,7 @@ readonly
     /// <param name="del">The callback to invoke.</param>
     public static void Allocate<TParam>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<byte, TParam> del
     )
 #if UNMANAGED_SPAN
@@ -7119,7 +7169,7 @@ readonly
     /// <param name="del">The callback to invoke.</param>
     public static unsafe void Allocate<TSpan, TParam>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
@@ -7168,7 +7218,7 @@ readonly
     [MustUseReturnValue]
     public static TResult Allocate<TParam, TResult>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<byte, TParam, TResult> del
     )
 #if UNMANAGED_SPAN
@@ -7189,7 +7239,7 @@ readonly
     [MustUseReturnValue]
     public static unsafe TResult Allocate<TSpan, TParam, TResult>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<TSpan, TParam, TResult> del
     )
         where TSpan : unmanaged
@@ -7222,7 +7272,7 @@ readonly
     [MustUseReturnValue]
     public static TResult Allocate<TParam, TResult>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<byte, TParam, TResult> del
     )
 #if UNMANAGED_SPAN
@@ -7243,7 +7293,7 @@ readonly
     [MustUseReturnValue]
     public static unsafe TResult Allocate<TSpan, TParam, TResult>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<TSpan, TParam, TResult> del
     )
         where TSpan : unmanaged
@@ -7264,6 +7314,51 @@ readonly
 
         return result;
     }
+
+// SPDX-License-Identifier: MPL-2.0
+
+
+/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+static class SpanIndexers
+{
+    /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
+    {
+        if (span.IsEmpty)
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = span[0];
+        tail = span[1..];
+    }
+
+    /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
+    {
+        if (span.IsEmpty)
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = span[0];
+        tail = span[1..];
+    }
+}
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -8559,7 +8654,6 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #endif
 #endif
 #pragma warning restore 8500
-
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Insert(int index, T item)
