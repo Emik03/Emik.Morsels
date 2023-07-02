@@ -1547,7 +1547,7 @@ public
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
-    public static string Prettify(this string s) => Prettify(s, separator: ",");
+    public static string Prettify(this string s) => Prettify(s, separator: ",;");
 
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
@@ -1560,7 +1560,7 @@ public
         this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
         string start = "([{<",
         string end = ")]}>",
-        string separator = ",",
+        string separator = ",;",
         string indent = "    "
     )
 #pragma warning disable CA1508
