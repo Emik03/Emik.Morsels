@@ -14,7 +14,7 @@ static partial class Allocator
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Reinterpret<T>(this scoped in Span<nint> span)
+    public static unsafe Span<T> Reinterpret<T>(this scoped Span<nint> span)
         where T : class =>
         MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
@@ -26,7 +26,7 @@ static partial class Allocator
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Reinterpret<T>(this scoped in Span<nuint> span)
+    public static unsafe Span<T> Reinterpret<T>(this scoped Span<nuint> span)
         where T : class =>
         MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
 
@@ -38,7 +38,7 @@ static partial class Allocator
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped in ReadOnlySpan<nint> span) =>
+    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped ReadOnlySpan<nint> span) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
@@ -49,17 +49,17 @@ static partial class Allocator
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped in ReadOnlySpan<nuint> span) =>
+    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped ReadOnlySpan<nuint> span) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(Span<T> value) =>
+    public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(SplitSpan<T> value)
+    public static unsafe byte[] Raw<T>(scoped SplitSpan<T> value)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>?
 #else
@@ -70,7 +70,7 @@ static partial class Allocator
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(ReadOnlySpan<T> value) =>
+    public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
 
     /// <summary>Reads the raw memory of the object.</summary>

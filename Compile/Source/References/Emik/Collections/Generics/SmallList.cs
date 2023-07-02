@@ -586,7 +586,6 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #endif
 #endif
 #pragma warning restore 8500
-
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Insert(int index, T item)

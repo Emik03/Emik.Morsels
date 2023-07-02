@@ -10,35 +10,35 @@ static partial class Span
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <param name="span">The allocated span.</param>
-    public delegate void SpanAction<TSpan>(Span<TSpan> span);
+    public delegate void SpanAction<TSpan>(scoped Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
-    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param);
+    public delegate void SpanAction<TSpan, in TParam>(scoped Span<TSpan> span, TParam param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(Span<TSpan> span, ReadOnlySpan<TParam> param);
+    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(scoped Span<TSpan> span, ReadOnlySpan<TParam> param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(Span<TSpan> span, Span<TParam> param);
+    public delegate void SpanActionSpan<TSpan, TParam>(scoped Span<TSpan> span, Span<TParam> param);
 
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span);
+    public delegate TResult SpanFunc<TSpan, out TResult>(scoped Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -47,7 +47,7 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param);
+    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(scoped Span<TSpan> span, TParam param);
 
     /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -57,7 +57,7 @@ static partial class Span
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        Span<TSpan> span,
+        scoped Span<TSpan> span,
         ReadOnlySpan<TParam> param
     );
 
@@ -70,7 +70,7 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The span parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(Span<TSpan> span, Span<TParam> param);
+    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(scoped Span<TSpan> span, Span<TParam> param);
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
     /// <remarks><para>
@@ -283,7 +283,7 @@ static partial class Span
     /// <param name="del">The callback to invoke.</param>
     public static void Allocate<TParam>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<byte, TParam> del
     )
 #if UNMANAGED_SPAN
@@ -301,7 +301,7 @@ static partial class Span
     /// <param name="del">The callback to invoke.</param>
     public static unsafe void Allocate<TSpan, TParam>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
@@ -332,7 +332,7 @@ static partial class Span
     /// <param name="del">The callback to invoke.</param>
     public static void Allocate<TParam>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<byte, TParam> del
     )
 #if UNMANAGED_SPAN
@@ -350,7 +350,7 @@ static partial class Span
     /// <param name="del">The callback to invoke.</param>
     public static unsafe void Allocate<TSpan, TParam>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<TSpan, TParam> del
     )
         where TSpan : unmanaged
@@ -373,6 +373,21 @@ static partial class Span
         Marshal.FreeHGlobal(array);
     }
 
+    /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
+    /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Ref<T>(ref T reference) => MemoryMarshal.CreateSpan(ref reference, 1);
+
+    /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
+    /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> In<T>(in T reference) =>
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
@@ -384,7 +399,7 @@ static partial class Span
     [MustUseReturnValue]
     public static TResult Allocate<TParam, TResult>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<byte, TParam, TResult> del
     )
 #if UNMANAGED_SPAN
@@ -405,7 +420,7 @@ static partial class Span
     [MustUseReturnValue]
     public static unsafe TResult Allocate<TSpan, TParam, TResult>(
         int length,
-        ReadOnlySpan<TParam> param,
+        scoped ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<TSpan, TParam, TResult> del
     )
         where TSpan : unmanaged
@@ -438,7 +453,7 @@ static partial class Span
     [MustUseReturnValue]
     public static TResult Allocate<TParam, TResult>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<byte, TParam, TResult> del
     )
 #if UNMANAGED_SPAN
@@ -459,7 +474,7 @@ static partial class Span
     [MustUseReturnValue]
     public static unsafe TResult Allocate<TSpan, TParam, TResult>(
         int length,
-        Span<TParam> param,
+        scoped Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<TSpan, TParam, TResult> del
     )
         where TSpan : unmanaged

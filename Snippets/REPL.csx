@@ -7142,6 +7142,21 @@ readonly
         Marshal.FreeHGlobal(array);
     }
 
+    /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
+    /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Ref<T>(ref T reference) => MemoryMarshal.CreateSpan(ref reference, 1);
+
+    /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
+    /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> In<T>(in T reference) =>
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>

@@ -424,7 +424,7 @@ static partial class Stringifier
     static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
 
     [Pure]
-    static string ToOrdinal(this in int i) =>
+    static string ToOrdinal(this int i) =>
         $"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
         {
             1 => FirstOrd,

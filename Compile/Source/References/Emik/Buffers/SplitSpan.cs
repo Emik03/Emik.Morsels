@@ -351,10 +351,18 @@ readonly
     }
 
     /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Body { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+    public ReadOnlySpan<T> Body
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
 
     /// <summary>Gets the separator.</summary>
-    public ReadOnlySpan<T> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+    public ReadOnlySpan<T> Separator
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
 
     /// <summary>Determines whether both splits are equal.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -370,6 +378,27 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(SplitSpan<T> left, SplitSpan<T> right) => !left.Equals(right);
 
+    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
+    /// <param name="head">The first element of this enumeration.</param>
+    /// <param name="tail">The rest of this enumeration.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Deconstruct(out ReadOnlySpan<T> head, out SplitSpan<T> tail)
+    {
+        if (GetEnumerator() is var e && !e.MoveNext())
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = e.Current;
+
+        tail = this with
+        {
+            Body = Body[e.Index..],
+        };
+    }
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override bool Equals(object? other) => false;
@@ -377,7 +406,7 @@ readonly
     /// <inheritdoc cref="IEquatable{T}.Equals(T?)" />
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(SplitSpan<T> other) =>
+    public bool Equals(scoped SplitSpan<T> other) =>
         Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
         IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
@@ -438,13 +467,18 @@ readonly
     {
         readonly SplitSpan<T> _split;
 
-        [ValueRange(-1, int.MaxValue)]
         int _end = -1;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="split">Tne entry to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(SplitSpan<T> split) => _split = split;
+
+        /// <summary>Gets the current index.</summary>
+        public readonly int Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
+        }
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
@@ -486,15 +520,20 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Step(
             bool isAny,
-            in ReadOnlySpan<T> body,
-            in ReadOnlySpan<T> separator,
-            ref int end,
+            scoped ReadOnlySpan<T> body,
+            scoped ReadOnlySpan<T> separator,
+            scoped ref int end,
             out int start
         ) =>
             isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAll(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAll(
+            scoped ReadOnlySpan<T> body,
+            scoped ReadOnlySpan<T> separator,
+            scoped ref int end,
+            out int start
+        )
         {
             Unsafe.SkipInit(out start);
 
@@ -528,7 +567,7 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(in ReadOnlySpan<T> body, in ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
         {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.SkipInit(out start);

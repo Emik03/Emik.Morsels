@@ -242,7 +242,11 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double Jaro<T>(
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -256,7 +260,7 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double Jaro<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double Jaro<T>(this scoped Span<T> left, scoped ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -271,8 +275,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static unsafe double Jaro<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -304,8 +308,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -325,8 +329,11 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double
-        JaroEmik<T>(this ReadOnlySpan<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double JaroEmik<T>(
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -344,7 +351,11 @@ static partial class Similarity
     /// <param name="comparer">The comparer to determine equality, or <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
-    public static double JaroEmik<T>(this Span<T> left, ReadOnlySpan<T> right, IEqualityComparer<T>? comparer)
+    public static double JaroEmik<T>(
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
+        IEqualityComparer<T>? comparer
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -363,8 +374,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static unsafe double JaroEmik<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -400,8 +411,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -422,8 +433,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
 #if UNMANAGED_SPAN
@@ -444,8 +455,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         IEqualityComparer<T>? comparer
     )
 #if UNMANAGED_SPAN
@@ -466,8 +477,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static unsafe double JaroWinkler<T>(
-        this ReadOnlySpan<T> left,
-        ReadOnlySpan<T> right,
+        this scoped ReadOnlySpan<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -503,8 +514,8 @@ static partial class Similarity
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(
-        this Span<T> left,
-        ReadOnlySpan<T> right,
+        this scoped Span<T> left,
+        scoped ReadOnlySpan<T> right,
         [InstantHandle] Func<T, T, bool>? comparer = null
     )
 #if UNMANAGED_SPAN
@@ -670,7 +681,7 @@ static partial class Similarity
 
     [MustUseReturnValue, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
-        Span<byte> visited,
+        scoped Span<byte> visited,
         (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>) args
     )
     {
@@ -719,7 +730,7 @@ static partial class Similarity
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
-        Span<byte> visited,
+        scoped Span<byte> visited,
         T left,
         T right,
         [ValueRange(2, int.MaxValue)] int leftLength,
