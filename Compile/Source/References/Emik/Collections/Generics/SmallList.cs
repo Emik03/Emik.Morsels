@@ -14,36 +14,38 @@ static partial class SmallFactory
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
         where T1 : T2 =>
         tuple;
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
         where T1 : T3
         where T2 : T3 =>
         tuple;
 
     /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
 
     /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
 
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerable<T>? iterable) => new(iterable);
 
     /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 }
 #endif
@@ -100,6 +102,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     T? _first, _second, _third;
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList() { }
 
     /// <summary>
@@ -107,6 +110,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// Collects the enumerable; allocating the heaped list lazily.
     /// </summary>
     /// <param name="enumerable">The enumerable to collect.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(IEnumerable<T>? enumerable)
         : this(enumerable?.GetEnumerator()) { }
 
@@ -115,6 +119,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// Mutates the enumerator; allocating the heaped list lazily.
     /// </summary>
     /// <param name="enumerator">The enumerator to mutate.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(IEnumerator<T>? enumerator)
     {
         if (!enumerator?.MoveNext() ?? true)
@@ -155,12 +160,14 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <param name="first">The first element.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first)
         : this(first, default, default, s_one) { }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second)
         : this(first, second, default, s_two) { }
 
@@ -168,6 +175,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third)
         : this(first, second, third, s_empty) { }
 
@@ -176,6 +184,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
     /// <param name="rest">The rest of the elements.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third, IList<T> rest)
         : this(first, second, third, (object)rest) { }
 
@@ -184,6 +193,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
     /// <param name="rest">The rest of the elements.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third, params T[] rest)
         : this(first, second, third, (object)rest) { }
 
@@ -192,6 +202,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
     /// <param name="rest">The backing rest object, either a list or an object representing the length.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     SmallList(T? first, T? second, T? third, object? rest)
     {
         _first = first;
@@ -201,35 +212,48 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <summary>Gets the empty list.</summary>
-    public static SmallList<T> Empty => default;
+    public static SmallList<T> Empty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
+    }
 
     /// <summary>Gets a value indicating whether determines whether the collection is empty.</summary>
-    [CollectionAccess(None), Pure]
-    public readonly bool IsEmpty => _rest is null;
+    public readonly bool IsEmpty
+    {
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _rest is null;
+    }
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
-    public readonly bool IsReadOnly => false;
+    public readonly bool IsReadOnly
+    {
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => false;
+    }
 
     /// <inheritdoc cref="ICollection{T}.Count" />
-    [CollectionAccess(None), Pure]
-    public readonly int Count =>
-        _rest switch
-        {
-            null => 0,
-            _ when _rest == s_one => 1,
-            _ when _rest == s_two => 2,
-            _ when _rest == s_empty => 3,
-            _ => Rest!.Count + InlinedLength,
-        };
+    public readonly int Count
+    {
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+            _rest switch
+            {
+                null => 0,
+                _ when _rest == s_one => 1,
+                _ when _rest == s_two => 2,
+                _ when _rest == s_empty => 3,
+                _ => Rest!.Count + InlinedLength,
+            };
+    }
 
     /// <summary>Gets the number of head elements used.</summary>
-    [CollectionAccess(None), Pure]
-    public readonly int HeadCount => Math.Min(Count, 3);
+    public readonly int HeadCount
+    {
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Math.Min(Count, 3);
+    }
 
     /// <summary>Gets the deep clone of this instance.</summary>
     public readonly SmallList<T> Cloned
     {
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             var clone = Uninit(Count);
@@ -241,7 +265,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
-        [CollectionAccess(Read)]
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         readonly get
         {
             BoundsCheck(index, out _);
@@ -254,7 +278,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
                 _ => Rest![index - InlinedLength],
             };
         }
-        [CollectionAccess(ModifyExistingContent)]
+        [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             BoundsCheck(index, out _);
@@ -270,10 +294,10 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 #pragma warning disable MA0102
     /// <summary>Gets or sets the first element.</summary>
-    [CollectionAccess(Read), Pure]
     public T First
     {
-        readonly get => this[0];
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[0];
+        [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[0] = value;
     }
 
@@ -281,7 +305,8 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     [CollectionAccess(Read), Pure]
     public T Second
     {
-        readonly get => this[1];
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[1];
+        [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[1] = value;
     }
 
@@ -289,54 +314,63 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     [CollectionAccess(Read), Pure]
     public T Third
     {
-        readonly get => this[2];
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[2];
+        [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[2] = value;
     }
 #pragma warning restore MA0102
 
     /// <summary>Gets the rest of the elements.</summary>
-    [CollectionAccess(None), ProvidesContext, Pure]
-    public readonly IList<T>? Rest => _rest as IList<T>;
+    public readonly IList<T>? Rest
+    {
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), ProvidesContext, Pure]
+        get => _rest as IList<T>;
+    }
 
     /// <summary>Determines whether both sequence are equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both sequences are equal.</returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(SmallList<T> left, SmallList<T> right) => left.Equals(right);
 
     /// <summary>Determines whether both sequence are not equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both sequences are not equal.</returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(SmallList<T> left, SmallList<T> right) => !left.Equals(right);
 
     /// <summary>Creates the collection with 1 item in it.</summary>
     /// <param name="value">The single item to use.</param>
     /// <returns>The collection with 1 item.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>(T value) => new(value);
 
     /// <summary>Creates the collection with 2 items in it.</summary>
     /// <param name="tuple">The tuple containing 2 items to destructure and use.</param>
     /// <returns>The collection with 2 items.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second) tuple) => new(tuple.First, tuple.Second);
 
     /// <summary>Creates the collection with 3 items in it.</summary>
     /// <param name="tuple">The tuple containing 3 items to destructure and use.</param>
     /// <returns>The collection with 3 items.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third);
 
     /// <summary>Creates the collection with 3 or more items in it.</summary>
     /// <param name="tuple">The tuple containing 3 or more items to destructure and use.</param>
     /// <returns>The collection with 3 or more items.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third, IList<T> List) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third, tuple.List);
 
     /// <summary>Skips initialization of inlined elements.</summary>
     /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Uninit(int length)
     {
         Unsafe.SkipInit(out SmallList<T> output);
@@ -347,6 +381,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <summary>Skips initialization of unreachable inlined elements.</summary>
     /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Zeroed(int length)
     {
         var output = Uninit(length);
@@ -368,7 +403,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <inheritdoc />
-    [CollectionAccess(UpdatedContent)]
+    [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
     {
         switch (Count)
@@ -389,7 +424,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <inheritdoc />
-    [CollectionAccess(ModifyExistingContent)]
+    [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => _rest = null;
 
     /// <summary>Copies all values onto the destination.</summary>
@@ -397,7 +432,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <exception cref="ArgumentOutOfRangeException">
     /// The parameter <paramref name="list"/> has less elements than itself.
     /// </exception>
-    [CollectionAccess(Read)]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void CopyTo(ref SmallList<T> list)
     {
         if (Count is var count && count is 0)
@@ -430,7 +465,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <inheritdoc />
-    [CollectionAccess(Read)]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
         // Takes advantage of fallthrough in switch-cases.
@@ -454,6 +489,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <summary>Deconstructs this instance with its properties.</summary>
     /// <param name="head">The first three elements.</param>
     /// <param name="tail">The remaining elements.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out (T? First, T? Second, T? Third) head, out IList<T> tail) =>
         Deconstruct(out head.First, out head.Second, out head.Third, out tail);
 
@@ -461,18 +497,16 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
-    public readonly void Deconstruct(out T? first, out T? second, out T? third)
-    {
-        first = _first;
-        second = _second;
-        third = _third;
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly void Deconstruct(out T? first, out T? second, out T? third) =>
+        (first, second, third) = (_first, _second, _third);
 
     /// <summary>Deconstructs this instance with its properties.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
     /// <param name="rest">The remaining elements.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest)
     {
         Deconstruct(out first, out second, out third);
@@ -482,7 +516,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read)]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del)
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
@@ -498,7 +532,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read)]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void HeadSpan<TParam>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> del
@@ -517,7 +551,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read)]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void HeadSpan<TParam>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> del
@@ -536,7 +570,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read)]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void HeadSpan<TParam>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> del
@@ -554,7 +588,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #pragma warning restore 8500
 
     /// <inheritdoc />
-    [CollectionAccess(UpdatedContent)]
+    [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Insert(int index, T item)
     {
         BoundsCheck(index, out var count);
@@ -588,7 +622,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <inheritdoc />
-    [CollectionAccess(ModifyExistingContent)]
+    [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveAt(int index)
     {
         BoundsCheck(index, out var count);
@@ -615,7 +649,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Contains(T item) =>
         Count switch
         {
@@ -629,7 +663,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="item">The item to check.</param>
     /// <param name="comparer">The comparer to use.</param>
     /// <returns>The value determining whether the parameter <paramref name="item"/> exists in the collection.</returns>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Contains(T item, IEqualityComparer<T?> comparer) =>
         Count switch
         {
@@ -643,11 +677,11 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         };
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is SmallList<T> other && Equals(other);
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Equals(SmallList<T> other) =>
         Count == other.Count &&
         Eq(_first, other._first) &&
@@ -656,7 +690,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         (other.Rest is [_, ..] rest ? Rest?.SequenceEqual(rest) ?? false : other.Rest is null);
 
     /// <inheritdoc />
-    [CollectionAccess(ModifyExistingContent)]
+    [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(T item) =>
         Count switch
         {
@@ -671,7 +705,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         };
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override int GetHashCode()
     {
         unchecked
@@ -685,7 +719,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int IndexOf(T item) =>
         Count switch
         {
@@ -701,7 +735,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         };
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
         Count switch
         {
@@ -714,12 +748,12 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
     /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
     /// <returns>The backwards enumerator.</returns>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetReversedEnumerator() => new(this, true);
 
     /// <summary>Forms a slice out of the current list that begins at a specified index.</summary>
@@ -727,7 +761,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <returns>
     /// A list that consists of all elements of the current list from <paramref name="start"/> to the end of the span.
     /// </returns>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable IDE0057
     public readonly SmallList<T> Slice(int start) => Slice(start, Count - start);
 #pragma warning restore IDE0057
@@ -738,7 +772,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// A span that consists of <paramref name="length"/> elements from
     /// the current span starting at <paramref name="start"/>.
     /// </returns>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly SmallList<T> Slice(int start, int length)
     {
         var count = Count;
@@ -792,7 +826,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MustUseReturnValue]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del)
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
@@ -810,7 +844,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MustUseReturnValue]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> del
@@ -831,7 +865,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MustUseReturnValue]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> del
@@ -852,7 +886,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MustUseReturnValue]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public unsafe TResult HeadSpan<TParam, TResult>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> del
@@ -869,82 +903,83 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #endif
 #pragma warning restore CS8500
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool IConvertible.ToBoolean(IFormatProvider provider) => !IsEmpty;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly byte IConvertible.ToByte(IFormatProvider provider) => unchecked((byte)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly char IConvertible.ToChar(IFormatProvider provider) => unchecked((char)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly DateTime IConvertible.ToDateTime(IFormatProvider provider) => new(Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly decimal IConvertible.ToDecimal(IFormatProvider provider) => Count;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly double IConvertible.ToDouble(IFormatProvider provider) => Count;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly short IConvertible.ToInt16(IFormatProvider provider) => unchecked((short)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly int IConvertible.ToInt32(IFormatProvider provider) => Count;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly long IConvertible.ToInt64(IFormatProvider provider) => Count;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly sbyte IConvertible.ToSByte(IFormatProvider provider) => unchecked((sbyte)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly float IConvertible.ToSingle(IFormatProvider provider) => Count;
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly string IConvertible.ToString(IFormatProvider provider) => ToString();
 
     /// <inheritdoc />
-    [DoesNotReturn]
+    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     readonly object IConvertible.ToType(Type conversionType, IFormatProvider provider) =>
         throw new InvalidOperationException();
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ushort IConvertible.ToUInt16(IFormatProvider provider) => unchecked((ushort)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly uint IConvertible.ToUInt32(IFormatProvider provider) => unchecked((uint)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ulong IConvertible.ToUInt64(IFormatProvider provider) => unchecked((ulong)Count);
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void RestFromLength(int length, out object? rest)
     {
         if (length is 0 or 1 or 2 or 3)
@@ -953,13 +988,14 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
             rest = new T[length - InlinedLength];
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void RestFromLengthWithoutAllocations(int length, out object? rest)
     {
         Unsafe.SkipInit(out rest);
 
         rest = length switch
         {
-            0 => null,
+            <= 0 => null,
             1 => s_one,
             2 => s_two,
             3 => s_empty,
@@ -967,9 +1003,10 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         };
     }
 
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     readonly void BoundsCheck(int index, [ValueRange(1, int.MaxValue)] out int count)
     {
         count = Count;
@@ -979,7 +1016,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     }
 
     // ReSharper disable once UnusedParameter.Local
-    [MustUseReturnValue]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     bool RemoveHead(T? _ = default)
     {
         if (Rest is [var head, ..])
@@ -993,7 +1030,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         return true;
     }
 
-    [MustUseReturnValue]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     IList<T> EnsureMutability()
     {
         var rest = Rest switch
@@ -1022,6 +1059,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="list">The <see cref="SmallList{T}"/> to enumerate over.</param>
         /// <param name="isReversed">Determines whether to go backwards.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(SmallList<T> list, bool isReversed = false)
         {
             _list = list;
@@ -1030,20 +1068,24 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         }
 
         /// <inheritdoc />
-        [Pure]
-        public T Current { get; private set; } = default!;
+        public T Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; } = default!;
 
         /// <inheritdoc />
-        [Pure]
-        readonly object? IEnumerator.Current => Current;
+        readonly object? IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
+        }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose() { }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _state = -1;
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() =>
             ++_state < _count &&
             (Current = (_isReversed ? _count - _state - 1 : _state) switch
