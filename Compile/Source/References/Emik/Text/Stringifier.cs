@@ -117,7 +117,7 @@ static partial class Stringifier
                     (seen, ++nest, sb.Append(s[i]).Indent(indent, nest)),
                 _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>
                     (seen, --nest, sb.Indent(indent, nest).Append(s[i])),
-                _ when separator.Contains(s[i]) => (true, nest, sb.Append(separator)),
+                _ when separator.Contains(s[i]) => (true, nest, sb.Append(s[i])),
                 ' ' when seen && nest > 0 ||
                     s.Nth(i - 1) is { } prev && start.Contains(prev) ||
                     s.Nth(i + 1) is { } next && end.Contains(next) => (seen, nest, sb),
