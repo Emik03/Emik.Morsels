@@ -7319,8 +7319,7 @@ readonly
 
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-static class SpanIndexers
-{
+
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -7358,7 +7357,6 @@ static class SpanIndexers
         head = span[0];
         tail = span[1..];
     }
-}
 
 // SPDX-License-Identifier: MPL-2.0
 
