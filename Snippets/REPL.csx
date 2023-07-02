@@ -8622,6 +8622,14 @@ public partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
             _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
         };
 #pragma warning disable CS8500
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public readonly Enumerator GetEnumerator() => new(this);
+
+    /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
+    /// <returns>The backwards enumerator.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public readonly Enumerator GetReversedEnumerator() => new(this, true);
 #if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
@@ -8703,15 +8711,6 @@ public partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
 #endif
 #endif
 #pragma warning restore CS8500
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public readonly Enumerator GetEnumerator() => new(this);
-
-    /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
-    /// <returns>The backwards enumerator.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public readonly Enumerator GetReversedEnumerator() => new(this, true);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
