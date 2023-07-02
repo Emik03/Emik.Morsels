@@ -423,6 +423,46 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         }
     }
 
+    /// <summary>Adds the elements of the specified collection to the end of the <see cref="SmallList{T}"/>.</summary>
+    /// <param name="collection">
+    /// The collection whose elements should be added to the end of the <see cref="SmallList{T}"/>.
+    /// </param>
+    [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddRange(IEnumerable<T>? collection)
+    {
+        if (collection is null)
+            return;
+
+        if (collection is not ICollection<T> { Count: var count } c)
+        {
+            foreach (var item in collection)
+                Add(item);
+
+            return;
+        }
+
+        if (count is 0)
+            return;
+
+        if (InlinedLength - HeadCount is var stackExpand && stackExpand is not 0)
+        {
+            using var e = c.GetEnumerator();
+
+            for (var i = 0; i < stackExpand; i++)
+                if (e.MoveNext())
+                    Add(e.Current);
+                else
+                    return;
+        }
+
+        if (count - stackExpand <= 0)
+            return;
+
+        var rest = _rest as List<T> ?? Rest!.ToList();
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand));
+        _rest = rest;
+    }
+
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => _rest = null;

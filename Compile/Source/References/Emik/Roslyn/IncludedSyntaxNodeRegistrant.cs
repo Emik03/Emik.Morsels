@@ -74,12 +74,12 @@ static partial class IncludedSyntaxNodeRegistrant
     /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
     /// interfaces and base types, and any subsequent interfaces and base types from those.
     /// </returns>
-    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol? symbol) =>
+    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol symbol) =>
         symbol
-          ?.GetMembers()
-           .Concat(GetAllMembers(symbol.BaseType))
-           .Concat(symbol.Interfaces.SelectMany(GetAllMembers)) ??
-        Enumerable.Empty<ISymbol>();
+           .BaseType
+           .FindPathToNull(x => x.BaseType)
+           .SelectMany(GetAllMembers)
+           .Concat(symbol.GetMembers());
 
     /// <summary>Gets the symbol from a lookup.</summary>
     /// <param name="context">The context to use.</param>

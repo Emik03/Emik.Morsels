@@ -6049,12 +6049,12 @@ public enum ControlFlow : byte
     /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
     /// interfaces and base types, and any subsequent interfaces and base types from those.
     /// </returns>
-    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol? symbol) =>
+    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol symbol) =>
         symbol
-          ?.GetMembers()
-           .Concat(GetAllMembers(symbol.BaseType))
-           .Concat(symbol.Interfaces.SelectMany(GetAllMembers)) ??
-        Enumerable.Empty<ISymbol>();
+           .BaseType
+           .FindPathToNull(x => x.BaseType)
+           .SelectMany(GetAllMembers)
+           .Concat(symbol.GetMembers());
 
     /// <summary>Gets the symbol from a lookup.</summary>
     /// <param name="context">The context to use.</param>
@@ -8487,6 +8487,46 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
                 EnsureMutability().Add(item);
                 break;
         }
+    }
+
+    /// <summary>Adds the elements of the specified collection to the end of the <see cref="SmallList{T}"/>.</summary>
+    /// <param name="collection">
+    /// The collection whose elements should be added to the end of the <see cref="SmallList{T}"/>.
+    /// </param>
+    [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void AddRange(IEnumerable<T>? collection)
+    {
+        if (collection is null)
+            return;
+
+        if (collection is not ICollection<T> { Count: var count } c)
+        {
+            foreach (var item in collection)
+                Add(item);
+
+            return;
+        }
+
+        if (count is 0)
+            return;
+
+        if (InlinedLength - HeadCount is var stackExpand && stackExpand is not 0)
+        {
+            using var e = c.GetEnumerator();
+
+            for (var i = 0; i < stackExpand; i++)
+                if (e.MoveNext())
+                    Add(e.Current);
+                else
+                    return;
+        }
+
+        if (count - stackExpand <= 0)
+            return;
+
+        var rest = _rest as List<T> ?? Rest!.ToList();
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand));
+        _rest = rest;
     }
 
     /// <inheritdoc />
