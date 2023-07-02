@@ -13,6 +13,17 @@ using static Span;
 static partial class SmallFactory
 #pragma warning restore MA0048
 {
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
+    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
+        where T1 : T2 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
+    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
+        where T1 : T3
+        where T2 : T3 =>
+        tuple;
+
     /// <inheritdoc cref="SmallList{T}.Uninit"/>
     [Pure]
     public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
@@ -40,7 +51,7 @@ static partial class SmallFactory
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
 [StructLayout(LayoutKind.Sequential)]
-partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
+partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, IReadOnlyList<T>
 {
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
     /// <remarks><para>
@@ -287,6 +298,20 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
     [CollectionAccess(None), ProvidesContext, Pure]
     public readonly IList<T>? Rest => _rest as IList<T>;
 
+    /// <summary>Determines whether both sequence are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both sequences are equal.</returns>
+    [Pure]
+    public static bool operator ==(SmallList<T> left, SmallList<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether both sequence are not equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both sequences are not equal.</returns>
+    [Pure]
+    public static bool operator !=(SmallList<T> left, SmallList<T> right) => !left.Equals(right);
+
     /// <summary>Creates the collection with 1 item in it.</summary>
     /// <param name="value">The single item to use.</param>
     /// <returns>The collection with 1 item.</returns>
@@ -303,22 +328,19 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
     public static implicit operator SmallList<T>((T First, T Second, T Third) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third);
 
+    /// <summary>Creates the collection with 3 or more items in it.</summary>
+    /// <param name="tuple">The tuple containing 3 or more items to destructure and use.</param>
+    /// <returns>The collection with 3 or more items.</returns>
+    public static implicit operator SmallList<T>((T First, T Second, T Third, IList<T> List) tuple) =>
+        new(tuple.First, tuple.Second, tuple.Third, tuple.List);
+
     /// <summary>Skips initialization of inlined elements.</summary>
     /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
     public static SmallList<T> Uninit(int length)
     {
         Unsafe.SkipInit(out SmallList<T> output);
-
-        output._rest = length switch
-        {
-            0 => null,
-            1 => s_one,
-            2 => s_two,
-            3 => s_empty,
-            _ => new T[length - InlinedLength],
-        };
-
+        RestFromLength(length, out output._rest);
         return output;
     }
 
@@ -621,6 +643,19 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
         };
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is SmallList<T> other && Equals(other);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public readonly bool Equals(SmallList<T> other) =>
+        Count == other.Count &&
+        Eq(_first, other._first) &&
+        Eq(_second, other._second) &&
+        Eq(_third, other._third) &&
+        (other.Rest is [_, ..] rest ? Rest?.SequenceEqual(rest) ?? false : other.Rest is null);
+
+    /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent)]
     public bool Remove(T item) =>
         Count switch
@@ -634,6 +669,20 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
                 Eq(_second, item) ? RemoveHead(_second = _third) :
                 Eq(_third, item) ? RemoveHead() : EnsureMutability().Remove(item),
         };
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public readonly override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = _rest?.GetHashCode() ?? 0;
+            hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_first);
+            hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_second);
+            hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_third);
+            return hashCode;
+        }
+    }
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -672,6 +721,71 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
     /// <returns>The backwards enumerator.</returns>
     [CollectionAccess(None), Pure]
     public readonly Enumerator GetReversedEnumerator() => new(this, true);
+
+    /// <summary>Forms a slice out of the current list that begins at a specified index.</summary>
+    /// <param name="start">The index at which to begin the slice.</param>
+    /// <returns>
+    /// A list that consists of all elements of the current list from <paramref name="start"/> to the end of the span.
+    /// </returns>
+    [CollectionAccess(Read), Pure]
+#pragma warning disable IDE0057
+    public readonly SmallList<T> Slice(int start) => Slice(start, Count - start);
+#pragma warning restore IDE0057
+    /// <summary>Forms a slice out of the current list starting at a specified index for a specified length.</summary>
+    /// <param name="start">The index at which to begin this slice.</param>
+    /// <param name="length">The desired length for the slice.</param>
+    /// <returns>
+    /// A span that consists of <paramref name="length"/> elements from
+    /// the current span starting at <paramref name="start"/>.
+    /// </returns>
+    [CollectionAccess(Read), Pure]
+    public readonly SmallList<T> Slice(int start, int length)
+    {
+        var count = Count;
+        start = Math.Max(start, 0);
+        length = Math.Min(length, count - start);
+
+        if (length is 0)
+            return default;
+
+        if (start is 0 && length == count)
+            return Cloned;
+
+        Unsafe.SkipInit(out SmallList<T> output);
+
+        if (Rest?.Skip(start).Take(length).ToList() is { } list)
+            output._rest = list;
+        else
+            RestFromLength(length, out output._rest);
+
+        switch (length)
+        {
+            case >= 2:
+                output._third = start is 0 ? _third : Rest![start - 1];
+                goto case 1;
+            case 1:
+                output._second = start switch
+                {
+                    0 => _second,
+                    1 => _third,
+                    _ => Rest![start - 2],
+                };
+
+                goto case 0;
+            case 0:
+                output._first = start switch
+                {
+                    0 => _first,
+                    1 => _second,
+                    2 => _third,
+                    _ => Rest![start - 3],
+                };
+
+                break;
+        }
+
+        return output;
+    }
 #pragma warning disable CS8500
 #if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -830,6 +944,28 @@ partial struct SmallList<T> : IConvertible, IList<T>, IReadOnlyList<T>
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    static void RestFromLength(int length, out object? rest)
+    {
+        if (length is 0 or 1 or 2 or 3)
+            RestFromLengthWithoutAllocations(length, out rest);
+        else
+            rest = new T[length - InlinedLength];
+    }
+
+    static void RestFromLengthWithoutAllocations(int length, out object? rest)
+    {
+        Unsafe.SkipInit(out rest);
+
+        rest = length switch
+        {
+            0 => null,
+            1 => s_one,
+            2 => s_two,
+            3 => s_empty,
+            _ => rest,
+        };
+    }
 
     [Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
