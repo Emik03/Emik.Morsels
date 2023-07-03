@@ -25,12 +25,8 @@ static partial class Allocator
         where T : unmanaged
 #endif
         =>
-            length switch
-            {
-                <= 0 => default, // No allocation needed
-                _ when length <= StackallocSize / Unsafe.SizeOf<T>() => length.Stackalloc<T>(), // Stack-allocated buffer
-                _ => new T[length], // Heap-allocated buffer
-            };
+            length <= 0 ? default :
+            IsStack<T>(length) ? length.Stackalloc<T>() : new T[length];
 #endif
 
     /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
@@ -44,7 +40,7 @@ static partial class Allocator
         where T : unmanaged
 #endif
     {
-        var pointer = stackalloc byte[unchecked(Unsafe.SizeOf<T>() * length)];
+        var pointer = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<T>(pointer), length);
     }
 #endif
