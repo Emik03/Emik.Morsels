@@ -156,10 +156,6 @@
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))">
         <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
     </ItemGroup>
-    <!-- Application-only references. -->
-    <ItemGroup Condition="'$(OutputType)' == 'Exe'">
-        <PackageReference Include="docopt.net" Version="0.8.1"/>
-    </ItemGroup>
     <!-- Nullable Reference Types and Record support for Low .NET Framework versions. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <Reference Include="System" Private="false"/>
