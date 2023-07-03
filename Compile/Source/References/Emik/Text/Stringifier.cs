@@ -83,6 +83,21 @@ static partial class Stringifier
 #endif
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #if !WAWA
+    /// <summary>Creates the collapsed form of the string.</summary>
+    /// <param name="s">The string to collapse.</param>
+    /// <returns>The collapsed string.</returns>
+    public static string Collapse(this string s)
+    {
+#pragma warning disable MA0110
+        s = new Regex(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+)+)\)").Replace(s, "(…)");
+        s = new Regex(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+)+)\]").Replace(s, "[…]");
+        s = new Regex("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+)*)}").Replace(s, "{…}");
+        s = new Regex("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+)+)>").Replace(s, "<…>");
+        s = new Regex(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+)*)""").Replace(s, "\"…\"");
+#pragma warning restore MA0110
+        return s;
+    }
+
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
@@ -426,7 +441,7 @@ static partial class Stringifier
     }
 
     [Pure]
-    static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
+    static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
 
     [Pure]
     static string ToOrdinal(this int i) =>
@@ -520,6 +535,12 @@ static partial class Stringifier
     [MustUseReturnValue]
     static Func<T, int, string> GenerateStringifier<T>()
     {
+        static MethodCallExpression Combine(Expression prev, Expression curr)
+        {
+            var call = Call(s_combine, prev, s_exSeparator);
+            return Call(s_combine, call, curr);
+        }
+
         const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
 
         ParameterExpression
@@ -550,21 +571,13 @@ static partial class Stringifier
 #else
            .ToCollectionLazily();
 #endif
-        static MethodCallExpression Combine(Expression prev, Expression curr)
-        {
-            var call = Call(s_combine, prev, s_exSeparator);
-            return Call(s_combine, call, curr);
-        }
-
-        var exResult = all.Any()
-            ? all.Aggregate(Combine)
-            : s_exEmpty;
-
+        var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
     }
 
     // ReSharper disable SuggestBaseTypeForParameter
     [MustUseReturnValue]
+#pragma warning disable CA1859
 #if NETFRAMEWORK && !NET40_OR_GREATER
     static Expression GetMethodCaller<T, TMember>(
 #else
@@ -575,6 +588,7 @@ static partial class Stringifier
         ParameterExpression exDepth,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
+#pragma warning restore CA1859
         where TMember : MemberInfo
     {
         var type = selector(info);

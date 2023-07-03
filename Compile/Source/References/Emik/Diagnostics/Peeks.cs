@@ -91,18 +91,50 @@ static partial class Peeks
         [CallerMemberName] string? member = null
     )
     {
-        // ReSharper disable once InvokeAsExtensionMethod RedundantNameQualifier
-        if ((filter ?? (_ => true))(value))
-            (logger ?? Write)(
-                @$"{((map ?? (x => x))(value) is var mapped && mapped is string
-                    ? mapped
-                    : Stringifier.Stringify(mapped) is var stringy && shouldPrettify
-                        ? stringy.Prettify()
-                        : stringy)}{(shouldLogExpression ? @$"
-        of {expression}" : "")}
-        at {member} in {Path.GetFileName(path)}:line {line}"
-            );
+        const string Indent = "\n        ";
 
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+        {
+            var trimmed = next.Trim();
+
+            fixed (char* ptr = &trimmed[0])
+                accumulator.Append(ptr, next.Length);
+
+            return accumulator;
+        }
+#pragma warning restore 8500
+#endif
+
+        if (!(filter ?? (_ => true))(value))
+            return value;
+
+        logger ??= Write;
+
+        // ReSharper disable InvokeAsExtensionMethod RedundantNameQualifier
+        var stringified = (map ?? (x => x))(value) switch
+        {
+            string s => s,
+            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
+            var o => Stringifier.Stringify(o),
+        };
+
+        var location = shouldLogExpression
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Indent), Accumulator)
+#else
+            ? expression
+              ?.Collapse()
+               .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+               .Select(x => x.Trim())
+               .Prepend(Indent)
+               .Conjoin("")
+#endif
+            : default;
+
+        var log = $"{stringified}{location}{Indent}at {member} in {Path.GetFileName(path)}:line {line}";
+        logger(log);
         return value;
     }
 

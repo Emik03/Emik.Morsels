@@ -1544,6 +1544,21 @@ public
 #endif
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #if !WAWA
+    /// <summary>Creates the collapsed form of the string.</summary>
+    /// <param name="s">The string to collapse.</param>
+    /// <returns>The collapsed string.</returns>
+    public static string Collapse(this string s)
+    {
+#pragma warning disable MA0110
+        s = new Regex(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+)+)\)").Replace(s, "(…)");
+        s = new Regex(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+)+)\]").Replace(s, "[…]");
+        s = new Regex("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+)*)}").Replace(s, "{…}");
+        s = new Regex("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+)+)>").Replace(s, "<…>");
+        s = new Regex(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+)*)""").Replace(s, "\"…\"");
+#pragma warning restore MA0110
+        return s;
+    }
+
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
@@ -1887,7 +1902,7 @@ public
     }
 
     [Pure]
-    static string Etcetera(this int? i) => i is null ? "..." : $"...{i} more";
+    static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
 
     [Pure]
     static string ToOrdinal(this int i) =>
@@ -1981,6 +1996,12 @@ public
     [MustUseReturnValue]
     static Func<T, int, string> GenerateStringifier<T>()
     {
+        static MethodCallExpression Combine(Expression prev, Expression curr)
+        {
+            var call = Call(s_combine, prev, s_exSeparator);
+            return Call(s_combine, call, curr);
+        }
+
         const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
 
         ParameterExpression
@@ -2011,21 +2032,13 @@ public
 #else
            .ToCollectionLazily();
 #endif
-        static MethodCallExpression Combine(Expression prev, Expression curr)
-        {
-            var call = Call(s_combine, prev, s_exSeparator);
-            return Call(s_combine, call, curr);
-        }
-
-        var exResult = all.Any()
-            ? all.Aggregate(Combine)
-            : s_exEmpty;
-
+        var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
     }
 
     // ReSharper disable SuggestBaseTypeForParameter
     [MustUseReturnValue]
+#pragma warning disable CA1859
 #if NETFRAMEWORK && !NET40_OR_GREATER
     static Expression GetMethodCaller<T, TMember>(
 #else
@@ -2036,6 +2049,7 @@ public
         ParameterExpression exDepth,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
+#pragma warning restore CA1859
         where TMember : MemberInfo
     {
         var type = selector(info);
@@ -3704,18 +3718,50 @@ public
         [CallerMemberName] string? member = null
     )
     {
-        // ReSharper disable once InvokeAsExtensionMethod RedundantNameQualifier
-        if ((filter ?? (_ => true))(value))
-            (logger ?? Write)(
-                @$"{((map ?? (x => x))(value) is var mapped && mapped is string
-                    ? mapped
-                    : Stringifier.Stringify(mapped) is var stringy && shouldPrettify
-                        ? stringy.Prettify()
-                        : stringy)}{(shouldLogExpression ? @$"
-        of {expression}" : "")}
-        at {member} in {Path.GetFileName(path)}:line {line}"
-            );
+        const string Indent = "\n        ";
 
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+        {
+            var trimmed = next.Trim();
+
+            fixed (char* ptr = &trimmed[0])
+                accumulator.Append(ptr, next.Length);
+
+            return accumulator;
+        }
+#pragma warning restore 8500
+#endif
+
+        if (!(filter ?? (_ => true))(value))
+            return value;
+
+        logger ??= Write;
+
+        // ReSharper disable InvokeAsExtensionMethod RedundantNameQualifier
+        var stringified = (map ?? (x => x))(value) switch
+        {
+            string s => s,
+            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
+            var o => Stringifier.Stringify(o),
+        };
+
+        var location = shouldLogExpression
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Indent), Accumulator)
+#else
+            ? expression
+              ?.Collapse()
+               .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+               .Select(x => x.Trim())
+               .Prepend(Indent)
+               .Conjoin("")
+#endif
+            : default;
+
+        var log = $"{stringified}{location}{Indent}at {member} in {Path.GetFileName(path)}:line {line}";
+        logger(log);
         return value;
     }
 
@@ -6732,6 +6778,25 @@ readonly
     public ReadOnlySpan<T> Single() =>
         GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
 
+    /// <summary>Gets the first element.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="seed">The accumulator.</param>
+    /// <param name="func">An accumulator function to be invoked on each element.</param>
+    /// <returns>The first span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public TAccumulator Aggregate<TAccumulator>(
+        TAccumulator seed,
+        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+    )
+    {
+        var accumulator = seed;
+
+        foreach (var next in this)
+            accumulator = func(accumulator, next);
+
+        return accumulator;
+    }
+
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
     public
@@ -6877,6 +6942,13 @@ readonly
             return true;
         }
     }
+
+    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="accumulator">The accumulator.</param>
+    /// <param name="next">The next slice from the enumeration.</param>
+    /// <returns>The final accumulator value.</returns>
+    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
 }
 
 // SPDX-License-Identifier: MPL-2.0
