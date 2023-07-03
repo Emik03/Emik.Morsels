@@ -171,10 +171,8 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [Pure]
-    public static bool IsStack<T>(int length)
-        where T : unmanaged =>
-        InBytes<T>(length) <= StackallocSize;
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsStack<T>(int length) => InBytes<T>(length) <= StackallocSize;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -182,10 +180,8 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [NonNegativeValue, Pure]
-    public static unsafe int InBytes<T>(int length)
-        where T : unmanaged =>
-        length * sizeof(T);
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+    public static int InBytes<T>(int length) => length * Unsafe.SizeOf<T>();
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
