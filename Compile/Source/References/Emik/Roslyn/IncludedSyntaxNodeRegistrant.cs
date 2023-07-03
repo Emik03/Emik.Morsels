@@ -126,6 +126,7 @@ static partial class IncludedSyntaxNodeRegistrant
             IMethodSymbol x => x.ReturnType,
             IArrayTypeSymbol x => x.ElementType,
             IPointerTypeSymbol x => x.PointedAtType,
+            IFunctionPointerTypeSymbol x => x.Signature.ReturnType,
             _ => null,
         };
 
