@@ -274,7 +274,7 @@ static partial class Span
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsStack<T>(int length) => InBytes<T>(length) <= StackallocSize;
+    public static bool IsStack<T>([NonNegativeValue] int length) => InBytes<T>(length) <= StackallocSize;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -283,7 +283,7 @@ static partial class Span
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    public static int InBytes<T>(int length) => length * Unsafe.SizeOf<T>();
+    public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
 
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
