@@ -32,7 +32,7 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     [ProvidesContext]
     readonly IList<T> _list;
 
-    /// <summary>Initializes a new instance of the <see cref="ReadOnlyList{T}"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Morsels.ReadOnlyList{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
     public ReadOnlyList([ProvidesContext] IList<T> list) => _list = list;
 
