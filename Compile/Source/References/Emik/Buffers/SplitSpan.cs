@@ -457,6 +457,25 @@ readonly
     public ReadOnlySpan<T> Single() =>
         GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
 
+    /// <summary>Gets the first element.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="seed">The accumulator.</param>
+    /// <param name="func">An accumulator function to be invoked on each element.</param>
+    /// <returns>The first span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public TAccumulator Aggregate<TAccumulator>(
+        TAccumulator seed,
+        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+    )
+    {
+        var accumulator = seed;
+
+        foreach (var next in this)
+            accumulator = func(accumulator, next);
+
+        return accumulator;
+    }
+
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
     public
@@ -602,4 +621,11 @@ readonly
             return true;
         }
     }
+
+    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="accumulator">The accumulator.</param>
+    /// <param name="next">The next slice from the enumeration.</param>
+    /// <returns>The final accumulator value.</returns>
+    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
 }
