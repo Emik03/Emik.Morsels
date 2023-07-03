@@ -88,6 +88,7 @@ static partial class Span
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="del">The callback to invoke.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Allocate(
         [NonNegativeValue] int length,
         [InstantHandle, RequireStaticDelegate] SpanAction<byte> del
@@ -126,6 +127,7 @@ static partial class Span
     /// <param name="length">The length of the buffer.</param>
     /// <param name="param">The parameter to pass in.</param>
     /// <param name="del">The callback to invoke.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Allocate<TParam>(
         int length,
         TParam param,
@@ -162,121 +164,13 @@ static partial class Span
         Marshal.FreeHGlobal(array);
     }
 
-    /// <summary>Determines if a given length and type should be stack-allocated.</summary>
-    /// <remarks><para>
-    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of array.</typeparam>
-    /// <param name="length">The amount of items.</param>
-    /// <returns>
-    /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsStack<T>(int length) => InBytes<T>(length) <= StackallocSize;
-
-    /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
-    /// <typeparam name="T">The type of array.</typeparam>
-    /// <param name="length">The amount of items.</param>
-    /// <returns>
-    /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    public static int InBytes<T>(int length) => length * Unsafe.SizeOf<T>();
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static TResult Allocate<TResult>(
-        int length,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TResult> del
-    ) =>
-        Allocate<byte, TResult>(length, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static unsafe TResult Allocate<TSpan, TResult>(
-        int length,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TResult> del
-    )
-        where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-            return del(stackalloc TSpan[value]);
-
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        var result = del(span);
-
-        Marshal.FreeHGlobal(array);
-
-        return result;
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static TResult Allocate<TParam, TResult>(
-        int length,
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TParam, TResult> del
-    ) =>
-        Allocate<byte, TParam, TResult>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static unsafe TResult Allocate<TSpan, TParam, TResult>(
-        int length,
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TParam, TResult> del
-    )
-        where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-            return del(stackalloc TSpan[value], param);
-
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        var result = del(span, param);
-
-        Marshal.FreeHGlobal(array);
-
-        return result;
-    }
-
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
     /// <param name="length">The length of the buffer.</param>
     /// <param name="param">The parameter to pass in.</param>
     /// <param name="del">The callback to invoke.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Allocate<TParam>(
         int length,
         scoped ReadOnlySpan<TParam> param,
@@ -326,6 +220,7 @@ static partial class Span
     /// <param name="length">The length of the buffer.</param>
     /// <param name="param">The parameter to pass in.</param>
     /// <param name="del">The callback to invoke.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Allocate<TParam>(
         int length,
         scoped Span<TParam> param,
@@ -369,20 +264,129 @@ static partial class Span
         Marshal.FreeHGlobal(array);
     }
 
+    /// <summary>Determines if a given length and type should be stack-allocated.</summary>
+    /// <remarks><para>
+    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of array.</typeparam>
+    /// <param name="length">The amount of items.</param>
+    /// <returns>
+    /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsStack<T>(int length) => InBytes<T>(length) <= StackallocSize;
+
+    /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
+    /// <typeparam name="T">The type of array.</typeparam>
+    /// <param name="length">The amount of items.</param>
+    /// <returns>
+    /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+    public static int InBytes<T>(int length) => length * Unsafe.SizeOf<T>();
+
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> Ref<T>(ref T reference) => MemoryMarshal.CreateSpan(ref reference, 1);
 
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TResult">The return type.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="del">The callback to invoke.</param>
+    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public static TResult Allocate<TResult>(
+        int length,
+        [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TResult> del
+    ) =>
+        Allocate<byte, TResult>(length, del);
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
+    /// <typeparam name="TResult">The return type.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="del">The callback to invoke.</param>
+    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
+    [MustUseReturnValue]
+    public static unsafe TResult Allocate<TSpan, TResult>(
+        int length,
+        [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TResult> del
+    )
+        where TSpan : unmanaged
+    {
+        var value = Math.Max(length, 0);
+
+        if (IsStack<TSpan>(length))
+            return del(stackalloc TSpan[value]);
+
+        var array = Marshal.AllocHGlobal(value);
+        Span<TSpan> span = new((void*)array, value);
+        var result = del(span);
+
+        Marshal.FreeHGlobal(array);
+
+        return result;
+    }
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <typeparam name="TResult">The return type.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="param">The parameter to pass in.</param>
+    /// <param name="del">The callback to invoke.</param>
+    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public static TResult Allocate<TParam, TResult>(
+        int length,
+        TParam param,
+        [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TParam, TResult> del
+    ) =>
+        Allocate<byte, TParam, TResult>(length, param, del);
+
+    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
+    /// <typeparam name="TParam">The type of the parameter.</typeparam>
+    /// <typeparam name="TResult">The return type.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <param name="param">The parameter to pass in.</param>
+    /// <param name="del">The callback to invoke.</param>
+    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
+    [MustUseReturnValue]
+    public static unsafe TResult Allocate<TSpan, TParam, TResult>(
+        int length,
+        TParam param,
+        [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TParam, TResult> del
+    )
+        where TSpan : unmanaged
+    {
+        var value = Math.Max(length, 0);
+
+        if (IsStack<TSpan>(length))
+            return del(stackalloc TSpan[value], param);
+
+        var array = Marshal.AllocHGlobal(value);
+        Span<TSpan> span = new((void*)array, value);
+        var result = del(span, param);
+
+        Marshal.FreeHGlobal(array);
+
+        return result;
+    }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -392,7 +396,7 @@ static partial class Span
     /// <param name="param">The parameter to pass in.</param>
     /// <param name="del">The callback to invoke.</param>
     /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public static TResult Allocate<TParam, TResult>(
         int length,
         scoped ReadOnlySpan<TParam> param,
@@ -446,7 +450,7 @@ static partial class Span
     /// <param name="param">The parameter to pass in.</param>
     /// <param name="del">The callback to invoke.</param>
     /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public static TResult Allocate<TParam, TResult>(
         int length,
         scoped Span<TParam> param,
