@@ -1481,6 +1481,9 @@ public
 #endif
 
     const int MaxIteration = 32, MaxRecursion = 3;
+#if !WAWA
+    const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
+#endif
 
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
@@ -1544,18 +1547,26 @@ public
 #endif
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #if !WAWA
+
+#pragma warning disable MA0110
+    static readonly Regex
+        s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
+        s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
+        s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
+        s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
+        s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
+#pragma warning restore MA0110
+
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
     public static string Collapse(this string s)
     {
-#pragma warning disable MA0110
-        s = new Regex(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+)+)\)").Replace(s, "(…)");
-        s = new Regex(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+)+)\]").Replace(s, "[…]");
-        s = new Regex("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+)*)}").Replace(s, "{…}");
-        s = new Regex("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+)+)>").Replace(s, "<…>");
-        s = new Regex(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+)*)""").Replace(s, "\"…\"");
-#pragma warning restore MA0110
+        s = s_parentheses.Replace(s, "(…)");
+        s = s_brackets.Replace(s, "[…]");
+        s = s_curlies.Replace(s, "{…}");
+        s = s_angles.Replace(s, "<…>");
+        s = s_quotes.Replace(s, "\"…\"");
         return s;
     }
 
