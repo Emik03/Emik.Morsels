@@ -194,7 +194,6 @@ static partial class Peeks
     public static T Peek<T>(this T value, [InstantHandle] Action<T> action)
     {
         action(value);
-
         return value;
     }
 #if !NETFRAMEWORK
@@ -206,9 +205,11 @@ static partial class Peeks
     /// The value <paramref name="call"/> points to <see langword="null"/>.
     /// </exception>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    public static unsafe T Peek<T>(this T value, [InstantHandle, NonNegativeValue] delegate*<T, void> call)
+    public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void>? call)
     {
-        (call is null ? throw new ArgumentNullException(nameof(call)) : call)(value);
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (call is not null)
+            call(value);
 
         return value;
     }
