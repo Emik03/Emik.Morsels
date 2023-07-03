@@ -1,12 +1,13 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+#pragma warning disable GlobalUsingsAnalyzer, IDE0060, SA1600, RCS1163
 using static InlineIL.IL;
 using static InlineIL.IL.Emit;
 
 // Taken from: https://raw.githubusercontent.com/ltrzesniewski/InlineIL.Fody/master/src/InlineIL.Examples/Unsafe.cs
 // ReSharper disable CheckNamespace EntityNameCapturedOnly.Global
-namespace System.Runtime.InteropServices;
-#pragma warning disable IDE0060, RCS1163
+namespace System.Runtime.CompilerServices;
+
 static unsafe class Unsafe
 {
     // This is the InlineIL equivalent of System.Runtime.CompilerServices.Unsafe
@@ -197,15 +198,15 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
 #else
         // Roundtrip via a local to avoid type mismatch on return that the JIT inliner chokes on.
-        IL.DeclareLocals(
+        DeclareLocals(
             false,
             new LocalVar("local", typeof(int).MakeByRefType())
         );
 
-        IL.Push(source);
+        Push(source);
         Stloc("local");
         Ldloc("local");
-        return ref IL.ReturnRef<T>();
+        return ref ReturnRef<T>();
 #endif
     }
 
