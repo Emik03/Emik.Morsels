@@ -91,7 +91,9 @@ static partial class Peeks
         [CallerMemberName] string? member = null
     )
     {
-        const string Indent = "\n        ";
+        const string
+            Indent = "\n        ",
+            Of = $"{Indent}of ";
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable 8500
@@ -115,20 +117,20 @@ static partial class Peeks
         // ReSharper disable InvokeAsExtensionMethod RedundantNameQualifier
         var stringified = (map ?? (x => x))(value) switch
         {
-            string s => s,
+            string s when !(shouldLogExpression = false) => s,
             var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
             var o => Stringifier.Stringify(o),
         };
 
         var location = shouldLogExpression
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Indent), Accumulator)
+            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Of), Accumulator)
 #else
             ? expression
               ?.Collapse()
                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                .Select(x => x.Trim())
-               .Prepend(Indent)
+               .Prepend(Of)
                .Conjoin("")
 #endif
             : default;
