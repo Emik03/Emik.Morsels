@@ -550,7 +550,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
     }
 #else
         =>
@@ -569,7 +569,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -588,7 +588,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -607,7 +607,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
