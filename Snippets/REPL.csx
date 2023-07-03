@@ -5093,11 +5093,7 @@ public
 #endif
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
-#if NETFRAMEWORK && !NET45_OR_GREATER
         iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
-#else
-        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
-#endif
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
