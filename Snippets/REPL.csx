@@ -3807,7 +3807,6 @@ public
     public static T Peek<T>(this T value, [InstantHandle] Action<T> action)
     {
         action(value);
-
         return value;
     }
 #if !NETFRAMEWORK
@@ -3819,9 +3818,11 @@ public
     /// The value <paramref name="call"/> points to <see langword="null"/>.
     /// </exception>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    public static unsafe T Peek<T>(this T value, [InstantHandle, NonNegativeValue] delegate*<T, void> call)
+    public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void>? call)
     {
-        (call is null ? throw new ArgumentNullException(nameof(call)) : call)(value);
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (call is not null)
+            call(value);
 
         return value;
     }
@@ -6155,11 +6156,54 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace RedundantUsingDirective
 
 #pragma warning disable 8500
+
+
 /// <summary>Provides the method to convert spans.</summary>
 
+#if !CSHARPREPL
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>
+    /// This method is aggressively inlined.
+    /// </para><para>
+    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Alloc<T>(this in int length)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            length switch
+            {
+                <= 0 => default, // No allocation needed
+                _ when length <= StackallocSize / Unsafe.SizeOf<T>() => length.Stackalloc<T>(), // Stack-allocated buffer
+                _ => new T[length], // Heap-allocated buffer
+            };
+#endif
+
+    /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
+    /// <remarks><para>This method is aggressively inlined.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="length">The length of the buffer.</param>
+    /// <returns>The stack-allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe Span<T> Stackalloc<T>(this in int length)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        var pointer = stackalloc byte[unchecked(Unsafe.SizeOf<T>() * length)];
+        return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<T>(pointer), length);
+    }
+#endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
     /// <param name="span">The span to convert.</param>
@@ -6168,9 +6212,9 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Reinterpret<T>(this scoped Span<nint> span)
+    public static Span<T> Reinterpret<T>(this Span<nint> span)
         where T : class =>
-        MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
+        MemoryMarshal.CreateSpan(ref Unsafe.As<nint, T>(ref span[0]), span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6180,9 +6224,9 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Reinterpret<T>(this scoped Span<nuint> span)
+    public static Span<T> Reinterpret<T>(this Span<nuint> span)
         where T : class =>
-        MemoryMarshal.CreateSpan(ref *(T*)span[0], span.Length);
+        MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref span[0]), span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6192,8 +6236,8 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped ReadOnlySpan<nint> span) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
+    public static ReadOnlySpan<T> Reinterpret<T>(this ReadOnlySpan<nint> span) =>
+        MemoryMarshal.CreateSpan(ref Unsafe.As<nint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
 
     /// <summary>Reinterprets the span as a series of managed types.</summary>
     /// <typeparam name="T">The type of span to convert to.</typeparam>
@@ -6203,8 +6247,9 @@ public enum ControlFlow : byte
     /// but with each time assumed to be <typeparamref name="T"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> Reinterpret<T>(this scoped ReadOnlySpan<nuint> span) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(T*)span[0], span.Length);
+    public static ReadOnlySpan<T> Reinterpret<T>(this ReadOnlySpan<nuint> span) =>
+        MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
+#endif
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -6232,8 +6277,8 @@ public enum ControlFlow : byte
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(T value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(T)).ToArray();
+    public static byte[] Raw<T>(T value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -7337,6 +7382,8 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace
+
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 
@@ -7408,7 +7455,7 @@ public sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
     [ProvidesContext]
     readonly IList<T> _list;
 
-    /// <summary>Initializes a new instance of the <see cref="ReadOnlyList{T}"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Morsels.ReadOnlyList{T}"/> class.</summary>
     /// <param name="list">The list to encapsulate.</param>
     public ReadOnlyList([ProvidesContext] IList<T> list) => _list = list;
 
@@ -8636,7 +8683,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
     }
 #else
         =>
@@ -8655,7 +8702,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -8674,7 +8721,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -8693,7 +8740,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
     }
 #else
         =>
@@ -8945,7 +8992,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     {
         fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
     }
 #else
         =>
