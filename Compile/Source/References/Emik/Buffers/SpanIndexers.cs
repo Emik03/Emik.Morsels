@@ -3,8 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+#pragma warning disable IDE0056
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable ConditionIsAlwaysTrueOrFalse
+// ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
 static partial class SpanIndexers
 {
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
@@ -51,11 +52,8 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
-    {
-        range.GetOffsetAndLength(span.Length, out var offset, out var length);
-        return offset < 0 || length < 0 || offset + length >= span.Length ? default : span.Slice(offset, length);
-    }
+    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range) =>
+        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -63,11 +61,8 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this Span<T> span, Range range)
-    {
-        range.GetOffsetAndLength(span.Length, out var offset, out var length);
-        return offset < 0 || length < 0 || offset + length >= span.Length ? default : span.Slice(offset, length);
-    }
+    public static Span<T> Nth<T>(this Span<T> span, Range range) =>
+        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -85,7 +80,9 @@ static partial class SpanIndexers
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index) =>
-        index.GetOffset(span.Length) is >= 0 and var offset && offset < span.Length ? span[offset] : default;
+        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+            ? span[offset]
+            : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -94,7 +91,7 @@ static partial class SpanIndexers
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[^index] : default;
+        index > 0 && index <= span.Length ? span[span.Length - index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -112,7 +109,9 @@ static partial class SpanIndexers
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Nth<T>(this scoped Span<T> span, Index index) =>
-        index.GetOffset(span.Length) is >= 0 and var offset && offset < span.Length ? span[offset] : default;
+        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+            ? span[offset]
+            : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -121,5 +120,5 @@ static partial class SpanIndexers
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[^index] : default;
+        index > 0 && index <= span.Length ? span[span.Length - index] : default;
 }

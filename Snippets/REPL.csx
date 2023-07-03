@@ -1095,7 +1095,6 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
 
-#pragma warning disable CS1574
     /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
     /// <remarks><para>
     /// For performance reasons, we don't validate the input length parameter against negative values.
@@ -1110,8 +1109,23 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="outOffset">The resulting offset.</param>
     /// <param name="outLength">The resulting length.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning restore CS1574
     public static void GetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
+    {
+        if (!TryGetOffsetAndLength(range, length, out outOffset, out outLength))
+            throw new ArgumentOutOfRangeException(nameof(length));
+    }
+
+    /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
+    /// <param name="range">The <see cref="Range"/> that contains the range of elements.</param>
+    /// <param name="length">
+    /// The length of the collection that the range will be used with.
+    /// <paramref name="length"/> has to be a positive value.
+    /// </param>
+    /// <param name="outOffset">The resulting offset.</param>
+    /// <param name="outLength">The resulting length.</param>
+    /// <returns>Whether the values are set.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool TryGetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
     {
         var startIndex = range.Start;
         var start = startIndex.IsFromEnd ? length - startIndex.Value : startIndex.Value;
@@ -1119,11 +1133,10 @@ using static JetBrains.Annotations.CollectionAccessType;
         var endIndex = range.End;
         var end = endIndex.IsFromEnd ? length - endIndex.Value : endIndex.Value;
 
-        if ((uint)end > (uint)length || (uint)start > (uint)end)
-            throw new ArgumentOutOfRangeException(nameof(length));
-
         outOffset = start;
         outLength = end - start;
+
+        return unchecked((uint)end <= (uint)length && (uint)start <= (uint)end);
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -7463,8 +7476,9 @@ readonly
 // ReSharper disable once CheckNamespace
 
 
+#pragma warning disable IDE0056
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable ConditionIsAlwaysTrueOrFalse
+// ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
 
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -7510,11 +7524,8 @@ readonly
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
-    {
-        range.GetOffsetAndLength(span.Length, out var offset, out var length);
-        return offset < 0 || length < 0 || offset + length >= span.Length ? default : span.Slice(offset, length);
-    }
+    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range) =>
+        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -7522,11 +7533,8 @@ readonly
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this Span<T> span, Range range)
-    {
-        range.GetOffsetAndLength(span.Length, out var offset, out var length);
-        return offset < 0 || length < 0 || offset + length >= span.Length ? default : span.Slice(offset, length);
-    }
+    public static Span<T> Nth<T>(this Span<T> span, Range range) =>
+        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -7544,7 +7552,9 @@ readonly
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index) =>
-        index.GetOffset(span.Length) is >= 0 and var offset && offset < span.Length ? span[offset] : default;
+        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+            ? span[offset]
+            : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -7553,7 +7563,7 @@ readonly
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[^index] : default;
+        index > 0 && index <= span.Length ? span[span.Length - index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -7571,7 +7581,9 @@ readonly
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Nth<T>(this scoped Span<T> span, Index index) =>
-        index.GetOffset(span.Length) is >= 0 and var offset && offset < span.Length ? span[offset] : default;
+        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+            ? span[offset]
+            : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -7580,7 +7592,7 @@ readonly
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[^index] : default;
+        index > 0 && index <= span.Length ? span[span.Length - index] : default;
 
 // SPDX-License-Identifier: MPL-2.0
 
