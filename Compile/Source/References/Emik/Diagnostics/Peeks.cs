@@ -205,7 +205,7 @@ static partial class Peeks
     /// The value <paramref name="call"/> points to <see langword="null"/>.
     /// </exception>
     /// <returns>The parameter <paramref name="value"/>.</returns>
-    public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void>? call)
+    public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void> call)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (call is not null)
