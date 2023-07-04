@@ -352,6 +352,8 @@ static partial class Stringifier
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
             ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
 #endif
+            IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
+            IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
@@ -734,4 +736,32 @@ static partial class Stringifier
         return builder.Append('>');
     }
 #endif
+
+    sealed class FakeComparer : IComparer, IEqualityComparer
+    {
+        readonly int _depth;
+
+        StringBuilder? _builder;
+
+        public FakeComparer(int depth) => _depth = depth;
+
+        /// <inheritdoc />
+        public override string ToString() =>
+            _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(']').ToString() ?? "[]";
+
+        /// <inheritdoc />
+        bool IEqualityComparer.Equals(object x, object y) => Append(x, true);
+
+        /// <inheritdoc />
+        int IComparer.Compare(object x, object y) => Append(x, 0);
+
+        /// <inheritdoc />
+        int IEqualityComparer.GetHashCode(object obj) => Append(obj, 0);
+
+        T Append<T>(object obj, T ret)
+        {
+            (_builder ??= new("[")).Append(obj.Stringify(_depth)).Append(Separator);
+            return ret;
+        }
+    }
 }
