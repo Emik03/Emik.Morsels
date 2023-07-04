@@ -114,10 +114,10 @@ static partial class Peeks
 
         logger ??= Write;
 
-        // ReSharper disable InvokeAsExtensionMethod RedundantNameQualifier
+        // ReSharper disable ExplicitCallerInfoArgument InvokeAsExtensionMethod RedundantNameQualifier
         var stringified = (map ?? (x => x))(value) switch
         {
-            string x when !(shouldLogExpression = false) => x,
+            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
@@ -158,16 +158,14 @@ static partial class Peeks
         if (!(filter ?? (_ => true))(value))
             return value;
 
-        // ReSharper disable ExplicitCallerInfoArgument
         var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
         {
-            string x when !(shouldLogExpression = false) => x,
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
 
         Debug(
-            stringified.ToCharArray(),
+            stringified,
             shouldPrettify,
             shouldLogExpression,
             logger: logger,

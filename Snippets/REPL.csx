@@ -3796,12 +3796,12 @@ public
 
         logger ??= Write;
 
-        // ReSharper disable InvokeAsExtensionMethod RedundantNameQualifier
+        // ReSharper disable ExplicitCallerInfoArgument InvokeAsExtensionMethod RedundantNameQualifier
         var stringified = (map ?? (x => x))(value) switch
         {
-            string s when !(shouldLogExpression = false) => s,
-            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
-            var o => Stringifier.Stringify(o),
+            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
+            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
+            var x => Stringifier.Stringify(x),
         };
 
         var location = shouldLogExpression
@@ -3840,12 +3840,10 @@ public
         if (!(filter ?? (_ => true))(value))
             return value;
 
-        // ReSharper disable ExplicitCallerInfoArgument
         var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
         {
-            string s when !(shouldLogExpression = false) => s,
-            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
-            var o => Stringifier.Stringify(o),
+            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
+            var x => Stringifier.Stringify(x),
         };
 
         Debug(
