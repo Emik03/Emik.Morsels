@@ -1502,6 +1502,7 @@ public
 #pragma warning disable CA1823, IDE0051
     const string
         Else = "th",
+        EqualityContract = nameof(EqualityContract),
         False = "false",
         FirstOrd = "st",
         Invalid = $"!<{nameof(InvalidOperationException)}>",
@@ -1985,17 +1986,21 @@ public
     {
         if (source is null)
             return Null;
+
+        if (!s_hasMethods.ContainsKey(typeof(T)))
+            s_hasMethods[typeof(T)] =
+                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
+                typeof(T).GetProperties().Any(x => x.Name is EqualityContract);
+
+        if (depth < 0)
+            return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
         if (source.GetType() is var t && t != typeof(T))
             return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
 #pragma warning restore 8600, 8603
-        if (!s_hasMethods.ContainsKey(typeof(T)))
-            s_hasMethods[typeof(T)] =
-                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
 
         // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        return depth >= 0 ? UseStringifier(source, depth) :
-            s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
+        return UseStringifier(source, depth);
     }
 
     [MustUseReturnValue]
@@ -9161,8 +9166,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
             1 => $"[{_first}]",
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
-            _ when Rest is { } rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
-            _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
+            _ => $"[{_first}, {_second}, {_third}, {Rest!.Conjoin()}]",
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
