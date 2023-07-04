@@ -3846,7 +3846,7 @@ public
             var x => Stringifier.Stringify(x),
         };
 
-        Debug(
+        Debug<IEnumerable<char>>(
             stringified,
             shouldPrettify,
             shouldLogExpression,

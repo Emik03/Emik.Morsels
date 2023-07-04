@@ -164,7 +164,7 @@ static partial class Peeks
             var x => Stringifier.Stringify(x),
         };
 
-        Debug(
+        Debug<IEnumerable<char>>(
             stringified,
             shouldPrettify,
             shouldLogExpression,
