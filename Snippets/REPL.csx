@@ -2480,6 +2480,16 @@ public
 #pragma warning disable CA1508
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
 
+    /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
+    /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
+    /// <param name="iterable">The item to return with adjusted nullability.</param>
+    /// <returns>The parameter <paramref name="iterable"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static IEnumerable<T?>? ItemCanBeEmptyNullable<T>(this IEnumerable<T>? iterable)
+        where T : struct =>
+        iterable?.Select(x => new T?(x));
+
 #pragma warning disable CS8619
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -3784,7 +3794,7 @@ public
             var trimmed = next.Trim();
 
             fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, next.Length);
+                accumulator.Append(ptr, trimmed.Length);
 
             return accumulator;
         }

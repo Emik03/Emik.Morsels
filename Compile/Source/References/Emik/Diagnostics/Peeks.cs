@@ -102,7 +102,7 @@ static partial class Peeks
             var trimmed = next.Trim();
 
             fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, next.Length);
+                accumulator.Append(ptr, trimmed.Length);
 
             return accumulator;
         }
