@@ -1987,9 +1987,16 @@ public
             return Null;
 
         if (source.GetType() is var t && t != typeof(T))
-#pragma warning disable CS8600, CS8603 // Will never be null, we have access to this function.
-            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
-#pragma warning restore CS8600, CS8603
+        {
+            while (t is not null && (t.IsNestedPrivate || t.IsNotPublic))
+                t = t.BaseType;
+
+#pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
+            if (t is not null)
+                return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+#pragma warning restore 8600, 8603
+        }
+
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
@@ -5401,6 +5408,19 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [return: NotNullIfNotNull(nameof(iterable))]
     public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
+
+    /// <summary>Creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
+    /// <param name="comparer">The comparer to use.</param>
+    /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSet<T>(
+        [InstantHandle] this IEnumerable<T>? iterable,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        iterable is null ? null : new HashSet<T>(iterable, comparer);
 
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
