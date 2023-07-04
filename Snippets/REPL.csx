@@ -1905,9 +1905,9 @@ public
 #endif
             x is -1 ? "0" : $"1 << {x}";
 
-        return value.IsFlagsDefined()
-            ? Conjoin(System.Convert.ToInt32(value).Bits().Select(BitStringifier), " | ")
-            : $"{value}";
+        return !value.IsFlagsDefined() || System.Convert.ToInt32(value) is var i && i is 0
+            ? $"{value}"
+            : Conjoin(System.Convert.ToInt32(i).Bits().Select(BitStringifier), " | ");
     }
 
     static IEnumerable<int> Bits(this int number)
