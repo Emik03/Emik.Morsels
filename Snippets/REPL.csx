@@ -3800,6 +3800,7 @@ public
         var stringified = (map ?? (x => x))(value) switch
         {
             var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
+            string x => x,
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
@@ -3843,6 +3844,7 @@ public
         var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
         {
             var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x as object,
+            string x => x,
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
