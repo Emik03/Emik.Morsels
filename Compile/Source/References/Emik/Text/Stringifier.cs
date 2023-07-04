@@ -555,7 +555,7 @@ static partial class Stringifier
             return Call(s_combine, call, curr);
         }
 
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
 
         ParameterExpression
             exInstance = Parameter(typeof(T), nameof(T)),
