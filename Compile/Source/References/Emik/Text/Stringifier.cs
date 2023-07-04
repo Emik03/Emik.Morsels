@@ -750,15 +750,15 @@ static partial class Stringifier
             _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(')').ToString() ?? "()";
 
         /// <inheritdoc />
-        bool IEqualityComparer.Equals(object x, object y) => Append(x, true);
+        bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
 
         /// <inheritdoc />
-        int IComparer.Compare(object x, object y) => Append(x, 0);
+        int IComparer.Compare(object? x, object? y) => Append(x, 0);
 
         /// <inheritdoc />
-        int IEqualityComparer.GetHashCode(object obj) => Append(obj, 0);
+        int IEqualityComparer.GetHashCode(object? obj) => Append(obj, 0);
 
-        T Append<T>(object obj, T ret)
+        T Append<T>(object? obj, T ret)
         {
             (_builder ??= new("(")).Append(obj.Stringify(_depth)).Append(Separator);
             return ret;
