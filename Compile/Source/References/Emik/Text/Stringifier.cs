@@ -105,8 +105,7 @@ static partial class Stringifier
         s = s_brackets.Replace(s, "[…]");
         s = s_curlies.Replace(s, "{…}");
         s = s_angles.Replace(s, "<…>");
-        s = s_quotes.Replace(s, "\"…\"");
-        return s;
+        return s_quotes.Replace(s, "\"…\"");
     }
 
     /// <summary>Creates the prettified form of the string.</summary>
