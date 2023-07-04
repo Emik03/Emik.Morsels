@@ -373,6 +373,9 @@ static partial class Stringifier
 #endif
 
     [Pure]
+    static bool IsAccessible([NotNullWhen(true)] this Type? t) => t is { IsPublic: true, IsNestedPublic: true };
+
+    [Pure]
     static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
 
     [Pure]
@@ -511,23 +514,15 @@ static partial class Stringifier
     {
         if (source is null)
             return Null;
-
-        if (source.GetType() is var t && t != typeof(T))
-        {
-            while (t is not null && (t.IsNestedPrivate || t.IsNotPublic))
-                t = t.BaseType;
-
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
-            if (t is not null)
-                return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+        if (source.GetType() is var t && t != typeof(T) && IsAccessible(t))
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
 #pragma warning restore 8600, 8603
-        }
-
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object);
 
-        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         return depth >= 0 ? UseStringifier(source, depth) :
             s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
     }
