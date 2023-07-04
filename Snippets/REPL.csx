@@ -2221,7 +2221,7 @@ public
 
         /// <inheritdoc />
         public override string ToString() =>
-            _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(']').ToString() ?? "[]";
+            _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(')').ToString() ?? "()";
 
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object x, object y) => Append(x, true);
@@ -2234,7 +2234,7 @@ public
 
         T Append<T>(object obj, T ret)
         {
-            (_builder ??= new("[")).Append(obj.Stringify(_depth)).Append(Separator);
+            (_builder ??= new("(")).Append(obj.Stringify(_depth)).Append(Separator);
             return ret;
         }
     }
