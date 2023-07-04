@@ -117,9 +117,9 @@ static partial class Peeks
         // ReSharper disable InvokeAsExtensionMethod RedundantNameQualifier
         var stringified = (map ?? (x => x))(value) switch
         {
-            string s when !(shouldLogExpression = false) => s,
-            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
-            var o => Stringifier.Stringify(o),
+            string x when !(shouldLogExpression = false) => x,
+            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
+            var x => Stringifier.Stringify(x),
         };
 
         var location = shouldLogExpression
@@ -161,13 +161,13 @@ static partial class Peeks
         // ReSharper disable ExplicitCallerInfoArgument
         var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
         {
-            string s when !(shouldLogExpression = false) => s,
-            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
-            var o => Stringifier.Stringify(o),
+            string x when !(shouldLogExpression = false) => x,
+            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
+            var x => Stringifier.Stringify(x),
         };
 
         Debug(
-            stringified,
+            stringified.ToCharArray(),
             shouldPrettify,
             shouldLogExpression,
             logger: logger,
