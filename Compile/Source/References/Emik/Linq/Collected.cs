@@ -77,6 +77,19 @@ static partial class Collected
     public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
 
+    /// <summary>Creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
+    /// <param name="comparer">The comparer to use.</param>
+    /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSet<T>(
+        [InstantHandle] this IEnumerable<T>? iterable,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        iterable is null ? null : new HashSet<T>(iterable, comparer);
+
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
