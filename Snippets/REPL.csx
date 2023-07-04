@@ -3842,11 +3842,12 @@ public
 
         var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
         {
+            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x as object,
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
 
-        Debug<IEnumerable<char>>(
+        Debug(
             stringified,
             shouldPrettify,
             shouldLogExpression,
