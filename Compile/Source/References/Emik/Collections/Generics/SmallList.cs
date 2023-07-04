@@ -771,8 +771,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
             1 => $"[{_first}]",
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
-            _ when Rest is { } rest => $"[{_first}, {_second}, {_third}, {rest.Conjoin()}]",
-            _ => $"[{_first}, {_second}, {_third}, ..{_rest} ]",
+            _ => $"[{_first}, {_second}, {_third}, {Rest!.Conjoin()}]",
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
