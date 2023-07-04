@@ -373,9 +373,6 @@ static partial class Stringifier
 #endif
 
     [Pure]
-    static bool IsAccessible([NotNullWhen(true)] this Type? t) => t is { IsPublic: true, IsNestedPublic: true };
-
-    [Pure]
     static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
 
     [Pure]
@@ -515,7 +512,7 @@ static partial class Stringifier
         if (source is null)
             return Null;
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
-        if (source.GetType() is var t && t != typeof(T) && IsAccessible(t))
+        if (source.GetType() is var t && t != typeof(T))
             return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
 #pragma warning restore 8600, 8603
         if (!s_hasMethods.ContainsKey(typeof(T)))
