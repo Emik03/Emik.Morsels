@@ -73,17 +73,13 @@ static partial class Indexers
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
+    /// <param name="range">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
     [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static string? Nth(this string str, Range index) =>
-        (index.Start.IsFromEnd ? str.Length - index.Start.Value : index.Start.Value) is var start and >= 0 &&
-        (index.End.IsFromEnd ? str.Length - index.End.Value : index.End.Value) is var end and >= 0 &&
-        start <= str.Length &&
-        end <= str.Length &&
-        start <= end
-            ? str[index]
-            : null;
+    public static string? Nth(this string str, Range range) =>
+        range.TryGetOffsetAndLength(str.Length, out var offset, out var length)
+            ? str.Substring(offset, length)
+            : default;
 
     /// <summary>Gets a range of items from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>

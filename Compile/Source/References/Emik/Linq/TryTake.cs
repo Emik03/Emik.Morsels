@@ -93,15 +93,6 @@ static partial class TryTake
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Reinterpret<T>(char c)
-    {
-        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
-#pragma warning disable 8500
-        return *(T*)&c;
-#pragma warning restore 8500
-    }
-
 #if !NET20 && !NET30
     /// <summary>Returns the item, or a fallback.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -215,4 +206,13 @@ static partial class TryTake
         };
     }
 #endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Reinterpret<T>(char c)
+    {
+        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
+#pragma warning disable 8500
+        return *(T*)&c;
+#pragma warning restore 8500
+    }
 }
