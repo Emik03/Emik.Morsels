@@ -167,7 +167,7 @@ static partial class Peeks
 
         Debug(
             stringified,
-            shouldPrettify,
+            false,
             shouldLogExpression,
             logger: logger,
             expression: expression,

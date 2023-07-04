@@ -3849,7 +3849,7 @@ public
 
         Debug(
             stringified,
-            shouldPrettify,
+            false,
             shouldLogExpression,
             logger: logger,
             expression: expression,
