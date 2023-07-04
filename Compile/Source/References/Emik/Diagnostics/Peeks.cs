@@ -141,6 +141,46 @@ static partial class Peeks
     }
 
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    [return: NotNullIfNotNull(nameof(value))]
+    public static T Debug<T, TAs>(
+        this T value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = true,
+        [InstantHandle] Converter<T, TAs?>? map = null,
+        [InstantHandle] Predicate<T>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+    {
+        if (!(filter ?? (_ => true))(value))
+            return value;
+
+        // ReSharper disable ExplicitCallerInfoArgument
+        var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
+        {
+            string s when !(shouldLogExpression = false) => s,
+            var o when shouldPrettify => Stringifier.Stringify(o).Prettify(),
+            var o => Stringifier.Stringify(o),
+        };
+
+        Debug(
+            stringified,
+            shouldPrettify,
+            shouldLogExpression,
+            logger: logger,
+            expression: expression,
+            path: path,
+            line: line,
+            member: member
+        );
+
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
         bool shouldPrettify = true,
