@@ -60,7 +60,7 @@ static partial class IncludedSyntaxNodeRegistrant
                 diagnostic.Descriptor.IsEnabledByDefault,
                 $"{diagnostic.Descriptor.Description} {message.Stringify()}",
                 diagnostic.Descriptor.HelpLinkUri,
-                diagnostic.Descriptor.CustomTags.ToArray()
+                diagnostic.Descriptor.CustomTags.ToArrayLazily()
             ),
             diagnostic.Location,
             diagnostic.Severity,
