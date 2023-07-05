@@ -384,6 +384,13 @@ static partial class Stringifier
         (bits & filter) is not 0;
 
     [Pure]
+    static bool IsRecord<T>() =>
+        typeof(T)
+           .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
+           .Where(x => x.CanRead && !x.CanWrite && x.PropertyType == typeof(Type) && x.GetIndexParameters() is [])
+           .Any(x => x.Name is EqualityContract);
+
+    [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
 
     [MustUseReturnValue]
@@ -510,18 +517,13 @@ static partial class Stringifier
     [MustUseReturnValue]
     static string StringifyObject<T>(this T source, int depth)
     {
-        const BindingFlags Flags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
-
         if (source is null)
             return Null;
 
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
-                typeof(T)
-                   .GetProperties(Flags)
-                   .Where(x => x.PropertyType != typeof(Type))
-                   .All(x => x.Name is not EqualityContract);
+                !IsRecord<T>();
 
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
