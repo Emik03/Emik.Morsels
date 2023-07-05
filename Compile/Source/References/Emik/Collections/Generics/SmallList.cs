@@ -13,6 +13,10 @@ using static Span;
 static partial class SmallFactory
 #pragma warning restore MA0048
 {
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsSmallList<T>(this T value) => value;
+
     /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)

@@ -8432,6 +8432,10 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
 
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsSmallList<T>(this T value) => value;
+
     /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
