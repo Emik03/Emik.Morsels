@@ -365,6 +365,9 @@ static partial class Stringifier
 #endif
             IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
             IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
+#if ROSLYN
+            ISymbol x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+#endif
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
