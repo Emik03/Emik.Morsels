@@ -510,13 +510,18 @@ static partial class Stringifier
     [MustUseReturnValue]
     static string StringifyObject<T>(this T source, int depth)
     {
+        const BindingFlags Flags = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
+
         if (source is null)
             return Null;
 
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
-                typeof(T).GetProperties().Any(x => x.Name is EqualityContract);
+                typeof(T)
+                   .GetProperties(Flags)
+                   .Where(x => x.PropertyType != typeof(Type))
+                   .All(x => x.Name is not EqualityContract);
 
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());

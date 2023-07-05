@@ -1990,7 +1990,7 @@ public
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
-                typeof(T).GetProperties().Any(x => x.Name is EqualityContract);
+                typeof(T).GetProperties().All(x => x.Name is not EqualityContract);
 
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
