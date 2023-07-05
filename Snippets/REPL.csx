@@ -1583,6 +1583,17 @@ public
         return s_quotes.Replace(s, "\"…\"");
     }
 
+    /// <summary>Converts a number to an ordinal.</summary>
+    /// <param name="i">The number to convert.</param>
+    /// <param name="one">The string for the value 1 or -1.</param>
+    /// <param name="many">The string to concatenate. Use prefixed dashes to trim <paramref name="one"/>.</param>
+    /// <returns>The conjugation of all the parameters.</returns>
+    [Pure]
+    public static string Conjugate(this int i, string one, string many = "s") =>
+        i is not 1 and not -1 && Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length) is var trim
+            ? $"{i} {one[..^trim]}{many[trim..]}"
+            : $"{i} {one}";
+
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
@@ -1848,6 +1859,12 @@ public
 #endif
 
     [Pure]
+    static bool IsEqualityContract(PropertyInfo x) =>
+        x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
+        x.PropertyType == typeof(Type) &&
+        x.GetIndexParameters() is [];
+
+    [Pure]
     static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
 
     [Pure]
@@ -1861,8 +1878,7 @@ public
     static bool IsRecord<T>() =>
         typeof(T)
            .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
-           .Where(x => x.CanRead && !x.CanWrite && x.PropertyType == typeof(Type) && x.GetIndexParameters() is [])
-           .Any(x => x.Name is EqualityContract);
+           .Any(IsEqualityContract);
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
