@@ -7376,7 +7376,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
 
-    /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
+    /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
