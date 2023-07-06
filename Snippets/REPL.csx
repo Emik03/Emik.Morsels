@@ -8895,9 +8895,9 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
         list.BoundsCheck(count - 1, out _);
 
         // Takes advantage of fallthrough in switch-cases.
-        switch (2 - count)
+        switch (count)
         {
-            case < 0:
+            case > InlinedLength:
                 IList<T>
                     from = Rest!,
                     to = list.Rest!;
@@ -8905,14 +8905,14 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
                 for (var i = 0; i < from.Count; i++)
                     to[i] = from[i];
 
-                goto case 0;
-            case 0:
+                goto case 3;
+            case 3:
                 list._third = _third!;
-                goto case 1;
-            case 1:
-                list._second = _second!;
                 goto case 2;
             case 2:
+                list._second = _second!;
+                goto case 1;
+            case 1:
                 list._first = _first!;
                 break;
         }
@@ -8923,18 +8923,18 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     public readonly void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
         // Takes advantage of fallthrough in switch-cases.
-        switch (2 - Count)
+        switch (Count)
         {
-            case < 0:
+            case > InlinedLength:
                 Rest!.CopyTo(array, arrayIndex + InlinedLength);
-                goto case 0;
-            case 0:
+                goto case 3;
+            case 3:
                 array[arrayIndex + 2] = _third!;
-                goto case 1;
-            case 1:
-                array[arrayIndex + 1] = _second!;
                 goto case 2;
             case 2:
+                array[arrayIndex + 1] = _second!;
+                goto case 1;
+            case 1:
                 array[arrayIndex] = _first!;
                 break;
         }
@@ -9109,7 +9109,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
             0 => Eq(_first, item),
             1 => Eq(_first, item) || Eq(_second, item),
             2 => Eq(_first, item) || Eq(_second, item) || Eq(_third, item),
-            _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || (Rest?.Contains(item) ?? false),
+            _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || Rest!.Contains(item),
         };
 
     /// <summary>Determines whether the item exists in the collection.</summary>
@@ -9126,7 +9126,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
             _ => comparer.Equals(_first, item) ||
                 comparer.Equals(_second, item) ||
                 comparer.Equals(_third, item) ||
-                (Rest?.Contains(item, comparer) ?? false),
+                Rest!.Contains(item, comparer),
         };
 
     /// <inheritdoc />
@@ -9163,10 +9163,24 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     {
         unchecked
         {
-            var hashCode = _rest?.GetHashCode() ?? 0;
-            hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_first);
-            hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_second);
-            hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_third);
+            var hashCode = 0;
+
+            switch (Count)
+            {
+                case > InlinedLength:
+                    hashCode = _rest!.GetHashCode();
+                    goto case 3;
+                case 3:
+                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
+                    goto case 2;
+                case 2:
+                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
+                    goto case 1;
+                case 1:
+                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
+                    break;
+            }
+
             return hashCode;
         }
     }
@@ -9360,68 +9374,68 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool IConvertible.ToBoolean(IFormatProvider provider) => !IsEmpty;
+    readonly bool IConvertible.ToBoolean(IFormatProvider? provider) => !IsEmpty;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly byte IConvertible.ToByte(IFormatProvider provider) => unchecked((byte)Count);
+    readonly byte IConvertible.ToByte(IFormatProvider? provider) => unchecked((byte)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly char IConvertible.ToChar(IFormatProvider provider) => unchecked((char)Count);
+    readonly char IConvertible.ToChar(IFormatProvider? provider) => unchecked((char)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly DateTime IConvertible.ToDateTime(IFormatProvider provider) => new(Count);
+    readonly DateTime IConvertible.ToDateTime(IFormatProvider? provider) => new(Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly decimal IConvertible.ToDecimal(IFormatProvider provider) => Count;
+    readonly decimal IConvertible.ToDecimal(IFormatProvider? provider) => Count;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly double IConvertible.ToDouble(IFormatProvider provider) => Count;
+    readonly double IConvertible.ToDouble(IFormatProvider? provider) => Count;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly short IConvertible.ToInt16(IFormatProvider provider) => unchecked((short)Count);
+    readonly short IConvertible.ToInt16(IFormatProvider? provider) => unchecked((short)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly int IConvertible.ToInt32(IFormatProvider provider) => Count;
+    readonly int IConvertible.ToInt32(IFormatProvider? provider) => Count;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly long IConvertible.ToInt64(IFormatProvider provider) => Count;
+    readonly long IConvertible.ToInt64(IFormatProvider? provider) => Count;
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly sbyte IConvertible.ToSByte(IFormatProvider provider) => unchecked((sbyte)Count);
+    readonly sbyte IConvertible.ToSByte(IFormatProvider? provider) => unchecked((sbyte)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly float IConvertible.ToSingle(IFormatProvider provider) => Count;
+    readonly float IConvertible.ToSingle(IFormatProvider? provider) => Count;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly string IConvertible.ToString(IFormatProvider provider) => ToString();
+    readonly string IConvertible.ToString(IFormatProvider? provider) => ToString();
 
     /// <inheritdoc />
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    readonly object IConvertible.ToType(Type conversionType, IFormatProvider provider) =>
+    readonly object IConvertible.ToType(Type conversionType, IFormatProvider? provider) =>
         throw new InvalidOperationException();
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly ushort IConvertible.ToUInt16(IFormatProvider provider) => unchecked((ushort)Count);
+    readonly ushort IConvertible.ToUInt16(IFormatProvider? provider) => unchecked((ushort)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly uint IConvertible.ToUInt32(IFormatProvider provider) => unchecked((uint)Count);
+    readonly uint IConvertible.ToUInt32(IFormatProvider? provider) => unchecked((uint)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly ulong IConvertible.ToUInt64(IFormatProvider provider) => unchecked((ulong)Count);
+    readonly ulong IConvertible.ToUInt64(IFormatProvider? provider) => unchecked((ulong)Count);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
