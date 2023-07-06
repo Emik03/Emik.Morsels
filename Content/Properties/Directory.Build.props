@@ -138,7 +138,7 @@
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
         <PackageReference Include="ReSharper.ExportAnnotations.Task" Version="1.4.0" PrivateAssets="all"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0-eap4" PrivateAssets="all" IncludeAssets="compile"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" PrivateAssets="all" IncludeAssets="compile"/>
     </ItemGroup>
     <!-- F# latest for .NET Framework 2.0 - 4.6. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))">
