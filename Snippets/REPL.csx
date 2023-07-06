@@ -215,7 +215,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -238,7 +238,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -274,7 +274,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -299,7 +299,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -1839,6 +1839,9 @@ public
 #endif
             IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
             IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
+#if ROSLYN
+            ISymbol x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+#endif
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
             _ => source.ToString(),
 #else
@@ -6240,7 +6243,7 @@ public enum ControlFlow : byte
                 diagnostic.Descriptor.IsEnabledByDefault,
                 $"{diagnostic.Descriptor.Description} {message.Stringify()}",
                 diagnostic.Descriptor.HelpLinkUri,
-                diagnostic.Descriptor.CustomTags.ToArray()
+                diagnostic.Descriptor.CustomTags.ToArrayLazily()
             ),
             diagnostic.Location,
             diagnostic.Severity,
