@@ -175,6 +175,7 @@ unsafe
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
+     EditorBrowsable(EditorBrowsableState.Never),
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
@@ -221,6 +222,7 @@ unsafe
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
+     EditorBrowsable(EditorBrowsableState.Never),
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override int GetHashCode() => throw new NotSupportedException();
@@ -522,6 +524,7 @@ unsafe
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
+     EditorBrowsable(EditorBrowsableState.Never),
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on ReadOnlySpan will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
@@ -568,6 +571,7 @@ unsafe
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
+     EditorBrowsable(EditorBrowsableState.Never),
      MethodImpl(MethodImplOptions.AggressiveInlining),
      Obsolete("Equals() on ReadOnlySpan will always throw an exception. Use the equality operator instead.")]
     public override int GetHashCode() => throw new NotSupportedException();

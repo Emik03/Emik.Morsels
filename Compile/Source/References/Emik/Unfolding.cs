@@ -27,7 +27,7 @@ static partial class Unfolding
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -50,7 +50,7 @@ static partial class Unfolding
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -86,7 +86,7 @@ static partial class Unfolding
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
@@ -111,7 +111,7 @@ static partial class Unfolding
     }
 
     /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
-    [DoesNotReturn, Obsolete("The return value is always not null.", true)]
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
 #pragma warning restore RCS1163, RCS1175
