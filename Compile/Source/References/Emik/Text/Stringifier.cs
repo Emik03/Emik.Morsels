@@ -405,7 +405,6 @@ static partial class Stringifier
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
@@ -414,7 +413,6 @@ static partial class Stringifier
         p.GetIndexParameters().Length is 0 &&
         p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
 #endif
-
     [Pure]
     static bool IsEqualityContract(PropertyInfo x) =>
         x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
