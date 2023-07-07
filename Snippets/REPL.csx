@@ -2072,10 +2072,20 @@ public
             exInstance = Parameter(typeof(T), nameof(T)),
             exDepth = Parameter(typeof(int), nameof(Int32));
 
+        var deeperProperties = typeof(T).IsInterface
+            ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties())
+            : Enumerable.Empty<PropertyInfo>();
+
+        var deeperFields = typeof(T).IsInterface
+            ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields())
+            : Enumerable.Empty<FieldInfo>();
+
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var properties = typeof(T)
            .GetProperties(Flags)
+           .Concat(deeperProperties)
            .Where(CanUse)
+           .OrderBy(x => x.Name, StringComparer.Ordinal)
 #if NETFRAMEWORK && !NET40_OR_GREATER
            .Select(p => GetMethodCaller<T, PropertyInfo>(p, exInstance, exDepth, static x => x.PropertyType));
 #else
@@ -2083,6 +2093,8 @@ public
 #endif
         var fields = typeof(T)
            .GetFields(Flags)
+           .Concat(deeperFields)
+           .OrderBy(x => x.Name, StringComparer.Ordinal)
 #if NETFRAMEWORK && !NET40_OR_GREATER
            .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
 #else
