@@ -1859,7 +1859,7 @@ public
 #if !WAWA
     public
 #endif
-        static string UseStringifier<T>(this T source, int depth)
+        static string UseStringifier<T>(this T source, int depth = MaxRecursion)
     {
         // Method can be called if 'forceReflection' is true.
         if (!typeof(T).IsValueType && source is null)
