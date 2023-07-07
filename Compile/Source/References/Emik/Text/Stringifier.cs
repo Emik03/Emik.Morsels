@@ -376,6 +376,33 @@ static partial class Stringifier
 #endif
         };
 
+    /// <summary>Forces the use of reflective stringification.</summary>
+    /// <typeparam name="T">The type of the source.</typeparam>
+    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
+    /// <param name="depth">The amount of nesting.</param>
+    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
+    [MustUseReturnValue]
+#if !WAWA
+    public
+#endif
+        static string UseStringifier<T>(this T source, int depth)
+    {
+        // Method can be called if 'forceReflection' is true.
+        if (!typeof(T).IsValueType && source is null)
+            return Null;
+
+        if (!s_stringifiers.ContainsKey(typeof(T)))
+            s_stringifiers[typeof(T)] = GenerateStringifier<T>();
+
+        var name = source?.GetType() is { } type && type != typeof(T)
+            ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
+            : UnfoldedName(typeof(T));
+
+        return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
+            ? $"{name} {{ {str} }}"
+            : name;
+    }
+
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
 
@@ -554,25 +581,6 @@ static partial class Stringifier
 
         // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         return UseStringifier(source, depth);
-    }
-
-    [MustUseReturnValue]
-    static string UseStringifier<T>(this T source, int depth)
-    {
-        // Method can be called if 'forceReflection' is true.
-        if (!typeof(T).IsValueType && source is null)
-            return Null;
-
-        if (!s_stringifiers.ContainsKey(typeof(T)))
-            s_stringifiers[typeof(T)] = GenerateStringifier<T>();
-
-        var name = source?.GetType() is { } type && type != typeof(T)
-            ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
-            : UnfoldedName(typeof(T));
-
-        return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
-            ? $"{name} {{ {str} }}"
-            : name;
     }
 
     [MustUseReturnValue]
