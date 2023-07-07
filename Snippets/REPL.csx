@@ -3823,7 +3823,7 @@ public
             var trimmed = next.Trim();
 
             fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, trimmed.Length);
+                accumulator.Append(ptr, trimmed.Length).Append(' ');
 
             return accumulator;
         }
