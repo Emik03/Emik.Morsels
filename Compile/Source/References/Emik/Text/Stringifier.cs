@@ -410,7 +410,7 @@ static partial class Stringifier
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
-        p.CanRead &&
+        p is { CanRead: true } and not { PropertyType.Name: not "SyntaxTree" } &&
         p.GetIndexParameters().Length is 0 &&
         p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
 #endif
