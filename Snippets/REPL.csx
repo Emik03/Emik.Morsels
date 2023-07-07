@@ -1819,6 +1819,7 @@ public
             Object x => x.name,
 #endif
             IConvertible x => x.ToString(CultureInfo.InvariantCulture),
+            ICustomFormatter x => x.Format("", x, CultureInfo.InvariantCulture),
             _ when depth <= 0 =>
 #if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
                 source.ToString(),
