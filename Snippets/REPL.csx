@@ -8423,12 +8423,16 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T? item) => item is null ? -1 : _list.IndexOf(item);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), Pure]
 #if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
 #pragma warning disable CS8619
 #endif
     public IEnumerator<T?> GetEnumerator() => _list.GetEnumerator();
+
+    /// <inheritdoc/>
+    [CollectionAccess(Read), Pure]
+    IEnumerator<T> IEnumerable<T?>.GetEnumerator() => _list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
