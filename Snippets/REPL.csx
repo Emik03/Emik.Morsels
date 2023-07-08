@@ -8454,7 +8454,6 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
 
 
-#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
 
@@ -8496,7 +8495,6 @@ public sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
-#endif
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
