@@ -174,9 +174,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
-using FieldInfo = System.Reflection.FieldInfo;
 using static System.Linq.Expressions.Expression;
-using FieldInfo = System.Reflection.FieldInfo;
 using static System.Math;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
@@ -1488,6 +1486,7 @@ namespace Wawa.Modules;
 #if !(NET20 || NET30)
 #endif
 
+
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
 #if WAWA
@@ -2291,6 +2290,7 @@ public
 // SPDX-License-Identifier: MPL-2.0
 #if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace RedundantNameQualifier
+
 
 
 
