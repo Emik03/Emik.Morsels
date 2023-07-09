@@ -11,6 +11,7 @@ namespace Emik.Morsels;
 #if !(NET20 || NET30)
 using static Expression;
 #endif
+using FieldInfo = System.Reflection.FieldInfo;
 
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
@@ -88,14 +89,14 @@ static partial class Stringifier
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #if !WAWA
 
-#pragma warning disable MA0110
+#pragma warning disable MA0110, SYSLIB1045
     static readonly Regex
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
         s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
         s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
         s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
-#pragma warning restore MA0110
+#pragma warning restore MA0110, SYSLIB1045
 
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
