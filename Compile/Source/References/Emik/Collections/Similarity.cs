@@ -927,7 +927,7 @@ static partial class Similarity
     readonly
 #endif
         unsafe partial struct Fat<T>(void* pointer, [NonNegativeValue] int length)
-#if UNMANAGED_SPAN || CSHARPREPL
+#if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
