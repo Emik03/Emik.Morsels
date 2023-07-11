@@ -63,8 +63,10 @@ static partial class SplitFactory
 #endif
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
+/// <param name="truthy">The value representing a <see langword="true"/> value.</param>
+/// <param name="falsy">The value representing a <see langword="false"/> value.</param>
 /// <typeparam name="T">The type of item in the collection.</typeparam>
-sealed partial class Split<T> : ICollection<T>,
+sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IDictionary<bool, T>,
     IReadOnlyCollection<T>,
     IReadOnlyDictionary<bool, T>
@@ -72,27 +74,28 @@ sealed partial class Split<T> : ICollection<T>,
     [ProvidesContext]
     static readonly bool[] s_booleans = { true, false };
 
+#pragma warning disable SA1642
     /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
     /// <param name="value">The value representing both values.</param>
+#pragma warning restore SA1642
     public Split(T value)
         : this(value, value) { }
 
-    /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
-    /// <param name="truthy">The value representing a <see langword="true"/> value.</param>
-    /// <param name="falsy">The value representing a <see langword="false"/> value.</param>
-    public Split(T truthy, T falsy)
-    {
-        Truthy = truthy;
-        Falsy = falsy;
-    }
-
     /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
     [Pure]
-    public T Falsy { get; set; }
+    public T Falsy
+    {
+        get => falsy;
+        set => falsy = value;
+    }
 
     /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
     [Pure]
-    public T Truthy { get; set; }
+    public T Truthy
+    {
+        get => truthy;
+        set => truthy = value;
+    }
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
     [Pure]
@@ -122,8 +125,8 @@ sealed partial class Split<T> : ICollection<T>,
     [Pure]
     public T this[bool key]
     {
-        get => key ? Truthy : Falsy;
-        set => _ = key ? Truthy = value : Falsy = value;
+        get => key ? truthy : falsy;
+        set => _ = key ? truthy = value : falsy = value;
     }
 
     /// <inheritdoc cref="ICollection{T}.Count" />
@@ -145,22 +148,22 @@ sealed partial class Split<T> : ICollection<T>,
     /// <inheritdoc />
     public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
-        array[arrayIndex] = Truthy;
-        array[arrayIndex + 1] = Falsy;
+        array[arrayIndex] = truthy;
+        array[arrayIndex + 1] = falsy;
     }
 
     /// <inheritdoc />
     [Pure]
     public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(Truthy, item) ||
-        EqualityComparer<T>.Default.Equals(Falsy, item);
+        EqualityComparer<T>.Default.Equals(truthy, item) ||
+        EqualityComparer<T>.Default.Equals(falsy, item);
 
     /// <inheritdoc />
     [Pure]
     public IEnumerator<T> GetEnumerator()
     {
-        yield return Truthy;
-        yield return Falsy;
+        yield return truthy;
+        yield return falsy;
     }
 
     /// <inheritdoc />
@@ -178,31 +181,31 @@ sealed partial class Split<T> : ICollection<T>,
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    public void Add(bool key, T value) => _ = key ? Truthy = value : Falsy = value;
+    public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
 
     /// <inheritdoc />
     // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
-    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? Truthy = item.Value : Falsy = item.Value;
+    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
 
     /// <inheritdoc />
     public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
     {
-        array[arrayIndex] = new(true, Truthy);
-        array[arrayIndex + 1] = new(false, Falsy);
+        array[arrayIndex] = new(true, truthy);
+        array[arrayIndex + 1] = new(false, falsy);
     }
 
     /// <inheritdoc />
     [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
     public bool Contains(KeyValuePair<bool, T> item) =>
         item.Key
-            ? EqualityComparer<T>.Default.Equals(Truthy, item.Value)
-            : EqualityComparer<T>.Default.Equals(Falsy, item.Value);
+            ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
+            : EqualityComparer<T>.Default.Equals(falsy, item.Value);
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
     [Pure]
     public bool TryGetValue(bool key, out T value)
     {
-        value = key ? Truthy : Falsy;
+        value = key ? truthy : falsy;
         return true;
     }
 
@@ -225,8 +228,8 @@ sealed partial class Split<T> : ICollection<T>,
     [Pure]
     IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
     {
-        yield return new(true, Truthy);
-        yield return new(false, Falsy);
+        yield return new(true, truthy);
+        yield return new(false, falsy);
     }
 
     /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
@@ -234,15 +237,15 @@ sealed partial class Split<T> : ICollection<T>,
     bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
 
     /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
-    /// <param name="truthy">The value to get assigned as <see cref="Truthy"/>.</param>
-    /// <param name="falsy">The value to get assigned as <see cref="Falsy"/>.</param>
-    public void Deconstruct(out T truthy, out T falsy)
+    /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
+    /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
+    public void Deconstruct(out T t, out T f)
     {
-        truthy = Truthy;
-        falsy = Falsy;
+        t = truthy;
+        f = falsy;
     }
 
     /// <inheritdoc />
     [Pure]
-    public override string ToString() => $"Split({Truthy}, {Falsy})";
+    public override string ToString() => $"Split({truthy}, {falsy})";
 }

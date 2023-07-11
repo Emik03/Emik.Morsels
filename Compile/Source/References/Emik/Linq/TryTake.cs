@@ -210,6 +210,7 @@ static partial class TryTake
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
     {
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
         return *(T*)&c;

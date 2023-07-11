@@ -36,34 +36,27 @@ static partial class Headless
 /// <summary>Represents a list with no head.</summary>
 /// <typeparam name="T">The type of list to encapsulate.</typeparam>
 #pragma warning disable MA0048
-sealed partial class HeadlessList<T> : IList<T>
+sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="HeadlessList{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    public HeadlessList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]
     {
-        get => index is not -1 ? _list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
-        set => _list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
+        get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
+        set => list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
     }
 
     /// <inheritdoc />
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="IList{T}.Count" />
-    public int Count => _list.Count - 1;
+    public int Count => list.Count - 1;
 
     /// <inheritdoc />
-    public void Add(T item) => _list.Add(item);
+    public void Add(T item) => list.Add(item);
 
     /// <inheritdoc />
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex)
@@ -78,7 +71,7 @@ sealed partial class HeadlessList<T> : IList<T>
         if (index is -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        _list.Insert(index + 1, item);
+        list.Insert(index + 1, item);
     }
 
     /// <inheritdoc />
@@ -87,22 +80,22 @@ sealed partial class HeadlessList<T> : IList<T>
         if (index is not -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
-        _list.RemoveAt(index + 1);
+        list.RemoveAt(index + 1);
     }
 
     /// <inheritdoc />
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
-    public bool Remove(T item) => _list.Remove(item);
+    public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc />
-    public int IndexOf(T item) => _list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
+    public int IndexOf(T item) => list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator()
     {
-        var ret = ((IEnumerable)_list).GetEnumerator();
+        var ret = ((IEnumerable)list).GetEnumerator();
         ret.MoveNext();
         return ret;
     }
@@ -110,7 +103,7 @@ sealed partial class HeadlessList<T> : IList<T>
     /// <inheritdoc />
     public IEnumerator<T> GetEnumerator()
     {
-        var ret = _list.GetEnumerator();
+        var ret = list.GetEnumerator();
         ret.MoveNext();
         return ret;
     }

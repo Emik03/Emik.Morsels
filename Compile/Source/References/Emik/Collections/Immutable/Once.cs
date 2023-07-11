@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0102, SA1137
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
 
 /// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class OnceFactory
-#pragma warning restore MA0048
 {
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -20,19 +18,14 @@ static partial class OnceFactory
 }
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
+/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Once{T}"/> struct. Prepares enumeration of a single item forever.
-    /// </summary>
-    /// <param name="value">The item to use.</param>
-    public Once([ProvidesContext] T value) => Current = value;
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
     bool ICollection<T>.IsReadOnly => true;
@@ -47,19 +40,19 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext, Pure]
-    public T Current { get; }
+    public T Current => value;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     T IList<T>.this[int _]
     {
-        [CollectionAccess(Read)] get => Current;
+        [CollectionAccess(Read)] get => value;
         [CollectionAccess(None)] set { }
     }
 
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(Read), Pure]
-    T IReadOnlyList<T>.this[int _] => Current;
+    T IReadOnlyList<T>.this[int _] => value;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -75,7 +68,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = Current;
+    public void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = value;
 
     /// <inheritdoc />
     [CollectionAccess(None)]
@@ -111,7 +104,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => EqualityComparer<T>.Default.Equals(Current, item);
+    public bool Contains(T item) => EqualityComparer<T>.Default.Equals(value, item);
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]
@@ -133,7 +126,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
-    public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Contains(Current);
+    public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Contains(value);
 
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(Read), Pure]
@@ -156,7 +149,7 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), Pure]
-    public Enumerator GetEnumerator() => new(Current);
+    public Enumerator GetEnumerator() => new(value);
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -167,27 +160,21 @@ partial struct Once<T> : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
+    /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator : IEnumerator<T>
+    public partial struct Enumerator(T value) : IEnumerator<T>
     {
         static readonly object s_fallback = new();
 
         bool _hasMoved;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Enumerator"/> struct.
-        /// Prepares enumeration of a single item forever.
-        /// </summary>
-        /// <param name="value">The item to use.</param>
-        public Enumerator(T value) => Current = value;
+        /// <inheritdoc />
+        [CollectionAccess(Read), Pure]
+        public readonly T Current => value;
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
-        public T Current { get; }
-
-        /// <inheritdoc />
-        [CollectionAccess(Read), Pure]
-        readonly object IEnumerator.Current => Current ?? s_fallback;
+        readonly object IEnumerator.Current => value ?? s_fallback;
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>

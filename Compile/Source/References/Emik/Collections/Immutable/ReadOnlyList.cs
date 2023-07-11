@@ -26,35 +26,29 @@ static partial class ReadOnlyFactory
 #endif
 
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
+/// <param name="list">The list to encapsulate.</param>
 /// <typeparam name="T">The type of element in the list.</typeparam>
-sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
+sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="Morsels.ReadOnlyList{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    public ReadOnlyList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc />
     [Pure]
     public bool IsReadOnly => true;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(Read), Pure]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this" />
     [Pure]
     public T this[int index]
     {
-        [CollectionAccess(Read)] get => _list[index];
+        [CollectionAccess(Read)] get => list[index];
         [CollectionAccess(None)] set { }
     }
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
 
     /// <inheritdoc />
     [CollectionAccess(None)]
@@ -74,7 +68,7 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => _list.Contains(item);
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
     [CollectionAccess(None), Pure]
@@ -82,11 +76,11 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => _list.IndexOf(item);
+    public int IndexOf(T item) => list.IndexOf(item);
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -94,5 +88,5 @@ sealed partial class ReadOnlyList<T> : IList<T>, IReadOnlyList<T>
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 }

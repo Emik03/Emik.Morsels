@@ -2,7 +2,7 @@
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-#pragma warning disable 8500, MA0102, SA1137
+#pragma warning disable 8500, IDE0044, MA0102, SA1137
 using static Math;
 using static Span;
 
@@ -10,6 +10,8 @@ using static Span;
 static partial class Similarity
 {
     const StringComparison DefaultCharComparer = StringComparison.Ordinal;
+
+    const string E = "Value must be non-negative and less than the length.";
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -924,28 +926,23 @@ static partial class Similarity
 #if !NO_READONLY_STRUCTS
     readonly
 #endif
-        unsafe partial struct Fat<T>
-#if UNMANAGED_SPAN
+        unsafe partial struct Fat<T>(void* pointer, [NonNegativeValue] int length)
+#if UNMANAGED_SPAN || CSHARPREPL
         where T : unmanaged
 #endif
     {
-        const string E = "Value must be non-negative and less than the length.";
-
-        readonly void* _pointer;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Fat(void* pointer, [NonNegativeValue] int length)
-        {
-            _pointer = pointer;
-            Length = length;
-        }
-
+        /// <summary>Takes the element corresponding to the passed in index. A bounds check is performed.</summary>
+        /// <param name="i">The index to take.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// The parameter <paramref name="i"/> is outside the range.
+        /// </exception>
         public T this[int i]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get => (uint)i < (uint)Length ? ((T*)_pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
+            get => (uint)i < (uint)Length ? ((T*)pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
         }
 
-        public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
+        /// <summary>Gets the length.</summary>
+        public int Length => length;
     }
 }

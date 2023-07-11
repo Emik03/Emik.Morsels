@@ -27,34 +27,28 @@ static partial class GuardedFactory
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
 /// an out of range value will always give the <see langword="default"/> value.
 /// </summary>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
+sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
-    [ProvidesContext]
-    readonly IList<T> _list;
-
-    /// <summary>Initializes a new instance of the <see cref="GuardedList{T}"/> class.</summary>
-    /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-    public GuardedList([ProvidesContext] IList<T> list) => _list = list;
-
     /// <inheritdoc/>
     [CollectionAccess(None), Pure]
-    public bool IsReadOnly => _list.IsReadOnly;
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(None), NonNegativeValue, Pure]
-    public int Count => _list.Count;
+    public int Count => list.Count;
 
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T? this[int index]
     {
-        [CollectionAccess(Read)] get => IsIn(index) ? _list[index] : default;
+        [CollectionAccess(Read)] get => IsIn(index) ? list[index] : default;
         [CollectionAccess(ModifyExistingContent)]
         set
         {
             if (value is not null && IsIn(index))
-                _list[index] = value;
+                list[index] = value;
         }
     }
 
@@ -63,19 +57,19 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void Add(T? item)
     {
         if (item is not null)
-            _list.Add(item);
+            list.Add(item);
     }
 
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => _list.Clear();
+    public void Clear() => list.Clear();
 
     /// <inheritdoc/>
     [CollectionAccess(Read)]
     public void CopyTo(T?[] array, int arrayIndex)
     {
         if (Count <= array.Length - arrayIndex)
-            _list.CopyTo(array as T[], arrayIndex);
+            list.CopyTo(array as T[], arrayIndex);
     }
 
     /// <inheritdoc/>
@@ -83,7 +77,7 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void Insert(int index, T? item)
     {
         if (item is not null && IsIn(index))
-            _list.Insert(index, item);
+            list.Insert(index, item);
     }
 
     /// <inheritdoc/>
@@ -91,27 +85,27 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
     public void RemoveAt(int index)
     {
         if (IsIn(index))
-            _list.RemoveAt(index);
+            list.RemoveAt(index);
     }
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
-    public bool Contains(T? item) => item is not null && _list.Contains(item);
+    public bool Contains(T? item) => item is not null && list.Contains(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T? item) => item is not null && _list.Remove(item);
+    public bool Remove(T? item) => item is not null && list.Remove(item);
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    public int IndexOf(T? item) => item is null ? -1 : _list.IndexOf(item);
+    public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), Pure]
 #if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
 #pragma warning disable CS8619
 #endif
-    public IEnumerator<T?> GetEnumerator() => _list.GetEnumerator();
+    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
@@ -119,11 +113,11 @@ sealed partial class GuardedList<T> : IList<T?>, IReadOnlyList<T?>
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => _list.ToString();
+    public override string? ToString() => list.ToString();
 
     [Pure]
     bool IsIn(int index) => index >= 0 && index < Count;

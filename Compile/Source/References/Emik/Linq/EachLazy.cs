@@ -88,19 +88,19 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     readonly TExternal _external;
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <inheritdoc />
-    public Enumerable(IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
         : this(enumerable, external, (Delegate)action) { }
 
     /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
@@ -109,7 +109,7 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// </param>
     /// <param name="external">The context element.</param>
     /// <param name="action">The <see cref="Delegate"/> to invoke on iteration.</param>
-    Enumerable(IEnumerable<T> enumerable, TExternal external, Delegate action)
+    Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Delegate action)
     {
         _enumerable = enumerable;
         _external = external;
@@ -124,51 +124,38 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    sealed class Enumerator : IEnumerator<T>
+    sealed class Enumerator([ProvidesContext] IEnumerator<T> enumerator, TExternal external, Delegate action) : IEnumerator<T>
     {
-        readonly Delegate _action;
-
-        readonly IEnumerator<T> _enumerator;
-
-        readonly TExternal _external;
-
         int _index;
-
-        public Enumerator(IEnumerator<T> enumerator, TExternal external, Delegate action)
-        {
-            _enumerator = enumerator;
-            _external = external;
-            _action = action;
-        }
 
         /// <inheritdoc />
         // ReSharper disable once AssignNullToNotNullAttribute
-        public T Current => _enumerator.Current;
+        public T Current => enumerator.Current;
 
         /// <inheritdoc />
-        object? IEnumerator.Current => ((IEnumerator)_enumerator).Current;
+        object? IEnumerator.Current => ((IEnumerator)enumerator).Current;
 
         /// <inheritdoc />
         public void Reset()
         {
-            _enumerator.Reset();
+            enumerator.Reset();
             _index = 0;
         }
 
         /// <inheritdoc />
 #pragma warning disable IDISP007
-        public void Dispose() => _enumerator.Dispose();
+        public void Dispose() => enumerator.Dispose();
 #pragma warning restore IDISP007
 
         /// <inheritdoc />
         public bool MoveNext()
         {
-            if (!_enumerator.MoveNext())
+            if (!enumerator.MoveNext())
                 return false;
 
             var current = Current;
 
-            switch (_action)
+            switch (action)
             {
                 case Action<T> action:
                     action(current);
@@ -177,10 +164,10 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
                     action(current, _index);
                     break;
                 case Action<T, TExternal> action:
-                    action(current, _external);
+                    action(current, external);
                     break;
                 case Action<T, int, TExternal> action:
-                    action(current, _index, _external);
+                    action(current, _index, external);
                     break;
             }
 

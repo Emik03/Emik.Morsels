@@ -19,28 +19,23 @@ static partial class YesFactory
 }
 
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
+/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-partial struct Yes<T> : IEnumerable<T>, IEnumerator<T>
+partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     static readonly object s_fallback = new();
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Yes{T}"/> struct. Prepares enumeration of a single item forever.
-    /// </summary>
-    /// <param name="value">The item to use.</param>
-    public Yes([ProvidesContext] T value) => Current = value;
-
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
-    public T Current { get; }
+    public T Current => value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => Current ?? s_fallback;
+    object IEnumerator.Current => value ?? s_fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
