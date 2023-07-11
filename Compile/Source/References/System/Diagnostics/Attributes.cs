@@ -482,42 +482,6 @@ namespace System.Runtime.CompilerServices
     )]
     sealed partial class SkipLocalsInitAttribute : Attribute;
 #endif
-#if !NET7_0_OR_GREATER
-    /// <summary>
-    /// Indicates that compiler support for a particular feature is
-    /// required for the location where this attribute is applied.
-    /// </summary>
-    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-    sealed partial class CompilerFeatureRequiredAttribute : Attribute
-    {
-        /// <summary>The <see cref="FeatureName"/> used for the ref structs C# feature.</summary>
-        public const string RefStructs = nameof(RefStructs);
-
-        /// <summary>The <see cref="FeatureName"/> used for the required members C# feature.</summary>
-        public const string RequiredMembers = nameof(RequiredMembers);
-
-        /// <summary>Initializes a new instance of the <see cref="CompilerFeatureRequiredAttribute"/> class.</summary>
-        /// <param name="featureName">The name of the compiler feature.</param>
-        public CompilerFeatureRequiredAttribute(string featureName) => FeatureName = featureName;
-
-        /// <summary>Gets the name of the compiler feature.</summary>
-        public string FeatureName { [Pure] get; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether the compiler can choose to allow access to the location
-        /// where this attribute is applied if it does not understand <see cref="FeatureName"/>.
-        /// </summary>
-        public bool IsOptional { [Pure] get; set; }
-    }
-
-    /// <summary>Specifies that a type has required members or that a member is required.</summary>
-    [AttributeUsage(AttributeTargets.Constructor)]
-    sealed partial class RequiredMemberAttribute : Attribute;
-#endif
-}
-
-namespace System.Runtime.CompilerServices
-{
 #if !NET6_0_OR_GREATER
     /// <summary>
     /// Indicates that an API is in preview. This attribute allows call sites to be
@@ -558,7 +522,49 @@ namespace System.Runtime.CompilerServices
         public string? Url { get; set; }
     }
 #endif
+#if !NET7_0_OR_GREATER
+    /// <summary>
+    /// Indicates that compiler support for a particular feature is
+    /// required for the location where this attribute is applied.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
+    sealed partial class CompilerFeatureRequiredAttribute : Attribute
+    {
+        /// <summary>The <see cref="FeatureName"/> used for the ref structs C# feature.</summary>
+        public const string RefStructs = nameof(RefStructs);
+
+        /// <summary>The <see cref="FeatureName"/> used for the required members C# feature.</summary>
+        public const string RequiredMembers = nameof(RequiredMembers);
+
+        /// <summary>Initializes a new instance of the <see cref="CompilerFeatureRequiredAttribute"/> class.</summary>
+        /// <param name="featureName">The name of the compiler feature.</param>
+        public CompilerFeatureRequiredAttribute(string featureName) => FeatureName = featureName;
+
+        /// <summary>Gets the name of the compiler feature.</summary>
+        public string FeatureName { [Pure] get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the compiler can choose to allow access to the location
+        /// where this attribute is applied if it does not understand <see cref="FeatureName"/>.
+        /// </summary>
+        public bool IsOptional { [Pure] get; set; }
+    }
+
+    /// <summary>Specifies that a type has required members or that a member is required.</summary>
+    [AttributeUsage(AttributeTargets.Constructor)]
+    sealed partial class RequiredMemberAttribute : Attribute;
+#endif
+#if !NET8_0_OR_GREATER
+    /// <summary>Indicates that the instance's storage is sequentially replicated "length" times.</summary>
+    [AttributeUsage(AttributeTargets.Struct), EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class InlineArrayAttribute(int length) : Attribute
+    {
+        /// <summary>Gets the length of the inlined array.</summary>
+        public int Length { get; } = length;
+    }
+#endif
 }
+
 #if !NET7_0_OR_GREATER
 namespace System.Text.RegularExpressions
 {
