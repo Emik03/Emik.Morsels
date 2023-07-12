@@ -151,7 +151,7 @@
     </ItemGroup>
     <!-- F# latest for .NET Core. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
-        <PackageReference Include="FSharp.Core" Version="7.0.300-beta.23176.1"/>
+        <PackageReference Include="FSharp.Core" Version="8.0.100-beta.23327.15"/>
     </ItemGroup>
     <!-- Does not work on .NET Framework 4.5.1 or less. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))">
