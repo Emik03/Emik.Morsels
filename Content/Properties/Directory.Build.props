@@ -117,7 +117,7 @@
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.62" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.65" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.6" PrivateAssets="all"/>
@@ -129,13 +129,12 @@
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="1.0.1.1" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.3.0" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.6.40" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.5-beta1.23270.2" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.5-beta1.23320.2" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23270.2" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23320.2" PrivateAssets="all"/>
     </ItemGroup>
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
