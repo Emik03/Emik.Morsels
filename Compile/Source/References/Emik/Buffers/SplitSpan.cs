@@ -403,7 +403,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override bool Equals(object? other) => false;
 
-    /// <inheritdoc cref="IEquatable{T}.Equals(T?)" />
+    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(scoped SplitSpan<T> other) =>

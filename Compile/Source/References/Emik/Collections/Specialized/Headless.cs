@@ -39,7 +39,7 @@ static partial class Headless
 sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
         get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
@@ -49,7 +49,7 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
     /// <inheritdoc />
     public bool IsReadOnly => list.IsReadOnly;
 
-    /// <inheritdoc cref="IList{T}.Count" />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     public int Count => list.Count - 1;
 
     /// <inheritdoc />

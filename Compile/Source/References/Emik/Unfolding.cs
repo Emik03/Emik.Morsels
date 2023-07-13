@@ -26,7 +26,7 @@ static partial class Unfolding
         }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
@@ -34,7 +34,7 @@ static partial class Unfolding
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
@@ -49,7 +49,7 @@ static partial class Unfolding
         }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
@@ -57,7 +57,7 @@ static partial class Unfolding
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
@@ -69,7 +69,7 @@ static partial class Unfolding
             : Enumerable.Empty<T>();
 #endif
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
         where T : class
@@ -85,7 +85,7 @@ static partial class Unfolding
         return output;
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
@@ -93,7 +93,7 @@ static partial class Unfolding
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
@@ -110,7 +110,7 @@ static partial class Unfolding
         return output;
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
@@ -118,7 +118,7 @@ static partial class Unfolding
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>

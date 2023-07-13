@@ -9,7 +9,7 @@ static partial class MemoryExtensions
 {
     /// <summary>
     /// Determines whether two sequences are equal by comparing the
-    /// elements using <see cref="IEquatable{T}.Equals(T?)"/>.
+    /// elements using <see cref="IEquatable{T}.Equals(T)"/>.
     /// </summary>
     /// <typeparam name="T">The type of span.</typeparam>
     /// <param name="span">The first span.</param>
@@ -41,7 +41,7 @@ static partial class MemoryExtensions
 
     /// <summary>
     /// Searches for the specified value and returns the index of its first occurrence.
-    /// If not found, returns -1. Values are compared using <see cref="IEquatable{T}.Equals(T?)"/>.
+    /// If not found, returns -1. Values are compared using <see cref="IEquatable{T}.Equals(T)"/>.
     /// </summary>
     /// <typeparam name="T">The type of span and value.</typeparam>
     /// <param name="span">The span to search.</param>
@@ -59,7 +59,7 @@ static partial class MemoryExtensions
 
     /// <summary>
     /// Searches for the specified sequence and returns the index of its first occurrence.
-    /// If not found, returns -1. Values are compared using <see cref="IEquatable{T}.Equals(T?)"/>.
+    /// If not found, returns -1. Values are compared using <see cref="IEquatable{T}.Equals(T)"/>.
     /// </summary>
     /// <typeparam name="T">The type of span and value.</typeparam>
     /// <param name="span">The span to search.</param>

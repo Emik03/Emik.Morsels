@@ -127,7 +127,8 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
         if (!enumerator?.MoveNext() ?? true)
             return;
 
-        _first = enumerator.Current;
+        // ReSharper disable once RedundantSuppressNullableWarningExpression
+        _first = enumerator!.Current;
 
         if (!enumerator.MoveNext())
         {
