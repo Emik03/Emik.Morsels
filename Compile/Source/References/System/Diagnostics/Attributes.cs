@@ -459,6 +459,8 @@ namespace System.Runtime.CompilerServices
     }
 #endif
 #if !NET5_0_OR_GREATER
+    // ReSharper disable once CommentTypo
+
     /// <summary>
     /// Used to indicate to the compiler that the <c>.locals init</c> flag should not be set in method headers.
     /// </summary>
@@ -557,7 +559,7 @@ namespace System.Runtime.CompilerServices
 #if !NET8_0_OR_GREATER
     /// <summary>Indicates that the instance's storage is sequentially replicated "length" times.</summary>
     [AttributeUsage(AttributeTargets.Struct), EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class InlineArrayAttribute(int length) : Attribute
+    sealed partial class InlineArrayAttribute(int length) : Attribute
     {
         /// <summary>Gets the length of the inlined array.</summary>
         public int Length { get; } = length;

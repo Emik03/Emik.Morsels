@@ -88,7 +88,6 @@ static partial class Stringifier
 #endif
     static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
 #if !WAWA
-
 #pragma warning disable MA0110, SYSLIB1045
     static readonly Regex
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
@@ -365,8 +364,10 @@ static partial class Stringifier
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
             ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
 #endif
+#if !NETFRAMEWORK || NET40_OR_GREATER
             IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
             IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
+#endif
 #if ROSLYN
             ISymbol x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 #endif
@@ -418,7 +419,7 @@ static partial class Stringifier
     static bool IsEqualityContract(PropertyInfo x) =>
         x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
         x.PropertyType == typeof(Type) &&
-        x.GetIndexParameters() is [];
+        x.GetIndexParameters().Length is 0;
 
     [Pure]
     static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
@@ -571,6 +572,7 @@ static partial class Stringifier
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
                 !IsRecord<T>();
 
+        // ReSharper disable once ConstantNullCoalescingCondition
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
@@ -785,14 +787,10 @@ static partial class Stringifier
         return builder.Append('>');
     }
 #endif
-
-    sealed class FakeComparer : IComparer, IEqualityComparer
+#if !NETFRAMEWORK || NET40_OR_GREATER
+    sealed class FakeComparer(int depth) : IComparer, IEqualityComparer
     {
-        readonly int _depth;
-
         StringBuilder? _builder;
-
-        public FakeComparer(int depth) => _depth = depth;
 
         /// <inheritdoc />
         public override string ToString() =>
@@ -809,8 +807,9 @@ static partial class Stringifier
 
         T Append<T>(object? obj, T ret)
         {
-            (_builder ??= new("(")).Append(obj.Stringify(_depth)).Append(Separator);
+            (_builder ??= new("(")).Append(Stringify(obj, depth)).Append(Separator);
             return ret;
         }
     }
+#endif
 }
