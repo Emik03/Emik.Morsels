@@ -20,5 +20,5 @@ static partial class Whitespaces
     public const string Unicode = $"{Breaking}{NonBreaking}";
 
     /// <summary>All unicode characters that appear to be whitespace.</summary>
-    public const string All = $"{Unicode}{Related}";
+    public const string Combined = $"{Unicode}{Related}";
 }
