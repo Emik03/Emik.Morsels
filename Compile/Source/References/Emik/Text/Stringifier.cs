@@ -9,8 +9,9 @@ namespace Emik.Morsels;
 #endif
 
 #if !(NET20 || NET30)
-using static Expression;
+using static System.Linq.Expressions.Expression;
 #endif
+using Expression = System.Linq.Expressions.Expression;
 using FieldInfo = System.Reflection.FieldInfo;
 
 /// <summary>Provides stringification methods.</summary>
@@ -807,7 +808,9 @@ static partial class Stringifier
 
         T Append<T>(object? obj, T ret)
         {
+#pragma warning disable RCS1196
             (_builder ??= new("(")).Append(Stringify(obj, depth)).Append(Separator);
+#pragma warning restore RCS1196
             return ret;
         }
     }

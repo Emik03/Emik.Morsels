@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 #if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace RedundantNameQualifier
+// ReSharper disable CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
 
-using static Expression;
+using static System.Linq.Expressions.Expression;
+using Expression = System.Linq.Expressions.Expression;
 using FieldInfo = System.Reflection.FieldInfo;
 
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>

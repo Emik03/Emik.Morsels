@@ -118,8 +118,9 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <inheritdoc />
     [CollectionAccess(CollectionAccessType.Read), Pure]
+#pragma warning disable IDISP004
     public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
-
+#pragma warning restore IDISP004
     /// <inheritdoc />
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

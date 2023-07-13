@@ -1480,6 +1480,7 @@ namespace Wawa.Modules;
 #endif
 
 
+
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
 #if WAWA
@@ -2273,7 +2274,9 @@ public
 
         T Append<T>(object? obj, T ret)
         {
+#pragma warning disable RCS1196
             (_builder ??= new("(")).Append(Stringify(obj, depth)).Append(Separator);
+#pragma warning restore RCS1196
             return ret;
         }
     }
@@ -2281,7 +2284,8 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 #if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace RedundantNameQualifier
+// ReSharper disable CheckNamespace RedundantNameQualifier
+
 
 
 
@@ -4936,9 +4940,9 @@ public
     /// </returns>
     [LinqTunnel, Pure]
     public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
-#pragma warning disable IDISP004
+#pragma warning disable CA2000, IDISP004
         enumerator.AsGeneric().AsEnumerable();
-#pragma warning restore IDISP004
+#pragma warning restore CA2000, IDISP004
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside a <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
@@ -5379,8 +5383,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
     /// <inheritdoc />
     [CollectionAccess(CollectionAccessType.Read), Pure]
+#pragma warning disable IDISP004
     public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
-
+#pragma warning restore IDISP004
     /// <inheritdoc />
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

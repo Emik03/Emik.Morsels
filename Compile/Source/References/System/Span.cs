@@ -130,9 +130,9 @@ unsafe
     /// It does not remove items from the <see cref="Span{T}"/>.
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable CS8604
+#pragma warning disable 8604, CA1855
     public void Clear() => Fill(default);
-#pragma warning restore CS8604
+#pragma warning restore 8604, CA1855
 
     /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="Span{T}"/>.</summary>
     /// <param name="destination">The destination <see cref="Span{T}"/> object.</param>

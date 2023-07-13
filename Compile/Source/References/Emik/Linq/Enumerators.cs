@@ -22,9 +22,9 @@ static partial class EnumeratorToEnumerable
     /// </returns>
     [LinqTunnel, Pure]
     public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
-#pragma warning disable IDISP004
+#pragma warning disable CA2000, IDISP004
         enumerator.AsGeneric().AsEnumerable();
-#pragma warning restore IDISP004
+#pragma warning restore CA2000, IDISP004
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside a <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
