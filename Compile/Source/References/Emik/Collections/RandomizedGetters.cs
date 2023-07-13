@@ -87,12 +87,15 @@ static partial class RandomizedGetters
 
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
-    public static T PickRandom<T>([InstantHandle] this Span<T> iterable, Func<int, int, int>? selector = null) =>
+    public static T PickRandom<T>([InstantHandle] this scoped Span<T> iterable, Func<int, int, int>? selector = null) =>
         PickRandom((ReadOnlySpan<T>)iterable, selector);
 
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
-    public static T PickRandom<T>([InstantHandle] this ReadOnlySpan<T> iterable, Func<int, int, int>? selector = null)
+    public static T PickRandom<T>(
+        [InstantHandle] this scoped ReadOnlySpan<T> iterable,
+        Func<int, int, int>? selector = null
+    )
     {
         selector ??= Rand();
         return iterable[selector(0, iterable.Length)];
