@@ -39,6 +39,30 @@ static partial class RandomizedGetters
         return list;
     }
 
+    /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
+    {
+        selector ??= Rand();
+
+        for (var j = iterable.Length; j >= 1; j--)
+        {
+            var item = selector(0, j);
+
+            if (item >= j - 1)
+                continue;
+
+            // Tuples might not necessarily be imported.
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
+            var t = iterable[item];
+            iterable[item] = iterable[j - 1];
+            iterable[j - 1] = t;
+#pragma warning restore IDE0180
+        }
+
+        return iterable;
+    }
+
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
@@ -59,6 +83,19 @@ static partial class RandomizedGetters
             _ when iterable.ToList() is var list => list[selector(0, list.Count)],
             _ => throw Unreachable,
         };
+    }
+
+    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue]
+    public static T PickRandom<T>([InstantHandle] this Span<T> iterable, Func<int, int, int>? selector = null) =>
+        PickRandom((ReadOnlySpan<T>)iterable, selector);
+
+    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue]
+    public static T PickRandom<T>([InstantHandle] this ReadOnlySpan<T> iterable, Func<int, int, int>? selector = null)
+    {
+        selector ??= Rand();
+        return iterable[selector(0, iterable.Length)];
     }
 
     [Pure]

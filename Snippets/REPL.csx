@@ -175,7 +175,6 @@ using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
-using static System.Math;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
@@ -1461,7 +1460,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     public const string Unicode = $"{Breaking}{NonBreaking}";
 
     /// <summary>All unicode characters that appear to be whitespace.</summary>
-    public const string All = $"{Unicode}{Related}";
+    public const string Combined = $"{Unicode}{Related}";
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -3205,7 +3204,7 @@ public
 
         var slice = Slice(left, right, leftLength, rightLength, indexer, comparer) * Grade(leftLength, rightLength);
 
-        return Max(jaro, slice);
+        return Math.Max(jaro, slice);
     }
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
@@ -3261,7 +3260,7 @@ public
         var prefixLength = NumberOfEquals(left, right, leftLength, rightLength, indexer, comparer);
         var distance = JaroWinklerDistance(jaroDistance, prefixLength);
 
-        return Min(distance, 1);
+        return Math.Min(distance, 1);
     }
 
     [MustUseReturnValue, ValueRange(0, 1)]
@@ -3393,7 +3392,7 @@ public
 
         for (var i = 0; i < bigLength; i++)
         {
-            var highestPossibleScore = Min(bigLength - i - 1, smallLength);
+            var highestPossibleScore = Math.Min(bigLength - i - 1, smallLength);
 
             if (score >= highestPossibleScore)
                 break;
@@ -3420,7 +3419,7 @@ public
 
         for (var j = 0; j < smallLength && i + j < bigLength; j++)
             if (EqualsAt(big, small, i + j, j, comparer, indexer))
-                score = Max(score, j - lower);
+                score = Math.Max(score, j - lower);
             else
                 lower = j;
 
@@ -3437,7 +3436,7 @@ public
         [InstantHandle] Func<TItem, TItem, bool> comparer
     )
     {
-        var sharedLength = Min(leftLength, rightLength);
+        var sharedLength = Math.Min(leftLength, rightLength);
 
         for (var sharedIndex = 0; sharedIndex < sharedLength; sharedIndex++)
             if (!EqualsAt(left, right, sharedIndex, sharedIndex, comparer, indexer))
@@ -3470,7 +3469,7 @@ public
         [ValueRange(2, int.MaxValue)] int rightLength,
         [NonNegativeValue] int leftIndex
     ) =>
-        Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
+        Math.Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int MinBound(
@@ -3478,14 +3477,16 @@ public
         [ValueRange(2, int.MaxValue)] int rightLength,
         [NonNegativeValue] int leftIndex
     ) =>
-        SearchRange(leftLength, rightLength) < leftIndex ? Max(0, leftIndex - SearchRange(leftLength, rightLength)) : 0;
+        SearchRange(leftLength, rightLength) < leftIndex
+            ? Math.Max(0, leftIndex - SearchRange(leftLength, rightLength))
+            : 0;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int SearchRange(
         [ValueRange(2, int.MaxValue)] int leftLength,
         [ValueRange(2, int.MaxValue)] int rightLength
     ) =>
-        Max(leftLength, rightLength) / 2 - 1;
+        Math.Max(leftLength, rightLength) / 2 - 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroDistance(
@@ -3498,7 +3499,7 @@ public
 
     [MustUseReturnValue, ValueRange(0, 1)]
     static double Grade([NonNegativeValue] int leftLength, [NonNegativeValue] int rightLength) =>
-        1 - 1.0 / Min(leftLength + 1, rightLength + 1);
+        1 - 1.0 / Math.Min(leftLength + 1, rightLength + 1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroWinklerDistance([ValueRange(0, 1)] double jaroDistance, [NonNegativeValue] int prefixLength) =>
@@ -3569,6 +3570,30 @@ public
         return list;
     }
 
+    /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
+    {
+        selector ??= Rand();
+
+        for (var j = iterable.Length; j >= 1; j--)
+        {
+            var item = selector(0, j);
+
+            if (item >= j - 1)
+                continue;
+
+            // Tuples might not necessarily be imported.
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
+            var t = iterable[item];
+            iterable[item] = iterable[j - 1];
+            iterable[j - 1] = t;
+#pragma warning restore IDE0180
+        }
+
+        return iterable;
+    }
+
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
@@ -3589,6 +3614,19 @@ public
             _ when iterable.ToList() is var list => list[selector(0, list.Count)],
             _ => throw Unreachable,
         };
+    }
+
+    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue]
+    public static T PickRandom<T>([InstantHandle] this Span<T> iterable, Func<int, int, int>? selector = null) =>
+        PickRandom((ReadOnlySpan<T>)iterable, selector);
+
+    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue]
+    public static T PickRandom<T>([InstantHandle] this ReadOnlySpan<T> iterable, Func<int, int, int>? selector = null)
+    {
+        selector ??= Rand();
+        return iterable[selector(0, iterable.Length)];
     }
 
     [Pure]
@@ -6331,6 +6369,245 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> BreakableFor<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> BreakableFor<T>(
+        this Memory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> BreakableFor<T>(
+        this Span<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable, func);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> BreakableFor<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor(iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> BreakableFor<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        foreach (var x in iterable)
+            if (func(x) is ControlFlow.Break)
+                break;
+
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> BreakableFor<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> BreakableFor<T>(
+        this Memory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> BreakableFor<T>(
+        this Span<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable, func);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> BreakableFor<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor(iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> BreakableFor<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        for (var i = 0; i < iterable.Length; i++)
+            if (func(iterable[i], i) is ControlFlow.Break)
+                break;
+
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> For<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T> action
+    )
+    {
+        For((ReadOnlySpan<T>)iterable.Memory.Span, action);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> For<T>(this Memory<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
+    {
+        For((ReadOnlySpan<T>)iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> For<T>(this Span<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
+    {
+        For((ReadOnlySpan<T>)iterable, action);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> For<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T> action
+    )
+    {
+        For(iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> For<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T> action
+    )
+    {
+        foreach (var x in iterable)
+            action(x);
+
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> For<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        For((ReadOnlySpan<T>)iterable.Memory.Span, action);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> For<T>(
+        this Memory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        For((ReadOnlySpan<T>)iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> For<T>(this Span<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T, int> action)
+    {
+        For((ReadOnlySpan<T>)iterable, action);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> For<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        For(iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> For<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        for (var i = 0; i < iterable.Length; i++)
+            action(iterable[i], i);
+
+        return iterable;
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable CheckNamespace RedundantUsingDirective
 
 #pragma warning disable 8500
@@ -6450,6 +6727,555 @@ public enum ControlFlow : byte
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static byte[] Raw<T>(T value) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        All((ReadOnlySpan<T>)source.Memory.Span, func);
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        All((ReadOnlySpan<T>)source.Span, func);
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        All((ReadOnlySpan<T>)source, func);
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    ) =>
+        All(source.Span, func);
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(
+        this scoped ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    )
+    {
+        foreach (var next in source)
+            if (!func(next))
+                return false;
+
+        return true;
+    }
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        Any((ReadOnlySpan<T>)source.Memory.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        Any((ReadOnlySpan<T>)source.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        Any((ReadOnlySpan<T>)source, func);
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    ) =>
+        Any(source.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(
+        this scoped ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    )
+    {
+        foreach (var next in source)
+            if (func(next))
+                return true;
+
+        return false;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> Select<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T> selector
+    )
+    {
+        Select(source.Memory.Span, selector);
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Select<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
+    {
+        Select(source.Span, selector);
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Select<T>(this Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
+    {
+        for (var i = 0; i < source.Length; i++)
+            source[i] = selector(source[i]);
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> SkipWhile<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        SkipWhile(source.Memory, predicate);
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> SkipWhile<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(span[i]))
+                return source[i..];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> SkipWhile<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(source[i]))
+                return source[i..];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> SkipWhile<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(span[i]))
+                return source[i..];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> SkipWhile<T>(
+        this ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(source[i]))
+                return source[i..];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> TakeWhile<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        TakeWhile(source.Memory, predicate);
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> TakeWhile<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(span[i]))
+                return source[..i];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> TakeWhile<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(source[i]))
+                return source[..i];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> TakeWhile<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(span[i]))
+                return source[..i];
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> TakeWhile<T>(
+        this ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(source[i]))
+                return source[..i];
+
+        return source;
+    }
+#if NET7_0_OR_GREATER
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source)
+        where T : INumberBase<T> =>
+        Range(source.Memory.Span, T.Zero);
+
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source)
+        where T : INumberBase<T> =>
+        Range(source.Span, T.Zero);
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number in the <see cref="Span{T}"/>.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Span<T> source)
+        where T : INumberBase<T> =>
+        Range(source, T.Zero);
+
+    /// <inheritdoc cref="Range{T}(Span{T}, T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source, T start)
+        where T : IIncrementOperators<T> =>
+        Range(source.Memory.Span, start);
+
+    /// <inheritdoc cref="Range{T}(Span{T}, T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source, T start)
+        where T : IIncrementOperators<T> =>
+        Range(source.Span, start);
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number in the <see cref="Span{T}"/>.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <param name="start">The number to start with.</param>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Span<T> source, T start)
+        where T : IIncrementOperators<T>
+    {
+        for (var i = 0; i < source.Length; i++, start++)
+            source[i] = start;
+
+        return source;
+    }
+#else
+    /// <inheritdoc cref="Range(Span{int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<int> Range(this IMemoryOwner<int> source) => Range(source.Memory.Span, 0);
+
+    /// <inheritdoc cref="Range(Span{int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<int> Range(this Memory<int> source) => Range(source.Span, 0);
+
+    /// <summary>Creates the range.</summary>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<int> Range(this Span<int> source) => Range(source, 0);
+
+    /// <inheritdoc cref="Range(Span{int}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<int> Range(this IMemoryOwner<int> source, int start) => Range(source.Memory.Span, start);
+
+    /// <inheritdoc cref="Range(Span{int}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<int> Range(this Memory<int> source, int start) => Range(source.Span, start);
+
+    /// <summary>Creates the range.</summary>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <param name="start">The number to start with.</param>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<int> Range(this Span<int> source, int start)
+    {
+        for (var i = 0; i < source.Length; i++)
+            source[i] = i + start;
+
+        return source;
+    }
+#endif
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Where<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source.Memory[..^Filter(source.Memory.Span, predicate)];
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Where<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source[..^Filter(source.Span, predicate)];
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Where<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source[..^Filter(source, predicate)];
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Memory.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
+        Aggregate((ReadOnlySpan<T>)source.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this scoped Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    ) =>
+        Aggregate(source.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this scoped ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    )
+    {
+        var e = source.GetEnumerator();
+
+        if (!e.MoveNext())
+            return default;
+
+        var accumulator = e.Current;
+
+        while (e.MoveNext())
+            accumulator = func(accumulator, e.Current);
+
+        return accumulator;
+    }
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this IMemoryOwner<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this Memory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this scoped Span<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source, seed, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this ReadOnlyMemory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate(source.Span, seed, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this scoped ReadOnlySpan<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    )
+    {
+        foreach (var next in source)
+            seed = func(seed, next);
+
+        return seed;
+    }
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this IMemoryOwner<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func, resultSelector);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this Memory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this Span<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this ReadOnlyMemory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate(source.Span, seed, func, resultSelector);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this scoped ReadOnlySpan<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    )
+    {
+        foreach (var next in source)
+            seed = func(seed, next);
+
+        return resultSelector(seed);
+    }
+
+    // Surprisingly, direct indexing is more efficient than .CopyTo despite latter guaranteeing SIMD.
+    // Benchmarked with various sizes and on function "static x => BitOperations.PopCount(x) % 2 is 0".
+    // This function was chosen as the baseline due to it being cheap to compute, evenly distributed,
+    // and ensuring all patterns of [[false, false], [false, true], [true, false], [true, true]] would appear.
+    // ReSharper disable CommentTypo
+    // https://sharplab.io/#v2:D4AQTAjAsAULIQGwAICWA7ALsg6gCwFMAnAgSXXWIB4AVAPgApZkXkBlABwEN1a7kAzgHsArkQDGBADTNWABRIATVOK6YCfZByUq1BWAEpYAb1ksAZkKLIGANy7XUyALzIADAG40yKoNESCADoAGQJ0AHNMPC9UAGpYoxhWZFMk5NZUcxttAmVVdQZhMUkAbVQAXQNE9JrkcSEsDBECD1gzdPtrAUwHbFdUVrg0msUhdtq0LIZ4pzpXIoCQsMi8aonakAB2QR6iTEGJgHc8VAAbAhsAQhy8vUL/UoqqwfHWTuRlAQ5TrkkAWzCfW8AFodr0DrUFo9AoFyoEAMJCDgATxoQnuxQIJW6vRhlQhNShF3mDyxMIAep9vr8CACsOUCeknMDXFSfv9AYyAL5tYbILZ+TFLCJRQZcoA
+    // https://cdn.discordapp.com/attachments/445375602648940544/1129045669148098610/image.png
+    // ReSharper restore CommentTypo
+
+    [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
+    {
+        var end = 0;
+
+        for (var i = 0; i < source.Length; i++)
+        {
+            if (predicate(source[i]))
+            {
+                if (end > 0)
+                    source[i - end] = source[i];
+
+                continue;
+            }
+
+            var start = i;
+
+            do
+                if (++i >= source.Length)
+                    return end + i - start;
+            while (!predicate(source[i]));
+
+            end += i - start;
+            source[i - end] = source[i];
+        }
+
+        return end;
+    }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -7080,6 +7906,376 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+/// <inheritdoc cref="SpanSimdQueries"/>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this IMemoryOwner<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable.Memory.Span);
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this Memory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable.Span);
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this scoped Span<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable);
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this ReadOnlyMemory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable.Span);
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable);
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this IMemoryOwner<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable.Memory.Span);
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this Memory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable.Span);
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this scoped Span<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable);
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this ReadOnlyMemory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable.Span);
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable);
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this IMemoryOwner<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable.Memory.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this Memory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this scoped Span<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this ReadOnlyMemory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this scoped ReadOnlySpan<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this IMemoryOwner<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable.Memory.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this Memory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this scoped Span<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this ReadOnlyMemory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this scoped ReadOnlySpan<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable, keySelector);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool IsNumericPrimitive<T>() =>
+        typeof(T) == typeof(byte) ||
+        typeof(T) == typeof(double) ||
+        typeof(T) == typeof(float) ||
+        typeof(T) == typeof(int) ||
+        typeof(T) == typeof(long) ||
+        typeof(T) == typeof(nint) ||
+        typeof(T) == typeof(nuint) ||
+        typeof(T) == typeof(sbyte) ||
+        typeof(T) == typeof(short) ||
+        typeof(T) == typeof(uint) ||
+        typeof(T) == typeof(ulong) ||
+        typeof(T) == typeof(ushort);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051
+    static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+#pragma warning restore MA0051
+    {
+        T value;
+
+        if (span.IsEmpty)
+            return default!;
+
+        if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
+        {
+            value = span[0];
+
+            for (var i = 1; i < span.Length; i++)
+                if (typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(span[i], value) > 0,
+                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(span[i], value) < 0,
+                    _ => throw Unreachable,
+                })
+                    value = span[i];
+        }
+        else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
+        {
+            ref var current = ref MemoryMarshal.GetReference(span);
+            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector128<T>.Count);
+
+            var best = Vector128.LoadUnsafe(ref current);
+            current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+
+            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
+            {
+                best = typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref current)),
+                    var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref current)),
+                    _ => throw Unreachable,
+                };
+
+                current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+            }
+
+            best = typeof(TMinMax) switch
+            {
+                var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref lastVectorStart)),
+                var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref lastVectorStart)),
+                _ => throw Unreachable,
+            };
+
+            value = best[0];
+
+            for (var i = 1; i < Vector128<T>.Count; i++)
+                if (typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(best[i], value) > 0,
+                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(best[i], value) < 0,
+                    _ => throw Unreachable,
+                })
+                    value = best[i];
+        }
+        else
+        {
+            ref var current = ref MemoryMarshal.GetReference(span);
+            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector256<T>.Count);
+
+            var best = Vector256.LoadUnsafe(ref current);
+            current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+
+            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
+            {
+                best = typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref current)),
+                    var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref current)),
+                    _ => throw Unreachable,
+                };
+
+                current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+            }
+
+            best = typeof(TMinMax) switch
+            {
+                var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref lastVectorStart)),
+                var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref lastVectorStart)),
+                _ => throw Unreachable,
+            };
+
+            value = best[0];
+
+            for (var i = 1; i < Vector256<T>.Count; i++)
+                if (typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(best[i], value) > 0,
+                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(best[i], value) < 0,
+                    _ => throw Unreachable,
+                })
+                    value = best[i];
+        }
+
+        return value;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static T MinMax<T, TResult, TMinMax>(
+        this scoped ReadOnlySpan<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+    {
+        if (enumerable.IsEmpty)
+            return default!;
+
+        var value = enumerable[0];
+        var best = converter(value);
+
+        for (var i = 1; i < enumerable.Length; i++)
+            if (converter(enumerable[i]) is var next &&
+                typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Comparer<TResult>.Default.Compare(next, best) > 0,
+                    var x when x == typeof(Minimum) => Comparer<TResult>.Default.Compare(next, best) < 0,
+                    _ => throw Unreachable,
+                })
+                (value, best) = (enumerable[i], next);
+
+        return value;
+    }
+
+    struct Minimum;
+
+    struct Maximum;
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable once CheckNamespace
 
 
@@ -7574,6 +8770,342 @@ readonly
 
         return result;
     }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+/// <inheritdoc cref="SpanSimdQueries"/>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this IMemoryOwner<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Memory.Span);
+
+    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this Memory<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Span);
+
+    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this scoped Span<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span);
+
+    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this ReadOnlyMemory<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average(span.Span);
+
+    /// <summary>Gets the average.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to get the average of.</param>
+    /// <returns>The average of <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this scoped ReadOnlySpan<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            OperatorCaching<T>._divider(span.Sum(), span.Length);
+
+    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this IMemoryOwner<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Memory.Span);
+
+    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this Memory<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Span);
+
+    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this scoped Span<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span);
+
+    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this ReadOnlyMemory<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum(span.Span);
+
+    /// <summary>Gets the sum.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to get the sum of.</param>
+    /// <returns>The sum of <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this scoped ReadOnlySpan<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+    {
+        if (IsNumericPrimitive<T>() &&
+            Vector<T>.IsSupported &&
+            Vector.IsHardwareAccelerated &&
+            Vector<T>.Count > 2 &&
+            span.Length >= Vector<T>.Count * 4)
+            return SumVectorized(span);
+
+        T sum = default!;
+
+        foreach (var value in span)
+            checked
+            {
+                sum = OperatorCaching<T>._adder(sum, value);
+            }
+
+        return sum;
+    }
+
+    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this IMemoryOwner<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Average((ReadOnlySpan<T>)span.Memory.Span, converter);
+
+    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this Memory<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Average((ReadOnlySpan<T>)span.Span, converter);
+
+    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this scoped Span<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Average((ReadOnlySpan<T>)span, converter);
+
+    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this ReadOnlyMemory<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Average(span.Span, converter);
+
+    /// <summary>Gets the average.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <typeparam name="TResult">The type of return.</typeparam>
+    /// <param name="span">The span to get the average of.</param>
+    /// <param name="converter">The mapping of each element.</param>
+    /// <returns>The average of each mapping of <paramref name="span"/> by <paramref name="converter"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this scoped ReadOnlySpan<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
+
+    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this IMemoryOwner<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
+
+    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this Memory<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Sum((ReadOnlySpan<T>)span.Span, converter);
+
+    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this scoped Span<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Sum((ReadOnlySpan<T>)span, converter);
+
+    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this ReadOnlyMemory<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    ) =>
+        Sum(span.Span, converter);
+
+    /// <summary>Gets the sum.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <typeparam name="TResult">The type of return.</typeparam>
+    /// <param name="span">The span to get the sum of.</param>
+    /// <param name="converter">The mapping of each element.</param>
+    /// <returns>The sum of each mapping of <paramref name="span"/> by <paramref name="converter"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this scoped ReadOnlySpan<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+    {
+        TResult? sum = default;
+
+        foreach (var a in span)
+            sum = OperatorCaching<TResult>._adder(sum, converter(a));
+
+        return sum;
+    }
+
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
+#if NET8_0_OR_GREATER
+        =>
+            Vector.LoadUnsafe(ref source, elementOffset);
+#else
+        where T : struct
+    {
+        source = ref Unsafe.Add(ref source, (nint)elementOffset);
+        return Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref source));
+    }
+#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051
+    static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
+#pragma warning restore MA0051
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+    {
+        ref var ptr = ref MemoryMarshal.GetReference(span);
+        var length = (nuint)span.Length;
+
+        var accumulator = Vector<T>.Zero;
+
+        Vector<T> overflowTestVector = new(OperatorCaching<T>._minValue);
+
+        nuint index = 0;
+        var limit = length - (nuint)Vector<T>.Count * 4;
+
+        do
+        {
+            var data = LoadUnsafe(ref ptr, index);
+            var accumulator2 = accumulator + data;
+            var overflowTracking = (accumulator2 ^ accumulator) & (accumulator2 ^ data);
+
+            data = LoadUnsafe(ref ptr, index + (nuint)Vector<T>.Count);
+            accumulator = accumulator2 + data;
+            overflowTracking |= (accumulator ^ accumulator2) & (accumulator ^ data);
+
+            data = LoadUnsafe(ref ptr, index + (nuint)Vector<T>.Count * 2);
+            accumulator2 = accumulator + data;
+            overflowTracking |= (accumulator2 ^ accumulator) & (accumulator2 ^ data);
+
+            data = LoadUnsafe(ref ptr, index + (nuint)Vector<T>.Count * 3);
+            accumulator = accumulator2 + data;
+            overflowTracking |= (accumulator ^ accumulator2) & (accumulator ^ data);
+
+            if ((overflowTracking & overflowTestVector) != Vector<T>.Zero)
+                throw new OverflowException();
+
+            index += (nuint)Vector<T>.Count * 4;
+        } while (index < limit);
+
+        limit = length - (nuint)Vector<T>.Count;
+
+        if (index < limit)
+        {
+            var overflowTracking = Vector<T>.Zero;
+
+            do
+            {
+                var data = LoadUnsafe(ref ptr, index);
+                var accumulator2 = accumulator + data;
+                overflowTracking |= (accumulator2 ^ accumulator) & (accumulator2 ^ data);
+                accumulator = accumulator2;
+
+                index += (nuint)Vector<T>.Count;
+            } while (index < limit);
+
+            if ((overflowTracking & overflowTestVector) != Vector<T>.Zero)
+                throw new OverflowException();
+        }
+
+        T result = default!;
+
+        for (var i = 0; i < Vector<T>.Count; i++)
+            checked
+            {
+                result = OperatorCaching<T>._adder(result, accumulator[i]);
+            }
+
+        while (index < length)
+        {
+            checked
+            {
+                result = OperatorCaching<T>._adder(result, Unsafe.Add(ref ptr, index));
+            }
+
+            index++;
+        }
+
+        return result;
+    }
+
+    static class OperatorCaching<T>
+    {
+        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
+
+        static readonly Type[] s_args = new[] { typeof(T), typeof(T) };
+
+        internal static readonly T _minValue =
+            (T?)typeof(T).GetField("MinValue", Flags)?.GetValue(null) ?? throw Unreachable;
+
+        internal static readonly Func<T?, T?, T> _adder = Operator<T>("op_Addition", Expression.AddChecked);
+
+        internal static readonly Func<T?, int, T> _divider =
+            Operator<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(int))));
+
+        static Func<T?, TRight?, T> Operator<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
+            typeof(T).GetMethod(name, Flags, s_args) is not { } x &&
+            Expression.Parameter(typeof(T), "left") is var left &&
+            Expression.Parameter(typeof(TRight), "right") is var right
+                ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
+                : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
+    }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
