@@ -26,7 +26,7 @@ public sealed class Morsels : AMarkdownFactory
     }
 
     static void Throw(DocItem item, string name, DocItem seen) =>
-        throw new IOException($"Duplicate file name \"{name}\" at {seen.Stringify(true)} and {item.Stringify(true)}.");
+        throw new IOException($"Duplicate file name \"{name}\" at {seen.Stringify()} and {item.Stringify()}.");
 
     static string Parent(DocItem item) =>
         item.Parent is EntityDocItem { Entity: { SymbolKind: not SymbolKind.Namespace, Name: var name } } parent

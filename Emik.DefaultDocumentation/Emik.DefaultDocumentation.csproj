@@ -4,6 +4,7 @@
         <FileVersion>0.0</FileVersion>
         <TargetFramework>netstandard2.0</TargetFramework>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
+        <DefineConstants>$(DefineConstants);NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Remove="UnitGenerator"/>
