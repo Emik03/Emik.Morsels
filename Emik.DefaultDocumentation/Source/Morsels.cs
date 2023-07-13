@@ -36,39 +36,40 @@ public sealed class Morsels : AMarkdownFactory
     static string Parameters(DocItem item) =>
         (item as IParameterizedDocItem)?.Parameters.ToListLazily() is [_, ..] p ? $"({Join(p)})" : "";
 
-    static string TypeParameters(DocItem item) =>
-        (item as ITypeParameterizedDocItem)?.TypeParameters.ToListLazily() is [_, ..] p
-            ? $"{{{Join(p)}}}"
-            : "";
+    static string TypeArguments(IType type) => ElementType(type).TypeArguments is [_, ..] x ? $"{{{Join(x)}}}" : "";
 
-    static string TypeParameters(IType item) => ElementType(item).TypeArguments is [_, ..] p ? $"{{{Join(p)}}}" : "";
+    static string TypeParameters(DocItem item) =>
+        (item as ITypeParameterizedDocItem)?.TypeParameters.ToListLazily() is [_, ..] x
+            ? $"{{{Join(x)}}}"
+            : "";
 
     static string Join(IEnumerable<DocItem> parameters) => parameters.Select(ParameterName).Conjoin(",");
 
     static string Join(IEnumerable<IType> parameters) => parameters.Select(ParameterName).Conjoin(",");
 
-    static string ParameterName(DocItem x) =>
-        x switch
+    static string ParameterName(DocItem item) =>
+        item switch
         {
-            TypeParameterDocItem { TypeParameter.Name: var p } => p,
-            ParameterDocItem { Parameter.Type: { Namespace: nameof(System), Name: nameof(Nullable) } p }
-                => $"{TypeParameters(p)}+",
-            ParameterDocItem { Parameter.Type: var p } => $"{ToAlias(p)}{TypeParameters(p)}",
-            _ => x.Name,
+            TypeParameterDocItem { TypeParameter.Name: var x } => x,
+            ParameterDocItem
+                {
+                    Parameter.Type: { Namespace: nameof(System), Name: nameof(Nullable), TypeArguments: [var x] },
+                } => $"{ParameterName(x)}+",
+            ParameterDocItem { Parameter.Type: var x } => $"{ToAlias(x)}{TypeArguments(x)}",
+            _ => item.Name,
         };
 
-    static string ParameterName(IType x) => $"{ToAlias(x.Name)}{TypeParameters(x)}";
+    static string ParameterName(IType type) => $"{ToAlias(type)}{TypeArguments(type)}";
 
     static string MemberName(DocItem item) =>
         item is not EntityDocItem entity ? item.Name :
         entity.Entity is IMethod { Name: "op_Implicit" or "op_Explicit" } method ? method.ReturnType.Name :
         entity.Entity.Name;
 
-    static string ToAlias(INamedElement type) => type.Namespace is nameof(System) ? ToAlias(type.Name) : type.Name;
+    static string ToAlias(INamedElement name) => name.Namespace is nameof(System) ? ToAlias(name.Name) : name.Name;
 
-    static string ToAlias(string typeName) =>
-        typeName
-           .Replace(nameof(Boolean), "bool")
+    static string ToAlias(string str) =>
+        str.Replace(nameof(Boolean), "bool")
            .Replace(nameof(Byte), "byte")
            .Replace(nameof(Char), "char")
            .Replace(nameof(Decimal), "decimal")
@@ -86,5 +87,5 @@ public sealed class Morsels : AMarkdownFactory
            .Replace(nameof(UInt64), "ulong")
            .Replace(nameof(UInt16), "ushort");
 
-    static IType ElementType(IType item) => (item as ByReferenceType)?.ElementType ?? item;
+    static IType ElementType(IType type) => (type as ByReferenceType)?.ElementType ?? type;
 }
