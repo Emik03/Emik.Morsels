@@ -25,11 +25,15 @@ static partial class MemoryMarshal
     /// <param name="length">The number of <typeparamref name="T"/> elements the memory contains.</param>
     /// <returns>The lifetime of the returned span will not be validated for safety by span-aware languages.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> CreateSpan<T>(scoped ref T reference, int length) =>
+    public static unsafe Span<T> CreateSpan<T>(scoped ref T reference, int length)
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        new(&reference, length);
+    {
+        fixed (T* ptr = &reference)
+            return new(ptr, length);
+    }
 #else
-        Cache<T>.Span(ref reference, length);
+        =>
+            Cache<T>.Span(ref reference, length);
 #endif
 
     /// <summary>
@@ -42,11 +46,15 @@ static partial class MemoryMarshal
     /// <param name="length">The number of <typeparamref name="T"/> elements the memory contains.</param>
     /// <returns>The lifetime of the returned span will not be validated for safety by span-aware languages.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length) =>
+    public static unsafe ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length)
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        new(&reference, length);
+    {
+        fixed (T* ptr = &reference)
+            return new(ptr, length);
+    }
 #else
-        Cache<T>.ReadOnlySpan(ref reference, length);
+        =>
+            Cache<T>.ReadOnlySpan(ref reference, length);
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     static class Cache<T>
