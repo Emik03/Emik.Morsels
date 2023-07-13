@@ -51,18 +51,20 @@ public sealed class Morsels : AMarkdownFactory
         x switch
         {
             TypeParameterDocItem { TypeParameter.Name: var p } => p,
+            ParameterDocItem { Parameter.Type: { Namespace: nameof(System), Name: nameof(Nullable) } p }
+                => $"{TypeParameters(p)}+",
             ParameterDocItem { Parameter.Type: var p } => $"{ToAlias(p)}{TypeParameters(p)}",
             _ => x.Name,
         };
 
-    static string ParameterName(IType x) => $"{x.Name}{TypeParameters(x)}";
+    static string ParameterName(IType x) => $"{ToAlias(x.Name)}{TypeParameters(x)}";
 
     static string MemberName(DocItem item) =>
         item is not EntityDocItem entity ? item.Name :
         entity.Entity is IMethod { Name: "op_Implicit" or "op_Explicit" } method ? method.ReturnType.Name :
         entity.Entity.Name;
 
-    static string ToAlias(INamedElement type) => type.Namespace is "System" ? ToAlias(type.Name) : type.Name;
+    static string ToAlias(INamedElement type) => type.Namespace is nameof(System) ? ToAlias(type.Name) : type.Name;
 
     static string ToAlias(string typeName) =>
         typeName
