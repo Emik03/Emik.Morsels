@@ -15,6 +15,10 @@ static partial class SpanIndexers
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+
     {
         if (span.IsEmpty)
         {
@@ -34,6 +38,10 @@ static partial class SpanIndexers
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+
     {
         if (span.IsEmpty)
         {
@@ -52,8 +60,12 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -61,8 +73,12 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Nth<T>(this Span<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+    public static Span<T> Nth<T>(this Span<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -70,8 +86,12 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        index >= 0 && index < span.Length ? span[index] : default;
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index >= 0 && index < span.Length ? span[index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -79,10 +99,14 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index) =>
-        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
-            ? span[offset]
-            : default;
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+                ? span[offset]
+                : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -90,8 +114,12 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[span.Length - index] : default;
+    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index > 0 && index <= span.Length ? span[span.Length - index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -99,8 +127,12 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        index >= 0 && index < span.Length ? span[index] : default;
+    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index >= 0 && index < span.Length ? span[index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -108,10 +140,14 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, Index index) =>
-        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
-            ? span[offset]
-            : default;
+    public static T? Nth<T>(this scoped Span<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+                ? span[offset]
+                : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -119,6 +155,10 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[span.Length - index] : default;
+    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index > 0 && index <= span.Length ? span[span.Length - index] : default;
 }

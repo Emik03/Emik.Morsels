@@ -7,51 +7,6 @@ namespace Emik.Morsels;
 using static CollectionAccessType;
 using static Span;
 
-/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#pragma warning disable MA0048
-static partial class SmallFactory
-#pragma warning restore MA0048
-{
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsSmallList<T>(this T value) => value;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
-        where T1 : T2 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
-        where T1 : T3
-        where T2 : T3 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
-
-    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
-
-    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerable<T>? iterable) => new(iterable);
-
-    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
-}
-
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
 [StructLayout(LayoutKind.Sequential)]

@@ -363,7 +363,9 @@ static partial class Stringifier
             ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
             IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#pragma warning disable IDISP004
             ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
+#pragma warning restore IDISP004
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
             IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",

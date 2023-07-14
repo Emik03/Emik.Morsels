@@ -284,6 +284,306 @@ static partial class Span
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
+#pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
+#if !NETFRAMEWORK
+    /// <summary>Allocates an inlined span of the specified size.</summary>
+    /// <remarks><para>
+    /// The returned <see cref="Span{T}"/> will point to uninitialized memory.
+    /// Be sure to call <see cref="Span{T}.Fill"/> or otherwise written to first before enumeration or reading.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="_">The discard, which is used to let the compiler track lifetimes.</param>
+    /// <returns>The <see cref="Span{T}"/> of the specified size.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static Span<T> Inline1<T>(in T _ = default!)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static Span<T> Inline1<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out T one);
+        return new(ref Unsafe.AsRef(one));
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline2<T>(in Two<T> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<T>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline2<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<T> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<T>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline4<T>(in Two<Two<T>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<T>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline4<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<T>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<T>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline8<T>(in Two<Two<Two<T>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<T>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline8<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<T>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<T>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline16<T>(in Two<Two<Two<Two<T>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline16<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline32<T>(in Two<Two<Two<Two<Two<T>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline32<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline64<T>(in Two<Two<Two<Two<Two<Two<T>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline64<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline128<T>(in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline128<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline256<T>(in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline256<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline512<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline512<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline1024<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline1024<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+#endif
+#pragma warning restore RCS1242
 
     /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>

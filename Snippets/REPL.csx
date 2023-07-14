@@ -1849,7 +1849,9 @@ public
             ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
             IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#pragma warning disable IDISP004
             ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
+#pragma warning restore IDISP004
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
             IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
@@ -3995,6 +3997,33 @@ public
     {
         // ReSharper disable ExplicitCallerInfoArgument
         _ = value
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
+
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    public static SmallList<T, TRef> Debug<T, TRef>(
+        this SmallList<T, TRef> value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value
+           .View
            .ToArray()
            .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
@@ -6761,13 +6790,279 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace
+
+#if !NETFRAMEWORK
+/// <summary>
+/// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
+/// </summary>
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<T> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<T>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<T>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<T>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<T>>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
+        );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
+            );
+
+    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
+            );
+#endif
+
+/// <summary>
+/// Represents two inlined elements, equivalent to <see cref="ValueTuple{T1, T2}"/>,
+/// but the memory layout is guaranteed to be sequential, and both elements are of the same type.
+/// </summary>
+/// <typeparam name="T">The type of item to store.</typeparam>
+/// <param name="first">The first item.</param>
+/// <param name="second">The second item.</param>
+[StructLayout(LayoutKind.Sequential)]
+public readonly struct Two<T>(T first, T second) :
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    ITuple,
+#endif
+    IComparable<Two<T>>,
+    IEquatable<Two<T>>
+{
+    /// <summary>The stored items.</summary>
+    public readonly T First = first, Second = second;
+
+    /// <summary>Applies the indexer and returns the instance according to the value.</summary>
+    /// <param name="back">Whether or not to return <see cref="Second"/>.</param>
+    [Pure]
+    public T this[bool back] => back ? Second : First;
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <inheritdoc />
+    [Pure, ValueRange(2)]
+    int ITuple.Length => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    object? ITuple.this[int index] =>
+        index switch
+        {
+            0 => First,
+            1 => Second,
+            _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
+        };
+#endif
+
+    /// <summary>Deconstructs this instance into the two inlined elements.</summary>
+    /// <param name="first">The first item.</param>
+    /// <param name="second">The second item.</param>
+    public void Deconstruct(out T first, out T second)
+    {
+        first = First;
+        second = Second;
+    }
+
+    /// <summary>Determines whether both instances contain the same two values.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both instances have the same two values.</returns>
+    [Pure]
+    public static bool operator ==(Two<T> left, Two<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether both instances contain different values.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both instances have different values.</returns>
+    [Pure]
+    public static bool operator !=(Two<T> left, Two<T> right) => !(left == right);
+
+    /// <summary>Determines whether the left instance is less than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is less than the right.</returns>
+    [Pure]
+    public static bool operator <(Two<T> left, Two<T> right) => left.CompareTo(right) < 0;
+
+    /// <summary>Determines whether the left instance is equal to or less than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is equal to or less than the right.</returns>
+    [Pure]
+    public static bool operator <=(Two<T> left, Two<T> right) => left.CompareTo(right) <= 0;
+
+    /// <summary>Determines whether the left instance is greater than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is greater than the right.</returns>
+    [Pure]
+    public static bool operator >(Two<T> left, Two<T> right) => left.CompareTo(right) > 0;
+
+    /// <summary>Determines whether the left instance is equal to or greater than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is equal to or greater than the right.</returns>
+    [Pure]
+    public static bool operator >=(Two<T> left, Two<T> right) => left.CompareTo(right) >= 0;
+
+    /// <summary>Implicitly converts the <see cref="Two{T}"/> into the <see cref="ValueTuple{T1, T2}"/>.</summary>
+    /// <param name="two">The <see cref="Two{T}"/> to convert.</param>
+    /// <returns>The equivalent tuple layout of the parameter <paramref name="two"/>.</returns>
+    [Pure]
+    public static implicit operator (T First, T Second)(Two<T> two) => (two.First, two.Second);
+
+    /// <summary>Implicitly converts the <see cref="ValueTuple{T1, T2}"/> into the <see cref="Two{T}"/>.</summary>
+    /// <param name="tuple">The <see cref="ValueTuple{T1, T2}"/> to convert.</param>
+    /// <returns>The equivalent sequential layout of the parameter <paramref name="tuple"/>.</returns>
+    [Pure]
+    public static implicit operator Two<T>((T First, T Second) tuple) => (tuple.First, tuple.Second);
+
+    /// <inheritdoc />
+    [Pure]
+    public override bool Equals(object? obj) => obj is Two<T> two && Equals(two);
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Equals(Two<T> other) =>
+        EqualityComparer<T>.Default.Equals(First, other.First) &&
+        EqualityComparer<T>.Default.Equals(Second, other.Second);
+
+    /// <inheritdoc />
+    [Pure]
+    public int CompareTo(Two<T> other) =>
+        Comparer<T>.Default.Compare(First, other.First) is var first and not 0 ? first :
+        Comparer<T>.Default.Compare(Second, other.Second) is var second and not 0 ? second : 0;
+
+    /// <inheritdoc />
+    [Pure]
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = 0;
+
+            if (First is not null)
+                hashCode = EqualityComparer<T>.Default.GetHashCode(First);
+
+            if (Second is not null)
+                hashCode ^= EqualityComparer<T>.Default.GetHashCode(Second);
+
+            return hashCode;
+        }
+    }
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
 /// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
@@ -6777,12 +7072,16 @@ public enum ControlFlow : byte
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         All((ReadOnlySpan<T>)source.Span, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
-        All((ReadOnlySpan<T>)source, func);
-
+    public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            All((ReadOnlySpan<T>)source, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(
@@ -6790,6 +7089,7 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     ) =>
         All(source.Span, func);
+#endif
 
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -6797,6 +7097,9 @@ public enum ControlFlow : byte
         this scoped ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         foreach (var next in source)
             if (!func(next))
@@ -6804,7 +7107,7 @@ public enum ControlFlow : byte
 
         return true;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
@@ -6814,12 +7117,16 @@ public enum ControlFlow : byte
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         Any((ReadOnlySpan<T>)source.Span, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
-        Any((ReadOnlySpan<T>)source, func);
-
+    public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Any((ReadOnlySpan<T>)source, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
@@ -6827,13 +7134,16 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     ) =>
         Any(source.Span, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
         this scoped ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         foreach (var next in source)
             if (func(next))
@@ -6841,7 +7151,7 @@ public enum ControlFlow : byte
 
         return false;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> Select<T>(
@@ -6860,17 +7170,20 @@ public enum ControlFlow : byte
         Select(source.Span, selector);
         return source;
     }
-
+#endif
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Select<T>(this Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         for (var i = 0; i < source.Length; i++)
             source[i] = selector(source[i]);
 
         return source;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> SkipWhile<T>(
@@ -6894,13 +7207,16 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#endif
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> SkipWhile<T>(
         this Span<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         for (var i = 0; i < source.Length; i++)
             if (!predicate(source[i]))
@@ -6908,7 +7224,7 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> SkipWhile<T>(
@@ -6924,13 +7240,16 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#endif
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> SkipWhile<T>(
         this ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         for (var i = 0; i < source.Length; i++)
             if (!predicate(source[i]))
@@ -6938,7 +7257,7 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> TakeWhile<T>(
@@ -6962,13 +7281,16 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#endif
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> TakeWhile<T>(
         this Span<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         for (var i = 0; i < source.Length; i++)
             if (predicate(source[i]))
@@ -6976,7 +7298,7 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> TakeWhile<T>(
@@ -6992,13 +7314,16 @@ public enum ControlFlow : byte
 
         return source;
     }
-
+#endif
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> TakeWhile<T>(
         this ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         for (var i = 0; i < source.Length; i++)
             if (predicate(source[i]))
@@ -7010,14 +7335,22 @@ public enum ControlFlow : byte
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source)
-        where T : INumberBase<T> =>
-        Range(source.Memory.Span, T.Zero);
+        where T : INumberBase<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Range(source.Memory.Span, T.Zero);
 
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source)
-        where T : INumberBase<T> =>
-        Range(source.Span, T.Zero);
+        where T : INumberBase<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Range(source.Span, T.Zero);
 
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number in the <see cref="Span{T}"/>.</typeparam>
@@ -7025,20 +7358,32 @@ public enum ControlFlow : byte
     /// <returns>The parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Span<T> source)
-        where T : INumberBase<T> =>
-        Range(source, T.Zero);
+        where T : INumberBase<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Range(source, T.Zero);
 
     /// <inheritdoc cref="Range{T}(Span{T}, T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source, T start)
-        where T : IIncrementOperators<T> =>
-        Range(source.Memory.Span, start);
+        where T : IIncrementOperators<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Range(source.Memory.Span, start);
 
     /// <inheritdoc cref="Range{T}(Span{T}, T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source, T start)
-        where T : IIncrementOperators<T> =>
-        Range(source.Span, start);
+        where T : IIncrementOperators<T>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Range(source.Span, start);
 
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number in the <see cref="Span{T}"/>.</typeparam>
@@ -7047,7 +7392,11 @@ public enum ControlFlow : byte
     /// <returns>The parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Span<T> source, T start)
+#if UNMANAGED_SPAN
+        where T : IIncrementOperators<T>, unmanaged
+#else
         where T : IIncrementOperators<T>
+#endif
     {
         for (var i = 0; i < source.Length; i++, start++)
             source[i] = start;
@@ -7055,6 +7404,7 @@ public enum ControlFlow : byte
         return source;
     }
 #else
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Range(Span{int})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<int> Range(this IMemoryOwner<int> source) => Range(source.Memory.Span, 0);
@@ -7062,13 +7412,18 @@ public enum ControlFlow : byte
     /// <inheritdoc cref="Range(Span{int})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<int> Range(this Memory<int> source) => Range(source.Span, 0);
-
+#endif
     /// <summary>Creates the range.</summary>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
     /// <returns>The parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this Span<int> source) => Range(source, 0);
-
+    public static Span<int> Range(this Span<int> source)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Range(source, 0);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Range(Span{int}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<int> Range(this IMemoryOwner<int> source, int start) => Range(source.Memory.Span, start);
@@ -7076,13 +7431,16 @@ public enum ControlFlow : byte
     /// <inheritdoc cref="Range(Span{int}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<int> Range(this Memory<int> source, int start) => Range(source.Span, start);
-
+#endif
     /// <summary>Creates the range.</summary>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
     /// <param name="start">The number to start with.</param>
     /// <returns>The parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<int> Range(this Span<int> source, int start)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         for (var i = 0; i < source.Length; i++)
             source[i] = i + start;
@@ -7090,7 +7448,7 @@ public enum ControlFlow : byte
         return source;
     }
 #endif
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Where<T>(
@@ -7106,15 +7464,19 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     ) =>
         source[..^Filter(source.Span, predicate)];
-
+#endif
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Where<T>(
         this Span<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        source[..^Filter(source, predicate)];
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            source[..^Filter(source, predicate)];
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -7127,15 +7489,19 @@ public enum ControlFlow : byte
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
         Aggregate((ReadOnlySpan<T>)source.Span, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
         this scoped Span<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source, func);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -7143,13 +7509,16 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     ) =>
         Aggregate(source.Span, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
         this scoped ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         var e = source.GetEnumerator();
 
@@ -7163,7 +7532,7 @@ public enum ControlFlow : byte
 
         return accumulator;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -7181,16 +7550,20 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
         this scoped Span<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source, seed, func);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source, seed, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -7199,7 +7572,7 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     ) =>
         Aggregate(source.Span, seed, func);
-
+#endif
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -7207,13 +7580,16 @@ public enum ControlFlow : byte
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         foreach (var next in source)
             seed = func(seed, next);
 
         return seed;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -7233,17 +7609,21 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this Span<T> source,
+        this scoped Span<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -7253,7 +7633,7 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
     ) =>
         Aggregate(source.Span, seed, func, resultSelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -7262,6 +7642,9 @@ public enum ControlFlow : byte
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         foreach (var next in source)
             seed = func(seed, next);
@@ -7280,6 +7663,9 @@ public enum ControlFlow : byte
 
     [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         var end = 0;
 
@@ -7306,7 +7692,6 @@ public enum ControlFlow : byte
 
         return end;
     }
-#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -7939,11 +8324,12 @@ readonly
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -7961,16 +8347,18 @@ readonly
 #endif
         =>
             MinMax<T, Maximum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -7979,16 +8367,18 @@ readonly
 #endif
         =>
             MinMax<T, Maximum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -8006,16 +8396,18 @@ readonly
 #endif
         =>
             MinMax<T, Minimum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -8024,16 +8416,18 @@ readonly
 #endif
         =>
             MinMax<T, Minimum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -8057,19 +8451,21 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped Span<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -8081,19 +8477,21 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -8117,19 +8515,21 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped Span<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -8141,19 +8541,21 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
@@ -8168,11 +8570,13 @@ readonly
         typeof(T) == typeof(uint) ||
         typeof(T) == typeof(ulong) ||
         typeof(T) == typeof(ushort);
-
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
 #pragma warning restore MA0051
@@ -8181,9 +8585,10 @@ readonly
 
         if (span.IsEmpty)
             return default!;
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
         {
+#endif
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
@@ -8194,6 +8599,7 @@ readonly
                     _ => throw Unreachable,
                 })
                     value = span[i];
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         }
         else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
         {
@@ -8271,7 +8677,7 @@ readonly
                 })
                     value = best[i];
         }
-
+#endif
         return value;
     }
 
@@ -8280,6 +8686,9 @@ readonly
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         if (enumerable.IsEmpty)
             return default!;
@@ -8303,7 +8712,6 @@ readonly
     struct Minimum;
 
     struct Maximum;
-#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -8590,6 +8998,306 @@ readonly
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
+#pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
+#if !NETFRAMEWORK
+    /// <summary>Allocates an inlined span of the specified size.</summary>
+    /// <remarks><para>
+    /// The returned <see cref="Span{T}"/> will point to uninitialized memory.
+    /// Be sure to call <see cref="Span{T}.Fill"/> or otherwise written to first before enumeration or reading.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="_">The discard, which is used to let the compiler track lifetimes.</param>
+    /// <returns>The <see cref="Span{T}"/> of the specified size.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static Span<T> Inline1<T>(in T _ = default!)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static Span<T> Inline1<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out T one);
+        return new(ref Unsafe.AsRef(one));
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline2<T>(in Two<T> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<T>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline2<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<T> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<T>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline4<T>(in Two<Two<T>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<T>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline4<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<T>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<T>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline8<T>(in Two<Two<Two<T>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<T>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline8<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<T>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<T>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline16<T>(in Two<Two<Two<Two<T>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline16<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline32<T>(in Two<Two<Two<Two<Two<T>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline32<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline64<T>(in Two<Two<Two<Two<Two<Two<T>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline64<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline128<T>(in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline128<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline256<T>(in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline256<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline512<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline512<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+
+    /// <inheritdoc cref="Inline1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static Span<T> Inline1024<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            MemoryMarshal.CreateSpan(
+                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(_)),
+                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
+            );
+#else
+    public static Span<T> Inline1024<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two);
+
+        return MemoryMarshal.CreateSpan(
+            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
+            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
+        );
+    }
+#endif
+#endif
+#pragma warning restore RCS1242
 
     /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
@@ -8806,11 +9514,12 @@ readonly
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -8828,16 +9537,18 @@ readonly
 #endif
         =>
             Average((ReadOnlySpan<T>)span.Span);
-
+#endif
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped Span<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this ReadOnlyMemory<T> span)
@@ -8846,19 +9557,21 @@ readonly
 #endif
         =>
             Average(span.Span);
-
+#endif
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
     /// <returns>The average of <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped ReadOnlySpan<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             OperatorCaching<T>._divider(span.Sum(), span.Length);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -8876,16 +9589,18 @@ readonly
 #endif
         =>
             Sum((ReadOnlySpan<T>)span.Span);
-
+#endif
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped Span<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -8894,24 +9609,27 @@ readonly
 #endif
         =>
             Sum(span.Span);
-
+#endif
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
     /// <returns>The sum of <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped ReadOnlySpan<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
     {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (IsNumericPrimitive<T>() &&
             Vector<T>.IsSupported &&
             Vector.IsHardwareAccelerated &&
             Vector<T>.Count > 2 &&
             span.Length >= Vector<T>.Count * 4)
             return SumVectorized(span);
-
+#endif
         T sum = default!;
 
         foreach (var value in span)
@@ -8922,39 +9640,57 @@ readonly
 
         return sum;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average((ReadOnlySpan<T>)span.Memory.Span, converter);
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Memory.Span, converter);
 
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average((ReadOnlySpan<T>)span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Span, converter);
+#endif
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average((ReadOnlySpan<T>)span, converter);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span, converter);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average(span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average(span.Span, converter);
+#endif
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -8965,41 +9701,65 @@ readonly
     public static TResult Average<T, TResult>(
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
 
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum((ReadOnlySpan<T>)span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Span, converter);
+#endif
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum((ReadOnlySpan<T>)span, converter);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span, converter);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum(span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum(span.Span, converter);
+#endif
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -9011,6 +9771,11 @@ readonly
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
     {
         TResult? sum = default;
 
@@ -9019,7 +9784,7 @@ readonly
 
         return sum;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
@@ -9036,7 +9801,9 @@ readonly
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
 #pragma warning restore MA0051
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
     {
@@ -9114,7 +9881,7 @@ readonly
 
         return result;
     }
-
+#endif
     static class OperatorCaching<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
@@ -9136,7 +9903,6 @@ readonly
                 ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
                 : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
     }
-#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -9154,6 +9920,10 @@ readonly
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+
     {
         if (span.IsEmpty)
         {
@@ -9173,6 +9943,10 @@ readonly
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+
     {
         if (span.IsEmpty)
         {
@@ -9191,8 +9965,12 @@ readonly
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9200,8 +9978,12 @@ readonly
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Nth<T>(this Span<T> span, Range range) =>
-        range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+    public static Span<T> Nth<T>(this Span<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9209,8 +9991,12 @@ readonly
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        index >= 0 && index < span.Length ? span[index] : default;
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index >= 0 && index < span.Length ? span[index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9218,10 +10004,14 @@ readonly
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index) =>
-        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
-            ? span[offset]
-            : default;
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+                ? span[offset]
+                : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9229,8 +10019,12 @@ readonly
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[span.Length - index] : default;
+    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index > 0 && index <= span.Length ? span[span.Length - index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9238,8 +10032,12 @@ readonly
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        index >= 0 && index < span.Length ? span[index] : default;
+    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index >= 0 && index < span.Length ? span[index] : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9247,10 +10045,14 @@ readonly
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, Index index) =>
-        (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
-            ? span[offset]
-            : default;
+    public static T? Nth<T>(this scoped Span<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+                ? span[offset]
+                : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -9258,8 +10060,12 @@ readonly
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index) =>
-        index > 0 && index <= span.Length ? span[span.Length - index] : default;
+    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index > 0 && index <= span.Length ? span[span.Length - index] : default;
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -9933,54 +10739,279 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
 }
 
 // SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
+    /// <param name="countPerList">The length per count.</param>
+    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterator))]
+    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
+        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
+
+    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
+    /// <param name="countPerList">The length per count.</param>
+    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterator))]
+    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
+        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
+
+/// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
+/// <typeparam name="T">The type of item within the list.</typeparam>
+public sealed partial class Matrix<T> : IList<IList<T>>
+{
+    readonly int _countPerListEager;
+
+    readonly Func<int>? _countPerListLazy;
+
+    readonly IList<T>? _listEager;
+
+    readonly Func<IList<T>>? _listLazy;
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
+    {
+        // Explicitly check, in case someone ignores the warning, or uses a variable.
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        _countPerListEager = countPerList > 0
+            ? countPerList
+            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
+
+        _listEager = list;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(IList<T> list, Func<int> countPerList)
+    {
+        _countPerListLazy = countPerList;
+        _listEager = list;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
+    {
+        // Explicitly check, in case someone ignores the warning, or uses a variable.
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        _countPerListEager = countPerList > 0
+            ? countPerList
+            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
+
+        _listLazy = list;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(Func<IList<T>> list, Func<int> countPerList)
+    {
+        _countPerListLazy = countPerList;
+        _listLazy = list;
+    }
+
+    /// <summary>Gets the amount of items per list.</summary>
+    public int CountPerList
+    {
+        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
+    }
+
+    /// <summary>Gets the encapsulated list.</summary>
+    [ProvidesContext]
+#pragma warning disable CS8603 // Unreachable.
+    public IList<T> List
+    {
+        [Pure] // ReSharper disable once AssignNullToNotNullAttribute
+        get => _listLazy?.Invoke() ?? _listEager;
+    }
+#pragma warning restore CS8603
+
+    /// <inheritdoc />
+    public IList<T> this[[NonNegativeValue] int index]
+    {
+        [Pure] get => new Slice(this, index);
+        set => Add(value);
+    }
+#if !WAWA
+    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
+    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
+    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
+    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
+    {
+        [Pure] get => List[Count * x + y];
+        set => List[Count * x + y] = value;
+    }
+#endif
+
+    /// <inheritdoc />
+    public bool IsReadOnly
+    {
+        [Pure] get => List.IsReadOnly;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [NonNegativeValue]
+    public int Count
+    {
+        [Pure] get => List.Count / CountPerList;
+    }
+
+    /// <inheritdoc />
+    public void Add(IList<T>? item) =>
+        item?.ToList()
+#pragma warning disable SA1110
+#if NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+           .For
+#else
+           .ForEach
+#endif
+                (List.Add);
+#pragma warning restore SA1110
+
+    /// <inheritdoc />
+    public void Clear() => List.Clear();
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Contains(IList<T>? item) => item?.All(List.Contains) ?? false;
+
+    /// <inheritdoc />
+    public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
+    {
+        for (var i = 0; i < Count; i++)
+            array[arrayIndex + i] = this[i];
+    }
+
+    /// <inheritdoc />
+    public void Insert([NonNegativeValue] int index, IList<T>? item)
+    {
+        if (item is not null)
+            this[index] = item;
+    }
+
+    /// <inheritdoc />
+    public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
+
+    /// <inheritdoc />
+    public bool Remove(IList<T>? item) => item?.Select(List.Remove).Any() ?? false;
+
+    /// <inheritdoc />
+    [Pure, ValueRange(-1, int.MaxValue)]
+    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
+
+    /// <inheritdoc />
+    [Pure]
+    public IEnumerator<IList<T>> GetEnumerator() =>
+        Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>Represents a slice of a matrix.</summary>
+    /// <param name="matrix">The matrix to reference.</param>
+    /// <param name="ordinal">The first index of the matrix.</param>
+#pragma warning disable IDE0044
+    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
+#pragma warning restore IDE0044
+    {
+        /// <inheritdoc />
+        public bool IsReadOnly
+        {
+            [Pure] get => matrix.List.IsReadOnly;
+        }
+
+        /// <inheritdoc />
+        public int Count
+        {
+            [Pure] get => matrix.CountPerList;
+        }
+
+        /// <inheritdoc />
+        public T this[[NonNegativeValue] int index]
+        {
+            [Pure] get => matrix.List[Count * ordinal + index];
+            set => matrix.List[Count * ordinal + index] = value;
+        }
+
+        /// <inheritdoc />
+        public void Add(T item) => matrix.List.Add(item);
+
+        /// <inheritdoc />
+        public void Clear()
+        {
+            for (var i = 0; i < Count; i++)
+                matrix.List.RemoveAt(Count * ordinal);
+        }
+
+        /// <inheritdoc />
+        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+        {
+            for (var i = 0; i < Count; i++)
+                array[arrayIndex + i] = this[i];
+        }
+
+        /// <inheritdoc />
+        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
+
+        /// <inheritdoc />
+        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Contains(T item) =>
+            Enumerable
+               .Range(0, Count)
+               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
+
+        /// <inheritdoc />
+        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
+
+        /// <inheritdoc />
+        [Pure, ValueRange(-1, int.MaxValue)]
+        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+}
+
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
 
 
-
-/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#pragma warning disable MA0048
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsSmallList<T>(this T value) => value;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
-        where T1 : T2 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
-        where T1 : T3
-        where T2 : T3 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
-
-    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
-
-    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerable<T>? iterable) => new(iterable);
-
-    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
@@ -11074,273 +12105,6 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
-#pragma warning disable MA0048
-
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
-#if WAWA
-        iterator is null ? null : new(iterator.ToList(), countPerList);
-#else
-        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
-#endif
-
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
-#if WAWA
-        iterator is null ? null : new(iterator.ToList(), countPerList);
-#else
-        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
-#endif
-
-/// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
-/// <typeparam name="T">The type of item within the list.</typeparam>
-public sealed partial class Matrix<T> : IList<IList<T>>
-{
-    readonly int _countPerListEager;
-
-    readonly Func<int>? _countPerListLazy;
-
-    readonly IList<T>? _listEager;
-
-    readonly Func<IList<T>>? _listLazy;
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
-    {
-        // Explicitly check, in case someone ignores the warning, or uses a variable.
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        _countPerListEager = countPerList > 0
-            ? countPerList
-            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
-
-        _listEager = list;
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(IList<T> list, Func<int> countPerList)
-    {
-        _countPerListLazy = countPerList;
-        _listEager = list;
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
-    {
-        // Explicitly check, in case someone ignores the warning, or uses a variable.
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        _countPerListEager = countPerList > 0
-            ? countPerList
-            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
-
-        _listLazy = list;
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(Func<IList<T>> list, Func<int> countPerList)
-    {
-        _countPerListLazy = countPerList;
-        _listLazy = list;
-    }
-
-    /// <summary>Gets the amount of items per list.</summary>
-    public int CountPerList
-    {
-        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
-    }
-
-    /// <summary>Gets the encapsulated list.</summary>
-    [ProvidesContext]
-#pragma warning disable CS8603 // Unreachable.
-    public IList<T> List
-    {
-        [Pure] // ReSharper disable once AssignNullToNotNullAttribute
-        get => _listLazy?.Invoke() ?? _listEager;
-    }
-#pragma warning restore CS8603
-
-    /// <inheritdoc />
-    public IList<T> this[[NonNegativeValue] int index]
-    {
-        [Pure] get => new Slice(this, index);
-        set => Add(value);
-    }
-#if !WAWA
-    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
-    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
-    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
-    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
-    {
-        [Pure] get => List[Count * x + y];
-        set => List[Count * x + y] = value;
-    }
-#endif
-
-    /// <inheritdoc />
-    public bool IsReadOnly
-    {
-        [Pure] get => List.IsReadOnly;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [NonNegativeValue]
-    public int Count
-    {
-        [Pure] get => List.Count / CountPerList;
-    }
-
-    /// <inheritdoc />
-    public void Add(IList<T>? item) =>
-        item?.ToList()
-#pragma warning disable SA1110
-#if NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-           .For
-#else
-           .ForEach
-#endif
-                (List.Add);
-#pragma warning restore SA1110
-
-    /// <inheritdoc />
-    public void Clear() => List.Clear();
-
-    /// <inheritdoc />
-    [Pure]
-    public bool Contains(IList<T>? item) => item?.All(List.Contains) ?? false;
-
-    /// <inheritdoc />
-    public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
-    {
-        for (var i = 0; i < Count; i++)
-            array[arrayIndex + i] = this[i];
-    }
-
-    /// <inheritdoc />
-    public void Insert([NonNegativeValue] int index, IList<T>? item)
-    {
-        if (item is not null)
-            this[index] = item;
-    }
-
-    /// <inheritdoc />
-    public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
-
-    /// <inheritdoc />
-    public bool Remove(IList<T>? item) => item?.Select(List.Remove).Any() ?? false;
-
-    /// <inheritdoc />
-    [Pure, ValueRange(-1, int.MaxValue)]
-    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
-
-    /// <inheritdoc />
-    [Pure]
-    public IEnumerator<IList<T>> GetEnumerator() =>
-        Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <summary>Represents a slice of a matrix.</summary>
-    /// <param name="matrix">The matrix to reference.</param>
-    /// <param name="ordinal">The first index of the matrix.</param>
-#pragma warning disable IDE0044
-    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
-#pragma warning restore IDE0044
-    {
-        /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            [Pure] get => matrix.List.IsReadOnly;
-        }
-
-        /// <inheritdoc />
-        public int Count
-        {
-            [Pure] get => matrix.CountPerList;
-        }
-
-        /// <inheritdoc />
-        public T this[[NonNegativeValue] int index]
-        {
-            [Pure] get => matrix.List[Count * ordinal + index];
-            set => matrix.List[Count * ordinal + index] = value;
-        }
-
-        /// <inheritdoc />
-        public void Add(T item) => matrix.List.Add(item);
-
-        /// <inheritdoc />
-        public void Clear()
-        {
-            for (var i = 0; i < Count; i++)
-                matrix.List.RemoveAt(Count * ordinal);
-        }
-
-        /// <inheritdoc />
-        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-        {
-            for (var i = 0; i < Count; i++)
-                array[arrayIndex + i] = this[i];
-        }
-
-        /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
-
-        /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
-
-        /// <inheritdoc />
-        [Pure]
-        public bool Contains(T item) =>
-            Enumerable
-               .Range(0, Count)
-               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
-
-        /// <inheritdoc />
-        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
-
-        /// <inheritdoc />
-        [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
-
-        /// <inheritdoc />
-        [Pure]
-        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
-
-        /// <inheritdoc />
-        [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-}
-
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
 // ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
@@ -11448,6 +12212,487 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     }
 }
 #endif
+
+// SPDX-License-Identifier: MPL-2.0
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+#pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
+#if !NETFRAMEWORK
+/// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
+/// <typeparam name="T">The type of the collection.</typeparam>
+/// <typeparam name="TRef">The type of reference containing a continuous region of <typeparamref name="T"/>.</typeparam>
+/// <param name="view">The view to hold as the initial value.</param>
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+public ref partial struct SmallList<T, TRef>(Span<T> view)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+{
+    [NonNegativeValue]
+    int _length;
+
+    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
+    Span<T> _view = view;
+
+    T[]? _rental;
+
+    /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
+    /// <param name="reference">The reference considered to be a continuous buffer of <typeparamref name="T"/>.</param>
+    public SmallList(ref TRef reference)
+        : this(AsSpan(ref Unsafe.AsRef(reference))) { }
+
+    /// <summary>Gets the amount of items that can be inlined before <see cref="ArrayPool{T}"/> is used.</summary>
+    public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+        = Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
+
+    /// <inheritdoc cref="Span{T}.Empty"/>
+    public static SmallList<T, TRef> Empty
+    {
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#if DEBUG || CSHARPREPL
+        get => default;
+#else
+        get
+        {
+            Unsafe.SkipInit(out TRef two);
+            return new(ref Unsafe.AsRef(two));
+        }
+#endif
+    }
+
+    /// <inheritdoc cref="Span{T}.IsEmpty"/>
+    public readonly bool IsEmpty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View.IsEmpty;
+    }
+
+    /// <summary>Gets a value indicating whether the elements are inlined.</summary>
+    public readonly bool IsInlined
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining),
+         MemberNotNullWhen(false, nameof(_rental), nameof(TransferOwnership)), Pure]
+        get => _rental is null;
+    }
+
+    /// <inheritdoc cref="Span{T}.Length"/>
+    public int Length
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] readonly get => _length;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set
+        {
+            var newLength = Math.Max(value, 0);
+            var relativeLength = newLength - _length;
+            MakeRoom(relativeLength);
+            _length = newLength;
+        }
+    }
+
+    /// <summary>Gets the buffer.</summary>
+    public readonly Span<T> View
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _view[.._length];
+    }
+
+    /// <inheritdoc cref="IList{T}.Clear"/>
+    public SmallList<T, TRef> Reset
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            {
+                _length = 0;
+                return this;
+            }
+        }
+    }
+
+    /// <summary>Gets the entire exposed view.</summary>
+    public SmallList<T, TRef> Stretched
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            _length = _view.Length;
+            return this;
+        }
+    }
+
+    /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
+    /// <returns>The inner array.</returns>
+    public T[]? TransferOwnership
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining),
+         MustUseReturnValue("Dispose array by passing it into System.Memory.ArrayPool<T>.Shared.Return")]
+        get
+        {
+            if (!IsInlined)
+                return null;
+
+            var rental = _rental;
+            _length = 0;
+            _view = default;
+            _rental = null;
+            return rental;
+        }
+    }
+
+    /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
+    public readonly Span<T> this[[NonNegativeValue] int start, [NonNegativeValue] int length]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View.Slice(start, length);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View.Slice(start, length));
+    }
+
+    /// <inheritdoc cref="Span{T}.this"/>
+    public readonly Span<T> this[Range range]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View[range];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View[range]);
+    }
+
+    /// <inheritdoc cref="Span{T}.this"/>
+    public readonly ref T this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
+    }
+
+    /// <inheritdoc cref="Span{T}.this"/>
+    public readonly ref T this[Index index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
+    }
+
+    /// <inheritdoc cref="Span{T}.op_Equality"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator ==(SmallList<T, TRef> left, SmallList<T, TRef> right) => left.View == right.View;
+
+    /// <inheritdoc cref="Span{T}.op_Inequality"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(SmallList<T, TRef> left, SmallList<T, TRef> right) => !(left == right);
+
+    /// <summary>Turns the reference into a continuous <see cref="Span{T}"/>.</summary>
+    /// <param name="reference">The instance to turn into the <see cref="Span{T}"/>.</param>
+    /// <returns>
+    /// The <see cref="Span{T}"/> going over the continuous memory of the parameter <paramref name="reference"/>.
+    /// </returns>
+    public static Span<T> AsSpan(ref TRef reference) =>
+        typeof(TRef) switch
+        {
+            _ when typeof(TRef) == typeof(T) =>
+                new(ref Unsafe.As<TRef, T>(ref reference)),
+            _ when typeof(TRef) == typeof(Two<T>) =>
+                Unsafe.As<TRef, Two<T>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<T>>) =>
+                Unsafe.As<TRef, Two<Two<T>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<T>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<T>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<T>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<T>>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<T>>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<Two<T>>>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<T>>>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<T>>>>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<T>>>>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>(ref reference).AsSpan(),
+            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>) =>
+                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>(ref reference).AsSpan(),
+            _ => throw new TypeAccessException($"Cannot use \"{typeof(TRef).UnfoldedName()}\" as a continuous buffer."),
+        };
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+        if (!IsInlined)
+            ArrayPool<T>.Shared.Return(TransferOwnership);
+    }
+
+    /// <inheritdoc />
+    [Obsolete("Will always throw", true), DoesNotReturn]
+    public readonly override bool Equals(object? obj) => throw Unreachable;
+
+    /// <inheritdoc />
+    [Obsolete("Will always throw", true), DoesNotReturn]
+    public readonly override int GetHashCode() => throw Unreachable;
+
+    /// <inheritdoc cref="Span{T}.ToString"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly override string ToString() =>
+        typeof(T) == typeof(char) ? View.ToString() : View.ToArray().Conjoin();
+
+    /// <inheritdoc cref="IList{T}.Add"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Append(T item) => Insert(_length, new ReadOnlySpan<T>(item));
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Append(scoped ReadOnlySpan<T> collection) => Insert(_length, collection);
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Append(IEnumerable<T> collection)
+    {
+        if (collection.TryGetNonEnumeratedCount(out var count))
+            MakeRoom(count);
+
+        foreach (var x in collection)
+            Append(x);
+
+        return this;
+    }
+
+    /// <inheritdoc cref="IList{T}.Add"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Prepend(T item) => Insert(0, new ReadOnlySpan<T>(item));
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Prepend(scoped ReadOnlySpan<T> collection) => Insert(0, collection);
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Prepend(IEnumerable<T> collection)
+    {
+        MakeRoom(collection);
+
+        using var e = collection.GetEnumerator();
+
+        for (var i = 0; e.MoveNext(); i++)
+            Insert(i, e.Current);
+
+        return this;
+    }
+
+    /// <inheritdoc cref="IList{T}.Insert"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Insert([NonNegativeValue] int offset, T item) =>
+        Insert(offset, new ReadOnlySpan<T>(item));
+
+    /// <inheritdoc cref="IList{T}.Insert"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
+    {
+        if (!HasRoom(items.Length))
+        {
+            Copy(index, items, _view);
+            return this;
+        }
+
+        var replacement = Rent(items.Length);
+        Copy(index, items, replacement);
+        Swap(replacement);
+        return this;
+    }
+
+    /// <inheritdoc cref="IList{T}.RemoveAt"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
+
+    /// <summary>Removes the <see cref="SmallList{T, TRef}"/> item at the specified offset and length.</summary>
+    /// <param name="offset">The offset of the slice to remove.</param>
+    /// <param name="length">The length of the slice to remove.</param>
+    /// <returns>Itself.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
+    {
+        View[(offset + length)..].CopyTo(View[offset..]);
+        _length -= length;
+        return this;
+    }
+
+    /// <inheritdoc cref="IList{T}.RemoveAt"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> RemoveAt(Index index)
+    {
+        var offset = index.GetOffset(View.Length);
+        RemoveAt(offset, 1);
+        return this;
+    }
+
+    /// <summary>Removes the <see cref="SmallList{T, TRef}"/> item at the specified range.</summary>
+    /// <param name="range">The range of the slice to remove.</param>
+    /// <returns>Itself.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> RemoveAt(Range range)
+    {
+        var (offset, length) = range.GetOffsetAndLength(View.Length);
+        RemoveAt(offset, length);
+        return this;
+    }
+
+    /// <summary>Shrinks the collection.</summary>
+    /// <param name="amount">The amount of elements to shrink.</param>
+    /// <returns>Itself.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Shrink([NonNegativeValue] int amount)
+    {
+        Length -= amount;
+        return this;
+    }
+
+    /// <inheritdoc cref="Span{T}.GetEnumerator"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly Span<T>.Enumerator GetEnumerator() => View.GetEnumerator();
+
+    /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
+    /// <param name="i">The index.</param>
+    /// <returns>The element, or default.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly ref T Nth(int i)
+    {
+        if (i >= 0 && i < _length)
+            return ref _view[i];
+
+        return ref Unsafe.NullRef<T>();
+    }
+
+    /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
+    /// <param name="i">The index.</param>
+    /// <returns>The element, or default.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly ref T Nth(Index i)
+    {
+        var offset = i.GetOffset(_length);
+        return ref Nth(offset);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void Copy([NonNegativeValue] int offset, scoped ReadOnlySpan<T> insertion, scoped Span<T> destination)
+    {
+        View[offset..].CopyTo(destination[offset..]);
+        insertion.CopyTo(destination[offset..]);
+        View[..offset].CopyTo(destination);
+        _length += insertion.Length;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void Swap(T[] replacement)
+    {
+        if (!IsInlined)
+            ArrayPool<T>.Shared.Return(_rental);
+
+        _view = _rental = replacement;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void MakeRoom(int by)
+    {
+        if (HasRoom(by))
+            return;
+
+        var replacement = Rent(by);
+        View.CopyTo(replacement);
+        Swap(replacement);
+        _length += by;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void MakeRoom([NoEnumeration] IEnumerable<T> collection)
+    {
+        if (collection.TryGetNonEnumeratedCount(out var count))
+            MakeRoom(count);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    readonly bool HasRoom(int by) => _length + by <= _view.Length;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    readonly T[] Rent([NonNegativeValue] int by)
+    {
+        var sum = unchecked((uint)(_view.Length + by));
+        var length = unchecked((int)BitOperations.RoundUpToPowerOf2(sum));
+        return ArrayPool<T>.Shared.Rent(length);
+    }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
+#pragma warning disable MA0048
+
+    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Contains<T, TTwo>(this SmallList<T, TTwo> span, T item)
+        where T : IEquatable<T>? =>
+        span.View.Contains(item);
+
+    /// <summary>Removes the first occurence of a specific object from the <see cref="SmallList{T, TRef}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <typeparam name="TRef">The type of reference value for the <see cref="SmallList{T, TRef}"/>.</typeparam>
+    /// <param name="span">The <see cref="SmallList{T, TRef}"/> to remove an element from.</param>
+    /// <param name="item">The item to remove from the <see cref="SmallList{T, TRef}"/>.</param>
+    /// <returns>
+    /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
+    /// parameter <paramref name="span"/>, and substantially removed it from the collection.
+    /// </returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove<T, TRef>(this SmallList<T, TRef> span, T item)
+        where T : IEquatable<T>?
+    {
+        var i = span.IndexOf(item);
+
+        if (i is -1)
+            return false;
+
+        span.RemoveAt(i);
+        return true;
+    }
+
+    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int IndexOf<T, TTwo>(this SmallList<T, TTwo> span, T item)
+        where T : IEquatable<T>? =>
+        span.View.IndexOf(item);
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsSmallList<T>(this T value) => value;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
+        where T1 : T2 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
+        where T1 : T3
+        where T2 : T3 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.Uninit"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
+
+    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
+
+    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
+    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> ToSmallList<T>(this IEnumerable<T>? iterable) => new(iterable);
+
+    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
+    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -11603,8 +12848,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <inheritdoc />
     [Pure]
     public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(truthy, item) ||
-        EqualityComparer<T>.Default.Equals(falsy, item);
+        EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
 
     /// <inheritdoc />
     [Pure]
@@ -11697,6 +12941,253 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     public override string ToString() => $"Split({truthy}, {falsy})";
 }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable once CheckNamespace
+
+#pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
+/// <summary>Factory methods for creating inlined <see cref="SmallList{T}"/> instances.</summary>
+
+    /// <summary>Allocates an inlined list of the specified size.</summary>
+    /// <remarks><para>
+    /// The returned <see cref="SmallList{T, TRef}"/> will point to uninitialized memory.
+    /// Be sure to call <see cref="Span{T}.Fill"/> or otherwise written to first before enumeration or reading.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="_">The discard, which is used to let the compiler track lifetimes.</param>
+    /// <returns>The <see cref="Span{T}"/> of the specified size.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static SmallList<T, T> New1<T>(in T _ = default!)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, T> New1<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out T two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<T>> New2<T>(in Two<T> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<T>> New2<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<T> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<T>>> New4<T>(in Two<Two<T>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<T>>> New4<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<T>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<T>>>> New8<T>(in Two<Two<Two<T>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<T>>>> New8<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<T>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<T>>>>> New16<T>(in Two<Two<Two<Two<T>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<T>>>>> New16<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<Two<T>>>>>> New32<T>(in Two<Two<Two<Two<Two<T>>>>> _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<Two<T>>>>>> New32<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>> New64<T>(
+        in Two<Two<Two<Two<Two<Two<T>>>>>> _ = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>> New64<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> New128<T>(
+        in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> _ = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> New128<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> New256<T>(
+        in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> _ = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> New256<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> New512<T>(
+        in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> _ = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> New512<T>(in ValueTuple _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>> New1024<T>(
+        in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> _ = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>> New1024<T>(
+        in ValueTuple _ = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
 
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]

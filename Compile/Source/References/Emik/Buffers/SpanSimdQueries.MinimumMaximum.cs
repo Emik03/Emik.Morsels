@@ -2,13 +2,14 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
 {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -26,16 +27,18 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Maximum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -44,16 +47,18 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Maximum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -71,16 +76,18 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Minimum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -89,16 +96,18 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Minimum>(enumerable.Span);
-
+#endif
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -122,19 +131,21 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped Span<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -146,19 +157,21 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -182,19 +195,21 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped Span<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -206,19 +221,21 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
-
+#endif
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
     )
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
@@ -233,11 +250,13 @@ static partial class SpanSimdQueries
         typeof(T) == typeof(uint) ||
         typeof(T) == typeof(ulong) ||
         typeof(T) == typeof(ushort);
-
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
 #pragma warning restore MA0051
@@ -246,9 +265,10 @@ static partial class SpanSimdQueries
 
         if (span.IsEmpty)
             return default!;
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
         {
+#endif
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
@@ -259,6 +279,7 @@ static partial class SpanSimdQueries
                     _ => throw Unreachable,
                 })
                     value = span[i];
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         }
         else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
         {
@@ -336,7 +357,7 @@ static partial class SpanSimdQueries
                 })
                     value = best[i];
         }
-
+#endif
         return value;
     }
 
@@ -345,6 +366,9 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
         if (enumerable.IsEmpty)
             return default!;
@@ -369,4 +393,3 @@ static partial class SpanSimdQueries
 
     struct Maximum;
 }
-#endif

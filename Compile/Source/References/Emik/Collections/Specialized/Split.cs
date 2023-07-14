@@ -155,8 +155,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <inheritdoc />
     [Pure]
     public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(truthy, item) ||
-        EqualityComparer<T>.Default.Equals(falsy, item);
+        EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
 
     /// <inheritdoc />
     [Pure]

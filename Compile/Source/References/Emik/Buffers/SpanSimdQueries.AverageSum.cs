@@ -2,13 +2,14 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
 {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -26,16 +27,18 @@ static partial class SpanSimdQueries
 #endif
         =>
             Average((ReadOnlySpan<T>)span.Span);
-
+#endif
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped Span<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this ReadOnlyMemory<T> span)
@@ -44,19 +47,21 @@ static partial class SpanSimdQueries
 #endif
         =>
             Average(span.Span);
-
+#endif
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
     /// <returns>The average of <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped ReadOnlySpan<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             OperatorCaching<T>._divider(span.Sum(), span.Length);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -74,16 +79,18 @@ static partial class SpanSimdQueries
 #endif
         =>
             Sum((ReadOnlySpan<T>)span.Span);
-
+#endif
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped Span<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span);
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -92,24 +99,27 @@ static partial class SpanSimdQueries
 #endif
         =>
             Sum(span.Span);
-
+#endif
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
     /// <returns>The sum of <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped ReadOnlySpan<T> span)
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
     {
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (IsNumericPrimitive<T>() &&
             Vector<T>.IsSupported &&
             Vector.IsHardwareAccelerated &&
             Vector<T>.Count > 2 &&
             span.Length >= Vector<T>.Count * 4)
             return SumVectorized(span);
-
+#endif
         T sum = default!;
 
         foreach (var value in span)
@@ -120,39 +130,57 @@ static partial class SpanSimdQueries
 
         return sum;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average((ReadOnlySpan<T>)span.Memory.Span, converter);
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Memory.Span, converter);
 
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average((ReadOnlySpan<T>)span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Span, converter);
+#endif
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average((ReadOnlySpan<T>)span, converter);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span, converter);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Average(span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average(span.Span, converter);
+#endif
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -163,41 +191,65 @@ static partial class SpanSimdQueries
     public static TResult Average<T, TResult>(
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
 
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum((ReadOnlySpan<T>)span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Span, converter);
+#endif
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum((ReadOnlySpan<T>)span, converter);
-
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span, converter);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    ) =>
-        Sum(span.Span, converter);
-
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum(span.Span, converter);
+#endif
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -209,6 +261,11 @@ static partial class SpanSimdQueries
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
     {
         TResult? sum = default;
 
@@ -217,7 +274,7 @@ static partial class SpanSimdQueries
 
         return sum;
     }
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
@@ -234,7 +291,9 @@ static partial class SpanSimdQueries
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
 #pragma warning restore MA0051
-#if !NET8_0_OR_GREATER
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
         where T : struct
 #endif
     {
@@ -312,7 +371,7 @@ static partial class SpanSimdQueries
 
         return result;
     }
-
+#endif
     static class OperatorCaching<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
@@ -335,4 +394,3 @@ static partial class SpanSimdQueries
                 : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
     }
 }
-#endif

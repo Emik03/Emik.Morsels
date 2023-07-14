@@ -208,6 +208,33 @@ static partial class Peeks
     }
 
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    public static SmallList<T, TRef> Debug<T, TRef>(
+        this SmallList<T, TRef> value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value
+           .View
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
+
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static SplitSpan<T> Debug<T>(
         this SplitSpan<T> value,
         bool shouldPrettify = true,
