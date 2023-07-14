@@ -159,6 +159,26 @@ global using System.Xml.Schema;
 global using System.Xml.Serialization;
 global using System.Xml.XPath;
 global using System.Xml.Xsl;
+global using CommunityToolkit;
+global using CommunityToolkit.Common;
+global using CommunityToolkit.Common.Collections;
+global using CommunityToolkit.Common.Deferred;
+global using CommunityToolkit.Common.Extensions;
+global using CommunityToolkit.Common.Helpers;
+global using CommunityToolkit.Diagnostics;
+global using CommunityToolkit.Helpers;
+global using CommunityToolkit.HighPerformance;
+global using CommunityToolkit.HighPerformance.Buffers;
+global using CommunityToolkit.HighPerformance.Buffers.Internals;
+global using CommunityToolkit.HighPerformance.Buffers.Internals.Interfaces;
+global using CommunityToolkit.HighPerformance.Buffers.Views;
+global using CommunityToolkit.HighPerformance.Enumerables;
+global using CommunityToolkit.HighPerformance.Helpers;
+global using CommunityToolkit.HighPerformance.Helpers.Internals;
+global using CommunityToolkit.HighPerformance.Memory;
+global using CommunityToolkit.HighPerformance.Memory.Internals;
+global using CommunityToolkit.HighPerformance.Memory.Views;
+global using CommunityToolkit.HighPerformance.Streams;
 global using Emik;
 global using Emik.Results;
 global using Emik.Results.Extensions;
@@ -216,7 +236,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
@@ -224,7 +244,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
@@ -239,7 +259,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         }
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
@@ -247,7 +267,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
@@ -259,7 +279,7 @@ using static JetBrains.Annotations.CollectionAccessType;
             : Enumerable.Empty<T>();
 #endif
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
         where T : class
@@ -275,7 +295,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         return output;
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
@@ -283,7 +303,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
@@ -300,7 +320,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         return output;
     }
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
 #pragma warning disable RCS1163, RCS1175
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
@@ -308,7 +328,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         where T : struct =>
         throw Unreachable;
 
-    /// <inheritdoc cref="FindPathToNull{T}(T?,System.Converter{T,T?})" />
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
@@ -7690,7 +7710,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override bool Equals(object? other) => false;
 
-    /// <inheritdoc cref="IEquatable{T}.Equals(T?)" />
+    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(scoped SplitSpan<T> other) =>
@@ -10037,7 +10057,8 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
         if (!enumerator?.MoveNext() ?? true)
             return;
 
-        _first = enumerator.Current;
+        // ReSharper disable once RedundantSuppressNullableWarningExpression
+        _first = enumerator!.Current;
 
         if (!enumerator.MoveNext())
         {
@@ -11357,7 +11378,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
         get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
@@ -11367,7 +11388,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     /// <inheritdoc />
     public bool IsReadOnly => list.IsReadOnly;
 
-    /// <inheritdoc cref="IList{T}.Count" />
+    /// <inheritdoc cref="ICollection{T}.Count" />
     public int Count => list.Count - 1;
 
     /// <inheritdoc />
