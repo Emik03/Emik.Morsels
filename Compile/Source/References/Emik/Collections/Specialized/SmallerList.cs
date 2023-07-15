@@ -511,7 +511,7 @@ ref partial struct SmallerList<T>(Span<T> view)
         static bool Reflect(Type type) =>
             type
                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-               .Where(x => x.FieldType is var y && y != typeof(T) && y != typeof(TRef) && Reflect(y))
+               .Where(x => x.FieldType is var y && y != typeof(T) && !y.IsValueType || Reflect(y))
                .Select(Throw)
                .Any();
 
