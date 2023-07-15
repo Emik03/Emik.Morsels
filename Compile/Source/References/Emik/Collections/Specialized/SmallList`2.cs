@@ -224,7 +224,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList<T, TRef> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
     {
-        if (!HasRoom(items.Length))
+        if (HasRoom(items.Length))
         {
             Copy(index, items, _view);
             return this;
