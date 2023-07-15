@@ -24,7 +24,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, T> New1<T>(in ValueTuple _ = default)
+    public static SmallList<T, T> New1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -44,7 +44,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<T>> New2<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<T>> New2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -64,7 +64,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<T>>> New4<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<T>>> New4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -84,7 +84,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<T>>>> New8<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<T>>>> New8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -104,7 +104,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<T>>>>> New16<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<T>>>>> New16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -124,7 +124,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<T>>>>>> New32<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<T>>>>>> New32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -146,7 +146,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>> New64<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>> New64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -168,7 +168,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> New128<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> New128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -190,7 +190,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> New256<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> New256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -212,7 +212,7 @@ static partial class SmallList
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> New512<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> New512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -235,7 +235,7 @@ static partial class SmallList
             new(ref Unsafe.AsRef(_));
 #else
     public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>> New1024<T>(
-        in ValueTuple _ = default
+        in bool _ = false
     )
 #if UNMANAGED_SPAN
         where T : unmanaged

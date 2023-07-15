@@ -303,7 +303,7 @@ static partial class Span
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline1<T>(in ValueTuple _ = default)
+    public static Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -326,7 +326,7 @@ static partial class Span
                 SmallList<T, Two<T>>.InlinedLength
             );
 #else
-    public static Span<T> Inline2<T>(in ValueTuple _ = default)
+    public static Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -353,7 +353,7 @@ static partial class Span
                 SmallList<T, Two<Two<T>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline4<T>(in ValueTuple _ = default)
+    public static Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -380,7 +380,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<T>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline8<T>(in ValueTuple _ = default)
+    public static Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -407,7 +407,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline16<T>(in ValueTuple _ = default)
+    public static Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -434,7 +434,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline32<T>(in ValueTuple _ = default)
+    public static Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -461,7 +461,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline64<T>(in ValueTuple _ = default)
+    public static Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -488,7 +488,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline128<T>(in ValueTuple _ = default)
+    public static Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -515,7 +515,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline256<T>(in ValueTuple _ = default)
+    public static Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -542,7 +542,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline512<T>(in ValueTuple _ = default)
+    public static Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -569,7 +569,7 @@ static partial class Span
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline1024<T>(in ValueTuple _ = default)
+    public static Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
