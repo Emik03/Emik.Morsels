@@ -203,6 +203,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 <#
     static string ToFullName(string x) => x switch
     {
+        "using static Two;" => "",
         "using static Span;" => "",
         "using Range = System.Range;" => "",
         "global using static Unforgiving;" => "",

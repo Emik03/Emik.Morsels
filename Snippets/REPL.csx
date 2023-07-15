@@ -6797,7 +6797,7 @@ public enum ControlFlow : byte
 /// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
 /// </summary>
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<T> two)
 #if UNMANAGED_SPAN
@@ -6809,7 +6809,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<T>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<T>> two)
 #if UNMANAGED_SPAN
@@ -6821,7 +6821,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<T>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two)
 #if UNMANAGED_SPAN
@@ -6833,7 +6833,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<Two<T>>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two)
 #if UNMANAGED_SPAN
@@ -6845,7 +6845,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two)
 #if UNMANAGED_SPAN
@@ -6857,7 +6857,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
 #if UNMANAGED_SPAN
@@ -6868,7 +6868,7 @@ public enum ControlFlow : byte
             SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
         );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two)
 #if UNMANAGED_SPAN
@@ -6880,7 +6880,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two)
 #if UNMANAGED_SPAN
@@ -6892,7 +6892,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two)
 #if UNMANAGED_SPAN
@@ -6904,7 +6904,7 @@ public enum ControlFlow : byte
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
             );
 
-    /// <inheritdoc cref="SmallList{T, TRef}.AsSpan"/>
+    /// <inheritdoc cref="AsSpan{T, TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two)
 #if UNMANAGED_SPAN
@@ -6915,12 +6915,52 @@ public enum ControlFlow : byte
                 ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
             );
+
+    /// <summary>Turns the reference into a continuous <see cref="Span{T}"/>.</summary>
+    /// <param name="reference">The instance to turn into the <see cref="Span{T}"/>.</param>
+    /// <returns>
+    /// The <see cref="Span{T}"/> going over the continuous memory of the parameter <paramref name="reference"/>.
+    /// </returns>
+    public static Span<T> AsSpan<T, TRef>(ref TRef reference)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            typeof(TRef) switch
+            {
+                _ when typeof(TRef) == typeof(T) =>
+                    new(ref Unsafe.As<TRef, T>(ref reference)),
+                _ when typeof(TRef) == typeof(Two<T>) =>
+                    Unsafe.As<TRef, Two<T>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<T>>) =>
+                    Unsafe.As<TRef, Two<Two<T>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<T>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<T>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<T>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<T>>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<T>>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<Two<T>>>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<T>>>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<T>>>>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<T>>>>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>(ref reference).AsSpan(),
+                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>) =>
+                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>(ref reference).AsSpan(),
+                _ => throw new TypeAccessException($"\"{typeof(TRef).UnfoldedName()}\" isn't a continuous buffer."),
+            };
 #endif
 
 /// <summary>
 /// Represents two inlined elements, equivalent to <see cref="ValueTuple{T1, T2}"/>,
 /// but the memory layout is guaranteed to be sequential, and both elements are of the same type.
 /// </summary>
+/// <remarks><para>
+/// The name of this type may or may not derive from a specific algebralien from a show...
+/// </para></remarks>
 /// <typeparam name="T">The type of item to store.</typeparam>
 /// <param name="first">The first item.</param>
 /// <param name="second">The second item.</param>
@@ -12217,6 +12257,9 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace EmptyNamespace
 
+
+
+
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 #if !NETFRAMEWORK
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
@@ -12240,7 +12283,7 @@ public ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
     /// <param name="reference">The reference considered to be a continuous buffer of <typeparamref name="T"/>.</param>
     public SmallList(ref TRef reference)
-        : this(AsSpan(ref Unsafe.AsRef(reference))) { }
+        : this(AsSpan<T, TRef>(ref Unsafe.AsRef(reference))) { }
 
     /// <summary>Gets the amount of items that can be inlined before <see cref="ArrayPool{T}"/> is used.</summary>
     public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
@@ -12249,16 +12292,7 @@ public ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <inheritdoc cref="Span{T}.Empty"/>
     public static SmallList<T, TRef> Empty
     {
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#if DEBUG || CSHARPREPL
-        get => default;
-#else
-        get
-        {
-            Unsafe.SkipInit(out TRef two);
-            return new(ref Unsafe.AsRef(two));
-        }
-#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 
     /// <inheritdoc cref="Span{T}.IsEmpty"/>
@@ -12371,39 +12405,6 @@ public ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <inheritdoc cref="Span{T}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(SmallList<T, TRef> left, SmallList<T, TRef> right) => !(left == right);
-
-    /// <summary>Turns the reference into a continuous <see cref="Span{T}"/>.</summary>
-    /// <param name="reference">The instance to turn into the <see cref="Span{T}"/>.</param>
-    /// <returns>
-    /// The <see cref="Span{T}"/> going over the continuous memory of the parameter <paramref name="reference"/>.
-    /// </returns>
-    public static Span<T> AsSpan(ref TRef reference) =>
-        typeof(TRef) switch
-        {
-            _ when typeof(TRef) == typeof(T) =>
-                new(ref Unsafe.As<TRef, T>(ref reference)),
-            _ when typeof(TRef) == typeof(Two<T>) =>
-                Unsafe.As<TRef, Two<T>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<T>>) =>
-                Unsafe.As<TRef, Two<Two<T>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<T>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<T>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<T>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<T>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<T>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<T>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<T>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<T>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<T>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>(ref reference).AsSpan(),
-            _ => throw new TypeAccessException($"Cannot use \"{typeof(TRef).UnfoldedName()}\" as a continuous buffer."),
-        };
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

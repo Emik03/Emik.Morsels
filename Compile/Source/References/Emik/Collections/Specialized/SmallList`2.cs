@@ -2,6 +2,9 @@
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
+
+using static Two;
+
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 #if !NETFRAMEWORK
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
@@ -25,7 +28,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
     /// <param name="reference">The reference considered to be a continuous buffer of <typeparamref name="T"/>.</param>
     public SmallList(ref TRef reference)
-        : this(AsSpan(ref Unsafe.AsRef(reference))) { }
+        : this(AsSpan<T, TRef>(ref Unsafe.AsRef(reference))) { }
 
     /// <summary>Gets the amount of items that can be inlined before <see cref="ArrayPool{T}"/> is used.</summary>
     public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
@@ -34,16 +37,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <inheritdoc cref="Span{T}.Empty"/>
     public static SmallList<T, TRef> Empty
     {
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#if DEBUG || CSHARPREPL
-        get => default;
-#else
-        get
-        {
-            Unsafe.SkipInit(out TRef two);
-            return new(ref Unsafe.AsRef(two));
-        }
-#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 
     /// <inheritdoc cref="Span{T}.IsEmpty"/>
@@ -156,39 +150,6 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <inheritdoc cref="Span{T}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(SmallList<T, TRef> left, SmallList<T, TRef> right) => !(left == right);
-
-    /// <summary>Turns the reference into a continuous <see cref="Span{T}"/>.</summary>
-    /// <param name="reference">The instance to turn into the <see cref="Span{T}"/>.</param>
-    /// <returns>
-    /// The <see cref="Span{T}"/> going over the continuous memory of the parameter <paramref name="reference"/>.
-    /// </returns>
-    public static Span<T> AsSpan(ref TRef reference) =>
-        typeof(TRef) switch
-        {
-            _ when typeof(TRef) == typeof(T) =>
-                new(ref Unsafe.As<TRef, T>(ref reference)),
-            _ when typeof(TRef) == typeof(Two<T>) =>
-                Unsafe.As<TRef, Two<T>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<T>>) =>
-                Unsafe.As<TRef, Two<Two<T>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<T>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<T>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<T>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<T>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<T>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<T>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<T>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<T>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<T>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>(ref reference).AsSpan(),
-            _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>) =>
-                Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>(ref reference).AsSpan(),
-            _ => throw new TypeAccessException($"Cannot use \"{typeof(TRef).UnfoldedName()}\" as a continuous buffer."),
-        };
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
