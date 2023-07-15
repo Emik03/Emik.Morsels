@@ -7048,6 +7048,7 @@ public readonly struct Two<T>(T first, T second) :
     public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         All((ReadOnlySpan<T>)source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
@@ -7093,6 +7094,7 @@ public readonly struct Two<T>(T first, T second) :
     public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         Any((ReadOnlySpan<T>)source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
@@ -7110,6 +7112,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         Any(source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
@@ -7138,6 +7141,17 @@ public readonly struct Two<T>(T first, T second) :
         return source;
     }
 
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> Select<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+    {
+        Select(source.Memory.Span, selector);
+        return source;
+    }
+
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Select<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
@@ -7145,7 +7159,19 @@ public readonly struct Two<T>(T first, T second) :
         Select(source.Span, selector);
         return source;
     }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Select<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+    {
+        Select(source.Span, selector);
+        return source;
+    }
 #endif
+
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Select<T>(this Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
@@ -7155,6 +7181,22 @@ public readonly struct Two<T>(T first, T second) :
     {
         for (var i = 0; i < source.Length; i++)
             source[i] = selector(source[i]);
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Select<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            source[i] = selector(source[i], i);
 
         return source;
     }
@@ -7183,6 +7225,7 @@ public readonly struct Two<T>(T first, T second) :
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> SkipWhile<T>(
@@ -7216,6 +7259,7 @@ public readonly struct Two<T>(T first, T second) :
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> SkipWhile<T>(
@@ -7257,6 +7301,7 @@ public readonly struct Two<T>(T first, T second) :
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> TakeWhile<T>(
@@ -7290,6 +7335,7 @@ public readonly struct Two<T>(T first, T second) :
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> TakeWhile<T>(
@@ -7440,6 +7486,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         source[..^Filter(source.Span, predicate)];
 #endif
+
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Where<T>(
@@ -7465,6 +7512,7 @@ public readonly struct Two<T>(T first, T second) :
     public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
         Aggregate((ReadOnlySpan<T>)source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -7485,6 +7533,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         Aggregate(source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -7526,6 +7575,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -7548,6 +7598,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         Aggregate(source.Span, seed, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -7585,6 +7636,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -7609,6 +7661,7 @@ public readonly struct Two<T>(T first, T second) :
     ) =>
         Aggregate(source.Span, seed, func, resultSelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -8323,6 +8376,7 @@ readonly
         =>
             MinMax<T, Maximum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
@@ -8343,6 +8397,7 @@ readonly
         =>
             MinMax<T, Maximum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -8372,6 +8427,7 @@ readonly
         =>
             MinMax<T, Minimum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
@@ -8392,6 +8448,7 @@ readonly
         =>
             MinMax<T, Minimum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -8427,6 +8484,7 @@ readonly
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -8453,6 +8511,7 @@ readonly
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -8491,6 +8550,7 @@ readonly
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -8517,6 +8577,7 @@ readonly
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -8531,6 +8592,37 @@ readonly
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool Compare<T, TMinMax>(T l, T r) =>
+        typeof(TMinMax) switch
+        {
+            var x when x == typeof(Maximum) && typeof(T) == typeof(byte) => (byte)(object)l! > (byte)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(byte) => (byte)(object)l! < (byte)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(double) => (double)(object)l! > (double)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(double) => (double)(object)l! < (double)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(float) => (float)(object)l! > (float)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(float) => (float)(object)l! < (float)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(int) => (int)(object)l! > (int)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(int) => (int)(object)l! < (int)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(nint) => (nint)(object)l! > (nint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(nint) => (nint)(object)l! < (nint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(nuint) => (nuint)(object)l! > (nuint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(nuint) => (nuint)(object)l! < (nuint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! > (sbyte)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! < (sbyte)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(short) => (short)(object)l! > (short)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(short) => (short)(object)l! < (short)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(uint) => (uint)(object)l! > (uint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(uint) => (uint)(object)l! < (uint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(ulong) => (ulong)(object)l! > (ulong)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(ulong) => (ulong)(object)l! < (ulong)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(ushort) => (ushort)(object)l! > (ushort)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
+            var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(l, r) > 0,
+            var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
+            _ => throw Unreachable,
+        };
+
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
@@ -8567,12 +8659,7 @@ readonly
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
-                if (typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(span[i], value) > 0,
-                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(span[i], value) < 0,
-                    _ => throw Unreachable,
-                })
+                if (Compare<T, TMinMax>(span[i], value))
                     value = span[i];
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         }
@@ -8608,8 +8695,8 @@ readonly
             for (var i = 1; i < Vector128<T>.Count; i++)
                 if (typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(best[i], value) > 0,
-                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(best[i], value) < 0,
+                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
                     _ => throw Unreachable,
                 })
                     value = best[i];
@@ -8646,8 +8733,8 @@ readonly
             for (var i = 1; i < Vector256<T>.Count; i++)
                 if (typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(best[i], value) > 0,
-                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(best[i], value) < 0,
+                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
                     _ => throw Unreachable,
                 })
                     value = best[i];
@@ -8675,8 +8762,8 @@ readonly
             if (converter(enumerable[i]) is var next &&
                 typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Comparer<TResult>.Default.Compare(next, best) > 0,
-                    var x when x == typeof(Minimum) => Comparer<TResult>.Default.Compare(next, best) < 0,
+                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, best),
+                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, best),
                     _ => throw Unreachable,
                 })
                 (value, best) = (enumerable[i], next);
@@ -9797,7 +9884,7 @@ readonly
     }
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T Adder<T>(T left, T right)
+    static T Adder<T>(T l, T r)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #elif !NET8_0_OR_GREATER
@@ -9806,18 +9893,18 @@ readonly
         =>
             typeof(T) switch
             {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)left! + (byte)(object)right!),
-                var x when x == typeof(double) => (T)(object)((double)(object)left! + (double)(object)right!),
-                var x when x == typeof(float) => (T)(object)((float)(object)left! + (float)(object)right!),
-                var x when x == typeof(int) => (T)(object)((int)(object)left! + (int)(object)right!),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)left! + (nint)(object)right!),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)left! + (nuint)(object)right!),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)left! + (sbyte)(object)right!),
-                var x when x == typeof(short) => (T)(object)((short)(object)left! + (short)(object)right!),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)left! + (uint)(object)right!),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)left! + (ulong)(object)right!),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)left! + (ushort)(object)right!),
-                _ => OperatorCaching<T>._adder(left, right),
+                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
+                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+                _ => OperatorCaching<T>._adder(l, r),
             };
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]

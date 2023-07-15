@@ -20,6 +20,7 @@ static partial class SpanQueries
     public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         All((ReadOnlySpan<T>)source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
@@ -65,6 +66,7 @@ static partial class SpanQueries
     public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         Any((ReadOnlySpan<T>)source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
@@ -82,6 +84,7 @@ static partial class SpanQueries
     ) =>
         Any(source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
@@ -110,6 +113,17 @@ static partial class SpanQueries
         return source;
     }
 
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> Select<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+    {
+        Select(source.Memory.Span, selector);
+        return source;
+    }
+
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Select<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
@@ -117,7 +131,19 @@ static partial class SpanQueries
         Select(source.Span, selector);
         return source;
     }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Select<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+    {
+        Select(source.Span, selector);
+        return source;
+    }
 #endif
+
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Select<T>(this Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
@@ -127,6 +153,22 @@ static partial class SpanQueries
     {
         for (var i = 0; i < source.Length; i++)
             source[i] = selector(source[i]);
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Select<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            source[i] = selector(source[i], i);
 
         return source;
     }
@@ -155,6 +197,7 @@ static partial class SpanQueries
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> SkipWhile<T>(
@@ -188,6 +231,7 @@ static partial class SpanQueries
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> SkipWhile<T>(
@@ -229,6 +273,7 @@ static partial class SpanQueries
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> TakeWhile<T>(
@@ -262,6 +307,7 @@ static partial class SpanQueries
         return source;
     }
 #endif
+
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> TakeWhile<T>(
@@ -412,6 +458,7 @@ static partial class SpanQueries
     ) =>
         source[..^Filter(source.Span, predicate)];
 #endif
+
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Where<T>(
@@ -437,6 +484,7 @@ static partial class SpanQueries
     public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
         Aggregate((ReadOnlySpan<T>)source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -457,6 +505,7 @@ static partial class SpanQueries
     ) =>
         Aggregate(source.Span, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -498,6 +547,7 @@ static partial class SpanQueries
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -520,6 +570,7 @@ static partial class SpanQueries
     ) =>
         Aggregate(source.Span, seed, func);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -557,6 +608,7 @@ static partial class SpanQueries
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -581,6 +633,7 @@ static partial class SpanQueries
     ) =>
         Aggregate(source.Span, seed, func, resultSelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
