@@ -10,22 +10,21 @@ static partial class SmallFactory
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Contains<T, TTwo>(this SmallList<T, TTwo> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Contains<T>(this SmallerList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 
-    /// <summary>Removes the first occurence of a specific object from the <see cref="SmallList{T, TRef}"/>.</summary>
+    /// <summary>Removes the first occurence of a specific object from the <see cref="SmallerList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
-    /// <typeparam name="TRef">The type of reference value for the <see cref="SmallList{T, TRef}"/>.</typeparam>
-    /// <param name="span">The <see cref="SmallList{T, TRef}"/> to remove an element from.</param>
-    /// <param name="item">The item to remove from the <see cref="SmallList{T, TRef}"/>.</param>
+    /// <param name="span">The <see cref="SmallerList{T}"/> to remove an element from.</param>
+    /// <param name="item">The item to remove from the <see cref="SmallerList{T}"/>.</param>
     /// <returns>
     /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
     /// parameter <paramref name="span"/>, and substantially removed it from the collection.
     /// </returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T, TRef>(this SmallList<T, TRef> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove<T>(this SmallerList<T> span, T item)
         where T : IEquatable<T>?
     {
         var i = span.IndexOf(item);
@@ -38,10 +37,19 @@ static partial class SmallFactory
     }
 
     /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T, TTwo>(this SmallList<T, TTwo> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int IndexOf<T>(this SmallerList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
+
+    /// <summary>Creates a new instance of the <see cref="SmallerList{T}"/> struct.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="capacity">
+    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
+    /// </param>
+    /// <returns>The Created instance of <see cref="SmallerList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SmallerList<T> AsSmallerList<T>(this int capacity) => new(capacity);
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -81,13 +89,4 @@ static partial class SmallFactory
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
-
-    /// <summary>Creates a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="capacity">
-    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
-    /// </param>
-    /// <returns>The Created instance of <see cref="SmallList{T, TRef}"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SmallList<T, T> AsRefSmallList<T>(this int capacity) => new(capacity);
 }

@@ -1,259 +1,99 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
+
+using FieldInfo = System.Reflection.FieldInfo;
+
 #if !NETFRAMEWORK
 /// <summary>
 /// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
 /// </summary>
 static partial class Two
 {
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<T> two)
+    public static Span<T> AsSpan<T>(this in Two<T> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<T>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<T>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<T>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<T>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<T>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
-        );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two)
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
-            );
+        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
+    /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>> two)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>.InlinedLength
-            );
-
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>> two)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>.InlinedLength
-            );
-
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>> two)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>, T>(
-                    ref Unsafe.AsRef(two)
-                ),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>.InlinedLength
-            );
-
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>> two)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>, T>(
-                    ref Unsafe.AsRef(two)
-                ),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>>.InlinedLength
-            );
-
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(
-        this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>> two
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>>, T>(
-                    ref Unsafe.AsRef(two)
-                ),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>>>.InlinedLength
-            );
-
-    /// <inheritdoc cref="AsSpan{T, TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(
-        this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>>> two
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>>>, T>(
-                    ref Unsafe.AsRef(two)
-                ),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>>>>>>.InlinedLength
-            );
-
-    /// <summary>Turns the reference into a continuous <see cref="Span{T}"/>.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <typeparam name="TRef">The type of reference containing a continuous region of <typeparamref name="T"/>.</typeparam>
-    /// <param name="reference">The instance to turn into the <see cref="Span{T}"/>.</param>
-    /// <returns>
-    /// The <see cref="Span{T}"/> going over the continuous memory of the parameter <paramref name="reference"/>.
-    /// </returns>
-    public static Span<T> AsSpan<T, TRef>(ref TRef reference)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            typeof(TRef) switch
-            {
-                _ when typeof(TRef) == typeof(T) =>
-                    new(ref Unsafe.As<TRef, T>(ref reference)),
-                _ when typeof(TRef) == typeof(Two<T>) =>
-                    Unsafe.As<TRef, Two<T>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<T>>) =>
-                    Unsafe.As<TRef, Two<Two<T>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<T>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<T>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<T>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<T>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<T>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<T>>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<T>>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<T>>>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<T>>>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>(ref reference).AsSpan(),
-                _ when typeof(TRef) == typeof(Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>) =>
-                    Unsafe.As<TRef, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>(ref reference).AsSpan(),
-                _ => MemoryMarshal.CreateSpan(
-                    ref Unsafe.As<TRef, T>(ref Unsafe.AsRef(reference)),
-                    SmallList<T, TRef>.InlinedLength
-                ),
-            };
+    public static Two<T> AsTwo<T>(this (T First, T Second) tuple) => tuple;
 }
 #endif
 
@@ -282,6 +122,10 @@ public readonly struct Two<T>(T first, T second) :
     /// <param name="back">Whether or not to return <see cref="Second"/>.</param>
     [Pure]
     public T this[bool back] => back ? Second : First;
+
+    /// <inheritdoc cref="Two{T}.op_Implicit(Two{T})"/>
+    public (T First, T Second) Tuple => this;
+
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <inheritdoc />
     [Pure, ValueRange(2)]

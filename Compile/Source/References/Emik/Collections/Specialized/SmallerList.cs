@@ -3,18 +3,17 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
-using static Two;
+using FieldInfo = System.Reflection.FieldInfo;
 
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 #if !NETFRAMEWORK
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
-/// <typeparam name="TRef">The type of reference containing a continuous region of <typeparamref name="T"/>.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-ref partial struct SmallList<T, TRef>(Span<T> view)
+ref partial struct SmallerList<T>(Span<T> view)
 #if UNMANAGED_SPAN
-        where T : unmanaged
+    where T : unmanaged
 #endif
 {
     [NonNegativeValue]
@@ -25,25 +24,16 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     T[]? _rental;
 
-    /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SmallerList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
-    public SmallList(int capacity)
+    public SmallerList(int capacity)
         : this(Span<T>.Empty) =>
         _view = _rental = Rent(capacity);
 
-    /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
-    /// <param name="reference">The reference considered to be a continuous buffer of <typeparamref name="T"/>.</param>
-    public SmallList(ref TRef reference)
-        : this(AsSpan<T, TRef>(ref Unsafe.AsRef(reference))) { }
-
-    /// <summary>Gets the amount of items that can be inlined before <see cref="ArrayPool{T}"/> is used.</summary>
-    public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-        = Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
-
     /// <inheritdoc cref="Span{T}.Empty"/>
-    public static SmallList<T, TRef> Empty
+    public static SmallerList<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
@@ -83,7 +73,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     }
 
     /// <inheritdoc cref="IList{T}.Clear"/>
-    public SmallList<T, TRef> Reset
+    public SmallerList<T> Reset
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -96,7 +86,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     }
 
     /// <summary>Gets the entire exposed view.</summary>
-    public SmallList<T, TRef> Stretched
+    public SmallerList<T> Stretched
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -153,11 +143,32 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="Span{T}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(SmallList<T, TRef> left, SmallList<T, TRef> right) => left.View == right.View;
+    public static bool operator ==(SmallerList<T> left, SmallerList<T> right) => left.View == right.View;
 
     /// <inheritdoc cref="Span{T}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(SmallList<T, TRef> left, SmallList<T, TRef> right) => !(left == right);
+    public static bool operator !=(SmallerList<T> left, SmallerList<T> right) => !(left == right);
+
+    /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
+    /// <param name="span">The span.</param>
+    /// <returns>The <see cref="SmallerList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator SmallerList<T>(Span<T> span) => new(span);
+
+    /// <inheritdoc cref="AsSpan{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallerList<T> From<TRef>(ref TRef reference)
+        where TRef : struct =>
+        AsSpan(ref reference);
+
+    /// <summary>Reinterprets the reference as the continuous buffer of <see cref="T"/>.</summary>
+    /// <typeparam name="TRef">The generic representing the continuous buffer of <see cref="T"/>.</typeparam>
+    /// <param name="reference">The reference.</param>
+    /// <returns>The span.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> AsSpan<TRef>(ref TRef reference)
+        where TRef : struct =>
+        Validate<TRef>.AsSpan(ref reference);
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -182,7 +193,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Append(T item)
+    public SmallerList<T> Append(T item)
     {
         if (HasRoom(1))
         {
@@ -199,7 +210,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Append(scoped ReadOnlySpan<T> collection)
+    public SmallerList<T> Append(scoped ReadOnlySpan<T> collection)
     {
         if (HasRoom(collection.Length))
         {
@@ -218,7 +229,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Append([InstantHandle] IEnumerable<T> collection)
+    public SmallerList<T> Append([InstantHandle] IEnumerable<T> collection)
     {
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
@@ -231,7 +242,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Prepend(T item)
+    public SmallerList<T> Prepend(T item)
     {
         if (HasRoom(1))
         {
@@ -251,7 +262,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Prepend(scoped ReadOnlySpan<T> collection)
+    public SmallerList<T> Prepend(scoped ReadOnlySpan<T> collection)
     {
         if (HasRoom(collection.Length))
         {
@@ -271,11 +282,11 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
+    public SmallerList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Insert([NonNegativeValue] int offset, T item)
+    public SmallerList<T> Insert([NonNegativeValue] int offset, T item)
     {
         if (HasRoom(1))
         {
@@ -291,7 +302,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
+    public SmallerList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
     {
         if (HasRoom(items.Length))
         {
@@ -307,7 +318,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
+    public SmallerList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
     {
         MakeRoom(collection);
 
@@ -321,14 +332,14 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
+    public SmallerList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
 
-    /// <summary>Removes the <see cref="SmallList{T, TRef}"/> item at the specified offset and length.</summary>
+    /// <summary>Removes the <see cref="SmallerList{T}"/> item at the specified offset and length.</summary>
     /// <param name="offset">The offset of the slice to remove.</param>
     /// <param name="length">The length of the slice to remove.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
+    public SmallerList<T> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
     {
         View[(offset + length)..].CopyTo(View[offset..]);
         _length -= length;
@@ -337,18 +348,18 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> RemoveAt(Index index)
+    public SmallerList<T> RemoveAt(Index index)
     {
         var offset = index.GetOffset(_length);
         RemoveAt(offset, 1);
         return this;
     }
 
-    /// <summary>Removes the <see cref="SmallList{T, TRef}"/> item at the specified range.</summary>
+    /// <summary>Removes the <see cref="SmallerList{T}"/> item at the specified range.</summary>
     /// <param name="range">The range of the slice to remove.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> RemoveAt(Range range)
+    public SmallerList<T> RemoveAt(Range range)
     {
         var (offset, length) = range.GetOffsetAndLength(_length);
         RemoveAt(offset, length);
@@ -359,7 +370,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <param name="amount">The amount of elements to shrink.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Shrink([NonNegativeValue] int amount)
+    public SmallerList<T> Shrink([NonNegativeValue] int amount)
     {
         Length -= amount;
         return this;
@@ -373,8 +384,9 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     /// <param name="i">The index.</param>
     /// <returns>The element, or default.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ref T Nth(int i)
+    public readonly ref T Nth([NonNegativeValue] int i)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (i >= 0 && i < _length)
             return ref _view[i];
 
@@ -445,7 +457,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void MakeRoom(int by)
+    void MakeRoom([NonNegativeValue] int by)
     {
         if (HasRoom(by))
             return;
@@ -466,12 +478,48 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool HasRoom(int by) => _length + by <= _view.Length;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly T[] Rent([NonNegativeValue] int by)
     {
         var sum = unchecked((uint)(_view.Length + by));
         var length = unchecked((int)BitOperations.RoundUpToPowerOf2(sum));
         return ArrayPool<T>.Shared.Rent(length);
+    }
+
+    /// <summary>Validator of generics the continuous buffer of <see cref="T"/>.</summary>
+    /// <typeparam name="TRef">The generic representing the continuous buffer of <see cref="T"/>.</typeparam>
+    public static class Validate<TRef>
+        where TRef : struct
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static Validate() => Check(typeof(TRef));
+
+        /// <summary>Gets the inlined length.</summary>
+        [NonNegativeValue]
+        public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
+
+        /// <summary>Reinterprets the reference as the continuous buffer of <see cref="T"/>.</summary>
+        /// <param name="reference">The reference.</param>
+        /// <returns>The span.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static Span<T> AsSpan(ref TRef reference) =>
+            MemoryMarshal.CreateSpan(ref Unsafe.As<TRef, T>(ref reference), InlinedLength);
+
+        // ReSharper disable once SuggestBaseTypeForParameter
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool Check(Type type) =>
+            !type
+               .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+               .Where(x => x.FieldType != typeof(T) && x.FieldType != typeof(TRef) && Check(x.FieldType))
+               .Select(Throw)
+               .Any();
+
+        [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static object Throw(FieldInfo _) =>
+            throw new TypeLoadException(
+                $"\"{typeof(TRef).UnfoldedName()}\" contains fields other than {typeof(T).UnfoldedName()}."
+            );
     }
 }
 #endif

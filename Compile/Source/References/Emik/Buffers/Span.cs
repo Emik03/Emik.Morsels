@@ -308,8 +308,8 @@ static partial class Span
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out T one);
-        return new(ref Unsafe.AsRef(one));
+        Unsafe.SkipInit(out T x);
+        return Ref(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -321,22 +321,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<T>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<T> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<T>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<T>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<T> x);
+        return SmallerList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -348,22 +341,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<T>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<T>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<T>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<T>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<T>> x);
+        return SmallerList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -375,22 +361,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<T>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<T>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<T>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<T>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<T>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -402,22 +381,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<T>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -429,22 +401,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<T>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -456,22 +421,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<Two<T>>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -483,22 +441,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -510,22 +461,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -537,22 +481,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -564,22 +501,15 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            MemoryMarshal.CreateSpan(
-                ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(_)),
-                SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
-            );
+            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two);
-
-        return MemoryMarshal.CreateSpan(
-            ref Unsafe.As<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>, T>(ref Unsafe.AsRef(two)),
-            SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
-        );
+        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
+        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 #endif
