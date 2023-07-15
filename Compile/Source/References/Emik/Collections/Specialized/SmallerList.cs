@@ -492,7 +492,7 @@ ref partial struct SmallerList<T>(Span<T> view)
         where TRef : struct
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static Validate() => Reflect(typeof(TRef));
+        static Validate() => Go(typeof(TRef));
 
         /// <summary>Gets the inlined length.</summary>
         [NonNegativeValue]
@@ -508,10 +508,10 @@ ref partial struct SmallerList<T>(Span<T> view)
 
         // ReSharper disable once SuggestBaseTypeForParameter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Reflect(Type type) =>
+        static bool Go(Type type) =>
             type
                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-               .Where(x => x.FieldType is var y && y != typeof(T) && !y.IsValueType || Reflect(y))
+               .Where(x => x.FieldType is var y && y != typeof(T) && (!y.IsValueType || y != x.DeclaringType && Go(y)))
                .Select(Throw)
                .Any();
 
