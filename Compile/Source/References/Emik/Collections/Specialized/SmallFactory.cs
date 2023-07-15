@@ -81,4 +81,13 @@ static partial class SmallFactory
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
+
+    /// <summary>Creates a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="capacity">
+    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
+    /// </param>
+    /// <returns>The Created instance of <see cref="SmallList{T, TRef}"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SmallList<T, T> AsRefSmallList<T>(this int capacity) => new(capacity);
 }

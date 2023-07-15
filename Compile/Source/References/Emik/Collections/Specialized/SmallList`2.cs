@@ -26,6 +26,14 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     T[]? _rental;
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
+    /// <param name="capacity">
+    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
+    /// </param>
+    public SmallList(int capacity)
+        : this(Span<T>.Empty) =>
+        _view = _rental = Rent(capacity);
+
+    /// <summary>Initializes a new instance of the <see cref="SmallList{T, TRef}"/> struct.</summary>
     /// <param name="reference">The reference considered to be a continuous buffer of <typeparamref name="T"/>.</param>
     public SmallList(ref TRef reference)
         : this(AsSpan<T, TRef>(ref Unsafe.AsRef(reference))) { }

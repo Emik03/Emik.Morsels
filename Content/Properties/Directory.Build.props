@@ -81,15 +81,15 @@
     </ItemGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
-        <AdditionalFiles Include="$(Morsels)/Content/Properties/**" Link="Content/Properties/**"/>
-        <Content Include="$(Morsels)/Content/Properties/**" Link="Content/Properties/**" Pack="false"/>
+        <AdditionalFiles Include="$(Morsels)/Content/Properties/**" Link="Properties/**"/>
+        <Content Include="$(Morsels)/Content/Properties/**" Link="Properties/**" Pack="false"/>
         <None Include="$([MSBuild]::GetPathOfFileAbove('README.md', '$(MSBuildProjectFullPath)../'))" Link="README.md" Pack="true" PackagePath="/"/>
     </ItemGroup>
     <!-- Set .globalconfig to the proper tag. -->
     <ItemGroup>
         <Content Remove="$(Morsels)/Content/Properties/.globalconfig"/>
         <AdditionalFiles Remove="$(Morsels)/Content/Properties/.globalconfig"/>
-        <GlobalAnalyzerConfigFiles Include="$(Morsels)/Content/Properties/.globalconfig" Link="Content/Properties/.globalconfig"/>
+        <GlobalAnalyzerConfigFiles Include="$(Morsels)/Content/Properties/.globalconfig" Link="Properties/.globalconfig"/>
     </ItemGroup>
     <!-- C# code snippets for C# projects. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
