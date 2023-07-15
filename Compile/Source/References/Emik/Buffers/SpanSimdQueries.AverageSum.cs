@@ -61,6 +61,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             OperatorCaching<T>._divider(span.Sum(), span.Length);
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

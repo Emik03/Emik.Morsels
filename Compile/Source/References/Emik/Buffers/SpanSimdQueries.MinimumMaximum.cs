@@ -236,7 +236,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
         typeof(T) == typeof(double) ||
