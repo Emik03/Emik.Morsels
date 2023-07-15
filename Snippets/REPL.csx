@@ -9057,7 +9057,7 @@ readonly
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline1<T>(in ValueTuple _ = default)
+    public static Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9080,7 +9080,7 @@ readonly
                 SmallList<T, Two<T>>.InlinedLength
             );
 #else
-    public static Span<T> Inline2<T>(in ValueTuple _ = default)
+    public static Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9107,7 +9107,7 @@ readonly
                 SmallList<T, Two<Two<T>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline4<T>(in ValueTuple _ = default)
+    public static Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9134,7 +9134,7 @@ readonly
                 SmallList<T, Two<Two<Two<T>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline8<T>(in ValueTuple _ = default)
+    public static Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9161,7 +9161,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<T>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline16<T>(in ValueTuple _ = default)
+    public static Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9188,7 +9188,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<Two<T>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline32<T>(in ValueTuple _ = default)
+    public static Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9215,7 +9215,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline64<T>(in ValueTuple _ = default)
+    public static Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9242,7 +9242,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline128<T>(in ValueTuple _ = default)
+    public static Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9269,7 +9269,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline256<T>(in ValueTuple _ = default)
+    public static Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9296,7 +9296,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline512<T>(in ValueTuple _ = default)
+    public static Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -9323,7 +9323,7 @@ readonly
                 SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.InlinedLength
             );
 #else
-    public static Span<T> Inline1024<T>(in ValueTuple _ = default)
+    public static Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -12361,7 +12361,7 @@ public ref partial struct SmallList<T, TRef>(Span<T> view)
          MustUseReturnValue("Dispose array by passing it into System.Memory.ArrayPool<T>.Shared.Return")]
         get
         {
-            if (!IsInlined)
+            if (IsInlined)
                 return null;
 
             var rental = _rental;
@@ -12968,7 +12968,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, T> New1<T>(in ValueTuple _ = default)
+    public static SmallList<T, T> New1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -12988,7 +12988,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<T>> New2<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<T>> New2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13008,7 +13008,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<T>>> New4<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<T>>> New4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13028,7 +13028,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<T>>>> New8<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<T>>>> New8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13048,7 +13048,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<T>>>>> New16<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<T>>>>> New16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13068,7 +13068,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<T>>>>>> New32<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<T>>>>>> New32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13090,7 +13090,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>> New64<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<T>>>>>>> New64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13112,7 +13112,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> New128<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> New128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13134,7 +13134,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> New256<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> New256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13156,7 +13156,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         =>
             new(ref Unsafe.AsRef(_));
 #else
-    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> New512<T>(in ValueTuple _ = default)
+    public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> New512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13179,7 +13179,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
             new(ref Unsafe.AsRef(_));
 #else
     public static SmallList<T, Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>> New1024<T>(
-        in ValueTuple _ = default
+        in bool _ = false
     )
 #if UNMANAGED_SPAN
         where T : unmanaged

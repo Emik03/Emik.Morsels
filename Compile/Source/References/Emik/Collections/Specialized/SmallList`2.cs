@@ -106,7 +106,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
          MustUseReturnValue("Dispose array by passing it into System.Memory.ArrayPool<T>.Shared.Return")]
         get
         {
-            if (!IsInlined)
+            if (IsInlined)
                 return null;
 
             var rental = _rental;
