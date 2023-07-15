@@ -245,4 +245,26 @@ static partial class SmallList
         return new(ref Unsafe.AsRef(two));
     }
 #endif
+
+    /// <inheritdoc cref="New1{T}"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if DEBUG || CSHARPREPL
+    public static SmallList<T, TRef> New<T>(in TRef _ = default)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            new(ref Unsafe.AsRef(_));
+#else
+    public static SmallList<T, TRef> New<T, TRef>(
+        in bool _ = false
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Unsafe.SkipInit(out TRef two);
+        return new(ref Unsafe.AsRef(two));
+    }
+#endif
 }
