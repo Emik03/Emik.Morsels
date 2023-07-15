@@ -28,6 +28,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, Maximum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
@@ -48,6 +49,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, Maximum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -77,6 +79,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, Minimum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
@@ -97,6 +100,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, Minimum>(enumerable.Span);
 #endif
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -132,6 +136,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -158,6 +163,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -196,6 +202,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -222,6 +229,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
 #endif
+
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -236,6 +244,37 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool Compare<T, TMinMax>(T l, T r) =>
+        typeof(TMinMax) switch
+        {
+            var x when x == typeof(Maximum) && typeof(T) == typeof(byte) => (byte)(object)l! > (byte)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(byte) => (byte)(object)l! < (byte)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(double) => (double)(object)l! > (double)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(double) => (double)(object)l! < (double)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(float) => (float)(object)l! > (float)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(float) => (float)(object)l! < (float)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(int) => (int)(object)l! > (int)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(int) => (int)(object)l! < (int)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(nint) => (nint)(object)l! > (nint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(nint) => (nint)(object)l! < (nint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(nuint) => (nuint)(object)l! > (nuint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(nuint) => (nuint)(object)l! < (nuint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! > (sbyte)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! < (sbyte)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(short) => (short)(object)l! > (short)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(short) => (short)(object)l! < (short)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(uint) => (uint)(object)l! > (uint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(uint) => (uint)(object)l! < (uint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(ulong) => (ulong)(object)l! > (ulong)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(ulong) => (ulong)(object)l! < (ulong)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(ushort) => (ushort)(object)l! > (ushort)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
+            var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(l, r) > 0,
+            var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
+            _ => throw Unreachable,
+        };
+
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
@@ -272,12 +311,7 @@ static partial class SpanSimdQueries
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
-                if (typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(span[i], value) > 0,
-                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(span[i], value) < 0,
-                    _ => throw Unreachable,
-                })
+                if (Compare<T, TMinMax>(span[i], value))
                     value = span[i];
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         }
@@ -313,8 +347,8 @@ static partial class SpanSimdQueries
             for (var i = 1; i < Vector128<T>.Count; i++)
                 if (typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(best[i], value) > 0,
-                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(best[i], value) < 0,
+                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
                     _ => throw Unreachable,
                 })
                     value = best[i];
@@ -351,8 +385,8 @@ static partial class SpanSimdQueries
             for (var i = 1; i < Vector256<T>.Count; i++)
                 if (typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(best[i], value) > 0,
-                    var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(best[i], value) < 0,
+                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
                     _ => throw Unreachable,
                 })
                     value = best[i];
@@ -380,8 +414,8 @@ static partial class SpanSimdQueries
             if (converter(enumerable[i]) is var next &&
                 typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Comparer<TResult>.Default.Compare(next, best) > 0,
-                    var x when x == typeof(Minimum) => Comparer<TResult>.Default.Compare(next, best) < 0,
+                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, best),
+                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, best),
                     _ => throw Unreachable,
                 })
                 (value, best) = (enumerable[i], next);

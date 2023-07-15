@@ -9,25 +9,6 @@ namespace Emik.Morsels;
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Average<T>(this IMemoryOwner<T> span)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Average((ReadOnlySpan<T>)span.Memory.Span);
-
-    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Average<T>(this Memory<T> span)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Average((ReadOnlySpan<T>)span.Span);
-#endif
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped Span<T> span)
@@ -48,6 +29,7 @@ static partial class SpanSimdQueries
         =>
             Average(span.Span);
 #endif
+
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
@@ -60,27 +42,8 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            OperatorCaching<T>._divider(span.Sum(), span.Length);
+            Divider(span.Sum(), span.Length);
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Sum<T>(this IMemoryOwner<T> span)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Sum((ReadOnlySpan<T>)span.Memory.Span);
-
-    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Sum<T>(this Memory<T> span)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Sum((ReadOnlySpan<T>)span.Span);
-#endif
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped Span<T> span)
@@ -101,6 +64,7 @@ static partial class SpanSimdQueries
         =>
             Sum(span.Span);
 #endif
+
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
@@ -126,36 +90,12 @@ static partial class SpanSimdQueries
         foreach (var value in span)
             checked
             {
-                sum = OperatorCaching<T>._adder(sum, value);
+                sum = Adder(sum, value);
             }
 
         return sum;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Average<T, TResult>(
-        this IMemoryOwner<T> span,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Average((ReadOnlySpan<T>)span.Memory.Span, converter);
 
-    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Average<T, TResult>(
-        this Memory<T> span,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Average((ReadOnlySpan<T>)span.Span, converter);
-#endif
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -182,6 +122,7 @@ static partial class SpanSimdQueries
         =>
             Average(span.Span, converter);
 #endif
+
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -200,31 +141,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
-        this IMemoryOwner<T> span,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
 
-    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
-        this Memory<T> span,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Sum((ReadOnlySpan<T>)span.Span, converter);
-#endif
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult? Sum<T, TResult>(
@@ -251,6 +168,7 @@ static partial class SpanSimdQueries
         =>
             Sum(span.Span, converter);
 #endif
+
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -275,6 +193,96 @@ static partial class SpanSimdQueries
 
         return sum;
     }
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this IMemoryOwner<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Memory.Span);
+
+    /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Average<T>(this Memory<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Span);
+#endif
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this IMemoryOwner<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Memory.Span);
+
+    /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Sum<T>(this Memory<T> span)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Span);
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this IMemoryOwner<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Memory.Span, converter);
+
+    /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Average<T, TResult>(
+        this Memory<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Average((ReadOnlySpan<T>)span.Span, converter);
+#endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this IMemoryOwner<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
+
+    /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult? Sum<T, TResult>(
+        this Memory<T> span,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Sum((ReadOnlySpan<T>)span.Span, converter);
+#endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
@@ -303,7 +311,7 @@ static partial class SpanSimdQueries
 
         var accumulator = Vector<T>.Zero;
 
-        Vector<T> overflowTestVector = new(OperatorCaching<T>._minValue);
+        Vector<T> overflowTestVector = new(MinValue<T>());
 
         nuint index = 0;
         var limit = length - (nuint)Vector<T>.Count * 4;
@@ -357,14 +365,14 @@ static partial class SpanSimdQueries
         for (var i = 0; i < Vector<T>.Count; i++)
             checked
             {
-                result = OperatorCaching<T>._adder(result, accumulator[i]);
+                result = Adder(result, accumulator[i]);
             }
 
         while (index < length)
         {
             checked
             {
-                result = OperatorCaching<T>._adder(result, Unsafe.Add(ref ptr, index));
+                result = Adder(result, Unsafe.Add(ref ptr, index));
             }
 
             index++;
@@ -372,7 +380,82 @@ static partial class SpanSimdQueries
 
         return result;
     }
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static T Adder<T>(T l, T r)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
 #endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
+                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+                _ => OperatorCaching<T>._adder(l, r),
+            };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static T Divider<T>(T left, int right)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => (T)(object)((byte)(object)left! + right),
+                var x when x == typeof(double) => (T)(object)((double)(object)left! + right),
+                var x when x == typeof(float) => (T)(object)((float)(object)left! + right),
+                var x when x == typeof(int) => (T)(object)((int)(object)left! + right),
+                var x when x == typeof(nint) => (T)(object)((nint)(object)left! + right),
+                var x when x == typeof(nuint) => (T)(object)((nuint)(object)left! + (nuint)right),
+                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)left! + right),
+                var x when x == typeof(short) => (T)(object)((short)(object)left! + right),
+                var x when x == typeof(uint) => (T)(object)((uint)(object)left! + right),
+                var x when x == typeof(ulong) => (T)(object)((ulong)(object)left! + (ulong)right),
+                var x when x == typeof(ushort) => (T)(object)((ushort)(object)left! + right),
+                _ => OperatorCaching<T>._divider(left, right),
+            };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static T MinValue<T>()
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => (T)(object)byte.MinValue,
+                var x when x == typeof(double) => (T)(object)double.MinValue,
+                var x when x == typeof(float) => (T)(object)float.MinValue,
+                var x when x == typeof(int) => (T)(object)int.MinValue,
+#if NET5_0_OR_GREATER
+                var x when x == typeof(nint) => (T)(object)nint.MinValue,
+                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
+#endif
+                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+                var x when x == typeof(short) => (T)(object)short.MinValue,
+                var x when x == typeof(uint) => (T)(object)uint.MinValue,
+                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+                _ => OperatorCaching<T>._minValue,
+            };
+#endif
+
     static class OperatorCaching<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
