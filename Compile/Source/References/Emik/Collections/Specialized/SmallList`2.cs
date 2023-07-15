@@ -160,11 +160,11 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     }
 
     /// <inheritdoc />
-    [Obsolete("Will always throw", true), DoesNotReturn]
+    [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
 
     /// <inheritdoc />
-    [Obsolete("Will always throw", true), DoesNotReturn]
+    [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
 
     /// <inheritdoc cref="Span{T}.ToString"/>
@@ -174,15 +174,43 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Append(T item) => Insert(_length, new ReadOnlySpan<T>(item));
+    public SmallList<T, TRef> Append(T item)
+    {
+        if (HasRoom(1))
+        {
+            _view[_length++] = item;
+            return this;
+        }
+
+        var replacement = Rent(1);
+        _view.CopyTo(replacement);
+        replacement[_length++] = item;
+        Swap(replacement);
+        return this;
+    }
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Append(scoped ReadOnlySpan<T> collection) => Insert(_length, collection);
+    public SmallList<T, TRef> Append(scoped ReadOnlySpan<T> collection)
+    {
+        if (HasRoom(collection.Length))
+        {
+            collection.CopyTo(_view[_length..]);
+            _length += collection.Length;
+            return this;
+        }
+
+        var replacement = Rent(collection.Length);
+        _view.CopyTo(replacement);
+        collection.CopyTo(_view[_length..]);
+        _length += collection.Length;
+        Swap(replacement);
+        return this;
+    }
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Append(IEnumerable<T> collection)
+    public SmallList<T, TRef> Append([InstantHandle] IEnumerable<T> collection)
     {
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
@@ -195,30 +223,63 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Prepend(T item) => Insert(0, new ReadOnlySpan<T>(item));
-
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Prepend(scoped ReadOnlySpan<T> collection) => Insert(0, collection);
-
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Prepend(IEnumerable<T> collection)
+    public SmallList<T, TRef> Prepend(T item)
     {
-        MakeRoom(collection);
+        if (HasRoom(1))
+        {
+            View.CopyTo(_view[1..]);
+            _length++;
+            _view[0] = item;
+            return this;
+        }
 
-        using var e = collection.GetEnumerator();
-
-        for (var i = 0; e.MoveNext(); i++)
-            Insert(i, e.Current);
-
+        var replacement = Rent(1);
+        _view.CopyTo(replacement.AsSpan()[1..]);
+        replacement[0] = item;
+        _length++;
+        Swap(replacement);
         return this;
     }
 
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Prepend(scoped ReadOnlySpan<T> collection)
+    {
+        if (HasRoom(collection.Length))
+        {
+            View.CopyTo(_view[collection.Length..]);
+            collection.CopyTo(_view);
+            _length += collection.Length;
+            return this;
+        }
+
+        var replacement = Rent(collection.Length);
+        _view.CopyTo(replacement.AsSpan()[collection.Length..]);
+        collection.CopyTo(_view);
+        _length += collection.Length;
+        Swap(replacement);
+        return this;
+    }
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
+
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList<T, TRef> Insert([NonNegativeValue] int offset, T item) =>
-        Insert(offset, new ReadOnlySpan<T>(item));
+    public SmallList<T, TRef> Insert([NonNegativeValue] int offset, T item)
+    {
+        if (HasRoom(1))
+        {
+            Copy(offset, item, _view);
+            return this;
+        }
+
+        var replacement = Rent(1);
+        Copy(offset, item, replacement);
+        Swap(replacement);
+        return this;
+    }
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -233,6 +294,20 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
         var replacement = Rent(items.Length);
         Copy(index, items, replacement);
         Swap(replacement);
+        return this;
+    }
+
+    /// <inheritdoc cref="List{T}.AddRange"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SmallList<T, TRef> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
+    {
+        MakeRoom(collection);
+
+        using var e = collection.GetEnumerator();
+
+        for (var i = index; e.MoveNext(); i++)
+            Insert(i, e.Current);
+
         return this;
     }
 
@@ -256,7 +331,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList<T, TRef> RemoveAt(Index index)
     {
-        var offset = index.GetOffset(View.Length);
+        var offset = index.GetOffset(_length);
         RemoveAt(offset, 1);
         return this;
     }
@@ -267,7 +342,7 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList<T, TRef> RemoveAt(Range range)
     {
-        var (offset, length) = range.GetOffsetAndLength(View.Length);
+        var (offset, length) = range.GetOffsetAndLength(_length);
         RemoveAt(offset, length);
         return this;
     }
@@ -309,11 +384,46 @@ ref partial struct SmallList<T, TRef>(Span<T> view)
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void Copy([NonNegativeValue] int offset, T insertion, scoped Span<T> destination)
+    {
+        switch (offset)
+        {
+            case 0:
+                View.CopyTo(destination[1..]);
+                break;
+            case var _ when offset == _length:
+                View.CopyTo(destination);
+                break;
+            default:
+                View[offset..].CopyTo(destination[(offset + 1)..]);
+                View[..offset].CopyTo(destination);
+                break;
+        }
+
+        destination[offset] = insertion;
+        _length++;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Copy([NonNegativeValue] int offset, scoped ReadOnlySpan<T> insertion, scoped Span<T> destination)
     {
-        View[offset..].CopyTo(destination[offset..]);
-        insertion.CopyTo(destination[offset..]);
-        View[..offset].CopyTo(destination);
+        switch (offset)
+        {
+            case 0:
+                View.CopyTo(destination[insertion.Length..]);
+                insertion.CopyTo(destination);
+                break;
+            case var _ when offset == _length:
+                insertion.CopyTo(destination[offset..]);
+                View.CopyTo(destination);
+                break;
+            default:
+                View[offset..].CopyTo(destination[(offset + insertion.Length)..]);
+                insertion.CopyTo(destination[offset..]);
+                View[..offset].CopyTo(destination);
+                break;
+        }
+
         _length += insertion.Length;
     }
 
