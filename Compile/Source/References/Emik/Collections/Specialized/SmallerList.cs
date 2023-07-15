@@ -492,7 +492,7 @@ ref partial struct SmallerList<T>(Span<T> view)
         where TRef : struct
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static Validate() => Check(typeof(TRef));
+        static Validate() => Reflect(typeof(TRef));
 
         /// <summary>Gets the inlined length.</summary>
         [NonNegativeValue]
@@ -508,15 +508,15 @@ ref partial struct SmallerList<T>(Span<T> view)
 
         // ReSharper disable once SuggestBaseTypeForParameter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Check(Type type) =>
-            !type
+        static bool Reflect(Type type) =>
+            type
                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-               .Where(x => x.FieldType != typeof(T) && x.FieldType != typeof(TRef) && Check(x.FieldType))
+               .Where(x => x.FieldType is var y && y != typeof(T) && y != typeof(TRef) && Reflect(y))
                .Select(Throw)
                .Any();
 
         [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static object Throw(FieldInfo _) =>
+        static bool Throw(FieldInfo _) =>
             throw new TypeLoadException(
                 $"\"{typeof(TRef).UnfoldedName()}\" contains fields other than {typeof(T).UnfoldedName()}."
             );
