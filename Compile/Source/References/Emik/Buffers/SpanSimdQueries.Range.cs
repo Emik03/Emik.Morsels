@@ -59,10 +59,11 @@ static partial class SpanSimdQueries
 #if NET8_0_OR_GREATER
         if (Vector512<T>.IsSupported && Vector512.IsHardwareAccelerated && source.Length >= Vector512<T>.Count)
         {
+            ref var last = ref Unsafe.Add(ref start, source.Length - Vector512<T>.Count);
             Unsafe.As<T, Vector512<T>>(ref start) = Vectorized<T>.Vec512;
             start = ref Unsafe.Add(ref start, Vector512<T>.Count);
 
-            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector512<T>.Count);
+            for (;
                 Unsafe.IsAddressLessThan(ref start, ref last);
                 start = ref Unsafe.Add(ref start, Vector512<T>.Count))
                 Unsafe.As<T, Vector512<T>>(ref start) =
@@ -73,10 +74,11 @@ static partial class SpanSimdQueries
 #endif
         if (Vector256<T>.IsSupported && Vector256.IsHardwareAccelerated && source.Length >= Vector256<T>.Count)
         {
+            ref var last = ref Unsafe.Add(ref start, source.Length - Vector256<T>.Count);
             Unsafe.As<T, Vector256<T>>(ref start) = Vectorized<T>.Vec256;
             start = ref Unsafe.Add(ref start, Vector256<T>.Count);
 
-            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector256<T>.Count);
+            for (;
                 Unsafe.IsAddressLessThan(ref start, ref last);
                 start = ref Unsafe.Add(ref start, Vector256<T>.Count))
                 Unsafe.As<T, Vector256<T>>(ref start) =
@@ -85,10 +87,11 @@ static partial class SpanSimdQueries
         }
         else if (Vector128<T>.IsSupported && Vector128.IsHardwareAccelerated && source.Length >= Vector128<T>.Count)
         {
+            ref var last = ref Unsafe.Add(ref start, source.Length - Vector128<T>.Count);
             Unsafe.As<T, Vector128<T>>(ref start) = Vectorized<T>.Vec128;
             start = ref Unsafe.Add(ref start, Vector128<T>.Count);
 
-            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector128<T>.Count);
+            for (;
                 Unsafe.IsAddressLessThan(ref start, ref last);
                 start = ref Unsafe.Add(ref start, Vector128<T>.Count))
                 Unsafe.As<T, Vector128<T>>(ref start) =
@@ -97,10 +100,11 @@ static partial class SpanSimdQueries
         }
         else if (Vector64<T>.IsSupported && Vector64.IsHardwareAccelerated && source.Length >= Vector64<T>.Count)
         {
+            ref var last = ref Unsafe.Add(ref start, source.Length - Vector64<T>.Count);
             Unsafe.As<T, Vector64<T>>(ref start) = Vectorized<T>.Vec64;
             start = ref Unsafe.Add(ref start, Vector64<T>.Count);
 
-            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector64<T>.Count);
+            for (;
                 Unsafe.IsAddressLessThan(ref start, ref last);
                 start = ref Unsafe.Add(ref start, Vector64<T>.Count))
                 Unsafe.As<T, Vector64<T>>(ref start) =
