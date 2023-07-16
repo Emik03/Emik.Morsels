@@ -1045,105 +1045,98 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 
 
+    /// <summary>Increments the value.</summary>
+    /// <typeparam name="T">The type of value to increment.</typeparam>
+    /// <param name="t">The value to increment.</param>
+    /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Increment<T>(ref T t)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
-                var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
-                var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
-                var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
+    public static bool Increment<T>(ref T t) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
+            var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
+            var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
+            var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
 #if NET5_0_OR_GREATER
-                var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
-                var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
+            var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
+            var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
 #endif
-                var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
-                var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
-                var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
-                var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
-                var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
-                _ => (t = DirectOperators<T>.Increment(t)) is var _,
-            };
+            var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
+            var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
+            var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
+            var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
+            var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
+            _ => (t = DirectOperators<T>.Increment(t)) is var _,
+        };
 
+    /// <summary>Performs an addition operation to return the sum.</summary>
+    /// <typeparam name="T">The type of value to add.</typeparam>
+    /// <param name="l">The left-hand side.</param>
+    /// <param name="r">The right-hand side.</param>
+    /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Adder<T>(T l, T r)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
-                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
-                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
-                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
-                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
-                _ => DirectOperators<T>.Adder(l, r),
-            };
+    public static T Adder<T>(T l, T r) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
+            var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+            _ => DirectOperators<T>.Adder(l, r),
+        };
 
+    /// <summary>Performs a dividing operation to return the quotient.</summary>
+    /// <typeparam name="T">The type of value to divide.</typeparam>
+    /// <param name="l">The left-hand side.</param>
+    /// <param name="r">The right-hand side.</param>
+    /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Divider<T>(T l, int r)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
-                var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
-                var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
-                var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
-                var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
-                _ => DirectOperators<T>.Divider(l, r),
-            };
+    public static T Divider<T>(T l, int r) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
+            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
+            var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
+            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
+            _ => DirectOperators<T>.Divider(l, r),
+        };
 
+    /// <summary>Gets the minimum value.</summary>
+    /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
+    /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T MinValue<T>()
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)byte.MinValue,
-                var x when x == typeof(double) => (T)(object)double.MinValue,
-                var x when x == typeof(float) => (T)(object)float.MinValue,
-                var x when x == typeof(int) => (T)(object)int.MinValue,
+    public static T MinValue<T>() =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)byte.MinValue,
+            var x when x == typeof(double) => (T)(object)double.MinValue,
+            var x when x == typeof(float) => (T)(object)float.MinValue,
+            var x when x == typeof(int) => (T)(object)int.MinValue,
 #if NET5_0_OR_GREATER
-                var x when x == typeof(nint) => (T)(object)nint.MinValue,
-                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
+            var x when x == typeof(nint) => (T)(object)nint.MinValue,
+            var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
 #endif
-                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-                var x when x == typeof(short) => (T)(object)short.MinValue,
-                var x when x == typeof(uint) => (T)(object)uint.MinValue,
-                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-                _ => DirectOperators<T>.MinValue,
-            };
+            var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+            var x when x == typeof(short) => (T)(object)short.MinValue,
+            var x when x == typeof(uint) => (T)(object)uint.MinValue,
+            var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+            var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+            _ => DirectOperators<T>.MinValue,
+        };
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
@@ -6575,173 +6568,6 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace EmptyNamespace
-
-
-
-
-/// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-#pragma warning disable MA0048
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Range{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this IMemoryOwner<T> source)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Range(source.Memory.Span);
-
-    /// <inheritdoc cref="Range{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Memory<T> source)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            Range(source.Span);
-#endif
-
-    /// <summary>Creates the range.</summary>
-    /// <typeparam name="T">The type of number.</typeparam>
-    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <returns>The parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051
-    public static Span<T> Range<T>(this Span<T> source)
-#pragma warning restore MA0051
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-    {
-        if (source.IsEmpty)
-            return source;
-
-        ref var start = ref MemoryMarshal.GetReference(source);
-        ref var end = ref Unsafe.Add(ref start, source.Length);
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-#if NET8_0_OR_GREATER
-        if (Vector512<T>.IsSupported && Vector512.IsHardwareAccelerated && source.Length >= Vector512<T>.Count)
-        {
-            ref var last = ref Unsafe.Add(ref start, source.Length - Vector512<T>.Count);
-            Unsafe.As<T, Vector512<T>>(ref start) = Vectorized<T>.Vec512;
-            start = ref Unsafe.Add(ref start, Vector512<T>.Count);
-
-            for (;
-                Unsafe.IsAddressLessThan(ref start, ref last);
-                start = ref Unsafe.Add(ref start, Vector512<T>.Count))
-                Unsafe.As<T, Vector512<T>>(ref start) =
-                    Unsafe.Add(ref Unsafe.As<T, Vector512<T>>(ref start), -1) +
-                    Vector512.Create(Vectorized<T>.Step);
-        }
-        else
-#endif
-        if (Vector256<T>.IsSupported && Vector256.IsHardwareAccelerated && source.Length >= Vector256<T>.Count)
-        {
-            ref var last = ref Unsafe.Add(ref start, source.Length - Vector256<T>.Count);
-            Unsafe.As<T, Vector256<T>>(ref start) = Vectorized<T>.Vec256;
-            start = ref Unsafe.Add(ref start, Vector256<T>.Count);
-
-            for (;
-                Unsafe.IsAddressLessThan(ref start, ref last);
-                start = ref Unsafe.Add(ref start, Vector256<T>.Count))
-                Unsafe.As<T, Vector256<T>>(ref start) =
-                    Unsafe.Add(ref Unsafe.As<T, Vector256<T>>(ref start), -1) +
-                    Vector256.Create(Vectorized<T>.Step);
-        }
-        else if (Vector128<T>.IsSupported && Vector128.IsHardwareAccelerated && source.Length >= Vector128<T>.Count)
-        {
-            ref var last = ref Unsafe.Add(ref start, source.Length - Vector128<T>.Count);
-            Unsafe.As<T, Vector128<T>>(ref start) = Vectorized<T>.Vec128;
-            start = ref Unsafe.Add(ref start, Vector128<T>.Count);
-
-            for (;
-                Unsafe.IsAddressLessThan(ref start, ref last);
-                start = ref Unsafe.Add(ref start, Vector128<T>.Count))
-                Unsafe.As<T, Vector128<T>>(ref start) =
-                    Unsafe.Add(ref Unsafe.As<T, Vector128<T>>(ref start), -1) +
-                    Vector128.Create(Vectorized<T>.Step);
-        }
-        else if (Vector64<T>.IsSupported && Vector64.IsHardwareAccelerated && source.Length >= Vector64<T>.Count)
-        {
-            ref var last = ref Unsafe.Add(ref start, source.Length - Vector64<T>.Count);
-            Unsafe.As<T, Vector64<T>>(ref start) = Vectorized<T>.Vec64;
-            start = ref Unsafe.Add(ref start, Vector64<T>.Count);
-
-            for (;
-                Unsafe.IsAddressLessThan(ref start, ref last);
-                start = ref Unsafe.Add(ref start, Vector64<T>.Count))
-                Unsafe.As<T, Vector64<T>>(ref start) =
-                    Unsafe.Add(ref Unsafe.As<T, Vector64<T>>(ref start), -1) +
-                    Vector64.Create(Vectorized<T>.Step);
-        }
-        else
-#endif
-        {
-            start = default!;
-            start = ref Unsafe.Add(ref start, 1);
-        }
-
-        for (;
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
-        {
-            var t = Unsafe.Add(ref start, -1);
-            Increment(ref t);
-            start = t;
-        }
-
-        return source;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    static class Vectorized<T>
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-    {
-        static readonly int s_size =
-#if NET8_0_OR_GREATER
-            Vector512<T>.Count + 1;
-#else
-            Vector256<T>.Count + 1;
-#endif
-
-        static readonly T[] s_values = new T[s_size];
-
-        static Vectorized()
-        {
-            T current = default!;
-
-            for (var i = 0; i < s_values.Length; i++)
-            {
-                s_values[i] = current;
-                Increment(ref current);
-            }
-        }
-
-        public static Vector64<T> Vec64 => Vector64.Create(s_values);
-
-        public static Vector128<T> Vec128 => Vector128.Create(s_values);
-
-        public static Vector256<T> Vec256 => Vector256.Create(s_values);
-#if NET8_0_OR_GREATER
-        public static Vector512<T> Vec512 => Vector512.Create(s_values);
-#endif
-        public static T Step => s_values[^1];
-    }
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 
 
@@ -7346,6 +7172,82 @@ public readonly struct Two<T>(T first, T second) :
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
+
+
+/// <inheritdoc cref="SpanQueries"/>
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
+
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source) => Range(source.Span);
+#endif
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Span<T> source)
+    {
+        switch (source.Length)
+        {
+            case 0: return source;
+            case 1:
+                MemoryMarshal.GetReference(source) = default!;
+                return source;
+            case var length:
+                InAscendingOrder<T>.UpTo(length).CopyTo(source);
+                return source;
+        }
+    }
+
+    static class InAscendingOrder<T>
+    {
+        // Vector512<T> is the largest vector type.
+        const int InitialCapacity = 512;
+
+        static T[] s_values = new T[InitialCapacity];
+
+        static InAscendingOrder() => Populate(s_values);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<T> UpTo(int length)
+        {
+            ReadOnlySpan<T> original = s_values;
+
+            if (length <= original.Length)
+                return original[..length];
+
+            var replacement = new T[BitOperations.RoundUpToPowerOf2((uint)length)];
+            Span<T> span = replacement;
+            original.CopyTo(span);
+            Populate(span[(original.Length - 1)..]);
+            s_values = replacement;
+            return span[..length];
+        }
+
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Populate(scoped Span<T> span)
+        {
+            for (var i = 1; i < span.Length; i++)
+            {
+                span[i] = span[i - 1];
+                Increment(ref span[i]);
+            }
+        }
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+
 /// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
@@ -7664,257 +7566,6 @@ public readonly struct Two<T>(T first, T second) :
                 return source[..i];
 
         return source;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> Where<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        source.Memory[..^Filter(source.Memory.Span, predicate)];
-
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> Where<T>(
-        this Memory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        source[..^Filter(source.Span, predicate)];
-#endif
-
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Where<T>(
-        this Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            source[..^Filter(source, predicate)];
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Memory.Span, func);
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
-        Aggregate((ReadOnlySpan<T>)source.Span, func);
-#endif
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(
-        this scoped Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Aggregate((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(
-        this ReadOnlyMemory<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
-    ) =>
-        Aggregate(source.Span, func);
-#endif
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(
-        this scoped ReadOnlySpan<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        var e = source.GetEnumerator();
-
-        if (!e.MoveNext())
-            return default;
-
-        var accumulator = e.Current;
-
-        while (e.MoveNext())
-            accumulator = func(accumulator, e.Current);
-
-        return accumulator;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TAccumulate Aggregate<T, TAccumulate>(
-        this IMemoryOwner<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func);
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TAccumulate Aggregate<T, TAccumulate>(
-        this Memory<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
-#endif
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TAccumulate Aggregate<T, TAccumulate>(
-        this scoped Span<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Aggregate((ReadOnlySpan<T>)source, seed, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TAccumulate Aggregate<T, TAccumulate>(
-        this ReadOnlyMemory<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate(source.Span, seed, func);
-#endif
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TAccumulate Aggregate<T, TAccumulate>(
-        this scoped ReadOnlySpan<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        foreach (var next in source)
-            seed = func(seed, next);
-
-        return seed;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Aggregate<T, TAccumulate, TResult>(
-        this IMemoryOwner<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func, resultSelector);
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Aggregate<T, TAccumulate, TResult>(
-        this Memory<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
-#endif
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Aggregate<T, TAccumulate, TResult>(
-        this scoped Span<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Aggregate<T, TAccumulate, TResult>(
-        this ReadOnlyMemory<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate(source.Span, seed, func, resultSelector);
-#endif
-
-    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult Aggregate<T, TAccumulate, TResult>(
-        this scoped ReadOnlySpan<T> source,
-        TAccumulate seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        foreach (var next in source)
-            seed = func(seed, next);
-
-        return resultSelector(seed);
-    }
-
-    // Surprisingly, direct indexing is more efficient than .CopyTo despite latter guaranteeing SIMD.
-    // Benchmarked with various sizes and on function "static x => BitOperations.PopCount(x) % 2 is 0".
-    // This function was chosen as the baseline due to it being cheap to compute, evenly distributed,
-    // and ensuring all patterns of [[false, false], [false, true], [true, false], [true, true]] would appear.
-    // ReSharper disable CommentTypo
-    // https://sharplab.io/#v2:D4AQTAjAsAULIQGwAICWA7ALsg6gCwFMAnAgSXXWIB4AVAPgApZkXkBlABwEN1a7kAzgHsArkQDGBADTNWABRIATVOK6YCfZByUq1BWAEpYAb1ksAZkKLIGANy7XUyALzIADAG40yKoNESCADoAGQJ0AHNMPC9UAGpYoxhWZFMk5NZUcxttAmVVdQZhMUkAbVQAXQNE9JrkcSEsDBECD1gzdPtrAUwHbFdUVrg0msUhdtq0LIZ4pzpXIoCQsMi8aonakAB2QR6iTEGJgHc8VAAbAhsAQhy8vUL/UoqqwfHWTuRlAQ5TrkkAWzCfW8AFodr0DrUFo9AoFyoEAMJCDgATxoQnuxQIJW6vRhlQhNShF3mDyxMIAep9vr8CACsOUCeknMDXFSfv9AYyAL5tYbILZ+TFLCJRQZcoA
-    // https://cdn.discordapp.com/attachments/445375602648940544/1129045669148098610/image.png
-    // ReSharper restore CommentTypo
-
-    [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        var end = 0;
-
-        for (var i = 0; i < source.Length; i++)
-        {
-            if (predicate(source[i]))
-            {
-                if (end > 0)
-                    source[i - end] = source[i];
-
-                continue;
-            }
-
-            var start = i;
-
-            do
-                if (++i >= source.Length)
-                    return end + i - start;
-            while (!predicate(source[i]));
-
-            end += i - start;
-            source[i - end] = source[i];
-        }
-
-        return end;
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -10106,6 +9757,197 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Memory.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
+        Aggregate((ReadOnlySpan<T>)source.Span, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this scoped Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    ) =>
+        Aggregate(source.Span, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? Aggregate<T>(
+        this scoped ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        var e = source.GetEnumerator();
+
+        if (!e.MoveNext())
+            return default;
+
+        var accumulator = e.Current;
+
+        while (e.MoveNext())
+            accumulator = func(accumulator, e.Current);
+
+        return accumulator;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this IMemoryOwner<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this Memory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this scoped Span<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source, seed, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this ReadOnlyMemory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    ) =>
+        Aggregate(source.Span, seed, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TAccumulate Aggregate<T, TAccumulate>(
+        this scoped ReadOnlySpan<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        foreach (var next in source)
+            seed = func(seed, next);
+
+        return seed;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this IMemoryOwner<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func, resultSelector);
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this Memory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this scoped Span<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this ReadOnlyMemory<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    ) =>
+        Aggregate(source.Span, seed, func, resultSelector);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static TResult Aggregate<T, TAccumulate, TResult>(
+        this scoped ReadOnlySpan<T> source,
+        TAccumulate seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        foreach (var next in source)
+            seed = func(seed, next);
+
+        return resultSelector(seed);
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable once CheckNamespace
 
 
@@ -10264,6 +10106,86 @@ readonly
 #endif
         =>
             index > 0 && index <= span.Length ? span[span.Length - index] : default;
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Where<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source.Memory[..^Filter(source.Memory.Span, predicate)];
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Where<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source[..^Filter(source.Span, predicate)];
+#endif
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Where<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            source[..^Filter(source, predicate)];
+
+    // Surprisingly, direct indexing is more efficient than .CopyTo despite latter guaranteeing SIMD.
+    // Benchmarked with various sizes and on function "static x => BitOperations.PopCount(x) % 2 is 0".
+    // This function was chosen as the baseline due to it being cheap to compute, evenly distributed,
+    // and ensuring all patterns of [[false, false], [false, true], [true, false], [true, true]] would appear.
+    // ReSharper disable CommentTypo
+    // https://sharplab.io/#v2:D4AQTAjAsAULIQGwAICWA7ALsg6gCwFMAnAgSXXWIB4AVAPgApZkXkBlABwEN1a7kAzgHsArkQDGBADTNWABRIATVOK6YCfZByUq1BWAEpYAb1ksAZkKLIGANy7XUyALzIADAG40yKoNESCADoAGQJ0AHNMPC9UAGpYoxhWZFMk5NZUcxttAmVVdQZhMUkAbVQAXQNE9JrkcSEsDBECD1gzdPtrAUwHbFdUVrg0msUhdtq0LIZ4pzpXIoCQsMi8aonakAB2QR6iTEGJgHc8VAAbAhsAQhy8vUL/UoqqwfHWTuRlAQ5TrkkAWzCfW8AFodr0DrUFo9AoFyoEAMJCDgATxoQnuxQIJW6vRhlQhNShF3mDyxMIAep9vr8CACsOUCeknMDXFSfv9AYyAL5tYbILZ+TFLCJRQZcoA
+    // https://cdn.discordapp.com/attachments/445375602648940544/1129045669148098610/image.png
+    // ReSharper restore CommentTypo
+
+    [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        var end = 0;
+
+        for (var i = 0; i < source.Length; i++)
+        {
+            if (predicate(source[i]))
+            {
+                if (end > 0)
+                    source[i - end] = source[i];
+
+                continue;
+            }
+
+            var start = i;
+
+            do
+                if (++i >= source.Length)
+                    return end + i - start;
+            while (!predicate(source[i]));
+
+            end += i - start;
+            source[i - end] = source[i];
+        }
+
+        return end;
+    }
 
 // SPDX-License-Identifier: MPL-2.0
 
