@@ -8,6 +8,8 @@ namespace Wawa.Modules;
 namespace Emik.Morsels;
 #endif
 
+using Enum = System.Enum;
+
 #if !(NET20 || NET30)
 using static System.Linq.Expressions.Expression;
 #endif
@@ -424,7 +426,7 @@ static partial class Stringifier
         x.PropertyType == typeof(Type) &&
         x.GetIndexParameters().Length is 0;
 
-    [Pure]
+    [Pure] // ReSharper disable once SuggestBaseTypeForParameter
     static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
 
     [Pure]
