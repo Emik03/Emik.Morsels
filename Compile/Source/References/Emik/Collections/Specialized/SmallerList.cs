@@ -361,7 +361,7 @@ ref partial struct SmallerList<T>(Span<T> view)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallerList<T> RemoveAt(Range range)
     {
-        var (offset, length) = range.GetOffsetAndLength(_length);
+        range.GetOffsetAndLength(_length, out var offset, out var length);
         RemoveAt(offset, length);
         return this;
     }

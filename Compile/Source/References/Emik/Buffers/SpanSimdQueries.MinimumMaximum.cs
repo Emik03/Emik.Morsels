@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable 1574, 1580, 1581, 1584
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
@@ -243,7 +243,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Compare<T, TMinMax>(T l, T r) =>
         typeof(TMinMax) switch
@@ -275,6 +275,7 @@ static partial class SpanSimdQueries
             _ => throw Unreachable,
         };
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
@@ -306,15 +307,15 @@ static partial class SpanSimdQueries
             return default!;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
-        {
 #endif
+        {
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
                 if (Compare<T, TMinMax>(span[i], value))
                     value = span[i];
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
         {
             ref var current = ref MemoryMarshal.GetReference(span);

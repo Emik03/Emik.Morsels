@@ -301,7 +301,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            new(ref Unsafe.AsRef(_));
+            Ref(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN

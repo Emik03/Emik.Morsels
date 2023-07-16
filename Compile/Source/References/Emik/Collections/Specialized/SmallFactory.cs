@@ -9,12 +9,13 @@ namespace Emik.Morsels;
 static partial class SmallFactory
 #pragma warning restore MA0048
 {
+#if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Contains<T>(this SmallerList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
-
+#endif
     /// <summary>Removes the first occurence of a specific object from the <see cref="SmallerList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="span">The <see cref="SmallerList{T}"/> to remove an element from.</param>

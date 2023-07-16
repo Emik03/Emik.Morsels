@@ -1044,6 +1044,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 
 
+/// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 
     /// <summary>Increments the value.</summary>
     /// <typeparam name="T">The type of value to increment.</typeparam>
@@ -1163,12 +1164,13 @@ using static JetBrains.Annotations.CollectionAccessType;
         public static Func<T?, T> Increment { get; } = Make("op_Increment", Expression.Increment);
 
         static Func<T?, T> Make(string name, Func<Expression, UnaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, s_args) is not { } x && Expression.Parameter(typeof(T), "unit") is var unit
+            typeof(T).GetMethod(name, Flags, null, s_args, null) is not { } x &&
+            Expression.Parameter(typeof(T), "unit") is var unit
                 ? Expression.Lambda<Func<T?, T>>(go(unit), unit).Compile()
                 : (Func<T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T>), x);
 
         static Func<T?, TRight?, T> Make<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, s_args) is not { } x &&
+            typeof(T).GetMethod(name, Flags, null, s_args, null) is not { } x &&
             Expression.Parameter(typeof(T), "left") is var left &&
             Expression.Parameter(typeof(TRight), "right") is var right
                 ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
@@ -7224,7 +7226,7 @@ public readonly struct Two<T>(T first, T second) :
             if (length <= original.Length)
                 return original[..length];
 
-            var replacement = new T[BitOperations.RoundUpToPowerOf2((uint)length)];
+            var replacement = new T[Math.Max(original.Length * 2, length)];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span[(original.Length - 1)..]);
@@ -8199,7 +8201,7 @@ readonly
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-
+#pragma warning disable 1574, 1580, 1581, 1584
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
@@ -8438,7 +8440,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Compare<T, TMinMax>(T l, T r) =>
         typeof(TMinMax) switch
@@ -8470,6 +8472,7 @@ readonly
             _ => throw Unreachable,
         };
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
@@ -8501,15 +8504,15 @@ readonly
             return default!;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
-        {
 #endif
+        {
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
                 if (Compare<T, TMinMax>(span[i], value))
                     value = span[i];
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
         {
             ref var current = ref MemoryMarshal.GetReference(span);
@@ -8924,7 +8927,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            new(ref Unsafe.AsRef(_));
+            Ref(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -12342,12 +12345,13 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
 
+#if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Contains<T>(this SmallerList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
-
+#endif
     /// <summary>Removes the first occurence of a specific object from the <see cref="SmallerList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="span">The <see cref="SmallerList{T}"/> to remove an element from.</param>
@@ -13034,7 +13038,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallerList<T> RemoveAt(Range range)
     {
-        var (offset, length) = range.GetOffsetAndLength(_length);
+        range.GetOffsetAndLength(_length, out var offset, out var length);
         RemoveAt(offset, length);
         return this;
     }

@@ -57,6 +57,31 @@ static partial class MemoryMarshal
             Cache<T>.ReadOnlySpan(ref reference, length);
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Returns a reference to the element of the read-only span at index 0.</summary>
+    /// <remarks><para>
+    /// If the read-only span is empty, this method returns a reference to the location where the
+    /// element at index 0 would have been stored. Such a reference may or may not be null.
+    /// The returned reference can be used for pinning, but it must never be dereferenced.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of items in the span.</typeparam>
+    /// <param name="span">The read-only from which the reference is retrieved.</param>
+    /// <returns>A reference to the element at index 0.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T GetReference<T>(ReadOnlySpan<T> span) => ref Unsafe.AsRef(span.GetPinnableReference());
+
+    /// <summary>Returns a reference to the element of the span at index 0.</summary>
+    /// <remarks><para>
+    /// If the span is empty, this method returns a reference to the location where the
+    /// element at index 0 would have been stored. Such a reference may or may not be null.
+    /// The returned reference can be used for pinning, but it must never be dereferenced.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of items in the span.</typeparam>
+    /// <param name="span">The span from which the reference is retrieved.</param>
+    /// <returns>A reference to the element at index 0.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T GetReference<T>(Span<T> span) => ref span.GetPinnableReference();
+#endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     static class Cache<T>
     {
         static Cache()

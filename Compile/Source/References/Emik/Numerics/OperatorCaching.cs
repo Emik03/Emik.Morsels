@@ -4,6 +4,7 @@
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 namespace Emik.Morsels;
 
+/// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 static partial class OperatorCaching
 {
     /// <summary>Increments the value.</summary>
@@ -124,12 +125,13 @@ static partial class OperatorCaching
         public static Func<T?, T> Increment { get; } = Make("op_Increment", Expression.Increment);
 
         static Func<T?, T> Make(string name, Func<Expression, UnaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, s_args) is not { } x && Expression.Parameter(typeof(T), "unit") is var unit
+            typeof(T).GetMethod(name, Flags, null, s_args, null) is not { } x &&
+            Expression.Parameter(typeof(T), "unit") is var unit
                 ? Expression.Lambda<Func<T?, T>>(go(unit), unit).Compile()
                 : (Func<T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T>), x);
 
         static Func<T?, TRight?, T> Make<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, s_args) is not { } x &&
+            typeof(T).GetMethod(name, Flags, null, s_args, null) is not { } x &&
             Expression.Parameter(typeof(T), "left") is var left &&
             Expression.Parameter(typeof(TRight), "right") is var right
                 ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
