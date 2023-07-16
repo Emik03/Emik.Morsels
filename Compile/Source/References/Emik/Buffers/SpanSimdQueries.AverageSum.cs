@@ -3,8 +3,10 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
+using static OperatorCaching;
+
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
@@ -104,8 +106,9 @@ static partial class SpanSimdQueries
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span, converter);
@@ -116,8 +119,11 @@ static partial class SpanSimdQueries
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Average(span.Span, converter);
@@ -136,34 +142,39 @@ static partial class SpanSimdQueries
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
         =>
-            OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
+            Divider(span.Sum(converter), span.Length);
 
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span, converter);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Sum(span.Span, converter);
@@ -176,20 +187,21 @@ static partial class SpanSimdQueries
     /// <param name="converter">The mapping of each element.</param>
     /// <returns>The sum of each mapping of <paramref name="span"/> by <paramref name="converter"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
     {
-        TResult? sum = default;
+        TResult sum = default!;
 
-        foreach (var a in span)
-            sum = OperatorCaching<TResult>._adder(sum, converter(a));
+        foreach (var x in span)
+            sum = Adder(sum, converter(x));
 
         return sum;
     }
@@ -240,8 +252,11 @@ static partial class SpanSimdQueries
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span.Memory.Span, converter);
@@ -252,8 +267,11 @@ static partial class SpanSimdQueries
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span.Span, converter);
@@ -261,24 +279,30 @@ static partial class SpanSimdQueries
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
 
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span.Span, converter);
@@ -380,101 +404,5 @@ static partial class SpanSimdQueries
 
         return result;
     }
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T Adder<T>(T l, T r)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
 #endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
-                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
-                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
-                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
-                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
-                _ => OperatorCaching<T>._adder(l, r),
-            };
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T Divider<T>(T left, int right)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)left! + right),
-                var x when x == typeof(double) => (T)(object)((double)(object)left! + right),
-                var x when x == typeof(float) => (T)(object)((float)(object)left! + right),
-                var x when x == typeof(int) => (T)(object)((int)(object)left! + right),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)left! + right),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)left! + (nuint)right),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)left! + right),
-                var x when x == typeof(short) => (T)(object)((short)(object)left! + right),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)left! + right),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)left! + (ulong)right),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)left! + right),
-                _ => OperatorCaching<T>._divider(left, right),
-            };
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T MinValue<T>()
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)byte.MinValue,
-                var x when x == typeof(double) => (T)(object)double.MinValue,
-                var x when x == typeof(float) => (T)(object)float.MinValue,
-                var x when x == typeof(int) => (T)(object)int.MinValue,
-#if NET5_0_OR_GREATER
-                var x when x == typeof(nint) => (T)(object)nint.MinValue,
-                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
-#endif
-                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-                var x when x == typeof(short) => (T)(object)short.MinValue,
-                var x when x == typeof(uint) => (T)(object)uint.MinValue,
-                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-                _ => OperatorCaching<T>._minValue,
-            };
-#endif
-
-    static class OperatorCaching<T>
-    {
-        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
-
-        static readonly Type[] s_args = new[] { typeof(T), typeof(T) };
-
-        internal static readonly T _minValue =
-            (T?)typeof(T).GetField("MinValue", Flags)?.GetValue(null) ?? throw Unreachable;
-
-        internal static readonly Func<T?, T?, T> _adder = Operator<T>("op_Addition", Expression.AddChecked);
-
-        internal static readonly Func<T?, int, T> _divider =
-            Operator<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(int))));
-
-        static Func<T?, TRight?, T> Operator<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, s_args) is not { } x &&
-            Expression.Parameter(typeof(T), "left") is var left &&
-            Expression.Parameter(typeof(TRight), "right") is var right
-                ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
-                : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
-    }
 }

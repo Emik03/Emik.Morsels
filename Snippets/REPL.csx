@@ -197,6 +197,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
+using Enum = System.Enum;
 using static System.Linq.Expressions.Expression;
 using static System.Linq.Expressions.Expression;
 using SecurityAction = System.Security.Permissions.SecurityAction;
@@ -1040,6 +1041,150 @@ using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+
+
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Increment<T>(ref T t)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
+                var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
+                var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
+                var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
+#if NET5_0_OR_GREATER
+                var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
+                var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
+#endif
+                var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
+                var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
+                var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
+                var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
+                var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
+                _ => (t = DirectOperators<T>.Increment(t)) is var _,
+            };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Adder<T>(T l, T r)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
+                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+                _ => DirectOperators<T>.Adder(l, r),
+            };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Divider<T>(T l, int r)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
+                var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
+                var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
+                var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
+                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
+                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
+                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
+                var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
+                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
+                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
+                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
+                _ => DirectOperators<T>.Divider(l, r),
+            };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T MinValue<T>()
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            typeof(T) switch
+            {
+                var x when x == typeof(byte) => (T)(object)byte.MinValue,
+                var x when x == typeof(double) => (T)(object)double.MinValue,
+                var x when x == typeof(float) => (T)(object)float.MinValue,
+                var x when x == typeof(int) => (T)(object)int.MinValue,
+#if NET5_0_OR_GREATER
+                var x when x == typeof(nint) => (T)(object)nint.MinValue,
+                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
+#endif
+                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+                var x when x == typeof(short) => (T)(object)short.MinValue,
+                var x when x == typeof(uint) => (T)(object)uint.MinValue,
+                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+                _ => DirectOperators<T>.MinValue,
+            };
+
+    /// <summary>Caches operators.</summary>
+    /// <typeparam name="T">The containing member of operators.</typeparam>
+    // ReSharper disable once ClassNeverInstantiated.Local
+    sealed partial class DirectOperators<T>
+    {
+        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
+
+        static readonly Type[] s_args = new[] { typeof(T), typeof(T) };
+
+        /// <summary>Gets the minimum value.</summary>
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        public static T MinValue { get; } =
+            (T?)typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null)!;
+
+        /// <summary>Gets the function for adding.</summary>
+        public static Func<T?, T?, T> Adder { get; } = Make<T>("op_Addition", Expression.AddChecked);
+
+        /// <summary>Gets the function for dividing.</summary>
+        public static Func<T?, int, T> Divider { get; } =
+            Make<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(T))));
+
+        /// <summary>Gets the function for dividing.</summary>
+        public static Func<T?, T> Increment { get; } = Make("op_Increment", Expression.Increment);
+
+        static Func<T?, T> Make(string name, Func<Expression, UnaryExpression> go) =>
+            typeof(T).GetMethod(name, Flags, s_args) is not { } x && Expression.Parameter(typeof(T), "unit") is var unit
+                ? Expression.Lambda<Func<T?, T>>(go(unit), unit).Compile()
+                : (Func<T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T>), x);
+
+        static Func<T?, TRight?, T> Make<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
+            typeof(T).GetMethod(name, Flags, s_args) is not { } x &&
+            Expression.Parameter(typeof(T), "left") is var left &&
+            Expression.Parameter(typeof(TRight), "right") is var right
+                ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
+                : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
 
 
 /// <summary>Extension methods to clamp numbers.</summary>
@@ -1496,6 +1641,7 @@ namespace Wawa.Modules;
 
 #endif
 
+
 #if !(NET20 || NET30)
 #endif
 
@@ -1910,7 +2056,7 @@ public
         x.PropertyType == typeof(Type) &&
         x.GetIndexParameters().Length is 0;
 
-    [Pure]
+    [Pure] // ReSharper disable once SuggestBaseTypeForParameter
     static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
 
     [Pure]
@@ -6429,6 +6575,169 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+
+
+
+/// <inheritdoc cref="SpanSimdQueries"/>
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Range(source.Memory.Span);
+
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            Range(source.Span);
+#endif
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051
+    public static Span<T> Range<T>(this Span<T> source)
+#pragma warning restore MA0051
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+    {
+        if (source.IsEmpty)
+            return source;
+
+        ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NET8_0_OR_GREATER
+        if (Vector512<T>.IsSupported && Vector512.IsHardwareAccelerated && source.Length >= Vector512<T>.Count)
+        {
+            Unsafe.As<T, Vector512<T>>(ref start) = Vectorized<T>.Vec512;
+            start = ref Unsafe.Add(ref start, Vector512<T>.Count);
+
+            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector512<T>.Count);
+                Unsafe.IsAddressLessThan(ref start, ref last);
+                start = ref Unsafe.Add(ref start, Vector512<T>.Count))
+                Unsafe.As<T, Vector512<T>>(ref start) =
+                    Unsafe.Add(ref Unsafe.As<T, Vector512<T>>(ref start), -1) +
+                    Vector512.Create(Vectorized<T>.Step);
+        }
+        else
+#endif
+        if (Vector256<T>.IsSupported && Vector256.IsHardwareAccelerated && source.Length >= Vector256<T>.Count)
+        {
+            Unsafe.As<T, Vector256<T>>(ref start) = Vectorized<T>.Vec256;
+            start = ref Unsafe.Add(ref start, Vector256<T>.Count);
+
+            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector256<T>.Count);
+                Unsafe.IsAddressLessThan(ref start, ref last);
+                start = ref Unsafe.Add(ref start, Vector256<T>.Count))
+                Unsafe.As<T, Vector256<T>>(ref start) =
+                    Unsafe.Add(ref Unsafe.As<T, Vector256<T>>(ref start), -1) +
+                    Vector256.Create(Vectorized<T>.Step);
+        }
+        else if (Vector128<T>.IsSupported && Vector128.IsHardwareAccelerated && source.Length >= Vector128<T>.Count)
+        {
+            Unsafe.As<T, Vector128<T>>(ref start) = Vectorized<T>.Vec128;
+            start = ref Unsafe.Add(ref start, Vector128<T>.Count);
+
+            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector128<T>.Count);
+                Unsafe.IsAddressLessThan(ref start, ref last);
+                start = ref Unsafe.Add(ref start, Vector128<T>.Count))
+                Unsafe.As<T, Vector128<T>>(ref start) =
+                    Unsafe.Add(ref Unsafe.As<T, Vector128<T>>(ref start), -1) +
+                    Vector128.Create(Vectorized<T>.Step);
+        }
+        else if (Vector64<T>.IsSupported && Vector64.IsHardwareAccelerated && source.Length >= Vector64<T>.Count)
+        {
+            Unsafe.As<T, Vector64<T>>(ref start) = Vectorized<T>.Vec64;
+            start = ref Unsafe.Add(ref start, Vector64<T>.Count);
+
+            for (ref var last = ref Unsafe.Add(ref start, source.Length - Vector64<T>.Count);
+                Unsafe.IsAddressLessThan(ref start, ref last);
+                start = ref Unsafe.Add(ref start, Vector64<T>.Count))
+                Unsafe.As<T, Vector64<T>>(ref start) =
+                    Unsafe.Add(ref Unsafe.As<T, Vector64<T>>(ref start), -1) +
+                    Vector64.Create(Vectorized<T>.Step);
+        }
+        else
+#endif
+        {
+            start = default!;
+            start = ref Unsafe.Add(ref start, 1);
+        }
+
+        for (;
+            Unsafe.IsAddressLessThan(ref start, ref end);
+            start = ref Unsafe.Add(ref start, 1))
+        {
+            var t = Unsafe.Add(ref start, -1);
+            Increment(ref t);
+            start = t;
+        }
+
+        return source;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    static class Vectorized<T>
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+    {
+        static readonly int s_size =
+#if NET8_0_OR_GREATER
+            Vector512<T>.Count + 1;
+#else
+            Vector256<T>.Count + 1;
+#endif
+
+        static readonly T[] s_values = new T[s_size];
+
+        static Vectorized()
+        {
+            T current = default!;
+
+            for (var i = 0; i < s_values.Length; i++)
+            {
+                s_values[i] = current;
+                Increment(ref current);
+            }
+        }
+
+        public static Vector64<T> Vec64 => Vector64.Create(s_values);
+
+        public static Vector128<T> Vec128 => Vector128.Create(s_values);
+
+        public static Vector256<T> Vec256 => Vector256.Create(s_values);
+#if NET8_0_OR_GREATER
+        public static Vector512<T> Vec512 => Vector512.Create(s_values);
+#endif
+        public static T Step => s_values[^1];
+    }
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable once CheckNamespace
 
 
@@ -6790,7 +7099,7 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace RedundantNameQualifier
+// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
 
 
 
@@ -7352,123 +7661,6 @@ public readonly struct Two<T>(T first, T second) :
 
         return source;
     }
-#if NET7_0_OR_GREATER
-    /// <inheritdoc cref="Range{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this IMemoryOwner<T> source)
-        where T : INumberBase<T>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Range(source.Memory.Span, T.Zero);
-
-    /// <inheritdoc cref="Range{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Memory<T> source)
-        where T : INumberBase<T>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Range(source.Span, T.Zero);
-
-    /// <summary>Creates the range.</summary>
-    /// <typeparam name="T">The type of number in the <see cref="Span{T}"/>.</typeparam>
-    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <returns>The parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Span<T> source)
-        where T : INumberBase<T>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Range(source, T.Zero);
-
-    /// <inheritdoc cref="Range{T}(Span{T}, T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this IMemoryOwner<T> source, T start)
-        where T : IIncrementOperators<T>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Range(source.Memory.Span, start);
-
-    /// <inheritdoc cref="Range{T}(Span{T}, T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Memory<T> source, T start)
-        where T : IIncrementOperators<T>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Range(source.Span, start);
-
-    /// <summary>Creates the range.</summary>
-    /// <typeparam name="T">The type of number in the <see cref="Span{T}"/>.</typeparam>
-    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <param name="start">The number to start with.</param>
-    /// <returns>The parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Span<T> source, T start)
-#if UNMANAGED_SPAN
-        where T : IIncrementOperators<T>, unmanaged
-#else
-        where T : IIncrementOperators<T>
-#endif
-    {
-        for (var i = 0; i < source.Length; i++, start++)
-            source[i] = start;
-
-        return source;
-    }
-#else
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Range(Span{int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this IMemoryOwner<int> source) => Range(source.Memory.Span, 0);
-
-    /// <inheritdoc cref="Range(Span{int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this Memory<int> source) => Range(source.Span, 0);
-#endif
-    /// <summary>Creates the range.</summary>
-    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <returns>The parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this Span<int> source)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Range(source, 0);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Range(Span{int}, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this IMemoryOwner<int> source, int start) => Range(source.Memory.Span, start);
-
-    /// <inheritdoc cref="Range(Span{int}, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this Memory<int> source, int start) => Range(source.Span, start);
-#endif
-    /// <summary>Creates the range.</summary>
-    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <param name="start">The number to start with.</param>
-    /// <returns>The parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<int> Range(this Span<int> source, int start)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            source[i] = i + start;
-
-        return source;
-    }
-#endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -9507,8 +9699,10 @@ readonly
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
+
+
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
@@ -9606,8 +9800,9 @@ readonly
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span, converter);
@@ -9618,8 +9813,11 @@ readonly
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Average(span.Span, converter);
@@ -9638,34 +9836,39 @@ readonly
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
         =>
-            OperatorCaching<TResult>._divider(span.Sum(converter), span.Length);
+            Divider(span.Sum(converter), span.Length);
 
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this scoped Span<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span, converter);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this ReadOnlyMemory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Sum(span.Span, converter);
@@ -9678,20 +9881,21 @@ readonly
     /// <param name="converter">The mapping of each element.</param>
     /// <returns>The sum of each mapping of <paramref name="span"/> by <paramref name="converter"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this scoped ReadOnlySpan<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
+#endif
+#if !NET8_0_OR_GREATER
+        where TResult : struct
 #endif
     {
-        TResult? sum = default;
+        TResult sum = default!;
 
-        foreach (var a in span)
-            sum = OperatorCaching<TResult>._adder(sum, converter(a));
+        foreach (var x in span)
+            sum = Adder(sum, converter(x));
 
         return sum;
     }
@@ -9742,8 +9946,11 @@ readonly
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span.Memory.Span, converter);
@@ -9754,8 +9961,11 @@ readonly
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Average((ReadOnlySpan<T>)span.Span, converter);
@@ -9763,24 +9973,30 @@ readonly
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this IMemoryOwner<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span.Memory.Span, converter);
 
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static TResult? Sum<T, TResult>(
+    public static TResult Sum<T, TResult>(
         this Memory<T> span,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
 #if !NET8_0_OR_GREATER
-        where T : struct
+        where TResult : struct
 #endif
         =>
             Sum((ReadOnlySpan<T>)span.Span, converter);
@@ -9882,103 +10098,7 @@ readonly
 
         return result;
     }
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T Adder<T>(T l, T r)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
 #endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
-                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
-                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
-                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
-                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
-                _ => OperatorCaching<T>._adder(l, r),
-            };
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T Divider<T>(T left, int right)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)left! + right),
-                var x when x == typeof(double) => (T)(object)((double)(object)left! + right),
-                var x when x == typeof(float) => (T)(object)((float)(object)left! + right),
-                var x when x == typeof(int) => (T)(object)((int)(object)left! + right),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)left! + right),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)left! + (nuint)right),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)left! + right),
-                var x when x == typeof(short) => (T)(object)((short)(object)left! + right),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)left! + right),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)left! + (ulong)right),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)left! + right),
-                _ => OperatorCaching<T>._divider(left, right),
-            };
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T MinValue<T>()
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)byte.MinValue,
-                var x when x == typeof(double) => (T)(object)double.MinValue,
-                var x when x == typeof(float) => (T)(object)float.MinValue,
-                var x when x == typeof(int) => (T)(object)int.MinValue,
-#if NET5_0_OR_GREATER
-                var x when x == typeof(nint) => (T)(object)nint.MinValue,
-                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
-#endif
-                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-                var x when x == typeof(short) => (T)(object)short.MinValue,
-                var x when x == typeof(uint) => (T)(object)uint.MinValue,
-                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-                _ => OperatorCaching<T>._minValue,
-            };
-#endif
-
-    static class OperatorCaching<T>
-    {
-        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
-
-        static readonly Type[] s_args = new[] { typeof(T), typeof(T) };
-
-        internal static readonly T _minValue =
-            (T?)typeof(T).GetField("MinValue", Flags)?.GetValue(null) ?? throw Unreachable;
-
-        internal static readonly Func<T?, T?, T> _adder = Operator<T>("op_Addition", Expression.AddChecked);
-
-        internal static readonly Func<T?, int, T> _divider =
-            Operator<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(int))));
-
-        static Func<T?, TRight?, T> Operator<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, s_args) is not { } x &&
-            Expression.Parameter(typeof(T), "left") is var left &&
-            Expression.Parameter(typeof(TRight), "right") is var right
-                ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
-                : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
-    }
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -9999,7 +10119,6 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-
     {
         if (span.IsEmpty)
         {
@@ -10022,7 +10141,6 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-
     {
         if (span.IsEmpty)
         {
