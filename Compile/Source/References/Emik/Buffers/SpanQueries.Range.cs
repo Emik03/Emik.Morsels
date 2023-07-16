@@ -57,7 +57,7 @@ static partial class SpanQueries
             if (length <= original.Length)
                 return original[..length];
 
-            var replacement = new T[Math.Max(original.Length * 2, length)];
+            var replacement = new T[BitOperations.RoundUpToPowerOf2((uint)length)];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span[(original.Length - 1)..]);
