@@ -18,7 +18,6 @@ static partial class SpanIndexers
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-
     {
         if (span.IsEmpty)
         {
@@ -41,7 +40,6 @@ static partial class SpanIndexers
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-
     {
         if (span.IsEmpty)
         {
