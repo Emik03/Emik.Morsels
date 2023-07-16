@@ -49,6 +49,6 @@ public static class ImmutableCollectionsMarshal
     /// <see langword="true"/>), the resulting <typeparamref name="T"/> array will be <see langword="null"/>.
     /// </para>
     /// </remarks>
-    public static T[]? AsArray<T>(ImmutableArray<T> array) => Unsafe.As<ImmutableArray<T>, T[]>(ref array);
+    public static T[]? AsArray<T>(ImmutableArray<T> array) => Unsafe.As<ImmutableArray<T>, T[]?>(ref array);
 }
 #endif
