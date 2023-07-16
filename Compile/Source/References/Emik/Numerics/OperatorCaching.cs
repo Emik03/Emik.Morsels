@@ -6,105 +6,98 @@ namespace Emik.Morsels;
 
 static partial class OperatorCaching
 {
+    /// <summary>Increments the value.</summary>
+    /// <typeparam name="T">The type of value to increment.</typeparam>
+    /// <param name="t">The value to increment.</param>
+    /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Increment<T>(ref T t)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
-                var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
-                var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
-                var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
+    public static bool Increment<T>(ref T t) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
+            var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
+            var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
+            var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
 #if NET5_0_OR_GREATER
-                var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
-                var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
+            var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
+            var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
 #endif
-                var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
-                var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
-                var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
-                var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
-                var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
-                _ => (t = DirectOperators<T>.Increment(t)) is var _,
-            };
+            var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
+            var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
+            var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
+            var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
+            var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
+            _ => (t = DirectOperators<T>.Increment(t)) is var _,
+        };
 
+    /// <summary>Performs an addition operation to return the sum.</summary>
+    /// <typeparam name="T">The type of value to add.</typeparam>
+    /// <param name="l">The left-hand side.</param>
+    /// <param name="r">The right-hand side.</param>
+    /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Adder<T>(T l, T r)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
-                var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
-                var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
-                var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
-                var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
-                _ => DirectOperators<T>.Adder(l, r),
-            };
+    public static T Adder<T>(T l, T r) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
+            var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+            _ => DirectOperators<T>.Adder(l, r),
+        };
 
+    /// <summary>Performs a dividing operation to return the quotient.</summary>
+    /// <typeparam name="T">The type of value to divide.</typeparam>
+    /// <param name="l">The left-hand side.</param>
+    /// <param name="r">The right-hand side.</param>
+    /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Divider<T>(T l, int r)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
-                var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
-                var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
-                var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
-                var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
-                var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
-                var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
-                var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
-                var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
-                var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
-                var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
-                _ => DirectOperators<T>.Divider(l, r),
-            };
+    public static T Divider<T>(T l, int r) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
+            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
+            var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
+            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
+            _ => DirectOperators<T>.Divider(l, r),
+        };
 
+    /// <summary>Gets the minimum value.</summary>
+    /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
+    /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T MinValue<T>()
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            typeof(T) switch
-            {
-                var x when x == typeof(byte) => (T)(object)byte.MinValue,
-                var x when x == typeof(double) => (T)(object)double.MinValue,
-                var x when x == typeof(float) => (T)(object)float.MinValue,
-                var x when x == typeof(int) => (T)(object)int.MinValue,
+    public static T MinValue<T>() =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)byte.MinValue,
+            var x when x == typeof(double) => (T)(object)double.MinValue,
+            var x when x == typeof(float) => (T)(object)float.MinValue,
+            var x when x == typeof(int) => (T)(object)int.MinValue,
 #if NET5_0_OR_GREATER
-                var x when x == typeof(nint) => (T)(object)nint.MinValue,
-                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
+            var x when x == typeof(nint) => (T)(object)nint.MinValue,
+            var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
 #endif
-                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-                var x when x == typeof(short) => (T)(object)short.MinValue,
-                var x when x == typeof(uint) => (T)(object)uint.MinValue,
-                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-                _ => DirectOperators<T>.MinValue,
-            };
+            var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+            var x when x == typeof(short) => (T)(object)short.MinValue,
+            var x when x == typeof(uint) => (T)(object)uint.MinValue,
+            var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+            var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+            _ => DirectOperators<T>.MinValue,
+        };
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
