@@ -178,6 +178,7 @@
                 <NullGuard Mode="Implicit"/>
                 <Substitute/>
                 <Virtuosity/>
+                <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
                 <ILMerge IncludeAssemblies="CommunityToolkit"/>
