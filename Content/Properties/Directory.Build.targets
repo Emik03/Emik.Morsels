@@ -16,8 +16,8 @@
                 <Caseless StringComparison="Ordinal"/>
                 <ILMerge IncludeAssemblies="CommunityToolkit"/>
                 <InlineMethod/>
-                <Absence/>
                 <Divorce/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
