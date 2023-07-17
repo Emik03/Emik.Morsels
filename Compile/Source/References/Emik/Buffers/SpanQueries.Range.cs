@@ -24,7 +24,7 @@ static partial class SpanQueries
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Span<T> source)
@@ -55,7 +55,7 @@ static partial class SpanQueries
 
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
-        /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+        /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
         /// <returns>The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <see cref="length"/> - 1.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<T> UpTo(int length)

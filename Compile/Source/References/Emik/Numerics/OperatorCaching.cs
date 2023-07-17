@@ -10,7 +10,7 @@ static partial class OperatorCaching
     /// <summary>Increments the value.</summary>
     /// <typeparam name="T">The type of value to increment.</typeparam>
     /// <param name="t">The value to increment.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
@@ -43,7 +43,7 @@ static partial class OperatorCaching
     /// <typeparam name="T">The type of value to add.</typeparam>
     /// <param name="l">The left-hand side.</param>
     /// <param name="r">The right-hand side.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
@@ -68,7 +68,7 @@ static partial class OperatorCaching
     /// <typeparam name="T">The type of value to divide.</typeparam>
     /// <param name="l">The left-hand side.</param>
     /// <param name="r">The right-hand side.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
@@ -91,11 +91,11 @@ static partial class OperatorCaching
 
     /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
     /// <typeparam name="T">The type that failed.</typeparam>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>This method does not return.</returns>
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
-        throw new($"The type \"{typeof(T).UnfoldedName()}\" cannot be used for generic operations.");
+        throw new MissingMethodException(typeof(T).UnfoldedName(), "op_Addition/op_Division/op_Increment");
 
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>

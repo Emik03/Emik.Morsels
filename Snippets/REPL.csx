@@ -1049,7 +1049,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <summary>Increments the value.</summary>
     /// <typeparam name="T">The type of value to increment.</typeparam>
     /// <param name="t">The value to increment.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
@@ -1082,7 +1082,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <typeparam name="T">The type of value to add.</typeparam>
     /// <param name="l">The left-hand side.</param>
     /// <param name="r">The right-hand side.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
@@ -1107,7 +1107,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <typeparam name="T">The type of value to divide.</typeparam>
     /// <param name="l">The left-hand side.</param>
     /// <param name="r">The right-hand side.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
@@ -1130,11 +1130,11 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
     /// <typeparam name="T">The type that failed.</typeparam>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>This method does not return.</returns>
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
-        throw new($"The type \"{typeof(T).UnfoldedName()}\" cannot be used for generic operations.");
+        throw new MissingMethodException(typeof(T).UnfoldedName(), "op_Addition/op_Division/op_Increment");
 
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
@@ -7246,7 +7246,7 @@ public readonly struct Two<T>(T first, T second) :
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
-    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Span<T> source)
@@ -7277,7 +7277,7 @@ public readonly struct Two<T>(T first, T second) :
 
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
-        /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+        /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
         /// <returns>The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <see cref="length"/> - 1.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<T> UpTo(int length)
