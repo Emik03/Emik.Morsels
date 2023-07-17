@@ -10,6 +10,7 @@ static partial class OperatorCaching
     /// <summary>Increments the value.</summary>
     /// <typeparam name="T">The type of value to increment.</typeparam>
     /// <param name="t">The value to increment.</param>
+    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
@@ -28,15 +29,23 @@ static partial class OperatorCaching
             var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
             var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
             var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
-            _ => (t = DirectOperators<T>.Increment(t)) is var _,
+            _ when DirectOperators<T>.IsSupported => (t = DirectOperators<T>.Increment(t)) is var _,
+            _ => Fail<T>() is var _,
         };
+
+    /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
+    /// <typeparam name="T">The type to check.</typeparam>
+    /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
 
     /// <summary>Performs an addition operation to return the sum.</summary>
     /// <typeparam name="T">The type of value to add.</typeparam>
     /// <param name="l">The left-hand side.</param>
     /// <param name="r">The right-hand side.</param>
+    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
         typeof(T) switch
         {
@@ -51,15 +60,17 @@ static partial class OperatorCaching
             var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
             var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
             var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
-            _ => DirectOperators<T>.Adder(l, r),
+            _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Adder(l, r),
+            _ => Fail<T>(),
         };
 
     /// <summary>Performs a dividing operation to return the quotient.</summary>
     /// <typeparam name="T">The type of value to divide.</typeparam>
     /// <param name="l">The left-hand side.</param>
     /// <param name="r">The right-hand side.</param>
+    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
         typeof(T) switch
         {
@@ -74,13 +85,22 @@ static partial class OperatorCaching
             var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
             var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
             var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
-            _ => DirectOperators<T>.Divider(l, r),
+            _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Divider(l, r),
+            _ => Fail<T>(),
         };
+
+    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
+    /// <typeparam name="T">The type that failed.</typeparam>
+    /// <exception cref="InvalidOperationException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>This method does not return.</returns>
+    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Fail<T>() =>
+        throw new($"The type \"{typeof(T).UnfoldedName()}\" cannot be used for generic operations.");
 
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T MinValue<T>() =>
         typeof(T) switch
         {
@@ -107,34 +127,67 @@ static partial class OperatorCaching
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
-        static readonly Type[] s_args = new[] { typeof(T), typeof(T) };
+        static readonly Type[]
+            s_binary = new[] { typeof(T), typeof(T) },
+            s_unary = new[] { typeof(T) };
 
+        static DirectOperators()
+        {
+            try
+            {
+                Increment = Make("op_Increment", Expression.Increment);
+                Adder = Make<T>("op_Addition", Expression.AddChecked);
+                Divider = Make<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(T))));
+            }
+            catch (InvalidOperationException)
+            {
+                IsSupported = false;
+            }
+        }
+#pragma warning disable RCS1158
+        /// <summary>
+        /// Gets a value indicating whether the functions can be used.
+        /// <see cref="MinValue"/> can be used regardless of its output.
+        /// </summary>
+        public static bool IsSupported
+        {
+            [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
+             MethodImpl(MethodImplOptions.AggressiveInlining),
+             Pure]
+            get;
+        } = true;
+#pragma warning restore RCS1158
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
-        public static T MinValue { get; } =
-            (T?)typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null)!;
+        public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!;
+
+        /// <summary>Gets the function for dividing.</summary>
+        public static Converter<T?, T>? Increment { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
         /// <summary>Gets the function for adding.</summary>
-        public static Func<T?, T?, T> Adder { get; } = Make<T>("op_Addition", Expression.AddChecked);
+        public static Func<T?, T?, T>? Adder { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
         /// <summary>Gets the function for dividing.</summary>
-        public static Func<T?, int, T> Divider { get; } =
-            Make<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(T))));
+        public static Func<T?, int, T>? Divider { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
-        /// <summary>Gets the function for dividing.</summary>
-        public static Func<T?, T> Increment { get; } = Make("op_Increment", Expression.Increment);
-
-        static Func<T?, T> Make(string name, Func<Expression, UnaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, null, s_args, null) is not { } x &&
+        [Pure]
+        static Converter<T?, T> Make(string name, [InstantHandle] Func<Expression, UnaryExpression> go) =>
+            typeof(T).GetMethod(name, Flags, null, s_unary, null) is not { } method &&
             Expression.Parameter(typeof(T), "unit") is var unit
-                ? Expression.Lambda<Func<T?, T>>(go(unit), unit).Compile()
-                : (Func<T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T>), x);
+                ? Expression.Lambda<Converter<T?, T>>(go(unit), unit).Compile()
+                : (Converter<T?, T>)Delegate.CreateDelegate(typeof(Converter<T?, T>), method);
 
-        static Func<T?, TRight?, T> Make<TRight>(string name, Func<Expression, Expression, BinaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, null, s_args, null) is not { } x &&
+        [Pure]
+        static Func<T?, TRight?, T> Make<TRight>(
+            string name,
+            [InstantHandle] Func<Expression, Expression, BinaryExpression> go
+        ) =>
+            (typeof(T).GetMethod(name, Flags, null, s_binary, null) is not { } method ||
+                (Func<T?, T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T?, T>), method) is not { } func) &&
             Expression.Parameter(typeof(T), "left") is var left &&
             Expression.Parameter(typeof(TRight), "right") is var right
                 ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
-                : (Func<T?, TRight?, T>)Delegate.CreateDelegate(typeof(Func<T?, TRight?, T>), x);
+                : (x, y) => func(x, (T?)(object?)y);
     }
 }
