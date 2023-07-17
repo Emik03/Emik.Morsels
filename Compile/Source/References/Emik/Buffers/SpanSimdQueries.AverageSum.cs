@@ -3,7 +3,9 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
+// ReSharper disable once RedundantUsingDirective
 using static OperatorCaching;
+using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression

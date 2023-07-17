@@ -2,7 +2,9 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#pragma warning disable 1574, 1580, 1581, 1584
+#pragma warning disable 1574, 1580, 1581, 1584 // ReSharper disable once RedundantUsingDirective
+using static SpanQueries;
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
@@ -275,22 +277,6 @@ static partial class SpanSimdQueries
             _ => throw Unreachable,
         };
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool IsNumericPrimitive<T>() =>
-        typeof(T) == typeof(byte) ||
-        typeof(T) == typeof(double) ||
-        typeof(T) == typeof(float) ||
-        typeof(T) == typeof(int) ||
-        typeof(T) == typeof(long) ||
-        typeof(T) == typeof(nint) ||
-        typeof(T) == typeof(nuint) ||
-        typeof(T) == typeof(sbyte) ||
-        typeof(T) == typeof(short) ||
-        typeof(T) == typeof(uint) ||
-        typeof(T) == typeof(ulong) ||
-        typeof(T) == typeof(ushort);
-#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)

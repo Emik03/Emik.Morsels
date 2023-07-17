@@ -9,6 +9,23 @@ namespace Emik.Morsels;
 static partial class SpanQueries
 #pragma warning restore MA0048
 {
+    /// <summary>Determines whether the type is a numeric primitive.</summary>
+    /// <typeparam name="T">The type to test.</typeparam>
+    /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNumericPrimitive<T>() =>
+        typeof(T) == typeof(byte) ||
+        typeof(T) == typeof(double) ||
+        typeof(T) == typeof(float) ||
+        typeof(T) == typeof(int) ||
+        typeof(T) == typeof(long) ||
+        typeof(T) == typeof(nint) ||
+        typeof(T) == typeof(nuint) ||
+        typeof(T) == typeof(sbyte) ||
+        typeof(T) == typeof(short) ||
+        typeof(T) == typeof(uint) ||
+        typeof(T) == typeof(ulong) ||
+        typeof(T) == typeof(ushort);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

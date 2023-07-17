@@ -36,7 +36,7 @@ static partial class SpanQueries
                 MemoryMarshal.GetReference(source) = default!;
                 return source;
             case var length:
-                if (!IsSupported<T>())
+                if (!IsNumericPrimitive<T>() && !IsSupported<T>())
                     Fail<T>();
 
                 InAscendingOrder<T>.UpTo(length).CopyTo(source);

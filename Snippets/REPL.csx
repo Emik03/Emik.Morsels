@@ -7258,7 +7258,7 @@ public readonly struct Two<T>(T first, T second) :
                 MemoryMarshal.GetReference(source) = default!;
                 return source;
             case var length:
-                if (!IsSupported<T>())
+                if (!IsNumericPrimitive<T>() && !IsSupported<T>())
                     Fail<T>();
 
                 InAscendingOrder<T>.UpTo(length).CopyTo(source);
@@ -7315,6 +7315,23 @@ public readonly struct Two<T>(T first, T second) :
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
+    /// <summary>Determines whether the type is a numeric primitive.</summary>
+    /// <typeparam name="T">The type to test.</typeparam>
+    /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNumericPrimitive<T>() =>
+        typeof(T) == typeof(byte) ||
+        typeof(T) == typeof(double) ||
+        typeof(T) == typeof(float) ||
+        typeof(T) == typeof(int) ||
+        typeof(T) == typeof(long) ||
+        typeof(T) == typeof(nint) ||
+        typeof(T) == typeof(nuint) ||
+        typeof(T) == typeof(sbyte) ||
+        typeof(T) == typeof(short) ||
+        typeof(T) == typeof(uint) ||
+        typeof(T) == typeof(ulong) ||
+        typeof(T) == typeof(ushort);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -8262,7 +8279,9 @@ readonly
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-#pragma warning disable 1574, 1580, 1581, 1584
+#pragma warning disable 1574, 1580, 1581, 1584 // ReSharper disable once RedundantUsingDirective
+
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
@@ -8533,22 +8552,6 @@ readonly
             _ => throw Unreachable,
         };
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool IsNumericPrimitive<T>() =>
-        typeof(T) == typeof(byte) ||
-        typeof(T) == typeof(double) ||
-        typeof(T) == typeof(float) ||
-        typeof(T) == typeof(int) ||
-        typeof(T) == typeof(long) ||
-        typeof(T) == typeof(nint) ||
-        typeof(T) == typeof(nuint) ||
-        typeof(T) == typeof(sbyte) ||
-        typeof(T) == typeof(short) ||
-        typeof(T) == typeof(uint) ||
-        typeof(T) == typeof(ulong) ||
-        typeof(T) == typeof(ushort);
-#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
@@ -9417,6 +9420,8 @@ readonly
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 
+
+// ReSharper disable once RedundantUsingDirective
 
 
 
