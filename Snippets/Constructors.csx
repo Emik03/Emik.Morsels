@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
-using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-if (args is not [var path])
+if (Args is not [var path])
+{
+	Warning("No path specified.");
     return;
+}
 
 try
 {
@@ -22,17 +24,21 @@ try
 }
 catch (Exception ex)
 {
-    Error("REPL threw", ex);
+    Error("dotnet-script threw", ex);
 }
 
-Environment.Exit(0);
+static void Error(string message, Exception ex = null) => Log("ERROR", message, ex);
 
-static void Error(string message, Exception ex) => Log("ERROR", message, ex);
+static void Hint(string message, Exception ex = null) => Log("HINT", message, ex);
 
-static void Warning(string message, Exception ex) => Log("WARNING", message, ex);
+static void Warning(string message, Exception ex = null) => Log("WARNING", message, ex);
 
 static void Log(string prefix, string message, Exception ex) =>
-    Console.WriteLine($"{prefix}: {message} {ex.GetType()}: {ex.Message}{(prefix is "ERROR" ? $"\t{ex.StackTrace.Replace('\n', '\t')}" : "")}");
+    Console.WriteLine(
+    	ex is null
+    		? $"{prefix}: {message}"
+    		: $"{prefix}: {message} {ex.GetType()}: {ex.Message}{(prefix is "ERROR" ? $"\t{ex.StackTrace.Replace('\n', '\t')}" : "")}"
+   		);
 
 static void Iterate(Assembly asm) =>
     ToTypes(asm)
@@ -91,14 +97,14 @@ static IList<Type> ToTypes(Assembly asm)
         var names = string.Join(", ", types.Select(x => x.Name));
 
         Warning($"The assembly \"{asm.GetName().Name}\" can only test {types.Count} types due to a", reason);
-        Warning($"The types that were able to be tested include [{names}] due to afforementioned", reason);
+        Hint($"The types that were able to be tested include [{names}] due to afforementioned", reason);
 
         ex
             .LoaderExceptions
             .Where(x => x is not null)
             .GroupBy(x => x.Message)
             .ToList()
-            .ForEach(x => Warning($"Potentially related exception (found {x.Count()}):", x.First()));
+            .ForEach(x => Hint($"Potentially related exception (found {x.Count()}):", x.First()));
 
         return types;
     }

@@ -329,11 +329,11 @@
     </Target>
     <!-- Run Constructor.csx on the project for Windows. -->
     <Target Name="RunConstructorTests" Condition="'$(OS)' == 'Windows_NT' and $(NoTests) != 'true' and '$(RebuildingWithoutJetBrainsAnnotations)' != 'true'">
-        <Exec Command="where -q csharprepl || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Snippets/Constructors.csx')) -- $(IntermediateOutputPath)$(AssemblyName).dll"/>
+        <Exec Command="where -q dotnet-script || dotnet tool install -g dotnet-script&#xA;type $([System.IO.Path]::GetFullPath('$(Morsels)/Snippets/Constructors.csx')) | dotnet-script eval -- $(IntermediateOutputPath)$(AssemblyName).dll"/>
     </Target>
     <!-- Run Constructor.csx on the project for Mac or Linux. -->
     <Target Name="RunConstructorTests" Condition="'$(OS)' != 'Windows_NT' and $(NoTests) != 'true' and '$(RebuildingWithoutJetBrainsAnnotations)' != 'true'">
-        <Exec Command="command -v csharprepl &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g csharprepl&#xA;csharprepl $([System.IO.Path]::GetFullPath('$(Morsels)/Snippets/Constructors.csx')) -- $(IntermediateOutputPath)$(AssemblyName).dll"/>
+        <Exec Command="command -v dotnet-script &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g dotnet-script&#xA;cat $([System.IO.Path]::GetFullPath('$(Morsels)/Snippets/Constructors.csx')) | dotnet-script eval -- $(IntermediateOutputPath)$(AssemblyName).dll"/>
     </Target>
     <!-- Copy index file to make Documentation folder nicer in GitHub for Windows. -->
     <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and $(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)') and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
