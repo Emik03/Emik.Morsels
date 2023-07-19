@@ -435,5 +435,9 @@ static partial class Each
 
         return upper;
     }
+
+    /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
+    public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter) =>
+        Array.ConvertAll(array, converter);
 #endif
 }
