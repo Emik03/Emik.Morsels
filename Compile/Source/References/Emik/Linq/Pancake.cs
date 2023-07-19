@@ -32,5 +32,28 @@ static partial class Pancake
            .SelectMany(Enumerable.AsEnumerable)
            .SelectMany(Enumerable.AsEnumerable)
            .SelectMany(Enumerable.AsEnumerable);
+
+    /// <summary>
+    /// Flattens the nested collection by taking all the first elements of the enumerations,
+    /// then all the second elements of the enumerations, the third, and so on.
+    /// When any enumeration runs out, it simply moves onto the next enumeration until all enumerations are finished.
+    /// </summary>
+    /// <typeparam name="T">The type of collection.</typeparam>
+    /// <param name="enumerable">The collection to flatten.</param>
+    /// <returns>
+    /// The flattened collection by taking items in order of appearance of each individual enumerable,
+    /// and only then by the outer enumerable.
+    /// </returns>
+    public static IEnumerable<T> Swipe<T>(this IEnumerable<IEnumerable<T>> enumerable)
+    {
+        var list = enumerable.Select(x => x.GetEnumerator()).ToListLazily();
+
+        while (list.Count > 0)
+            for (var i = 0; i < list.Count; i++)
+                if (list[i].MoveNext())
+                    yield return list[i].Current;
+                else
+                    list.RemoveAt(i--);
+    }
 }
 #endif
