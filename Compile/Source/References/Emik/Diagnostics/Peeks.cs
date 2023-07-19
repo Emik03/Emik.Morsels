@@ -208,8 +208,8 @@ static partial class Peeks
     }
 
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
-    public static SmallerList<T> Debug<T>(
-        this SmallerList<T> value,
+    public static PooledSmallList<T> Debug<T>(
+        this PooledSmallList<T> value,
         bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T[], object?>? map = null,

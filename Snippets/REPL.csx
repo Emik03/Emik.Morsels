@@ -4199,8 +4199,8 @@ public
     }
 
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
-    public static SmallerList<T> Debug<T>(
-        this SmallerList<T> value,
+    public static PooledSmallList<T> Debug<T>(
+        this PooledSmallList<T> value,
         bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T[], object?>? map = null,
@@ -7034,85 +7034,85 @@ public enum ControlFlow : byte
 /// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
 /// </summary>
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<T> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<T>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
     /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -9051,7 +9051,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9059,7 +9059,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<T> x);
-        return SmallerList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9071,7 +9071,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9079,7 +9079,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<T>> x);
-        return SmallerList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9091,7 +9091,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9099,7 +9099,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<T>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9111,7 +9111,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9119,7 +9119,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9131,7 +9131,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9139,7 +9139,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9151,7 +9151,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9159,7 +9159,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9171,7 +9171,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9179,7 +9179,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9191,7 +9191,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9199,7 +9199,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9211,7 +9211,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9219,7 +9219,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -9231,7 +9231,7 @@ readonly
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -9239,7 +9239,7 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 #endif
@@ -12453,21 +12453,22 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 
 #if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Contains<T>(this SmallerList<T> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool Contains<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
-    /// <summary>Removes the first occurence of a specific object from the <see cref="SmallerList{T}"/>.</summary>
+
+    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="span">The <see cref="SmallerList{T}"/> to remove an element from.</param>
-    /// <param name="item">The item to remove from the <see cref="SmallerList{T}"/>.</param>
+    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
+    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
     /// <returns>
     /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
     /// parameter <paramref name="span"/>, and substantially removed it from the collection.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this SmallerList<T> span, T item)
+    public static bool Remove<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>?
     {
         var i = span.IndexOf(item);
@@ -12480,19 +12481,19 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     }
 
     /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this SmallerList<T> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOf<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
 
-    /// <summary>Creates a new instance of the <see cref="SmallerList{T}"/> struct.</summary>
+    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
-    /// <returns>The Created instance of <see cref="SmallerList{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SmallerList<T> AsSmallerList<T>(this int capacity) => new(capacity);
+    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -12794,7 +12795,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public ref partial struct SmallerList<T>(Span<T> view)
+public ref partial struct PooledSmallList<T>(Span<T> view)
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -12807,16 +12808,16 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     T[]? _rental;
 
-    /// <summary>Initializes a new instance of the <see cref="SmallerList{T}"/> struct.</summary>
+    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
-    public SmallerList(int capacity)
+    public PooledSmallList(int capacity)
         : this(Span<T>.Empty) =>
         _view = _rental = Rent(capacity);
 
     /// <inheritdoc cref="Span{T}.Empty"/>
-    public static SmallerList<T> Empty
+    public static PooledSmallList<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
@@ -12831,7 +12832,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
     public readonly bool IsInlined
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MemberNotNullWhen(false, nameof(_rental), nameof(TransferOwnership)), Pure]
+         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)), Pure]
         get => _rental is null;
     }
 
@@ -12856,7 +12857,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
     }
 
     /// <inheritdoc cref="IList{T}.Clear"/>
-    public SmallerList<T> Reset
+    public PooledSmallList<T> Reset
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -12869,7 +12870,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
     }
 
     /// <summary>Gets the entire exposed view.</summary>
-    public SmallerList<T> Stretched
+    public PooledSmallList<T> Stretched
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -12881,7 +12882,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
     /// <returns>The inner array.</returns>
-    public T[]? TransferOwnership
+    public T[]? DangerouslyTransferOwnership
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
          MustUseReturnValue("Dispose array by passing it into System.Memory.ArrayPool<T>.Shared.Return")]
@@ -12926,21 +12927,21 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="Span{T}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(SmallerList<T> left, SmallerList<T> right) => left.View == right.View;
+    public static bool operator ==(PooledSmallList<T> left, PooledSmallList<T> right) => left.View == right.View;
 
     /// <inheritdoc cref="Span{T}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(SmallerList<T> left, SmallerList<T> right) => !(left == right);
+    public static bool operator !=(PooledSmallList<T> left, PooledSmallList<T> right) => !(left == right);
 
     /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
     /// <param name="span">The span.</param>
-    /// <returns>The <see cref="SmallerList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
+    /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator SmallerList<T>(Span<T> span) => new(span);
+    public static implicit operator PooledSmallList<T>(Span<T> span) => new(span);
 
     /// <inheritdoc cref="AsSpan{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallerList<T> From<TRef>(ref TRef reference)
+    public static PooledSmallList<T> From<TRef>(ref TRef reference)
         where TRef : struct =>
         AsSpan(ref reference);
 
@@ -12958,7 +12959,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
     public void Dispose()
     {
         if (!IsInlined)
-            ArrayPool<T>.Shared.Return(TransferOwnership);
+            ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
     }
 
     /// <inheritdoc />
@@ -12976,7 +12977,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Append(T item)
+    public PooledSmallList<T> Append(T item)
     {
         if (HasRoom(1))
         {
@@ -12993,7 +12994,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Append(scoped ReadOnlySpan<T> collection)
+    public PooledSmallList<T> Append(scoped ReadOnlySpan<T> collection)
     {
         if (HasRoom(collection.Length))
         {
@@ -13012,7 +13013,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Append([InstantHandle] IEnumerable<T> collection)
+    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T> collection)
     {
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
@@ -13025,7 +13026,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Prepend(T item)
+    public PooledSmallList<T> Prepend(T item)
     {
         if (HasRoom(1))
         {
@@ -13045,7 +13046,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Prepend(scoped ReadOnlySpan<T> collection)
+    public PooledSmallList<T> Prepend(scoped ReadOnlySpan<T> collection)
     {
         if (HasRoom(collection.Length))
         {
@@ -13065,11 +13066,11 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
+    public PooledSmallList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Insert([NonNegativeValue] int offset, T item)
+    public PooledSmallList<T> Insert([NonNegativeValue] int offset, T item)
     {
         if (HasRoom(1))
         {
@@ -13085,7 +13086,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
+    public PooledSmallList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
     {
         if (HasRoom(items.Length))
         {
@@ -13101,7 +13102,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
+    public PooledSmallList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
     {
         MakeRoom(collection);
 
@@ -13115,14 +13116,14 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
+    public PooledSmallList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
 
-    /// <summary>Removes the <see cref="SmallerList{T}"/> item at the specified offset and length.</summary>
+    /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified offset and length.</summary>
     /// <param name="offset">The offset of the slice to remove.</param>
     /// <param name="length">The length of the slice to remove.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
+    public PooledSmallList<T> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
     {
         View[(offset + length)..].CopyTo(View[offset..]);
         _length -= length;
@@ -13131,18 +13132,18 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt(Index index)
+    public PooledSmallList<T> RemoveAt(Index index)
     {
         var offset = index.GetOffset(_length);
         RemoveAt(offset, 1);
         return this;
     }
 
-    /// <summary>Removes the <see cref="SmallerList{T}"/> item at the specified range.</summary>
+    /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified range.</summary>
     /// <param name="range">The range of the slice to remove.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt(Range range)
+    public PooledSmallList<T> RemoveAt(Range range)
     {
         range.GetOffsetAndLength(_length, out var offset, out var length);
         RemoveAt(offset, length);
@@ -13153,7 +13154,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <param name="amount">The amount of elements to shrink.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Shrink([NonNegativeValue] int amount)
+    public PooledSmallList<T> Shrink([NonNegativeValue] int amount)
     {
         Length -= amount;
         return this;
@@ -13319,7 +13320,7 @@ public ref partial struct SmallerList<T>(Span<T> view)
 
     /// <summary>Allocates an inlined list of the specified size.</summary>
     /// <remarks><para>
-    /// The returned <see cref="SmallerList{T}"/> will point to uninitialized memory.
+    /// The returned <see cref="PooledSmallList{T}"/> will point to uninitialized memory.
     /// Be sure to call <see cref="Span{T}.Fill"/> or otherwise written to first before enumeration or reading.
     /// </para></remarks>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
@@ -13327,13 +13328,13 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <returns>The <see cref="Span{T}"/> of the specified size.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static SmallerList<T> New1<T>(in T _ = default!) =>
+    public static PooledSmallList<T> New1<T>(in T _ = default!) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         Ref(ref Unsafe.AsRef(_));
 #else
-    public static SmallerList<T> New1<T>(in bool _ = false)
+    public static PooledSmallList<T> New1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -13346,9 +13347,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New2<T>(in Two<T> _ = default)
+    public static PooledSmallList<T> New2<T>(in Two<T> _ = default)
 #else
-    public static SmallerList<T> New2<T>(in bool _ = false)
+    public static PooledSmallList<T> New2<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13359,9 +13360,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New4<T>(in Two<Two<T>> _ = default)
+    public static PooledSmallList<T> New4<T>(in Two<Two<T>> _ = default)
 #else
-    public static SmallerList<T> New4<T>(in bool _ = false)
+    public static PooledSmallList<T> New4<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13372,9 +13373,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New8<T>(in Two<Two<Two<T>>> _ = default)
+    public static PooledSmallList<T> New8<T>(in Two<Two<Two<T>>> _ = default)
 #else
-    public static SmallerList<T> New8<T>(in bool _ = false)
+    public static PooledSmallList<T> New8<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13385,9 +13386,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New16<T>(in Two<Two<Two<Two<T>>>> _ = default)
+    public static PooledSmallList<T> New16<T>(in Two<Two<Two<Two<T>>>> _ = default)
 #else
-    public static SmallerList<T> New16<T>(in bool _ = false)
+    public static PooledSmallList<T> New16<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13398,9 +13399,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New32<T>(in Two<Two<Two<Two<Two<T>>>>> _ = default)
+    public static PooledSmallList<T> New32<T>(in Two<Two<Two<Two<Two<T>>>>> _ = default)
 #else
-    public static SmallerList<T> New32<T>(in bool _ = false)
+    public static PooledSmallList<T> New32<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13411,9 +13412,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New64<T>(in Two<Two<Two<Two<Two<Two<T>>>>>> _ = default)
+    public static PooledSmallList<T> New64<T>(in Two<Two<Two<Two<Two<Two<T>>>>>> _ = default)
 #else
-    public static SmallerList<T> New64<T>(in bool _ = false)
+    public static PooledSmallList<T> New64<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13424,9 +13425,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New128<T>(in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> _ = default)
+    public static PooledSmallList<T> New128<T>(in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> _ = default)
 #else
-    public static SmallerList<T> New128<T>(in bool _ = false)
+    public static PooledSmallList<T> New128<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13437,9 +13438,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New256<T>(in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> _ = default)
+    public static PooledSmallList<T> New256<T>(in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> _ = default)
 #else
-    public static SmallerList<T> New256<T>(in bool _ = false)
+    public static PooledSmallList<T> New256<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13450,9 +13451,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New512<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> _ = default)
+    public static PooledSmallList<T> New512<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> _ = default)
 #else
-    public static SmallerList<T> New512<T>(in bool _ = false)
+    public static PooledSmallList<T> New512<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13463,9 +13464,9 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> New1024<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> _ = default)
+    public static PooledSmallList<T> New1024<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> _ = default)
 #else
-    public static SmallerList<T> New1024<T>(in bool _ = false)
+    public static PooledSmallList<T> New1024<T>(in bool _ = false)
 #endif
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -13476,21 +13477,21 @@ public ref partial struct SmallerList<T>(Span<T> view)
     /// <inheritdoc cref="New1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
-    public static SmallerList<T> From<T, TRef>(in TRef _ = default)
+    public static PooledSmallList<T> From<T, TRef>(in TRef _ = default)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         where TRef : struct =>
-        SmallerList<T>.From(ref Unsafe.AsRef(_));
+        PooledSmallList<T>.From(ref Unsafe.AsRef(_));
 #else
-    public static SmallerList<T> From<T, TRef>(in bool _ = false)
+    public static PooledSmallList<T> From<T, TRef>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         where TRef : struct
     {
         Unsafe.SkipInit(out TRef two);
-        return SmallerList<T>.From(ref Unsafe.AsRef(two));
+        return PooledSmallList<T>.From(ref Unsafe.AsRef(two));
     }
 #endif
 

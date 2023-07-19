@@ -321,7 +321,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -329,7 +329,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<T> x);
-        return SmallerList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -341,7 +341,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -349,7 +349,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<T>> x);
-        return SmallerList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -361,7 +361,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -369,7 +369,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<T>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -381,7 +381,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -389,7 +389,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -401,7 +401,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -409,7 +409,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -421,7 +421,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -429,7 +429,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -441,7 +441,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -449,7 +449,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -461,7 +461,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -469,7 +469,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -481,7 +481,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -489,7 +489,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 
@@ -501,7 +501,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
     public static Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -509,7 +509,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-        return SmallerList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 #endif

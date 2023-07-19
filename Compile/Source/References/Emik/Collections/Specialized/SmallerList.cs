@@ -11,7 +11,7 @@ using FieldInfo = System.Reflection.FieldInfo;
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-ref partial struct SmallerList<T>(Span<T> view)
+ref partial struct PooledSmallList<T>(Span<T> view)
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -24,16 +24,16 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     T[]? _rental;
 
-    /// <summary>Initializes a new instance of the <see cref="SmallerList{T}"/> struct.</summary>
+    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
-    public SmallerList(int capacity)
+    public PooledSmallList(int capacity)
         : this(Span<T>.Empty) =>
         _view = _rental = Rent(capacity);
 
     /// <inheritdoc cref="Span{T}.Empty"/>
-    public static SmallerList<T> Empty
+    public static PooledSmallList<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
@@ -48,7 +48,7 @@ ref partial struct SmallerList<T>(Span<T> view)
     public readonly bool IsInlined
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MemberNotNullWhen(false, nameof(_rental), nameof(TransferOwnership)), Pure]
+         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)), Pure]
         get => _rental is null;
     }
 
@@ -73,7 +73,7 @@ ref partial struct SmallerList<T>(Span<T> view)
     }
 
     /// <inheritdoc cref="IList{T}.Clear"/>
-    public SmallerList<T> Reset
+    public PooledSmallList<T> Reset
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -86,7 +86,7 @@ ref partial struct SmallerList<T>(Span<T> view)
     }
 
     /// <summary>Gets the entire exposed view.</summary>
-    public SmallerList<T> Stretched
+    public PooledSmallList<T> Stretched
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
@@ -98,7 +98,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
     /// <returns>The inner array.</returns>
-    public T[]? TransferOwnership
+    public T[]? DangerouslyTransferOwnership
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
          MustUseReturnValue("Dispose array by passing it into System.Memory.ArrayPool<T>.Shared.Return")]
@@ -143,21 +143,21 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="Span{T}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(SmallerList<T> left, SmallerList<T> right) => left.View == right.View;
+    public static bool operator ==(PooledSmallList<T> left, PooledSmallList<T> right) => left.View == right.View;
 
     /// <inheritdoc cref="Span{T}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(SmallerList<T> left, SmallerList<T> right) => !(left == right);
+    public static bool operator !=(PooledSmallList<T> left, PooledSmallList<T> right) => !(left == right);
 
     /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
     /// <param name="span">The span.</param>
-    /// <returns>The <see cref="SmallerList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
+    /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator SmallerList<T>(Span<T> span) => new(span);
+    public static implicit operator PooledSmallList<T>(Span<T> span) => new(span);
 
     /// <inheritdoc cref="AsSpan{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallerList<T> From<TRef>(ref TRef reference)
+    public static PooledSmallList<T> From<TRef>(ref TRef reference)
         where TRef : struct =>
         AsSpan(ref reference);
 
@@ -175,7 +175,7 @@ ref partial struct SmallerList<T>(Span<T> view)
     public void Dispose()
     {
         if (!IsInlined)
-            ArrayPool<T>.Shared.Return(TransferOwnership);
+            ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
     }
 
     /// <inheritdoc />
@@ -193,7 +193,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Append(T item)
+    public PooledSmallList<T> Append(T item)
     {
         if (HasRoom(1))
         {
@@ -210,7 +210,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Append(scoped ReadOnlySpan<T> collection)
+    public PooledSmallList<T> Append(scoped ReadOnlySpan<T> collection)
     {
         if (HasRoom(collection.Length))
         {
@@ -229,7 +229,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Append([InstantHandle] IEnumerable<T> collection)
+    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T> collection)
     {
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
@@ -242,7 +242,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Prepend(T item)
+    public PooledSmallList<T> Prepend(T item)
     {
         if (HasRoom(1))
         {
@@ -262,7 +262,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Prepend(scoped ReadOnlySpan<T> collection)
+    public PooledSmallList<T> Prepend(scoped ReadOnlySpan<T> collection)
     {
         if (HasRoom(collection.Length))
         {
@@ -282,11 +282,11 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
+    public PooledSmallList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Insert([NonNegativeValue] int offset, T item)
+    public PooledSmallList<T> Insert([NonNegativeValue] int offset, T item)
     {
         if (HasRoom(1))
         {
@@ -302,7 +302,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
+    public PooledSmallList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
     {
         if (HasRoom(items.Length))
         {
@@ -318,7 +318,7 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
+    public PooledSmallList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
     {
         MakeRoom(collection);
 
@@ -332,14 +332,14 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
+    public PooledSmallList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
 
-    /// <summary>Removes the <see cref="SmallerList{T}"/> item at the specified offset and length.</summary>
+    /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified offset and length.</summary>
     /// <param name="offset">The offset of the slice to remove.</param>
     /// <param name="length">The length of the slice to remove.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
+    public PooledSmallList<T> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
     {
         View[(offset + length)..].CopyTo(View[offset..]);
         _length -= length;
@@ -348,18 +348,18 @@ ref partial struct SmallerList<T>(Span<T> view)
 
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt(Index index)
+    public PooledSmallList<T> RemoveAt(Index index)
     {
         var offset = index.GetOffset(_length);
         RemoveAt(offset, 1);
         return this;
     }
 
-    /// <summary>Removes the <see cref="SmallerList{T}"/> item at the specified range.</summary>
+    /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified range.</summary>
     /// <param name="range">The range of the slice to remove.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> RemoveAt(Range range)
+    public PooledSmallList<T> RemoveAt(Range range)
     {
         range.GetOffsetAndLength(_length, out var offset, out var length);
         RemoveAt(offset, length);
@@ -370,7 +370,7 @@ ref partial struct SmallerList<T>(Span<T> view)
     /// <param name="amount">The amount of elements to shrink.</param>
     /// <returns>Itself.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallerList<T> Shrink([NonNegativeValue] int amount)
+    public PooledSmallList<T> Shrink([NonNegativeValue] int amount)
     {
         Length -= amount;
         return this;

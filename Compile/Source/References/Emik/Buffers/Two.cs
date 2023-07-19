@@ -11,85 +11,85 @@ using FieldInfo = System.Reflection.FieldInfo;
 /// </summary>
 static partial class Two
 {
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<T> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<T>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
-    /// <inheritdoc cref="SmallerList{T}.From{TRef}"/>
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two) =>
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        SmallerList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
 
     /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

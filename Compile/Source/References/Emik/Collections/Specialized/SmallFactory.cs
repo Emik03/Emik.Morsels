@@ -11,21 +11,22 @@ static partial class SmallFactory
 {
 #if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Contains<T>(this SmallerList<T> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool Contains<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
-    /// <summary>Removes the first occurence of a specific object from the <see cref="SmallerList{T}"/>.</summary>
+
+    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="span">The <see cref="SmallerList{T}"/> to remove an element from.</param>
-    /// <param name="item">The item to remove from the <see cref="SmallerList{T}"/>.</param>
+    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
+    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
     /// <returns>
     /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
     /// parameter <paramref name="span"/>, and substantially removed it from the collection.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this SmallerList<T> span, T item)
+    public static bool Remove<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>?
     {
         var i = span.IndexOf(item);
@@ -38,19 +39,19 @@ static partial class SmallFactory
     }
 
     /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this SmallerList<T> span, T item)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOf<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
 
-    /// <summary>Creates a new instance of the <see cref="SmallerList{T}"/> struct.</summary>
+    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
-    /// <returns>The Created instance of <see cref="SmallerList{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SmallerList<T> AsSmallerList<T>(this int capacity) => new(capacity);
+    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
