@@ -12443,346 +12443,6 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#pragma warning disable MA0048
-
-#if NETCOREAPP3_1_OR_GREATER
-    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool Contains<T>(this PooledSmallList<T> span, T item)
-        where T : IEquatable<T>? =>
-        span.View.Contains(item);
-#endif
-
-    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
-    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
-    /// <returns>
-    /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
-    /// parameter <paramref name="span"/>, and substantially removed it from the collection.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this PooledSmallList<T> span, T item)
-        where T : IEquatable<T>?
-    {
-        var i = span.IndexOf(item);
-
-        if (i is -1)
-            return false;
-
-        span.RemoveAt(i);
-        return true;
-    }
-
-    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOf<T>(this PooledSmallList<T> span, T item)
-        where T : IEquatable<T>? =>
-        span.View.IndexOf(item);
-
-    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="capacity">
-    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
-    /// </param>
-    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsSmallList<T>(this T value) => value;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
-        where T1 : T2 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
-        where T1 : T3
-        where T2 : T3 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
-
-    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
-
-    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerable<T>? iterable) => new(iterable);
-
-    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable RedundantExtendsListEntry
-// ReSharper disable once CheckNamespace
-
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
-#pragma warning disable MA0048
-
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="count">The number of elements in the first half.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half is as long as the parameter <paramref name="count"/> or shorter.
-    /// </returns>
-    [Pure]
-    public static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, [NonNegativeValue] int count) =>
-        new(source.Take(count), source.Skip(count));
-
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
-    /// <see langword="true"/> and <see langword="false"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    public static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
-    {
-        List<T> t = new(), f = new();
-
-        foreach (var item in source)
-#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
-            (predicate(item) ? t : f).Add(item);
-#pragma warning restore RCS1235
-
-        return new(t, f);
-    }
-
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
-    /// </returns>
-    [Pure]
-    public static Split<IEnumerable<T>> SplitWhen<T>(
-        this ICollection<T> source,
-        [InstantHandle] Func<T, bool> predicate
-    )
-    {
-        var index = source.TakeWhile(Not1(predicate)).Count();
-        return source.SplitAt(index);
-    }
-#endif
-
-/// <summary>Represents a fixed collection of 2 items.</summary>
-/// <param name="truthy">The value representing a <see langword="true"/> value.</param>
-/// <param name="falsy">The value representing a <see langword="false"/> value.</param>
-/// <typeparam name="T">The type of item in the collection.</typeparam>
-public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
-    IDictionary<bool, T>,
-    IReadOnlyCollection<T>,
-    IReadOnlyDictionary<bool, T>
-{
-    [ProvidesContext]
-    static readonly bool[] s_booleans = { true, false };
-
-#pragma warning disable SA1642
-    /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
-    /// <param name="value">The value representing both values.</param>
-#pragma warning restore SA1642
-    public Split(T value)
-        : this(value, value) { }
-
-    /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
-    [Pure]
-    public T Falsy
-    {
-        get => falsy;
-        set => falsy = value;
-    }
-
-    /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
-    [Pure]
-    public T Truthy
-    {
-        get => truthy;
-        set => truthy = value;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-    [Pure]
-    bool ICollection<T>.IsReadOnly => false;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int ICollection<T>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    public ICollection<T> Values => this;
-
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-    [Pure]
-    bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int ICollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
-    [Pure]
-    public T this[bool key]
-    {
-        get => key ? truthy : falsy;
-        set => _ = key ? truthy = value : falsy = value;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<T>.Count => 2;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
-
-    /// <inheritdoc />
-    public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-    {
-        array[arrayIndex] = truthy;
-        array[arrayIndex + 1] = falsy;
-    }
-
-    /// <inheritdoc />
-    [Pure]
-    public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
-
-    /// <inheritdoc />
-    [Pure]
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return truthy;
-        yield return falsy;
-    }
-
-    /// <inheritdoc />
-    void ICollection<T>.Add(T item) { }
-
-    /// <inheritdoc cref="ICollection{T}.Clear" />
-    void ICollection<T>.Clear() { }
-
-    /// <inheritdoc />
-    [Pure]
-    bool ICollection<T>.Remove(T item) => false;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc />
-    public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
-
-    /// <inheritdoc />
-    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
-    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
-
-    /// <inheritdoc />
-    public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
-    {
-        array[arrayIndex] = new(true, truthy);
-        array[arrayIndex + 1] = new(false, falsy);
-    }
-
-    /// <inheritdoc />
-    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
-    public bool Contains(KeyValuePair<bool, T> item) =>
-        item.Key
-            ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
-            : EqualityComparer<T>.Default.Equals(falsy, item.Value);
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
-    [Pure]
-    public bool TryGetValue(bool key, out T value)
-    {
-        value = key ? truthy : falsy;
-        return true;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.Clear" />
-    void ICollection<KeyValuePair<bool, T>>.Clear() { }
-
-    /// <inheritdoc />
-    [Pure]
-    bool ICollection<KeyValuePair<bool, T>>.Remove(KeyValuePair<bool, T> item) => false;
-
-    /// <inheritdoc />
-    [Pure]
-    bool IDictionary<bool, T>.Remove(bool key) => false;
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.ContainsKey" />
-    [Pure]
-    bool IDictionary<bool, T>.ContainsKey(bool key) => true;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
-    {
-        yield return new(true, truthy);
-        yield return new(false, falsy);
-    }
-
-    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
-    [Pure]
-    bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
-
-    /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
-    /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
-    /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
-    public void Deconstruct(out T t, out T f)
-    {
-        t = truthy;
-        f = falsy;
-    }
-
-    /// <inheritdoc />
-    [Pure]
-    public override string ToString() => $"Split({truthy}, {falsy})";
-}
-
-// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace EmptyNamespace
 
@@ -13307,6 +12967,346 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
     }
 }
 #endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
+#pragma warning disable MA0048
+
+#if NETCOREAPP3_1_OR_GREATER
+    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool Contains<T>(this PooledSmallList<T> span, T item)
+        where T : IEquatable<T>? =>
+        span.View.Contains(item);
+#endif
+
+    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
+    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
+    /// <returns>
+    /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
+    /// parameter <paramref name="span"/>, and substantially removed it from the collection.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove<T>(this PooledSmallList<T> span, T item)
+        where T : IEquatable<T>?
+    {
+        var i = span.IndexOf(item);
+
+        if (i is -1)
+            return false;
+
+        span.RemoveAt(i);
+        return true;
+    }
+
+    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOf<T>(this PooledSmallList<T> span, T item)
+        where T : IEquatable<T>? =>
+        span.View.IndexOf(item);
+
+    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="capacity">
+    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
+    /// </param>
+    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsSmallList<T>(this T value) => value;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
+        where T1 : T2 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
+        where T1 : T3
+        where T2 : T3 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.Uninit"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
+
+    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
+
+    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
+    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> ToSmallList<T>(this IEnumerable<T>? iterable) => new(iterable);
+
+    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
+    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable RedundantExtendsListEntry
+// ReSharper disable once CheckNamespace
+
+#if !NET20 && !NET30
+/// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="count">The number of elements in the first half.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half is as long as the parameter <paramref name="count"/> or shorter.
+    /// </returns>
+    [Pure]
+    public static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, [NonNegativeValue] int count) =>
+        new(source.Take(count), source.Skip(count));
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
+    /// <see langword="true"/> and <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
+    {
+        List<T> t = new(), f = new();
+
+        foreach (var item in source)
+#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
+            (predicate(item) ? t : f).Add(item);
+#pragma warning restore RCS1235
+
+        return new(t, f);
+    }
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// </returns>
+    [Pure]
+    public static Split<IEnumerable<T>> SplitWhen<T>(
+        this ICollection<T> source,
+        [InstantHandle] Func<T, bool> predicate
+    )
+    {
+        var index = source.TakeWhile(Not1(predicate)).Count();
+        return source.SplitAt(index);
+    }
+#endif
+
+/// <summary>Represents a fixed collection of 2 items.</summary>
+/// <param name="truthy">The value representing a <see langword="true"/> value.</param>
+/// <param name="falsy">The value representing a <see langword="false"/> value.</param>
+/// <typeparam name="T">The type of item in the collection.</typeparam>
+public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
+    IDictionary<bool, T>,
+    IReadOnlyCollection<T>,
+    IReadOnlyDictionary<bool, T>
+{
+    [ProvidesContext]
+    static readonly bool[] s_booleans = { true, false };
+
+#pragma warning disable SA1642
+    /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
+    /// <param name="value">The value representing both values.</param>
+#pragma warning restore SA1642
+    public Split(T value)
+        : this(value, value) { }
+
+    /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
+    [Pure]
+    public T Falsy
+    {
+        get => falsy;
+        set => falsy = value;
+    }
+
+    /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
+    [Pure]
+    public T Truthy
+    {
+        get => truthy;
+        set => truthy = value;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
+    [Pure]
+    bool ICollection<T>.IsReadOnly => false;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int ICollection<T>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    public ICollection<T> Values => this;
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
+    [Pure]
+    bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int ICollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
+    [Pure]
+    public T this[bool key]
+    {
+        get => key ? truthy : falsy;
+        set => _ = key ? truthy = value : falsy = value;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<T>.Count => 2;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
+
+    /// <inheritdoc />
+    public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+    {
+        array[arrayIndex] = truthy;
+        array[arrayIndex + 1] = falsy;
+    }
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Contains(T item) =>
+        EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
+
+    /// <inheritdoc />
+    [Pure]
+    public IEnumerator<T> GetEnumerator()
+    {
+        yield return truthy;
+        yield return falsy;
+    }
+
+    /// <inheritdoc />
+    void ICollection<T>.Add(T item) { }
+
+    /// <inheritdoc cref="ICollection{T}.Clear" />
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [Pure]
+    bool ICollection<T>.Remove(T item) => false;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
+
+    /// <inheritdoc />
+    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
+    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
+
+    /// <inheritdoc />
+    public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
+    {
+        array[arrayIndex] = new(true, truthy);
+        array[arrayIndex + 1] = new(false, falsy);
+    }
+
+    /// <inheritdoc />
+    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
+    public bool Contains(KeyValuePair<bool, T> item) =>
+        item.Key
+            ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
+            : EqualityComparer<T>.Default.Equals(falsy, item.Value);
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
+    [Pure]
+    public bool TryGetValue(bool key, out T value)
+    {
+        value = key ? truthy : falsy;
+        return true;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.Clear" />
+    void ICollection<KeyValuePair<bool, T>>.Clear() { }
+
+    /// <inheritdoc />
+    [Pure]
+    bool ICollection<KeyValuePair<bool, T>>.Remove(KeyValuePair<bool, T> item) => false;
+
+    /// <inheritdoc />
+    [Pure]
+    bool IDictionary<bool, T>.Remove(bool key) => false;
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.ContainsKey" />
+    [Pure]
+    bool IDictionary<bool, T>.ContainsKey(bool key) => true;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
+    {
+        yield return new(true, truthy);
+        yield return new(false, falsy);
+    }
+
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
+    [Pure]
+    bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
+
+    /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
+    /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
+    /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
+    public void Deconstruct(out T t, out T f)
+    {
+        t = truthy;
+        f = falsy;
+    }
+
+    /// <inheritdoc />
+    [Pure]
+    public override string ToString() => $"Split({truthy}, {falsy})";
+}
 
 // SPDX-License-Identifier: MPL-2.0
 
