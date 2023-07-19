@@ -44,16 +44,29 @@ static partial class Pancake
     /// The flattened collection by taking items in order of appearance of each individual enumerable,
     /// and only then by the outer enumerable.
     /// </returns>
-    public static IEnumerable<T> Swipe<T>(this IEnumerable<IEnumerable<T>> enumerable)
+    [Pure]
+    public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
-        var list = enumerable.Select(x => x.GetEnumerator()).ToListLazily();
+        var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
+        falsy.ForEach(x => x.Dispose());
 
-        while (list.Count > 0)
-            for (var i = 0; i < list.Count; i++)
-                if (list[i].MoveNext())
-                    yield return list[i].Current;
-                else
-                    list.RemoveAt(i--);
+        try
+        {
+            while (truthy is not [])
+            {
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+                yield return truthy.ConvertAll(x => x.Current);
+#else
+                yield return new(truthy.Select(x => x.Current));
+#endif
+                (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
+                falsy.ForEach(x => x.Dispose());
+            }
+        }
+        finally
+        {
+            truthy.ForEach(x => x.Dispose());
+        }
     }
 }
 #endif
