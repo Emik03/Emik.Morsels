@@ -15,7 +15,7 @@ namespace System;
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Index : IEquatable<Index>
+partial struct Index : IEquatable<Index>
 {
     readonly int _value;
 

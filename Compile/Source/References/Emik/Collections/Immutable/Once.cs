@@ -24,7 +24,7 @@ static partial class OnceFactory
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]

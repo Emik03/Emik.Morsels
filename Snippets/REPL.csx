@@ -10419,7 +10419,7 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -10621,7 +10621,7 @@ readonly
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     static readonly object s_fallback = new();
 
