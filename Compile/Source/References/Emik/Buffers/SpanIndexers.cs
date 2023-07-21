@@ -63,7 +63,9 @@ static partial class SpanIndexers
         where T : unmanaged
 #endif
         =>
-            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
+                ? span.Slice(offset, length)
+                : default;
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -76,7 +78,9 @@ static partial class SpanIndexers
         where T : unmanaged
 #endif
         =>
-            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
+                ? span.Slice(offset, length)
+                : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>

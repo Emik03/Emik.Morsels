@@ -292,13 +292,13 @@ static partial class Similarity
         fixed (T* l = left)
         fixed (T* r = right)
 #endif
-        return Jaro(
-            new Fat<T>(l, left.Length),
-            new(r, right.Length),
-            static x => x.Length,
-            static (x, i) => x[i],
-            comparer
-        );
+            return Jaro(
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
+                static x => x.Length,
+                static (x, i) => x[i],
+                comparer
+            );
     }
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
@@ -391,13 +391,13 @@ static partial class Similarity
         fixed (T* l = left)
         fixed (T* r = right)
 #endif
-        return JaroEmik(
-            new Fat<T>(l, left.Length),
-            new(r, right.Length),
-            static x => x.Length,
-            static (x, i) => x[i],
-            comparer
-        );
+            return JaroEmik(
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
+                static x => x.Length,
+                static (x, i) => x[i],
+                comparer
+            );
     }
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
@@ -494,13 +494,13 @@ static partial class Similarity
         fixed (T* l = left)
         fixed (T* r = right)
 #endif
-        return JaroWinkler(
-            new Fat<T>(l, left.Length),
-            new(r, right.Length),
-            static x => x.Length,
-            static (x, i) => x[i],
-            comparer
-        );
+            return JaroWinkler(
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
+                static x => x.Length,
+                static (x, i) => x[i],
+                comparer
+            );
     }
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>

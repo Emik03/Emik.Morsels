@@ -509,7 +509,10 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(
+            ref Unsafe.AsRef(x)
+        );
     }
 #endif
 #endif

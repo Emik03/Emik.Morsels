@@ -3098,13 +3098,13 @@ public
         fixed (T* l = left)
         fixed (T* r = right)
 #endif
-        return Jaro(
-            new Fat<T>(l, left.Length),
-            new(r, right.Length),
-            static x => x.Length,
-            static (x, i) => x[i],
-            comparer
-        );
+            return Jaro(
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
+                static x => x.Length,
+                static (x, i) => x[i],
+                comparer
+            );
     }
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
@@ -3197,13 +3197,13 @@ public
         fixed (T* l = left)
         fixed (T* r = right)
 #endif
-        return JaroEmik(
-            new Fat<T>(l, left.Length),
-            new(r, right.Length),
-            static x => x.Length,
-            static (x, i) => x[i],
-            comparer
-        );
+            return JaroEmik(
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
+                static x => x.Length,
+                static (x, i) => x[i],
+                comparer
+            );
     }
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
@@ -3300,13 +3300,13 @@ public
         fixed (T* l = left)
         fixed (T* r = right)
 #endif
-        return JaroWinkler(
-            new Fat<T>(l, left.Length),
-            new(r, right.Length),
-            static x => x.Length,
-            static (x, i) => x[i],
-            comparer
-        );
+            return JaroWinkler(
+                new Fat<T>(l, left.Length),
+                new(r, right.Length),
+                static x => x.Length,
+                static (x, i) => x[i],
+                comparer
+            );
     }
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
@@ -5673,7 +5673,11 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    sealed class Enumerator([ProvidesContext] IEnumerator<T> enumerator, TExternal external, Delegate action) : IEnumerator<T>
+    sealed class Enumerator(
+        [ProvidesContext] IEnumerator<T> enumerator,
+        TExternal external,
+        Delegate action
+    ) : IEnumerator<T>
     {
         int _index;
 
@@ -9239,7 +9243,10 @@ readonly
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(
+            ref Unsafe.AsRef(x)
+        );
     }
 #endif
 #endif
@@ -10119,7 +10126,9 @@ readonly
         where T : unmanaged
 #endif
         =>
-            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
+                ? span.Slice(offset, length)
+                : default;
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -10132,7 +10141,9 @@ readonly
         where T : unmanaged
 #endif
         =>
-            range.TryGetOffsetAndLength(span.Length, out var offset, out var length) ? span.Slice(offset, length) : default;
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
+                ? span.Slice(offset, length)
+                : default;
 
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
@@ -10408,7 +10419,7 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -10610,7 +10621,7 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     static readonly object s_fallback = new();
 

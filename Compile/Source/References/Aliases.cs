@@ -27,7 +27,8 @@ global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttrib
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
-global using NotifyPropertyChangedInvocatorAttribute = unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
+global using NotifyPropertyChangedInvocatorAttribute =
+    unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
@@ -40,6 +41,7 @@ global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
+
 #if KTANE
 #if !WAWA
 global using Range = System.Range;

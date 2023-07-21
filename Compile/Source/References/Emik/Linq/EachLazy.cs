@@ -125,7 +125,11 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [CollectionAccess(CollectionAccessType.Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    sealed class Enumerator([ProvidesContext] IEnumerator<T> enumerator, TExternal external, Delegate action) : IEnumerator<T>
+    sealed class Enumerator(
+        [ProvidesContext] IEnumerator<T> enumerator,
+        TExternal external,
+        Delegate action
+    ) : IEnumerator<T>
     {
         int _index;
 

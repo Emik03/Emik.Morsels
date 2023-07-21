@@ -25,7 +25,7 @@ static partial class YesFactory
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     static readonly object s_fallback = new();
 
