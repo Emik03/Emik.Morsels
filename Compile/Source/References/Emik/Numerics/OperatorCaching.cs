@@ -95,7 +95,7 @@ static partial class OperatorCaching
     /// <returns>This method does not return.</returns>
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
-        throw new MissingMethodException(typeof(T).UnfoldedName(), "op_Addition/op_Division/op_Increment");
+        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
 
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
