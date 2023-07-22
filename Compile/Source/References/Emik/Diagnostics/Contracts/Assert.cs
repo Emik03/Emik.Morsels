@@ -53,6 +53,7 @@ abstract partial class Assert(
     public string? Message { get; } = that ? null : message ?? $"Expected {thatEx.Collapse()} to be true.";
 
     /// <summary>Gets the name of the assertion.</summary>
+    [Pure]
     public string Name => GetType().UnfoldedFullName();
 
     /// <summary>Assertion that the enumerable must contain an item.</summary>
@@ -273,13 +274,13 @@ abstract partial class Assert(
         type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
         ParameterlessConstructor(type) is not null &&
         type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
-
 #if CSHARPREPL
     /// <summary>Gets the types from an assembly even if type loads occur.</summary>
     /// <param name="assembly">The assembly to get the types from.</param>
     /// <returns>
     /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
     /// </returns>
+    [MustUseReturnValue]
     static IEnumerable<Type> TypesFrom(Assembly assembly)
     {
         try
@@ -299,6 +300,7 @@ abstract partial class Assert(
     /// The <see cref="ConstructorInfo"/> containing no parameters from the parameter <paramref name="type"/>,
     /// if one exists.
     /// </returns>
+    [Pure]
     static ConstructorInfo? ParameterlessConstructor(Type type)
     {
         try
