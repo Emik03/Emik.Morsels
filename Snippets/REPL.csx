@@ -13689,6 +13689,15 @@ abstract partial class Assert(
     )
         : this(Update(that, that, ref message, f => f?[thatEx.Collapse()]), message, thatEx) { }
 
+    /// <summary>Gets the amount of available assertions.</summary>
+    [Pure]
+    public static int Length =>
+#if CSHARPREPL
+        Runner.Count();
+#else
+        s_assertions.Count;
+#endif
+
     /// <summary>
     /// Gets the enumeration responsible for running every <see cref="Assert"/> instance defined in the current
     /// <see cref="Assembly"/>, and returning every instance of a failed assert.
