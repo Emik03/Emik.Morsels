@@ -62,8 +62,14 @@ static void RunClassConstructor(Type type) => RunClassConstructor(type, type);
 
 static void RunClassConstructor(Type type, Type originalType)
 {
+    const BindingFlags Flags = BindingFlags.Static | BindingFlags.Public;
+
     if (type.BaseType is { } baseType)
         RunClassConstructor(baseType, originalType);
+
+    if (type.FullName is "Emik.Morsels.Assert")
+        foreach (var message in (IEnumerable<string>)type.GetMethod("AllMessages", Flags).Invoke(null, null))
+            Error(message);
 
     try
     {
