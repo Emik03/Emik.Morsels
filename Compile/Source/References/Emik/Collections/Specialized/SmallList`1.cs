@@ -68,7 +68,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// </summary>
     /// <param name="enumerable">The enumerable to collect.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList(IEnumerable<T>? enumerable)
+    public SmallList([InstantHandle] IEnumerable<T>? enumerable)
         : this(enumerable?.GetEnumerator()) { }
 
     /// <summary>
