@@ -91,7 +91,8 @@ static void RunMorselsAssertions(Type type)
 {
     const BindingFlags Flags = BindingFlags.Static | BindingFlags.Public;
 
-    var length = type.GetProperty("Length")?.GetValue(null, null);
+    if (type.GetProperty("Length")?.GetValue(null, null) is not int length || length is 0)
+        return;
 
     Trace($"Running {length} assertion{(length is 1 ? "" : "s")}...");
 

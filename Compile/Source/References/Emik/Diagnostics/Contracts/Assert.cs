@@ -17,7 +17,7 @@ abstract partial class Assert(
 )
 {
 #if !CSHARPREPL
-    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.GetTypes().Where(IsAssertable).ToListLazily();
+    static readonly IList<Type> s_assertions = TypesFrom(typeof(Assert).Assembly).Where(IsAssertable).ToListLazily();
 #endif
 
     /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
@@ -283,7 +283,7 @@ abstract partial class Assert(
         type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
         ParameterlessConstructor(type) is not null &&
         type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
-#if CSHARPREPL
+
     /// <summary>Gets the types from an assembly even if type loads occur.</summary>
     /// <param name="assembly">The assembly to get the types from.</param>
     /// <returns>
@@ -301,7 +301,6 @@ abstract partial class Assert(
             return ex.Types.Filter();
         }
     }
-#endif
 
     /// <summary>Gets the parameterless constructor, ignoring possible exceptions thrown.</summary>
     /// <param name="type">The type to get the parameterless exception from.</param>
