@@ -12470,6 +12470,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
+// ReSharper disable once RedundantNameQualifier
 
 
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158

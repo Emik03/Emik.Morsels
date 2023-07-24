@@ -2,6 +2,10 @@
 
 // ReSharper disable CheckNamespace InvocationIsSkipped
 namespace System;
+
+// ReSharper disable once RedundantNameQualifier
+using Debug = Diagnostics.Debug;
+
 #pragma warning disable 8500, MA0051, SA1405
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
