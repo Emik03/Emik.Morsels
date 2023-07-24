@@ -23,9 +23,11 @@ try
 
     Iterate(asm);
 }
-catch (Exception ex)
+catch (Exception? ex)
 {
-    Error("dotnet-script threw", ex);
+    do
+        Error("dotnet-script threw", ex);
+    while ((ex = ex?.InnerException) is not null);
 }
 
 static void Error(string message, Exception? ex = null) => Log("ERROR", message, ex);
