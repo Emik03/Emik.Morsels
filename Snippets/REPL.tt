@@ -222,10 +222,15 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static SecurityPermissionFlag;" => "using static System.Security.Permissions.SecurityPermissionFlag;",
         _ => x};
 
-    const string Path = "/home/emik/RiderProjects/Emik.Morsels/Compile/Source/References/Emik/";
+    if (Path.Combine(Environment.CurrentDirectory, "Compile/Source/References/Emik") is var dir &&
+        !Directory.Exists(dir))
+    {
+        Console.WriteLine("ERROR: Working directory must be in the root of Emik.Morsels!");
+        return "";
+    }
 
     var lines = Directory
-        .GetFiles(Path, "*.cs", SearchOption.AllDirectories)
+        .GetFiles(dir, "*.cs", SearchOption.AllDirectories)
         .Select(File.ReadAllText)
         .Select(x => x.Replace("namespace Emik.Morsels;", "").Replace("Emik.Morsels.", "").Replace("Whitespaces.", ""))
         .Select(
