@@ -6,7 +6,6 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Each
 {
-#if !NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -86,7 +85,6 @@ static partial class Each
 
         return upper;
     }
-#endif
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -354,14 +352,120 @@ static partial class Each
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
+    /// <returns>An enumeration from a range's start to end.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> For<T>(this T upper)
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return isNegative ? upper - i : i;
+    }
+
+    /// <summary>Gets an enumeration of a number.</summary>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="num">The index to count up or down to.</param>
+    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
+    [Pure]
+    public static IEnumerator<T> GetEnumerator<T>(this T num)
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T> =>
+        num.For().GetEnumerator();
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return external;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<T, TResult>(
+        [NonNegativeValue] this T upper,
+        [InstantHandle] Func<TResult> func
+    )
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return func();
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<T, TResult>(
+        [NonNegativeValue] this T upper,
+        [InstantHandle] Converter<T, TResult> func
+    )
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return func(isNegative ? upper - i : i);
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action();
 
         return upper;
@@ -378,9 +482,9 @@ static partial class Each
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action(i);
 
         return upper;
@@ -403,9 +507,9 @@ static partial class Each
         TExternal external,
         [InstantHandle] Action<TExternal> action
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action(external);
 
         return upper;
@@ -428,9 +532,9 @@ static partial class Each
         TExternal external,
         [InstantHandle] Action<T, TExternal> action
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action(i, external);
 
         return upper;

@@ -7,7 +7,6 @@ namespace Emik.Morsels;
 // ReSharper disable LoopCanBePartlyConvertedToQuery
 static partial class EachWithControlFlow
 {
-#if !NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -91,7 +90,6 @@ static partial class EachWithControlFlow
 
         return upper;
     }
-#endif
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -307,9 +305,9 @@ static partial class EachWithControlFlow
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func() is ControlFlow.Break)
                 break;
 
@@ -327,9 +325,9 @@ static partial class EachWithControlFlow
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func(i) is ControlFlow.Break)
                 break;
 
@@ -353,9 +351,9 @@ static partial class EachWithControlFlow
         TExternal external,
         [InstantHandle] Func<TExternal, ControlFlow> func
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func(external) is ControlFlow.Break)
                 break;
 
@@ -379,9 +377,9 @@ static partial class EachWithControlFlow
         TExternal external,
         [InstantHandle] Func<T, TExternal, ControlFlow> func
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func(i, external) is ControlFlow.Break)
                 break;
 

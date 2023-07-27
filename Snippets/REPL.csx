@@ -4560,7 +4560,6 @@ public
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 
-#if !NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -4640,7 +4639,6 @@ public
 
         return upper;
     }
-#endif
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -4908,14 +4906,120 @@ public
     /// </summary>
     /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
+    /// <returns>An enumeration from a range's start to end.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> For<T>(this T upper)
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return isNegative ? upper - i : i;
+    }
+
+    /// <summary>Gets an enumeration of a number.</summary>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="num">The index to count up or down to.</param>
+    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
+    [Pure]
+    public static IEnumerator<T> GetEnumerator<T>(this T num)
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T> =>
+        num.For().GetEnumerator();
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return external;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<T, TResult>(
+        [NonNegativeValue] this T upper,
+        [InstantHandle] Func<TResult> func
+    )
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return func();
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<T, TResult>(
+        [NonNegativeValue] this T upper,
+        [InstantHandle] Converter<T, TResult> func
+    )
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return func(isNegative ? upper - i : i);
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action();
 
         return upper;
@@ -4932,9 +5036,9 @@ public
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action(i);
 
         return upper;
@@ -4957,9 +5061,9 @@ public
         TExternal external,
         [InstantHandle] Action<TExternal> action
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action(external);
 
         return upper;
@@ -4982,9 +5086,9 @@ public
         TExternal external,
         [InstantHandle] Action<T, TExternal> action
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             action(i, external);
 
         return upper;
@@ -6124,7 +6228,6 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
 // ReSharper disable LoopCanBePartlyConvertedToQuery
 
-#if !NET7_0_OR_GREATER
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -6208,7 +6311,6 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
         return upper;
     }
-#endif
 #if !NET20 && !NET30
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
@@ -6424,9 +6526,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func() is ControlFlow.Break)
                 break;
 
@@ -6444,9 +6546,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
     [NonNegativeValue]
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func(i) is ControlFlow.Break)
                 break;
 
@@ -6470,9 +6572,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         TExternal external,
         [InstantHandle] Func<TExternal, ControlFlow> func
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func(external) is ControlFlow.Break)
                 break;
 
@@ -6496,9 +6598,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         TExternal external,
         [InstantHandle] Func<T, TExternal, ControlFlow> func
     )
-        where T : IComparisonOperators<T, T, bool>, INumberBase<T>
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (var i = T.Zero; i < upper; i++)
+        for (T? i = default; i < upper; i++)
             if (func(i, external) is ControlFlow.Break)
                 break;
 
@@ -6688,7 +6790,7 @@ public enum ControlFlow : byte
 #pragma warning disable MA0048
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> BreakableFor<T>(
         this IMemoryOwner<T> iterable,
@@ -6699,7 +6801,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> BreakableFor<T>(
         this Memory<T> iterable,
@@ -6711,7 +6813,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> BreakableFor<T>(
         this Span<T> iterable,
@@ -6722,7 +6824,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> BreakableFor<T>(
         this ReadOnlyMemory<T> iterable,
@@ -6734,7 +6836,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> BreakableFor<T>(
         this ReadOnlySpan<T> iterable,
@@ -6748,7 +6850,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> BreakableFor<T>(
         this IMemoryOwner<T> iterable,
@@ -6759,7 +6861,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> BreakableFor<T>(
         this Memory<T> iterable,
@@ -6771,7 +6873,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> BreakableFor<T>(
         this Span<T> iterable,
@@ -6782,7 +6884,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> BreakableFor<T>(
         this ReadOnlyMemory<T> iterable,
@@ -6794,7 +6896,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> BreakableFor<T>(
         this ReadOnlySpan<T> iterable,
