@@ -14222,7 +14222,9 @@ abstract partial class Assert
         /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
         [Pure]
         public string this[string assertion, string xFactory, object? xValue] =>
-            xValue.Stringify() is var x ? this[assertion, xFactory, x, xFactory, x] : throw Unreachable;
+            xFactory.Collapse() is var factory && xValue.Stringify() is var value
+                ? this[assertion, factory, value, factory, value]
+                : throw Unreachable;
 
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
