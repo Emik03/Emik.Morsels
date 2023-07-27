@@ -3,6 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+// ReSharper disable once RedundantNameQualifier
+using Attribute = System.Attribute;
+
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {
@@ -46,7 +49,7 @@ abstract partial class Assert
         /// <param name="yFactory">The value to replace <see cref="YFactory"/> with.</param>
         /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
         [Pure]
-        public string this[string assertion, string xFactory, string xValue, string? yFactory, string? yValue] =>
+        public string this[string assertion, string xFactory, string xValue, string yFactory, string yValue] =>
             new StringBuilder(Template)
                .Replace(Assertion, assertion)
                .Replace(XFactory, xFactory)
