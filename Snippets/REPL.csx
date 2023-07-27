@@ -13689,7 +13689,7 @@ abstract partial class Assert(
         string? message = null,
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
-        : this(Update(that, that, ref message, f => f?[thatEx.Collapse()]), message, thatEx) { }
+        : this(Update(that, that, ref message, f => f?[thatEx]), message, thatEx) { }
 
     /// <summary>Gets the amount of available assertions.</summary>
     [Pure]
@@ -13719,7 +13719,7 @@ abstract partial class Assert(
 
     /// <summary>Gets the message of the assertion if it failed, or null.</summary>
     [Pure]
-    public string? Message { get; } = that ? null : message ?? $"Expected {thatEx.Collapse()} to be true.";
+    public string? Message { get; } = that ? null : message ?? FormatAttribute.Default[thatEx];
 
     /// <summary>Gets the name of the assertion.</summary>
     [Pure]
@@ -14207,18 +14207,22 @@ abstract partial class Assert
         /// <summary>The value that is substituted for second parameter.</summary>
         public const string YValue = "#y";
 
+        /// <summary>Gets the default formatter.</summary>
+        [Pure]
+        public static FormatAttribute Default { get; } = new($"Expected {Assertion} to be true.");
+
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameter.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         [Pure]
-        public string this[string assertion] => Template.Replace(Assertion, assertion);
+        public string this[string assertion] => Template.Replace(Assertion, assertion.Collapse());
 
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
         /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
         [Pure]
-        public string this[string assertion, string xFactory, string xValue] =>
-            this[assertion, xFactory, xValue, xFactory, xValue];
+        public string this[string assertion, string xFactory, object? xValue] =>
+            xValue.Stringify() is var x ? this[assertion, xFactory, x, xFactory, x] : throw Unreachable;
 
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
@@ -14227,13 +14231,13 @@ abstract partial class Assert
         /// <param name="yFactory">The value to replace <see cref="YFactory"/> with.</param>
         /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
         [Pure]
-        public string this[string assertion, string xFactory, string xValue, string yFactory, string yValue] =>
+        public string this[string assertion, string xFactory, object? xValue, string yFactory, object? yValue] =>
             new StringBuilder(Template)
-               .Replace(Assertion, assertion)
-               .Replace(XFactory, xFactory)
-               .Replace(XValue, xValue)
-               .Replace(YFactory, yFactory)
-               .Replace(YValue, yValue)
+               .Replace(Assertion, assertion.Collapse())
+               .Replace(XFactory, xFactory.Collapse())
+               .Replace(XValue, xValue.Stringify())
+               .Replace(YFactory, yFactory.Collapse())
+               .Replace(YValue, yValue.Stringify())
                .ToString();
 
         /// <summary>Gets the template, before any substitution occurs.</summary>
@@ -14349,11 +14353,7 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(it))] string itEx = "",
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
-        : base(
-            Update(that, () => that(it), ref message, f => f?[thatEx.Collapse(), itEx.Collapse(), it.Stringify()]),
-            message,
-            thatEx
-        ) { }
+        : base(Update(that, () => that(it), ref message, f => f?[thatEx, itEx, it]), message, thatEx) { }
 
     /// <summary>Initializes a new instance of the <see cref="Assert{T}"/> class.</summary>
     /// <param name="x">The first context value.</param>
@@ -14372,16 +14372,7 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(y))] string yEx = "",
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
-        : base(
-            Update(
-                that,
-                () => that(x, y),
-                ref message,
-                f => f?[thatEx.Collapse(), xEx.Collapse(), x.Stringify(), yEx.Collapse(), y.Stringify()]
-            ),
-            message,
-            thatEx
-        ) { }
+        : base(Update(that, () => that(x, y), ref message, f => f?[thatEx, xEx, x, yEx, y]), message, thatEx) { }
 
     /// <inheritdoc cref="Assert{T}(T, Predicate{T}, string, string, string)"/>
     protected Assert(
