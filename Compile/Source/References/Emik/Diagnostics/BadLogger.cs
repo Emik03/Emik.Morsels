@@ -3,6 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+// ReSharper disable once RedundantUsingDirective
 using static Peeks;
 using static Span;
 
@@ -42,7 +43,7 @@ sealed partial class BadLogger : IDisposable
     {
         _interval = interval ?? DefaultInterval;
         (_stream = File.OpenWrite(path)).SetLength(0);
-        _stream.Write(s_clear);
+        _stream.Write(s_clear, 0, s_clear.Length);
         OnWrite += Log;
         "..".Debug();
         _stopwatch.Start();
@@ -63,12 +64,13 @@ sealed partial class BadLogger : IDisposable
     /// <param name="entry">The entry to log.</param>
     public void Log(string entry)
     {
-        const int MaxBytesInUtf16 = 3;
         var log = $"[{DateTime.Now:HH:mm:ss.fff}]: {entry}\n";
 #if NETCOREAPP3_0_OR_GREATER
+        const int MaxBytesInUtf16 = 3;
         Allocate(log.Length * MaxBytesInUtf16, (this, log), Write());
 #else
-        _stream.Write(Encoding.UTF8.GetBytes(log));
+        var bytes = Encoding.UTF8.GetBytes(log);
+        _stream.Write(bytes, 0, bytes.Length);
 #endif
         TryFlush();
     }
@@ -120,7 +122,7 @@ sealed partial class BadLogger : IDisposable
             throw;
         }
     }
-
+#if NETCOREAPP3_0_OR_GREATER
     static SpanAction<byte, (BadLogger, string)> Write() =>
         static (span, tuple) =>
         {
@@ -128,4 +130,5 @@ sealed partial class BadLogger : IDisposable
             Utf8.FromUtf16(log, span, out _, out var wrote);
             that._stream.Write(span[..wrote]);
         };
+#endif
 }
