@@ -17,7 +17,7 @@ abstract partial class Assert(
 )
 {
 #if !CSHARPREPL
-    static readonly IList<Type> s_assertions = TypesFrom(typeof(Assert).Assembly).Where(IsAssertable).ToListLazily();
+    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToListLazily();
 #endif
 
     /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
@@ -50,7 +50,7 @@ abstract partial class Assert(
         AppDomain
            .CurrentDomain
            .GetAssemblies()
-           .SelectMany(TypesFrom)
+           .SelectMany(ManyQueries.TryGetTypes)
            .Where(IsAssertable)
 #else
         s_assertions
@@ -283,24 +283,6 @@ abstract partial class Assert(
         type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
         ParameterlessConstructor(type) is not null &&
         type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
-
-    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
-    /// <param name="assembly">The assembly to get the types from.</param>
-    /// <returns>
-    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    static IEnumerable<Type> TypesFrom(Assembly assembly)
-    {
-        try
-        {
-            return assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            return ex.Types.Filter();
-        }
-    }
 
     /// <summary>Gets the parameterless constructor, ignoring possible exceptions thrown.</summary>
     /// <param name="type">The type to get the parameterless exception from.</param>

@@ -6,6 +6,24 @@ namespace Emik.Morsels;
 /// <summary>Methods that creates enumerations from individual items.</summary>
 static partial class ManyQueries
 {
+    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
+    /// <param name="assembly">The assembly to get the types from.</param>
+    /// <returns>
+    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static IEnumerable<Type> TryGetTypes(this Assembly? assembly)
+    {
+        try
+        {
+            return assembly?.GetTypes() ?? Enumerable.Empty<Type>();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Filter();
+        }
+    }
+
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>

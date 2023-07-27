@@ -23,6 +23,11 @@ static partial class Peeks
         (Action<string>)Console.WriteLine;
 #endif
 
+    /// <summary>Gets all of the types currently loaded.</summary>
+    [Pure]
+    public static IEnumerable<Type> AllTypes =>
+        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+
 #pragma warning disable CS1574
     /// <summary>
     /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.

@@ -343,6 +343,24 @@ using Attribute = System.Attribute;
 #pragma warning disable CS1574, CS1580
 /// <summary>Methods that creates enumerations from individual items.</summary>
 
+    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
+    /// <param name="assembly">The assembly to get the types from.</param>
+    /// <returns>
+    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static IEnumerable<Type> TryGetTypes(this Assembly? assembly)
+    {
+        try
+        {
+            return assembly?.GetTypes() ?? Enumerable.Empty<Type>();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Filter();
+        }
+    }
+
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
@@ -4027,6 +4045,11 @@ public
         (Action<string>)Console.WriteLine;
 #endif
 
+    /// <summary>Gets all of the types currently loaded.</summary>
+    [Pure]
+    public static IEnumerable<Type> AllTypes =>
+        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+
 #pragma warning disable CS1574
     /// <summary>
     /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
@@ -6790,7 +6813,7 @@ public enum ControlFlow : byte
 #pragma warning disable MA0048
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> BreakableFor<T>(
         this IMemoryOwner<T> iterable,
@@ -6801,7 +6824,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> BreakableFor<T>(
         this Memory<T> iterable,
@@ -6813,7 +6836,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> BreakableFor<T>(
         this Span<T> iterable,
@@ -6824,7 +6847,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> BreakableFor<T>(
         this ReadOnlyMemory<T> iterable,
@@ -6836,7 +6859,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> BreakableFor<T>(
         this ReadOnlySpan<T> iterable,
@@ -6850,7 +6873,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> BreakableFor<T>(
         this IMemoryOwner<T> iterable,
@@ -6861,7 +6884,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> BreakableFor<T>(
         this Memory<T> iterable,
@@ -6873,7 +6896,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> BreakableFor<T>(
         this Span<T> iterable,
@@ -6884,7 +6907,7 @@ public enum ControlFlow : byte
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> BreakableFor<T>(
         this ReadOnlyMemory<T> iterable,
@@ -6896,7 +6919,7 @@ public enum ControlFlow : byte
     }
 #endif
 
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(System.Collections.Generic.IEnumerable{T},System.Func{T,int,ControlFlow})"/>
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> BreakableFor<T>(
         this ReadOnlySpan<T> iterable,
@@ -13779,7 +13802,7 @@ abstract partial class Assert(
 )
 {
 #if !CSHARPREPL
-    static readonly IList<Type> s_assertions = TypesFrom(typeof(Assert).Assembly).Where(IsAssertable).ToListLazily();
+    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToListLazily();
 #endif
 
     /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
@@ -13812,7 +13835,7 @@ abstract partial class Assert(
         AppDomain
            .CurrentDomain
            .GetAssemblies()
-           .SelectMany(TypesFrom)
+           .SelectMany(ManyQueries.TryGetTypes)
            .Where(IsAssertable)
 #else
         s_assertions
@@ -14045,24 +14068,6 @@ abstract partial class Assert(
         type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
         ParameterlessConstructor(type) is not null &&
         type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
-
-    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
-    /// <param name="assembly">The assembly to get the types from.</param>
-    /// <returns>
-    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    static IEnumerable<Type> TypesFrom(Assembly assembly)
-    {
-        try
-        {
-            return assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            return ex.Types.Filter();
-        }
-    }
 
     /// <summary>Gets the parameterless constructor, ignoring possible exceptions thrown.</summary>
     /// <param name="type">The type to get the parameterless exception from.</param>
@@ -14704,6 +14709,18 @@ abstract partial class Assert<T> : Assert
     public static T[] Params(params T[] items) => Params<T>(items);
 }
 
+/// <summary>Methods that creates enumerations from individual items.</summary>
+static partial class ManyQueries
+{
+    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
+    /// <param name="assembly">The assembly to get the types from.</param>
+    /// <returns>
+    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
+}
+
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
 sealed partial class InlineAttribute : Attribute
@@ -14716,6 +14733,7 @@ sealed partial class InlineAttribute : Attribute
     public bool Remove { get; }
 }
 
+/// <summary>Provides stringification methods.</summary>
 static class Stringifier
 {
     /// <summary>
