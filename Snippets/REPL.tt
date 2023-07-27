@@ -206,6 +206,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
     {
         "using static Two;" => "",
         "using static Span;" => "",
+        "using static Peeks;" => "",
         "using static SpanQueries;" => "",
         "using Range = System.Range;" => "",
         "using static OperatorCaching;" => "",
