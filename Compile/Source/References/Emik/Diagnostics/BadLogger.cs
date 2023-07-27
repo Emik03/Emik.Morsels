@@ -4,6 +4,7 @@
 namespace Emik.Morsels;
 
 using static Peeks;
+using static Span;
 
 /// <summary>An extremely bad logger.</summary>
 sealed partial class BadLogger : IDisposable
@@ -19,16 +20,27 @@ sealed partial class BadLogger : IDisposable
     /// 00000000: 1b5b 481b 5b32 4a1b 5b33 4a.[H.[2J.[3J
     /// </code></remarks>
     [Pure]
-    public ReadOnlySpan<byte> Clear => s_clear;
+    public static ReadOnlySpan<byte> Clear => s_clear;
 #endif
+
+    /// <summary>Gets the default interval when one is left unspecified.</summary>
+    [Pure]
+    public static TimeSpan DefaultInterval { get; } = TimeSpan.FromMilliseconds(100);
+
     readonly Stopwatch _stopwatch = new();
 
     readonly FileStream _stream;
 
+    readonly TimeSpan _interval;
+
+    TimeSpan _last;
+
     /// <summary>Initializes a new instance of the <see cref="BadLogger"/> class.</summary>
     /// <param name="path">The path to the file to write.</param>
-    public BadLogger(string path = "/tmp/morsels.log")
+    /// <param name="interval">The rate of flushing the stream.</param>
+    public BadLogger(string path = "/tmp/morsels.log", TimeSpan? interval = null)
     {
+        _interval = interval ?? DefaultInterval;
         (_stream = File.OpenWrite(path)).SetLength(0);
         _stream.Write(s_clear);
         OnWrite += Log;
@@ -43,7 +55,43 @@ sealed partial class BadLogger : IDisposable
         "(◕_◕)🎉".Debug();
         _stopwatch.ElapsedMilliseconds.ToString("0ms").Debug();
         OnWrite -= Log;
+        _stream.Flush();
         _stream.Close();
+    }
+
+    /// <summary>Logs the message.</summary>
+    /// <param name="entry">The entry to log.</param>
+    public void Log(string entry)
+    {
+        const int MaxBytesInUtf16 = 3;
+        var log = $"[{DateTime.Now:HH:mm:ss.fff}]: {entry}\n";
+#if NETCOREAPP3_0_OR_GREATER
+        Allocate(
+            log.Length * MaxBytesInUtf16,
+            (this, log),
+            static (span, tuple) =>
+            {
+                var (that, log) = tuple;
+                Utf8.FromUtf16(log, span, out _, out var wrote);
+                that._stream.Write(span[..wrote]);
+            }
+        );
+#else
+        _stream.Write(Encoding.UTF8.GetBytes(log));
+#endif
+        TryFlush();
+    }
+
+    /// <summary>Attempts to flush if enough time has elapsed.</summary>
+    /// <returns>Whether it flushed.</returns>
+    public bool TryFlush()
+    {
+        if (_stopwatch.Elapsed is var elapsed && elapsed - _last <= _interval)
+            return false;
+
+        _last = elapsed;
+        _stream.Flush();
+        return true;
     }
 
     /// <summary>Produces the side effect specified by the passed in <see cref="Action"/>.</summary>
@@ -80,11 +128,5 @@ sealed partial class BadLogger : IDisposable
             $"{ex}".Debug();
             throw;
         }
-    }
-
-    void Log(string entry)
-    {
-        _stream.Write(Encoding.UTF8.GetBytes($"[{DateTime.Now:HH:mm:ss.fff}]: {entry}\n"));
-        _stream.Flush(true);
     }
 }
