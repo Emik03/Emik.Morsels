@@ -1,0 +1,122 @@
+<Patterns xmlns="urn:schemas-jetbrains-com:member-reordering-patterns">
+    <TypePattern DisplayName="Non-reorderable types">
+        <TypePattern.Match>
+            <Or>
+                <And>
+                    <Kind Is="Interface"/>
+                    <Or>
+                        <HasAttribute Name="System.Runtime.InteropServices.InterfaceTypeAttribute"/>
+                        <HasAttribute Name="System.Runtime.InteropServices.ComImport"/>
+                    </Or>
+                </And>
+                <Kind Is="Struct"/>
+                <HasAttribute Name="JetBrains.Annotations.NoReorderAttribute"/>
+                <HasAttribute Name="JetBrains.Annotations.NoReorder"/>
+            </Or>
+        </TypePattern.Match>
+    </TypePattern>
+    <TypePattern DisplayName="Default Pattern">
+        <Entry DisplayName="Types">
+            <Entry.Match>
+                <Kind Is="Type"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <Access/>
+                <Static/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Constants">
+            <Entry.Match>
+                <Kind Is="Constant"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <ImplementsInterface Immediate="true"/>
+                <Access/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Fields">
+            <Entry.Match>
+                <Kind Is="Field"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <ImplementsInterface Immediate="true"/>
+                <Access/>
+                <Static/>
+                <Readonly/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Constructors">
+            <Entry.Match>
+                <Kind Is="Constructor"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <Access/>
+                <Static/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Indexers">
+            <Entry.Match>
+                <Kind Is="Indexer"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <ImplementsInterface Immediate="true"/>
+                <Access/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Properties">
+            <Entry.Match>
+                <Kind Is="Property"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <ImplementsInterface Immediate="true"/>
+                <Access/>
+                <Static/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Operators">
+            <Entry.Match>
+                <Kind Is="Operator"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <ImplementsInterface Immediate="true"/>
+                <Access/>
+                <Static/>
+                <Name/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="Methods">
+            <Entry.Match>
+                <Kind Is="Method"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <ImplementsInterface Immediate="true"/>
+                <Access/>
+                <Static/>
+            </Entry.SortBy>
+        </Entry>
+        <Entry DisplayName="All other members">
+            <Entry.Match>
+                <Not>
+                    <Or>
+                        <Kind Is="Destructor"/>
+                        <Kind Is="Type"/>
+                    </Or>
+                </Not>
+            </Entry.Match>
+        </Entry>
+        <Entry DisplayName="Destructors">
+            <Entry.Match>
+                <Kind Is="Destructor"/>
+            </Entry.Match>
+        </Entry>
+        <Entry DisplayName="Nested Types">
+            <Entry.Match>
+                <Kind Is="Type"/>
+            </Entry.Match>
+            <Entry.SortBy>
+                <Access/>
+                <Static/>
+            </Entry.SortBy>
+        </Entry>
+    </TypePattern>
+</Patterns>
