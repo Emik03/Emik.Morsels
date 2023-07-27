@@ -29,17 +29,21 @@ abstract partial class Assert
         /// <summary>The value that is substituted for second parameter.</summary>
         public const string YValue = "#y";
 
+        /// <summary>Gets the default formatter.</summary>
+        [Pure]
+        public static FormatAttribute Default { get; } = new($"Expected {Assertion} to be true.");
+
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameter.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         [Pure]
-        public string this[string assertion] => Template.Replace(Assertion, assertion);
+        public string this[string assertion] => Template.Replace(Assertion, assertion.Collapse());
 
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
         /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
         [Pure]
-        public string this[string assertion, string xFactory, string xValue] =>
+        public string this[string assertion, string xFactory, object? xValue] =>
             this[assertion, xFactory, xValue, xFactory, xValue];
 
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
@@ -49,13 +53,13 @@ abstract partial class Assert
         /// <param name="yFactory">The value to replace <see cref="YFactory"/> with.</param>
         /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
         [Pure]
-        public string this[string assertion, string xFactory, string xValue, string yFactory, string yValue] =>
+        public string this[string assertion, string xFactory, object? xValue, string yFactory, object? yValue] =>
             new StringBuilder(Template)
-               .Replace(Assertion, assertion)
-               .Replace(XFactory, xFactory)
-               .Replace(XValue, xValue)
-               .Replace(YFactory, yFactory)
-               .Replace(YValue, yValue)
+               .Replace(Assertion, assertion.Collapse())
+               .Replace(XFactory, xFactory.Collapse())
+               .Replace(XValue, xValue.Stringify())
+               .Replace(YFactory, yFactory.Collapse())
+               .Replace(YValue, yValue.Stringify())
                .ToString();
 
         /// <summary>Gets the template, before any substitution occurs.</summary>

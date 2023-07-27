@@ -19,11 +19,7 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(it))] string itEx = "",
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
-        : base(
-            Update(that, () => that(it), ref message, f => f?[thatEx.Collapse(), itEx.Collapse(), it.Stringify()]),
-            message,
-            thatEx
-        ) { }
+        : base(Update(that, () => that(it), ref message, f => f?[thatEx, itEx, it]), message, thatEx) { }
 
     /// <summary>Initializes a new instance of the <see cref="Assert{T}"/> class.</summary>
     /// <param name="x">The first context value.</param>
@@ -42,16 +38,7 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(y))] string yEx = "",
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
-        : base(
-            Update(
-                that,
-                () => that(x, y),
-                ref message,
-                f => f?[thatEx.Collapse(), xEx.Collapse(), x.Stringify(), yEx.Collapse(), y.Stringify()]
-            ),
-            message,
-            thatEx
-        ) { }
+        : base(Update(that, () => that(x, y), ref message, f => f?[thatEx, xEx, x, yEx, y]), message, thatEx) { }
 
     /// <inheritdoc cref="Emik.Morsels.Assert{T}(T, Predicate{T}, string, string, string)"/>
     protected Assert(

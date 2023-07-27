@@ -29,7 +29,7 @@ abstract partial class Assert(
         string? message = null,
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
-        : this(Update(that, that, ref message, f => f?[thatEx.Collapse()]), message, thatEx) { }
+        : this(Update(that, that, ref message, f => f?[thatEx]), message, thatEx) { }
 
     /// <summary>Gets the amount of available assertions.</summary>
     [Pure]
@@ -59,7 +59,7 @@ abstract partial class Assert(
 
     /// <summary>Gets the message of the assertion if it failed, or null.</summary>
     [Pure]
-    public string? Message { get; } = that ? null : message ?? $"Expected {thatEx.Collapse()} to be true.";
+    public string? Message { get; } = that ? null : message ?? FormatAttribute.Default[thatEx];
 
     /// <summary>Gets the name of the assertion.</summary>
     [Pure]
