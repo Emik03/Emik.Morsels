@@ -66,16 +66,7 @@ sealed partial class BadLogger : IDisposable
         const int MaxBytesInUtf16 = 3;
         var log = $"[{DateTime.Now:HH:mm:ss.fff}]: {entry}\n";
 #if NETCOREAPP3_0_OR_GREATER
-        Allocate(
-            log.Length * MaxBytesInUtf16,
-            (this, log),
-            static (span, tuple) =>
-            {
-                var (that, log) = tuple;
-                Utf8.FromUtf16(log, span, out _, out var wrote);
-                that._stream.Write(span[..wrote]);
-            }
-        );
+        Allocate(log.Length * MaxBytesInUtf16, (this, log), Write());
 #else
         _stream.Write(Encoding.UTF8.GetBytes(log));
 #endif
@@ -129,4 +120,12 @@ sealed partial class BadLogger : IDisposable
             throw;
         }
     }
+
+    static SpanAction<byte, (BadLogger, string)> Write() =>
+        static (span, tuple) =>
+        {
+            var (that, log) = tuple;
+            Utf8.FromUtf16(log, span, out _, out var wrote);
+            that._stream.Write(span[..wrote]);
+        };
 }
