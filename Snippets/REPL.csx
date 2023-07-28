@@ -540,6 +540,18 @@ using Attribute = System.Attribute;
 
 /// <summary>Extension methods for nullable types and booleans.</summary>
 
+#if NET7_0_OR_GREATER
+    /// <summary>Converts <see cref="bool"/> to <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type of number to convert to.</typeparam>
+    /// <param name="that">Whether or not to return the one value, or zero.</param>
+    /// <returns>
+    /// The value <see cref="INumberBase{T}.One"/> or <see cref="INumberBase{T}.Zero"/>,
+    /// based on the value of <paramref name="that"/>.
+    /// </returns>
+    public static T As<T>(this bool that)
+        where T : INumberBase<T> =>
+        that ? T.One : T.Zero;
+#endif
 #if NETCOREAPP || ROSLYN
     /// <summary>Determines whether two sequences are equal.</summary>
     /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
