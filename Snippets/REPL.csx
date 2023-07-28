@@ -10681,9 +10681,26 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
+    /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source) => source;
+    public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? new(source) : default;
+
+    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? new(source) : default;
+
+    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? new(source) : default;
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <param name="value">The item to use.</param>
@@ -10700,11 +10717,15 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    int IReadOnlyCollection<T>.Count => 1;
+    int IReadOnlyCollection<T>.Count => HasValue ? 1 : 0;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    int ICollection<T>.Count => 1;
+    int ICollection<T>.Count => HasValue ? 1 : 0;
+
+    /// <summary>Gets a value indicating whether this is a default value.</summary>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure] // ReSharper disable once ReplaceAutoPropertyWithComputedProperty
+    public bool HasValue { get; } = true;
 
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext, Pure]
@@ -10724,9 +10745,21 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public static implicit operator Once<T>([ProvidesContext] Enumerator value) => value.Current;
+
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public static implicit operator Once<T>([ProvidesContext] T value) => new(value);
+
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public static implicit operator Enumerator([ProvidesContext] Once<T> value) => value.Current;
 
     /// <summary>Implicitly calls <see cref="Current"/>.</summary>
     /// <param name="value">The value to call <see cref="Current"/>.</param>
@@ -10777,20 +10810,22 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other) =>
-        other.ToCollectionLazily() is { Count: > 1 } c && Overlaps(c);
+        HasValue
+            ? other.Any()
+            : other.ToCollectionLazily() is { Count: > 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(Read), Pure]
-    public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other) => !other.Any();
+    public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other) => HasValue && !other.Any();
 
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
     [CollectionAccess(Read), Pure]
-    public bool IsSubsetOf([InstantHandle] IEnumerable<T> other) => Overlaps(other);
+    public bool IsSubsetOf([InstantHandle] IEnumerable<T> other) => !HasValue || Overlaps(other);
 
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) =>
-        other.ToCollectionLazily() is { Count: <= 1 } c && Overlaps(c);
+        !HasValue || other.ToCollectionLazily() is { Count: <= 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
@@ -10798,7 +10833,7 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
 
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(Read), Pure]
-    public bool SetEquals([InstantHandle] IEnumerable<T> other) => other.SequenceEqual(this);
+    public bool SetEquals([InstantHandle] IEnumerable<T> other) => HasValue ? !other.Any() : other.SequenceEqual(this);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -10817,7 +10852,7 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), Pure]
-    public Enumerator GetEnumerator() => new(value);
+    public Enumerator GetEnumerator() => HasValue ? new(value) : default;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
@@ -10834,7 +10869,10 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
     {
         static readonly object s_fallback = new();
 
-        bool _hasMoved;
+        // ReSharper disable once ConvertToConstant.Local
+        readonly bool _hasValue = true;
+
+        bool _canMove = true;
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
@@ -10862,11 +10900,11 @@ public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyLi
 
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public bool MoveNext() => !_hasMoved && (_hasMoved = true);
+        public bool MoveNext() => _canMove && !(_canMove = false);
 
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public void Reset() => _hasMoved = false;
+        public void Reset() => _canMove = _hasValue;
     }
 }
 #endif
