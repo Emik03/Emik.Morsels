@@ -2,14 +2,13 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Numerics;
-
 #if !NETCOREAPP3_0_OR_GREATER
 /// <summary>
 /// Utility methods for intrinsic bit-twiddling operations.
 /// The methods use hardware intrinsics when available on the underlying platform,
 /// otherwise they use optimized software fallbacks.
 /// </summary>
-public static class BitOperations
+static partial class BitOperations
 {
     /// <summary>Round the given integral value up to a power of 2.</summary>
     /// <param name="value">The value.</param>
