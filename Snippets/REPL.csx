@@ -4092,8 +4092,7 @@ public sealed partial class BadLogger : IDisposable
         "(◕_◕)🎉".Debug();
         _stopwatch.ElapsedMilliseconds.ToString("0ms").Debug();
         OnWrite -= Log;
-        _stream.Flush();
-        _stream.Close();
+        _stream.Dispose();
     }
 
     /// <summary>Logs the message.</summary>
@@ -6890,7 +6889,7 @@ public enum ControlFlow : byte
     public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
 
-    /// <inheritdoc cref="GetAllMembers(INamespaceOrTypeSymbol)" />
+    /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
 
@@ -6899,8 +6898,11 @@ public enum ControlFlow : byte
     /// <returns>
     /// The <see cref="IEnumerable{T}"/> of all types defined in the parameter <paramref name="symbol"/>.
     /// </returns>
-    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceOrTypeSymbol symbol) =>
-        symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
+        symbol
+           .GetMembers()
+           .SelectMany(x => (x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>())
+           .Prepend(symbol);
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
@@ -6945,9 +6947,6 @@ public enum ControlFlow : byte
             if (!context.IsExcludedFromAnalysis() && context.Node is TSyntaxNode node)
                 action(context, node);
         };
-
-    static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(ISymbol symbol) =>
-        symbol is INamespaceOrTypeSymbol x ? x.GetAllMembers() : Enumerable.Empty<INamespaceOrTypeSymbol>();
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
