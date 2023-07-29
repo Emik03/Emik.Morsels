@@ -100,6 +100,10 @@ static partial class IncludedSyntaxNodeRegistrant
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
 
     /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this Compilation symbol) =>
+        symbol.GlobalNamespace.GetAllMembers();
+
+    /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
 
@@ -109,10 +113,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// The <see cref="IEnumerable{T}"/> of all types defined in the parameter <paramref name="symbol"/>.
     /// </returns>
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
-        symbol
-           .GetMembers()
-           .SelectMany(x => (x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>())
-           .Prepend(symbol);
+        symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
@@ -157,5 +158,8 @@ static partial class IncludedSyntaxNodeRegistrant
             if (!context.IsExcludedFromAnalysis() && context.Node is TSyntaxNode node)
                 action(context, node);
         };
+
+    static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
+        ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
 }
 #endif
