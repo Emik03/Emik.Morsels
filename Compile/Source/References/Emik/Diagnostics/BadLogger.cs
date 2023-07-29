@@ -56,8 +56,7 @@ sealed partial class BadLogger : IDisposable
         "(◕_◕)🎉".Debug();
         _stopwatch.ElapsedMilliseconds.ToString("0ms").Debug();
         OnWrite -= Log;
-        _stream.Flush();
-        _stream.Close();
+        _stream.Dispose();
     }
 
     /// <summary>Logs the message.</summary>
