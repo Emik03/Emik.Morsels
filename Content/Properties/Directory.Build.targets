@@ -228,6 +228,14 @@
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
         <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
+    <!-- Certain constructs are disallowed in the .NET Framework version of Celeste: https://github.com/EverestAPI/Resources/wiki/Recommended-Practices-and-Pitfalls#readonly-struct -->
+    <PropertyGroup Condition="$(TargetFramework) == 'net452' and $(IsCeleste) == 'true'">
+        <DefineConstants>$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
+    </PropertyGroup>
+    <!-- Use separate copy of Celeste if one is specified. -->
+    <PropertyGroup Condition="$(TargetFramework) == 'net452' and $(Celeste452) != ''">
+        <Celeste>$(Celeste452)</Celeste>
+    </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <None Remove="Documentation/**"/>

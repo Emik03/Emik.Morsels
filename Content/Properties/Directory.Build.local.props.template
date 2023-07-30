@@ -3,7 +3,7 @@
     <PropertyGroup>
         <!--
         Specifies the location of the game Keep Talking and Nobody Explodes, for use in referencing the internal code.
-        Required only for .NET Framework 3.5, which is reserved for that game.
+        Required only for projects that use $(IsKtane).
 
         These are the default locations of the game depending on your operating system.
 
@@ -17,7 +17,7 @@
         <Ktane></Ktane>
         <!--
         Specifies the location of the Unity application, *not* the Unity Hub, for use in referencing its libraries.
-        Required only for .NET Framework 3.5, which is reserved for Unity.
+        Required only for projects that use $(IsKtane).
 
         These are the default locations of the application depending on your operating system.
 
@@ -30,7 +30,7 @@
         <Unity></Unity>
         <!--
         Specifies the location of the game Celeste, for use in referencing the internal code.
-        Required only for .NET Framework 4.5.2, which is reserved for that game.
+        Required only for projects that use $(IsCeleste).
 
         These are the default locations of the game depending on your operating system.
 
@@ -43,13 +43,18 @@
         -->
         <Celeste></Celeste>
         <!--
+        Specifies the .NET Framework version of Celeste, allowing for multi-targeting. See above for default paths.
+        Optional, only for projects that use $(IsCeleste).
+        -->
+        <Celeste452></Celeste452>
+        <!--
         Specifies the location of the Emik.Morsels repository, for use in referencing itself, such as static files.
-        Required.
+        Required or optional, depending on environment. The path can be inferred if Directory.Build.props can be found.
         -->
         <Morsels></Morsels>
         <!--
         Specifies the location in which to copy the binaries post-build. For use in continuous testing with Unity.
-        Optional, for .NET Framework 3.5 only, which is reserved for Unity.
+        Optional, only for projects that use $(IsKtane).
         -->
         <Destination></Destination>
     </PropertyGroup>
