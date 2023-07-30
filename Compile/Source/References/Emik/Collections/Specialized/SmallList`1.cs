@@ -478,7 +478,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="tail">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out (T? First, T? Second, T? Third) head, out IList<T> tail) =>
-        Deconstruct(out head.First, out head.Second, out head.Third, out tail);
+        (head, tail) = ((_first, _second, _third), Rest ?? s_empty);
 
     /// <summary>Deconstructs this instance with the 3 first elements.</summary>
     /// <param name="first">The first element.</param>
@@ -494,11 +494,8 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <param name="third">The third element.</param>
     /// <param name="rest">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest)
-    {
-        Deconstruct(out first, out second, out third);
-        rest = Rest ?? s_empty;
-    }
+    public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest) =>
+        (first, second, third, rest) = (_first, _second, _third, Rest ?? s_empty);
 #if !UNMANAGED_SPAN
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
