@@ -2851,7 +2851,7 @@ public
 #pragma warning restore CS8619
 
 // SPDX-License-Identifier: MPL-2.0
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
@@ -3797,7 +3797,6 @@ public
         /// <summary>Gets the length.</summary>
         public int Length => length;
     }
-#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
