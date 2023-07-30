@@ -245,17 +245,14 @@ static partial class Stringifier
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if !WAWA
     /// <summary>Gets the full type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
     /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
     [Pure]
-    public static string UnfoldedFullName(
-#if !WAWA
-        this
-#endif
-            Type? type
-    ) =>
+    public static string UnfoldedFullName(this Type? type) =>
         type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
+#endif
 
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
