@@ -9342,13 +9342,15 @@ readonly
         =>
             Ref(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline1<T>(in bool _ = false)
+    public static unsafe Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
+#pragma warning disable 9091
         Unsafe.SkipInit(out T x);
         return Ref(ref Unsafe.AsRef(x));
+#pragma warning restore 9091
     }
 #endif
 #endif
