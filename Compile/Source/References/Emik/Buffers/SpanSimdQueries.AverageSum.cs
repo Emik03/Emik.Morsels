@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
@@ -408,3 +408,4 @@ static partial class SpanSimdQueries
     }
 #endif
 }
+#endif

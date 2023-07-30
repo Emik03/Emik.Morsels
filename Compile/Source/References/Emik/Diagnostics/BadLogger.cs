@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -133,3 +133,4 @@ sealed partial class BadLogger : IDisposable
         };
 #endif
 }
+#endif

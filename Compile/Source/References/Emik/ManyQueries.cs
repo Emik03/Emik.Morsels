@@ -6,6 +6,7 @@ namespace Emik.Morsels;
 /// <summary>Methods that creates enumerations from individual items.</summary>
 static partial class ManyQueries
 {
+#if !NETSTANDARD || NETSTANDARD1_5_OR_GREATER
     /// <summary>Gets the types from an assembly even if type loads occur.</summary>
     /// <param name="assembly">The assembly to get the types from.</param>
     /// <returns>
@@ -23,6 +24,7 @@ static partial class ManyQueries
             return ex.Types.Filter();
         }
     }
+#endif
 
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 namespace Emik.Morsels;
@@ -192,3 +192,4 @@ static partial class OperatorCaching
                 : (x, y) => func(x, (T?)(object?)y);
     }
 }
+#endif

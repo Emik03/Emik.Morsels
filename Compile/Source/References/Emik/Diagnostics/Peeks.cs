@@ -22,12 +22,12 @@ static partial class Peeks
 #endif
         (Action<string>)Console.WriteLine;
 #endif
-
+#if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all of the types currently loaded.</summary>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
-
+#endif
 #pragma warning disable CS1574
     /// <summary>
     /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
@@ -54,7 +54,7 @@ static partial class Peeks
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
     public static void Write(this string message) => (OnWrite ?? throw new InvalidOperationException(message))(message);
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to stringify.</param>
@@ -211,7 +211,7 @@ static partial class Peeks
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -293,6 +293,7 @@ static partial class Peeks
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
+#endif
 
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and action parameter.</typeparam>

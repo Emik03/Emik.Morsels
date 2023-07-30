@@ -10,7 +10,13 @@ using static Span;
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
 [StructLayout(LayoutKind.Sequential)]
-partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, IReadOnlyList<T>
+partial struct SmallList<T> :
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+    IConvertible,
+#endif
+    IEquatable<SmallList<T>>,
+    IList<T>,
+    IReadOnlyList<T>
 {
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
     /// <remarks><para>
@@ -740,7 +746,11 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
             1 => $"[{_first}]",
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
             _ => $"[{_first}, {_second}, {_third}, {Rest!.Conjoin()}]",
+#else
+            _ => $"[{_first}, {_second}, {_third}, {Rest}]",
+#endif
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
@@ -898,6 +908,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
 #endif
 #endif
 #pragma warning restore CS8500
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
@@ -966,6 +977,7 @@ partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ulong IConvertible.ToUInt64(IFormatProvider? provider) => unchecked((ulong)Count);
+#endif
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

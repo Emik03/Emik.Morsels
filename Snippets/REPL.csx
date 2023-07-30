@@ -343,6 +343,7 @@ using Attribute = System.Attribute;
 #pragma warning disable CS1574, CS1580
 /// <summary>Methods that creates enumerations from individual items.</summary>
 
+#if !NETSTANDARD || NETSTANDARD1_5_OR_GREATER
     /// <summary>Gets the types from an assembly even if type loads occur.</summary>
     /// <param name="assembly">The assembly to get the types from.</param>
     /// <returns>
@@ -360,6 +361,7 @@ using Attribute = System.Attribute;
             return ex.Types.Filter();
         }
     }
+#endif
 
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
@@ -1070,7 +1072,7 @@ using Attribute = System.Attribute;
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 
@@ -1261,6 +1263,7 @@ using Attribute = System.Attribute;
                 ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
                 : (x, y) => func(x, (T?)(object?)y);
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -1712,7 +1715,7 @@ using Attribute = System.Attribute;
     public const string Combined = $"{Unicode}{Related}";
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
 #if WAWA
@@ -2538,6 +2541,7 @@ public
         }
     }
 #endif
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
@@ -2847,7 +2851,7 @@ public
 #pragma warning restore CS8619
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
@@ -3793,6 +3797,7 @@ public
         /// <summary>Gets the length.</summary>
         public int Length => length;
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -4033,7 +4038,7 @@ public
     public static UnreachableException Unreachable { get; } = new();
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -4167,6 +4172,7 @@ public sealed partial class BadLogger : IDisposable
         };
 #endif
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable CS8632, RCS1196
@@ -4190,12 +4196,12 @@ public sealed partial class BadLogger : IDisposable
 #endif
         (Action<string>)Console.WriteLine;
 #endif
-
+#if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all of the types currently loaded.</summary>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
-
+#endif
 #pragma warning disable CS1574
     /// <summary>
     /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
@@ -4222,7 +4228,7 @@ public sealed partial class BadLogger : IDisposable
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
     public static void Write(this string message) => (OnWrite ?? throw new InvalidOperationException(message))(message);
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to stringify.</param>
@@ -4379,7 +4385,7 @@ public sealed partial class BadLogger : IDisposable
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -4461,6 +4467,7 @@ public sealed partial class BadLogger : IDisposable
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
+#endif
 
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and action parameter.</typeparam>
@@ -4549,7 +4556,7 @@ public sealed partial class BadLogger : IDisposable
     public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
         var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
-        falsy.ForEach(x => x.Dispose());
+        falsy.For(x => x.Dispose());
 
         try
         {
@@ -4561,12 +4568,12 @@ public sealed partial class BadLogger : IDisposable
                 yield return new(truthy.Select(x => x.Current));
 #endif
                 (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
-                falsy.ForEach(x => x.Dispose());
+                falsy.For(x => x.Dispose());
             }
         }
         finally
         {
-            truthy.ForEach(x => x.Dispose());
+            truthy.For(x => x.Dispose());
         }
     }
 #endif
@@ -7321,8 +7328,7 @@ public enum ControlFlow : byte
 
 
 
-
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>
 /// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
 /// </summary>
@@ -7561,8 +7567,8 @@ public partial struct Two<T>(T first, T second) :
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK
-// ReSharper disable once CheckNamespace EmptyNamespace
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+// ReSharper disable once CheckNamespace EmptyNamespace RedundantUsingDirective
 
 
 
@@ -9114,7 +9120,7 @@ readonly
     /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
     /// </para></remarks>
     public const int StackallocSize = 1 << 10;
-
+#if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <param name="length">The length of the buffer.</param>
@@ -9294,6 +9300,7 @@ readonly
 
         Marshal.FreeHGlobal(array);
     }
+#endif
 
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
@@ -9343,7 +9350,7 @@ readonly
         return Ref(ref Unsafe.AsRef(x));
     }
 #endif
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Inline1{T}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if DEBUG || CSHARPREPL
@@ -9547,6 +9554,7 @@ readonly
     }
 #endif
 #endif
+#endif
 #pragma warning restore RCS1242
 
     /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
@@ -9563,7 +9571,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
-
+#if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TResult">The return type.</typeparam>
@@ -9759,9 +9767,10 @@ readonly
 
         return result;
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
@@ -10166,6 +10175,7 @@ readonly
 
         return result;
     }
+#endif
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -11591,7 +11601,13 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
 [StructLayout(LayoutKind.Sequential)]
-public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, IList<T>, IReadOnlyList<T>
+public partial struct SmallList<T> :
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+    IConvertible,
+#endif
+    IEquatable<SmallList<T>>,
+    IList<T>,
+    IReadOnlyList<T>
 {
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
     /// <remarks><para>
@@ -12321,7 +12337,11 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
             1 => $"[{_first}]",
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
             _ => $"[{_first}, {_second}, {_third}, {Rest!.Conjoin()}]",
+#else
+            _ => $"[{_first}, {_second}, {_third}, {Rest}]",
+#endif
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
@@ -12479,6 +12499,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
 #endif
 #endif
 #pragma warning restore CS8500
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
@@ -12547,6 +12568,7 @@ public partial struct SmallList<T> : IConvertible, IEquatable<SmallList<T>>, ILi
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ulong IConvertible.ToUInt64(IFormatProvider? provider) => unchecked((ulong)Count);
+#endif
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -12794,7 +12816,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 
 
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
@@ -13330,7 +13352,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
@@ -13656,7 +13678,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
@@ -13844,7 +13866,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -13981,9 +14003,10 @@ abstract partial class Assert
         }
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14287,9 +14310,10 @@ abstract partial class Assert(
         }
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14372,9 +14396,10 @@ abstract partial class Assert<T>
             : base(x, that, message, thatEx) { }
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14453,9 +14478,10 @@ abstract partial class Assert
 #endif
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14482,9 +14508,10 @@ abstract partial class Assert
             : base(that, message, thatEx) { }
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14553,9 +14580,10 @@ abstract partial class Assert
         public string Template => template;
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14639,9 +14667,10 @@ abstract partial class Assert<T>
             : base(() => that(x()), message, thatEx) { }
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 
@@ -14844,9 +14873,10 @@ abstract partial class Assert<T>
     )
         : this(x, y(), that, message, xEx, yEx, thatEx) { }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable 1591, MA0048, SA1600 // Temporary because I don't feel like documenting yet.
@@ -14907,6 +14937,7 @@ abstract partial class Assert<T> : Assert
     [Pure]
     public static T[] Params(params T[] items) => Params<T>(items);
 }
+#endif
 
 /// <summary>Methods that creates enumerations from individual items.</summary>
 static partial class ManyQueries

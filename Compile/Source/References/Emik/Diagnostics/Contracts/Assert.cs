@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -303,3 +303,4 @@ abstract partial class Assert(
         }
     }
 }
+#endif

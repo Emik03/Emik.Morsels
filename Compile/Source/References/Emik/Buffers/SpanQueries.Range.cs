@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK
-// ReSharper disable once CheckNamespace EmptyNamespace
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+// ReSharper disable once CheckNamespace EmptyNamespace RedundantUsingDirective
 namespace Emik.Morsels;
 
 using static OperatorCaching;

@@ -7,7 +7,7 @@ namespace Emik.Morsels;
 using FieldInfo = System.Reflection.FieldInfo;
 
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>

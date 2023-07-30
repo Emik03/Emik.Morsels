@@ -1,6 +1,15 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable GlobalUsingsAnalyzer, IDE0060, SA1600, RCS1163
+#if NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0
+namespace System.Runtime.CompilerServices;
+
+static class Unsafe
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static void SkipInit<T>(out T value) => value = default!;
+}
+#else
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 using static InlineIL.IL;
 using static InlineIL.IL.Emit;
 
@@ -415,4 +424,5 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 }
+#endif
 #endif

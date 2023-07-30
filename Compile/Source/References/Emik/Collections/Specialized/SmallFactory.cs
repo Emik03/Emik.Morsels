@@ -16,7 +16,7 @@ static partial class SmallFactory
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>

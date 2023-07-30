@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;

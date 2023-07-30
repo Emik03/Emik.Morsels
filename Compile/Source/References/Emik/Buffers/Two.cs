@@ -4,8 +4,7 @@
 namespace Emik.Morsels;
 
 using FieldInfo = System.Reflection.FieldInfo;
-
-#if !NETFRAMEWORK
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>
 /// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
 /// </summary>

@@ -164,9 +164,15 @@
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))">
         <PackageReference Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
     </ItemGroup>
+    <!-- Explicit references -->
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))">
+        <Reference Include="System" Private="false"/>
+        <Reference Include="System.Xml" Private="false"/>
+        <Reference Include="System.Data" Private="false"/>
+        <Reference Include="System.Drawing" Private="false"/>
+    </ItemGroup>
     <!-- Nullable Reference Types and Record support for Low .NET Framework versions. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
-        <Reference Include="System" Private="false"/>
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
         <Reference Include="mscorlib" Aliases="global, ms" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
     </ItemGroup>

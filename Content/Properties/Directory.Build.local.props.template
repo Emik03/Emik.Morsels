@@ -46,7 +46,7 @@
         Specifies the .NET Framework version of Celeste, allowing for multi-targeting. See above for default paths.
         Optional, only for projects that use $(IsCeleste).
         -->
-        <Celeste452></Celeste452>
+        <CelesteLegacy></CelesteLegacy>
         <!--
         Specifies the location of the Emik.Morsels repository, for use in referencing itself, such as static files.
         Required or optional, depending on environment. The path can be inferred if Directory.Build.props can be found.

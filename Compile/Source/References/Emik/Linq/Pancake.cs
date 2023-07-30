@@ -48,7 +48,7 @@ static partial class Pancake
     public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
         var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
-        falsy.ForEach(x => x.Dispose());
+        falsy.For(x => x.Dispose());
 
         try
         {
@@ -60,12 +60,12 @@ static partial class Pancake
                 yield return new(truthy.Select(x => x.Current));
 #endif
                 (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
-                falsy.ForEach(x => x.Dispose());
+                falsy.For(x => x.Dispose());
             }
         }
         finally
         {
-            truthy.ForEach(x => x.Dispose());
+            truthy.For(x => x.Dispose());
         }
     }
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable 1591, MA0048, SA1600 // Temporary because I don't feel like documenting yet.
@@ -60,3 +60,4 @@ abstract partial class Assert<T> : Assert
     [Pure]
     public static T[] Params(params T[] items) => Params<T>(items);
 }
+#endif
