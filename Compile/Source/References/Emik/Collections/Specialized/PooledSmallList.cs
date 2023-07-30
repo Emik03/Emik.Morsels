@@ -46,10 +46,12 @@ ref partial struct PooledSmallList<T>(Span<T> view)
     }
 
     /// <summary>Gets a value indicating whether the elements are inlined.</summary>
+    [CLSCompliant(false)]
     public readonly bool IsInlined
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)), Pure]
+         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)),
+         Pure]
         get => _rental is null;
     }
 
@@ -73,7 +75,7 @@ ref partial struct PooledSmallList<T>(Span<T> view)
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _view[.._length];
     }
 
-    /// <inheritdoc cref="IList{T}.Clear"/>
+    /// <inheritdoc cref="ICollection{T}.Clear"/>
     public PooledSmallList<T> Reset
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -162,8 +164,8 @@ ref partial struct PooledSmallList<T>(Span<T> view)
         where TRef : struct =>
         AsSpan(ref reference);
 
-    /// <summary>Reinterprets the reference as the continuous buffer of <see cref="T"/>.</summary>
-    /// <typeparam name="TRef">The generic representing the continuous buffer of <see cref="T"/>.</typeparam>
+    /// <summary>Reinterprets the reference as the continuous buffer of <typeparamref name="T"/>.</summary>
+    /// <typeparam name="TRef">The generic representing the continuous buffer of <typeparamref name="T"/>.</typeparam>
     /// <param name="reference">The reference.</param>
     /// <returns>The span.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -178,7 +180,7 @@ ref partial struct PooledSmallList<T>(Span<T> view)
         if (!IsInlined)
             ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
     }
-
+#pragma warning disable 809
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
@@ -186,13 +188,13 @@ ref partial struct PooledSmallList<T>(Span<T> view)
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-
+#pragma warning restore 809
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
         typeof(T) == typeof(char) ? View.ToString() : View.ToArray().Conjoin();
 
-    /// <inheritdoc cref="IList{T}.Add"/>
+    /// <inheritdoc cref="ICollection{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Append(T item)
     {
@@ -241,7 +243,7 @@ ref partial struct PooledSmallList<T>(Span<T> view)
         return this;
     }
 
-    /// <inheritdoc cref="IList{T}.Add"/>
+    /// <inheritdoc cref="ICollection{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Prepend(T item)
     {
@@ -487,8 +489,8 @@ ref partial struct PooledSmallList<T>(Span<T> view)
         return ArrayPool<T>.Shared.Rent(length);
     }
 
-    /// <summary>Validator of generics the continuous buffer of <see cref="T"/>.</summary>
-    /// <typeparam name="TRef">The generic representing the continuous buffer of <see cref="T"/>.</typeparam>
+    /// <summary>Validator of generics representing the continuous buffer over the element type.</summary>
+    /// <typeparam name="TRef">The generic representing the continuous buffer over the element type.</typeparam>
     public static class Validate<TRef>
         where TRef : struct
     {
@@ -500,7 +502,7 @@ ref partial struct PooledSmallList<T>(Span<T> view)
         public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
 
-        /// <summary>Reinterprets the reference as the continuous buffer of <see cref="T"/>.</summary>
+        /// <summary>Reinterprets the reference as the continuous buffer over the element type.</summary>
         /// <param name="reference">The reference.</param>
         /// <returns>The span.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

@@ -149,6 +149,7 @@ static partial class OperatorCaching
         /// Gets a value indicating whether the functions can be used.
         /// <see cref="MinValue"/> can be used regardless of its output.
         /// </summary>
+        [CLSCompliant(false)]
         public static bool IsSupported
         {
             [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),

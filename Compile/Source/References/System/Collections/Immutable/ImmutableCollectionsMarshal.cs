@@ -11,7 +11,7 @@ namespace System.Runtime.InteropServices;
 public static class ImmutableCollectionsMarshal
 {
     /// <summary>
-    /// Gets an <see cref="ImmutableArray{T}"/> value wrapping the input <typeparamref name="T"/> array.
+    /// Gets an <see cref="ImmutableArray"/> value wrapping the input <typeparamref name="T"/> array.
     /// </summary>
     /// <typeparam name="T">The type of elements in the input array.</typeparam>
     /// <param name="array">The input array to wrap in the returned <see cref="ImmutableArray{T}"/> value.</param>

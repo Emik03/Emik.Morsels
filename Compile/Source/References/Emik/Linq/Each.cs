@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable 8603, 8604
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Each
 {

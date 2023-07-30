@@ -1219,6 +1219,7 @@ using Attribute = System.Attribute;
         /// Gets a value indicating whether the functions can be used.
         /// <see cref="MinValue"/> can be used regardless of its output.
         /// </summary>
+        [CLSCompliant(false)]
         public static bool IsSupported
         {
             [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
@@ -4723,7 +4724,7 @@ public sealed partial class BadLogger : IDisposable
 
 // ReSharper disable once CheckNamespace
 
-
+#pragma warning disable 8603, 8604
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 
     /// <summary>
@@ -6390,7 +6391,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
 // ReSharper disable once CheckNamespace
 
-
+#pragma warning disable 8604
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
 // ReSharper disable LoopCanBePartlyConvertedToQuery
 
@@ -7607,7 +7608,9 @@ public readonly struct Two<T>(T first, T second) :
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
         /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-        /// <returns>The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <see cref="length"/> - 1.</returns>
+        /// <returns>
+        /// The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <paramref name="length"/> - 1.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<T> UpTo(int length)
         {
@@ -12824,10 +12827,12 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
     }
 
     /// <summary>Gets a value indicating whether the elements are inlined.</summary>
+    [CLSCompliant(false)]
     public readonly bool IsInlined
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)), Pure]
+         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)),
+         Pure]
         get => _rental is null;
     }
 
@@ -12851,7 +12856,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _view[.._length];
     }
 
-    /// <inheritdoc cref="IList{T}.Clear"/>
+    /// <inheritdoc cref="ICollection{T}.Clear"/>
     public PooledSmallList<T> Reset
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -12940,8 +12945,8 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         where TRef : struct =>
         AsSpan(ref reference);
 
-    /// <summary>Reinterprets the reference as the continuous buffer of <see cref="T"/>.</summary>
-    /// <typeparam name="TRef">The generic representing the continuous buffer of <see cref="T"/>.</typeparam>
+    /// <summary>Reinterprets the reference as the continuous buffer of <typeparamref name="T"/>.</summary>
+    /// <typeparam name="TRef">The generic representing the continuous buffer of <typeparamref name="T"/>.</typeparam>
     /// <param name="reference">The reference.</param>
     /// <returns>The span.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -12956,7 +12961,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         if (!IsInlined)
             ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
     }
-
+#pragma warning disable 809
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
@@ -12964,13 +12969,13 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-
+#pragma warning restore 809
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
         typeof(T) == typeof(char) ? View.ToString() : View.ToArray().Conjoin();
 
-    /// <inheritdoc cref="IList{T}.Add"/>
+    /// <inheritdoc cref="ICollection{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Append(T item)
     {
@@ -13019,7 +13024,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         return this;
     }
 
-    /// <inheritdoc cref="IList{T}.Add"/>
+    /// <inheritdoc cref="ICollection{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Prepend(T item)
     {
@@ -13265,8 +13270,8 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         return ArrayPool<T>.Shared.Rent(length);
     }
 
-    /// <summary>Validator of generics the continuous buffer of <see cref="T"/>.</summary>
-    /// <typeparam name="TRef">The generic representing the continuous buffer of <see cref="T"/>.</typeparam>
+    /// <summary>Validator of generics representing the continuous buffer over the element type.</summary>
+    /// <typeparam name="TRef">The generic representing the continuous buffer over the element type.</typeparam>
     public static class Validate<TRef>
         where TRef : struct
     {
@@ -13278,7 +13283,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
 
-        /// <summary>Reinterprets the reference as the continuous buffer of <see cref="T"/>.</summary>
+        /// <summary>Reinterprets the reference as the continuous buffer over the element type.</summary>
         /// <param name="reference">The reference.</param>
         /// <returns>The span.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -13836,6 +13841,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
 
 /// <summary>Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.</summary>
+#pragma warning disable MA0048
 
     /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>
@@ -13854,7 +13860,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <summary>Eagerly executes all asserts of the passed in enumerable.</summary>
     /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to execute.</param>
     /// <returns>The collected result of all assertions.</returns>
-    [Pure]
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
         enumerable.Select(x => x.Run()).ToListLazily();
 
@@ -13910,7 +13916,7 @@ abstract partial class Assert
         [MemberNotNullWhen(true, nameof(Assertion)), Pure]
         public bool Succeeded => Instantiated && Assertion.Message is null;
 
-        /// <summary>Gets the message of the assertion</summary>
+        /// <summary>Gets the message of the assertion.</summary>
         [Pure]
         public string? Message => Instantiated ? Assertion.Message : null;
 

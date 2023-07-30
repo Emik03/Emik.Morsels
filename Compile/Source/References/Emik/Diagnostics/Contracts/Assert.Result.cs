@@ -4,7 +4,9 @@
 namespace Emik.Morsels;
 
 /// <summary>Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.</summary>
+#pragma warning disable MA0048
 static partial class AssertResultEnumerableOperations
+#pragma warning restore MA0048
 {
     /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>
@@ -23,7 +25,7 @@ static partial class AssertResultEnumerableOperations
     /// <summary>Eagerly executes all asserts of the passed in enumerable.</summary>
     /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to execute.</param>
     /// <returns>The collected result of all assertions.</returns>
-    [Pure]
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
         enumerable.Select(x => x.Run()).ToListLazily();
 }
@@ -80,7 +82,7 @@ abstract partial class Assert
         [MemberNotNullWhen(true, nameof(Assertion)), Pure]
         public bool Succeeded => Instantiated && Assertion.Message is null;
 
-        /// <summary>Gets the message of the assertion</summary>
+        /// <summary>Gets the message of the assertion.</summary>
         [Pure]
         public string? Message => Instantiated ? Assertion.Message : null;
 

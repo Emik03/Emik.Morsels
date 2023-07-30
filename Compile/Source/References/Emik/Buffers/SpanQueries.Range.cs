@@ -56,7 +56,9 @@ static partial class SpanQueries
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
         /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-        /// <returns>The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <see cref="length"/> - 1.</returns>
+        /// <returns>
+        /// The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <paramref name="length"/> - 1.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<T> UpTo(int length)
         {
