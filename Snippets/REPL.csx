@@ -1072,7 +1072,7 @@ using Attribute = System.Attribute;
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
 // ReSharper disable once CheckNamespace
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 
@@ -2851,7 +2851,7 @@ public
 #pragma warning restore CS8619
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD1_0
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
@@ -5748,7 +5748,7 @@ public sealed partial class BadLogger : IDisposable
     /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
     [Pure]
 #if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> list)
+    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> lists)
 #else
     public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> lists)
 #endif
@@ -5789,16 +5789,12 @@ public sealed partial class BadLogger : IDisposable
     /// <param name="lists">The input to generate combinations of.</param>
     /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
     [Pure]
-#if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> SmallCombinations<T>(this IList<IList<T>> list)
-#else
     public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
-#endif
     {
         // ReSharper disable NullableWarningSuppressionIsUsed
-        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        // ReSharper disable once LoopCanBePartlyConvertedToQuery ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
         foreach (var list in lists)
-            if (list.IsEmpty)
+            if (list is [])
                 yield break;
 
         int count = lists.Count, index = 0, pos = 0;
@@ -5832,11 +5828,7 @@ public sealed partial class BadLogger : IDisposable
     /// <param name="iterator">The input to generate combinations of.</param>
     /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
     [Pure]
-#if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(
-#else
     public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
-#endif
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
         iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
@@ -7229,7 +7221,7 @@ public enum ControlFlow : byte
             length <= 0 ? default :
             IsStack<T>(length) ? length.Stackalloc<T>() : new T[length];
 #endif
-#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
     /// <remarks><para>This method is aggressively inlined.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -7316,7 +7308,7 @@ public enum ControlFlow : byte
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
-#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
@@ -9124,7 +9116,7 @@ readonly
     /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
     /// </para></remarks>
     public const int StackallocSize = 1 << 10;
-#if !NETSTANDARD1_0
+
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <param name="length">The length of the buffer.</param>
@@ -9304,8 +9296,7 @@ readonly
 
         Marshal.FreeHGlobal(array);
     }
-#endif
-#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
+
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
@@ -9324,10 +9315,17 @@ readonly
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] // ReSharper disable once RedundantUnsafeContext
+    public static unsafe int InBytes<T>([NonNegativeValue] int length) =>
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+        length * Unsafe.SizeOf<T>();
+#else
+#pragma warning disable 8500
+        length * sizeof(T);
+#pragma warning restore 8500
+#endif
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
-
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Allocates an inlined span of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="Span{T}"/> will point to uninitialized memory.
@@ -9353,6 +9351,7 @@ readonly
         Unsafe.SkipInit(out T x);
         return Ref(ref Unsafe.AsRef(x));
     }
+#endif
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Inline1{T}"/>
@@ -9558,7 +9557,6 @@ readonly
     }
 #endif
 #endif
-#endif
 #pragma warning restore RCS1242
 
     /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
@@ -9567,7 +9565,8 @@ readonly
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> Ref<T>(ref T reference) => MemoryMarshal.CreateSpan(ref reference, 1);
-#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
+
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -9576,7 +9575,7 @@ readonly
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
 #endif
-#if !NETSTANDARD1_0
+#if true
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TResult">The return type.</typeparam>
