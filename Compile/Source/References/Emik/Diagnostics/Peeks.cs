@@ -146,7 +146,7 @@ static partial class Peeks
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     [return: NotNullIfNotNull(nameof(value))]
     public static T Debug<T, TAs>(
         this T value,
@@ -186,7 +186,7 @@ static partial class Peeks
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
         bool shouldPrettify = true,
@@ -211,7 +211,7 @@ static partial class Peeks
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
-
+#if !NETFRAMEWORK
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -238,8 +238,9 @@ static partial class Peeks
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
+#endif
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static SplitSpan<T> Debug<T>(
         this SplitSpan<T> value,
         bool shouldPrettify = true,
@@ -267,7 +268,7 @@ static partial class Peeks
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
         bool shouldPrettify = true,

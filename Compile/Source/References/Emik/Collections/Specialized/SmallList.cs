@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-
+#if !NETFRAMEWORK
 // ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
@@ -186,3 +186,4 @@ static partial class SmallList
     }
 #endif
 }
+#endif

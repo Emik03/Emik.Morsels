@@ -16,7 +16,7 @@ static partial class SmallFactory
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
-
+#if !NETFRAMEWORK
     /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
@@ -52,6 +52,7 @@ static partial class SmallFactory
     /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
+#endif
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
