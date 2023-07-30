@@ -28,7 +28,7 @@ static partial class Allocator
             length <= 0 ? default :
             IsStack<T>(length) ? length.Stackalloc<T>() : new T[length];
 #endif
-#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
     /// <remarks><para>This method is aggressively inlined.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -115,7 +115,7 @@ static partial class Allocator
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
-#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>

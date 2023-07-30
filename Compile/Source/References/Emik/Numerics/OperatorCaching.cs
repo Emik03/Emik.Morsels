@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
 // ReSharper disable once CheckNamespace
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 namespace Emik.Morsels;

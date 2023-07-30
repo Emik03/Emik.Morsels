@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD1_0
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
