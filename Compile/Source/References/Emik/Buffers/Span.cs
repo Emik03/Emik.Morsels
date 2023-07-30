@@ -264,7 +264,7 @@ static partial class Span
         Marshal.FreeHGlobal(array);
     }
 #endif
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
@@ -286,7 +286,7 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
-#if !NETFRAMEWORK
+
     /// <summary>Allocates an inlined span of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="Span{T}"/> will point to uninitialized memory.
@@ -526,7 +526,7 @@ static partial class Span
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> Ref<T>(ref T reference) => MemoryMarshal.CreateSpan(ref reference, 1);
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -534,6 +534,7 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+#endif
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>

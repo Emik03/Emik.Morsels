@@ -7229,7 +7229,7 @@ public enum ControlFlow : byte
             length <= 0 ? default :
             IsStack<T>(length) ? length.Stackalloc<T>() : new T[length];
 #endif
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
     /// <remarks><para>This method is aggressively inlined.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -7244,6 +7244,7 @@ public enum ControlFlow : byte
         var pointer = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<T>(pointer), length);
     }
+#endif
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Reinterprets the span as a series of managed types.</summary>
@@ -7293,6 +7294,7 @@ public enum ControlFlow : byte
         MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
 #endif
 
+#pragma warning disable 1574
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
@@ -7310,10 +7312,11 @@ public enum ControlFlow : byte
             MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
+#pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
@@ -7321,6 +7324,7 @@ public enum ControlFlow : byte
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static byte[] Raw<T>(T value) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -9301,7 +9305,7 @@ readonly
         Marshal.FreeHGlobal(array);
     }
 #endif
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
@@ -9323,7 +9327,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     public static int InBytes<T>([NonNegativeValue] int length) => length * Unsafe.SizeOf<T>();
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
-#if !NETFRAMEWORK
+
     /// <summary>Allocates an inlined span of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="Span{T}"/> will point to uninitialized memory.
@@ -9563,7 +9567,7 @@ readonly
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> Ref<T>(ref T reference) => MemoryMarshal.CreateSpan(ref reference, 1);
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -9571,6 +9575,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+#endif
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>

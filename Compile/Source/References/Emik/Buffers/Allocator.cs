@@ -28,7 +28,7 @@ static partial class Allocator
             length <= 0 ? default :
             IsStack<T>(length) ? length.Stackalloc<T>() : new T[length];
 #endif
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
     /// <remarks><para>This method is aggressively inlined.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -43,6 +43,7 @@ static partial class Allocator
         var pointer = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<T>(pointer), length);
     }
+#endif
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Reinterprets the span as a series of managed types.</summary>
@@ -92,6 +93,7 @@ static partial class Allocator
         MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
 #endif
 
+#pragma warning disable 1574
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
@@ -109,10 +111,11 @@ static partial class Allocator
             MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
+#pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
         MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
-
+#if !NET45_OR_GREATER && !NETSTANDARD1_0 || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
@@ -120,4 +123,5 @@ static partial class Allocator
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static byte[] Raw<T>(T value) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
+#endif
 }
