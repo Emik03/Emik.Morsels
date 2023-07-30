@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
-// ReSharper disable once RedundantNameQualifier
+// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
 using FieldInfo = System.Reflection.FieldInfo;
 
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158

@@ -586,7 +586,7 @@ static partial class Stringifier
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
                 !IsRecord<T>();
 
-        // ReSharper disable once ConstantNullCoalescingCondition
+        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.

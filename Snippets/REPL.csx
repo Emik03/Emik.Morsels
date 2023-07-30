@@ -2296,7 +2296,7 @@ public
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
                 !IsRecord<T>();
 
-        // ReSharper disable once ConstantNullCoalescingCondition
+        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
@@ -4044,7 +4044,9 @@ public
 /// <summary>An extremely bad logger.</summary>
 public sealed partial class BadLogger : IDisposable
 {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Clear"/>
+#endif
     static readonly byte[] s_clear = { 0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a };
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Gets the buffer that clears the console when printed. Only on certain Linux terminals though.</summary>
@@ -4378,7 +4380,7 @@ public sealed partial class BadLogger : IDisposable
         return value;
     }
 #if !NETFRAMEWORK
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
         bool shouldPrettify = true,
@@ -7420,8 +7422,13 @@ public enum ControlFlow : byte
 /// <typeparam name="T">The type of item to store.</typeparam>
 /// <param name="first">The first item.</param>
 /// <param name="second">The second item.</param>
+// ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
 [StructLayout(LayoutKind.Sequential)]
-readonly partial struct Two<T>(T first, T second) :
+#pragma warning disable MA0102
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+public partial struct Two<T>(T first, T second) :
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     ITuple,
 #endif
@@ -7554,7 +7561,7 @@ readonly partial struct Two<T>(T first, T second) :
 }
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETFRAMEWORK
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
@@ -7638,6 +7645,7 @@ readonly partial struct Two<T>(T first, T second) :
             }
         }
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -12785,7 +12793,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
-// ReSharper disable once RedundantNameQualifier
+// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
 
 
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
@@ -13319,7 +13327,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
 #pragma warning disable MA0048
 
 #if NETCOREAPP3_1_OR_GREATER
-    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
+    /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Contains<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
@@ -13347,7 +13355,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         return true;
     }
 
-    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
+    /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(this PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>

@@ -107,8 +107,13 @@ static partial class Two
 /// <typeparam name="T">The type of item to store.</typeparam>
 /// <param name="first">The first item.</param>
 /// <param name="second">The second item.</param>
+// ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
 [StructLayout(LayoutKind.Sequential)]
-readonly partial struct Two<T>(T first, T second) :
+#pragma warning disable MA0102
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+partial struct Two<T>(T first, T second) :
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     ITuple,
 #endif

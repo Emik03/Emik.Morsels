@@ -9,10 +9,12 @@ namespace System.Runtime.InteropServices;
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 using static System.Linq.Expressions.Expression;
 
+#pragma warning disable 1574 // Reference to System.Memory may not exist.
 /// <summary>
 /// Provides a collection of methods for interoperating with <see cref="Memory{T}"/>, <see cref="ReadOnlyMemory{T}"/>,
 /// <see cref="Span{T}"/>, and <see cref="ReadOnlySpan{T}"/>.
 /// </summary>
+#pragma warning restore 1574
 static partial class MemoryMarshal
 {
     /// <summary>
