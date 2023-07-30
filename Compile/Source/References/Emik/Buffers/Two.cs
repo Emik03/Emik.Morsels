@@ -108,7 +108,7 @@ static partial class Two
 /// <param name="first">The first item.</param>
 /// <param name="second">The second item.</param>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Two<T>(T first, T second) :
+readonly partial struct Two<T>(T first, T second) :
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     ITuple,
 #endif

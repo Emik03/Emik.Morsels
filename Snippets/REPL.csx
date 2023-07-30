@@ -4312,7 +4312,7 @@ public sealed partial class BadLogger : IDisposable
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     [return: NotNullIfNotNull(nameof(value))]
     public static T Debug<T, TAs>(
         this T value,
@@ -4352,7 +4352,7 @@ public sealed partial class BadLogger : IDisposable
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
         bool shouldPrettify = true,
@@ -4377,7 +4377,7 @@ public sealed partial class BadLogger : IDisposable
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
-
+#if !NETFRAMEWORK
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -4404,8 +4404,9 @@ public sealed partial class BadLogger : IDisposable
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
+#endif
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static SplitSpan<T> Debug<T>(
         this SplitSpan<T> value,
         bool shouldPrettify = true,
@@ -4433,7 +4434,7 @@ public sealed partial class BadLogger : IDisposable
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, System.Predicate{T}?, System.Action{string}?, string?, string?, int, string?)"/>
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
         bool shouldPrettify = true,
@@ -7420,7 +7421,7 @@ public enum ControlFlow : byte
 /// <param name="first">The first item.</param>
 /// <param name="second">The second item.</param>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Two<T>(T first, T second) :
+readonly partial struct Two<T>(T first, T second) :
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     ITuple,
 #endif
@@ -13324,7 +13325,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
-
+#if !NETFRAMEWORK
     /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
@@ -13360,6 +13361,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
     /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
+#endif
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -13649,7 +13651,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 }
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETFRAMEWORK
 // ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
@@ -13833,6 +13835,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         Unsafe.SkipInit(out TRef two);
         return PooledSmallList<T>.From(ref Unsafe.AsRef(two));
     }
+#endif
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
