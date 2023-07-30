@@ -1964,7 +1964,7 @@ public
 #endif
             Type? type
     ) =>
-        type is { Namespace: var name and not "" and not null } ? $"{name}.{type.UnfoldedName()}" : type.UnfoldedName();
+        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
 
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
