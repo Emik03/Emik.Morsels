@@ -250,11 +250,12 @@
     <!-- Celeste references. -->
     <ItemGroup Condition="$(IsCeleste) == 'true'">
         <Reference Include="FNA" HintPath="$(Celeste)/FNA.dll" Private="false"/>
-        <Reference Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
         <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
         <Reference Include="YamlDotNet" HintPath="$(Celeste)/YamlDotNet.dll" Private="false"/>
         <Reference Include="MonoMod.Utils" HintPath="$(Celeste)/MonoMod.Utils.dll" Private="false"/>
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
+        <Reference Condition="Exists('$(Celeste)/Celeste.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
+        <Reference Condition="Exists('$(Celeste)/Celeste.exe')" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="$(IsKtane) == 'true'">
