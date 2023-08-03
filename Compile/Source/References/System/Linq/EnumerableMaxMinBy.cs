@@ -45,7 +45,7 @@ static partial class EnumerableMaxMinBy
     /// No key extracted from <paramref name="source" /> implements the <see cref="IComparable"/>
     /// or <see cref="IComparable{TKey}"/> interface.
     /// </exception>
-#pragma warning disable MA0051
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     public static TSource? MinBy<TSource, TKey>(
         this IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
@@ -159,7 +159,7 @@ static partial class EnumerableMaxMinBy
     /// or <see cref="IComparable{TKey}"/> interface.
     /// </exception>
     /// <returns>The value with the maximum key in the sequence.</returns>
-#pragma warning disable MA0051
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     public static TSource? MaxBy<TSource, TKey>(
         this IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,

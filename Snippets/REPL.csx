@@ -10596,26 +10596,42 @@ readonly
 
         for (var i = 0; i < source.Length; i++)
         {
-            if (predicate(source[i]))
-            {
-                if (end > 0)
-                    source[i - end] = source[i];
-
+            if (!IsFail(ref source, predicate, i, end))
                 continue;
-            }
 
             var start = i;
 
-            do
-                if (++i >= source.Length)
-                    return end + i - start;
-            while (!predicate(source[i]));
+            if (FindNextPass(source, predicate, ref i))
+                return end + i - start;
 
             end += i - start;
             source[i - end] = source[i];
         }
 
         return end;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool IsFail<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
+    {
+        if (!predicate(source[i]))
+            return true;
+
+        if (end > 0)
+            source[i - end] = source[i];
+
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool FindNextPass<T>(in ReadOnlySpan<T> source, Predicate<T> predicate, ref int i)
+    {
+        do
+            if (++i >= source.Length)
+                return false;
+        while (!predicate(source[i]));
+
+        return true;
     }
 
 // SPDX-License-Identifier: MPL-2.0
