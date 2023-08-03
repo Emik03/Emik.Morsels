@@ -12,7 +12,10 @@ using FieldInfo = System.Reflection.FieldInfo;
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-ref partial struct PooledSmallList<T>(Span<T> view)
+#if !NO_REF_STRUCTS
+ref
+#endif
+    partial struct PooledSmallList<T>(Span<T> view)
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif

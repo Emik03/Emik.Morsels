@@ -7290,8 +7290,14 @@ public enum ControlFlow : byte
     public static ReadOnlySpan<T> Reinterpret<T>(this ReadOnlySpan<nuint> span) =>
         MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
 #endif
-
 #pragma warning disable 1574
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>)).ToArray();
+#endif
+
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
@@ -12860,7 +12866,10 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-public ref partial struct PooledSmallList<T>(Span<T> view)
+#if !NO_REF_STRUCTS
+public ref
+#endif
+    partial struct PooledSmallList<T>(Span<T> view)
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -13387,7 +13396,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
 #if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool Contains<T>(this PooledSmallList<T> span, T item)
+    public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
@@ -13401,7 +13410,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
     /// parameter <paramref name="span"/>, and substantially removed it from the collection.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this PooledSmallList<T> span, T item)
+    public static bool Remove<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>?
     {
         var i = span.IndexOf(item);
@@ -13415,7 +13424,7 @@ public ref partial struct PooledSmallList<T>(Span<T> view)
 
     /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOf<T>(this PooledSmallList<T> span, T item)
+    public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
 

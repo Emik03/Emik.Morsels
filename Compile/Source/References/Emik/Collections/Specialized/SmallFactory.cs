@@ -12,7 +12,7 @@ static partial class SmallFactory
 #if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool Contains<T>(this PooledSmallList<T> span, T item)
+    public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.Contains(item);
 #endif
@@ -26,7 +26,7 @@ static partial class SmallFactory
     /// parameter <paramref name="span"/>, and substantially removed it from the collection.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this PooledSmallList<T> span, T item)
+    public static bool Remove<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>?
     {
         var i = span.IndexOf(item);
@@ -40,7 +40,7 @@ static partial class SmallFactory
 
     /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOf<T>(this PooledSmallList<T> span, T item)
+    public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
 

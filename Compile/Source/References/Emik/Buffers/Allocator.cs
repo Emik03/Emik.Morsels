@@ -92,8 +92,14 @@ static partial class Allocator
     public static ReadOnlySpan<T> Reinterpret<T>(this ReadOnlySpan<nuint> span) =>
         MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
 #endif
-
 #pragma warning disable 1574
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>)).ToArray();
+#endif
+
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
