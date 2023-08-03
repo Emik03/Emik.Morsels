@@ -3,6 +3,7 @@
 // ReSharper disable CheckNamespace InvocationIsSkipped
 namespace System;
 
+// ReSharper disable CognitiveComplexity
 // ReSharper disable once RedundantNameQualifier
 using Debug = Diagnostics.Debug;
 

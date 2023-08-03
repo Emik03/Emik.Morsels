@@ -771,21 +771,7 @@ static partial class Stringifier
             return builder.Append(val);
 
         if (type.GetElementType() is { } underlying)
-        {
-            if (type.IsByRef)
-                builder.Append('r').Append('e').Append('f').Append(' ');
-
-            var underlyingName = UnfoldedName(underlying);
-            builder.Append(underlyingName);
-
-            if (type.IsArray)
-                builder.Append('[').Append(']');
-
-            if (type.IsPointer)
-                builder.Append('*');
-
-            return builder;
-        }
+            return UnfoldedElementName(type, builder, underlying);
 
         var name = type.Name;
 
@@ -799,6 +785,23 @@ static partial class Stringifier
         types.Skip(1).Select(Append).Enumerate();
 
         return builder.Append('>');
+    }
+
+    static StringBuilder UnfoldedElementName(Type type, StringBuilder builder, Type underlying)
+    {
+        if (type.IsByRef)
+            builder.Append('r').Append('e').Append('f').Append(' ');
+
+        var underlyingName = UnfoldedName(underlying);
+        builder.Append(underlyingName);
+
+        if (type.IsArray)
+            builder.Append('[').Append(']');
+
+        if (type.IsPointer)
+            builder.Append('*');
+
+        return builder;
     }
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER

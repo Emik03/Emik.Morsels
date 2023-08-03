@@ -74,7 +74,7 @@ abstract partial class Assert
 #if NET6_0_OR_GREATER
                 : $"{e.GetType().UnfoldedName()}: {e.Message}. {e.StackTrace?.ReplaceLineEndings(" ")}";
 #else
-                : $"{e.GetType().UnfoldedName()}: {e.Message}. {e.StackTrace?.Replace("\n", " ")}";
+                : $"{e.GetType().UnfoldedName()}: {e.Message}. {e.StackTrace?.Replace('\n', ' ')}";
 #endif
     }
 }

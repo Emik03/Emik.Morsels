@@ -73,14 +73,32 @@ static partial class Permuted
     [Pure]
     public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
     {
-        // ReSharper disable NullableWarningSuppressionIsUsed
-        // ReSharper disable once LoopCanBePartlyConvertedToQuery ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var list in lists)
             if (list is [])
-                yield break;
+                return Enumerable.Empty<SmallList<T>>();
 
+        return lists.CombinationsIterator();
+    }
+
+    /// <summary>Generates all combinations of the nested enumerable.</summary>
+    /// <typeparam name="T">The type of nested enumerable.</typeparam>
+    /// <param name="iterator">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
+    [Pure]
+    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+
+    static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
+    {
         int count = lists.Count, index = 0, pos = 0;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var indices = count.AsPooledSmallList<int>();
+#else
         var indices = count.AsUninitSmallList<int>();
+#endif
         var accumulator = count.AsUninitSmallList<T>();
 
         while (true)
@@ -104,15 +122,5 @@ static partial class Permuted
             } while (index >= lists[pos].Count);
         }
     }
-
-    /// <summary>Generates all combinations of the nested enumerable.</summary>
-    /// <typeparam name="T">The type of nested enumerable.</typeparam>
-    /// <param name="iterator">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
-    [Pure]
-    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
 }
 #endif
