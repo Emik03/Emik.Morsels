@@ -25,13 +25,15 @@ static partial class SmallList
 #endif
         Ref(ref Unsafe.AsRef(_));
 #else
-    public static PooledSmallList<T> New1<T>(in bool _ = false)
+    public static unsafe PooledSmallList<T> New1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
         Unsafe.SkipInit(out T one);
+#pragma warning disable 9091 // InlineAttribute makes this okay.
         return Ref(ref Unsafe.AsRef(one));
+#pragma warning restore 9091
     }
 #endif
 
@@ -175,14 +177,16 @@ static partial class SmallList
         where TRef : struct =>
         PooledSmallList<T>.From(ref Unsafe.AsRef(_));
 #else
-    public static PooledSmallList<T> From<T, TRef>(in bool _ = false)
+    public static unsafe PooledSmallList<T> From<T, TRef>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         where TRef : struct
     {
         Unsafe.SkipInit(out TRef two);
+#pragma warning disable 9091 // InlineAttribute makes this okay.
         return PooledSmallList<T>.From(ref Unsafe.AsRef(two));
+#pragma warning restore 9091
     }
 #endif
 }

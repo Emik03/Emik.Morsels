@@ -291,6 +291,7 @@ static partial class Span
         length * sizeof(T);
 #pragma warning restore 8500
 #endif
+#pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Allocates an inlined span of the specified size.</summary>
@@ -315,10 +316,8 @@ static partial class Span
         where T : unmanaged
 #endif
     {
-#pragma warning disable 9091
         Unsafe.SkipInit(out T x);
         return Ref(ref Unsafe.AsRef(x));
-#pragma warning restore 9091
     }
 #endif
 #endif
@@ -333,7 +332,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline2<T>(in bool _ = false)
+    public static unsafe Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -353,7 +352,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline4<T>(in bool _ = false)
+    public static unsafe Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -373,7 +372,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline8<T>(in bool _ = false)
+    public static unsafe Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -393,7 +392,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline16<T>(in bool _ = false)
+    public static unsafe Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -413,7 +412,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline32<T>(in bool _ = false)
+    public static unsafe Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -433,7 +432,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline64<T>(in bool _ = false)
+    public static unsafe Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -453,7 +452,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline128<T>(in bool _ = false)
+    public static unsafe Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -473,7 +472,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline256<T>(in bool _ = false)
+    public static unsafe Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -493,7 +492,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline512<T>(in bool _ = false)
+    public static unsafe Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -513,7 +512,7 @@ static partial class Span
         =>
             PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
 #else
-    public static Span<T> Inline1024<T>(in bool _ = false)
+    public static unsafe Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -544,7 +543,7 @@ static partial class Span
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
 #endif
-#if true
+
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TResult">The return type.</typeparam>
@@ -740,5 +739,4 @@ static partial class Span
 
         return result;
     }
-#endif
 }
