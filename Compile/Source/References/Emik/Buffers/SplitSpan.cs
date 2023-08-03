@@ -155,71 +155,6 @@ static partial class SplitFactory
 
         return ret;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Next<T>(
-        ref ReadOnlySpan<T> reader1,
-        ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
-        out bool ret
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
-        where T : IEquatable<T>?
-#endif
-    {
-        Unsafe.SkipInit(out ret);
-
-        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
-        {
-            if (!reader1.SequenceEqual(reader2))
-            {
-                ret = false;
-                return true;
-            }
-
-            if (!e1.MoveNext())
-            {
-                ret = !e2.MoveNext();
-                return true;
-            }
-
-            if (!e2.MoveNext())
-            {
-                ret = false;
-                return true;
-            }
-
-            reader1 = e1.Current;
-            reader2 = e2.Current;
-            return false;
-        }
-
-        if (length1 < length2)
-        {
-            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
-            {
-                ret = false;
-                return true;
-            }
-
-            reader1 = e1.Current;
-            reader2 = reader2[length1..];
-            return false;
-        }
-
-        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = reader1[length2..];
-        reader2 = e2.Current;
-        return false;
-    }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -273,6 +208,82 @@ static partial class SplitFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
 #endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool Next<T>(
+        ref ReadOnlySpan<T> reader1,
+        ref ReadOnlySpan<T> reader2,
+        ref SplitSpan<T>.Enumerator e1,
+        ref SplitSpan<T>.Enumerator e2,
+        out bool ret
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        Unsafe.SkipInit(out ret);
+
+        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
+            return SameLength(ref reader1, ref reader2, ref e1, ref e2, ref ret);
+
+        if (length1 < length2)
+        {
+            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader1 = e1.Current;
+            reader2 = reader2[length1..];
+            return false;
+        }
+
+        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+
+        reader1 = reader1[length2..];
+        reader2 = e2.Current;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool SameLength<T>(
+        ref ReadOnlySpan<T> reader1,
+        ref ReadOnlySpan<T> reader2,
+        ref SplitSpan<T>.Enumerator e1,
+        ref SplitSpan<T>.Enumerator e2,
+        ref bool ret
+    )
+        where T : IEquatable<T>?
+    {
+        if (!reader1.SequenceEqual(reader2))
+        {
+            ret = false;
+            return true;
+        }
+
+        if (!e1.MoveNext())
+        {
+            ret = !e2.MoveNext();
+            return true;
+        }
+
+        if (!e2.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+
+        reader1 = e1.Current;
+        reader2 = e2.Current;
+        return false;
+    }
 }
 
 /// <summary>Represents a split entry.</summary>
