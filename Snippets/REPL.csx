@@ -10596,12 +10596,12 @@ readonly
 
         for (var i = 0; i < source.Length; i++)
         {
-            if (!IsFail(ref source, predicate, i, end))
+            if (IsPass(ref source, predicate, i, end))
                 continue;
 
             var start = i;
 
-            if (FindNextPass(source, predicate, ref i))
+            if (!FindNextPass(source, predicate, ref i))
                 return end + i - start;
 
             end += i - start;
@@ -10612,15 +10612,15 @@ readonly
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool IsFail<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
+    static bool IsPass<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
     {
         if (!predicate(source[i]))
-            return true;
+            return false;
 
         if (end > 0)
             source[i - end] = source[i];
 
-        return false;
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
