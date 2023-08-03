@@ -5,6 +5,7 @@
 #if NETFRAMEWORK
 extern alias ms;
 #endif
+global using Attribute = System.Attribute;
 #if KTANE
 extern alias unity;
 

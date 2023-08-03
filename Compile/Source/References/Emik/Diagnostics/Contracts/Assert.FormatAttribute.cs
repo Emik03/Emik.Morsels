@@ -3,9 +3,6 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-// ReSharper disable once RedundantNameQualifier
-using Attribute = System.Attribute;
-
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {

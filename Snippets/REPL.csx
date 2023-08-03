@@ -210,7 +210,6 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
-using Attribute = System.Attribute;
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
@@ -14519,8 +14518,6 @@ abstract partial class Assert
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 
-
-// ReSharper disable once RedundantNameQualifier
 
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
