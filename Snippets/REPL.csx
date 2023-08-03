@@ -6804,6 +6804,113 @@ public enum ControlFlow : byte
 /// with a wrapped callback which filters out ignored contexts.
 /// </summary>
 
+    /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
+    /// <param name="accessibility">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="accessibility"/> is accessible externally.
+    /// </returns>
+    [Pure]
+    public static bool IsAccessible(this Accessibility accessibility) =>
+        accessibility is Accessibility.Protected or Accessibility.ProtectedOrInternal or Accessibility.Public;
+
+    /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> is accessible externally.
+    /// </returns>
+    [Pure]
+    public static bool IsAccessible([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol?.DeclaredAccessibility.IsAccessible() is true;
+
+    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is { BaseType: null, SpecialType: not SpecialType.System_Object };
+
+    /// <summary>
+    /// Determines whether the symbol and all subsequent parent types
+    /// are declared with the <see langword="partial"/> keyword.
+    /// </summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> and all its subsequent
+    /// parent types are <see langword="partial"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsCompletelyPartial([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol?.FindPathToNull(x => x.ContainingType).All(IsPartial) is true;
+
+    /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is obsolete, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsObsolete([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol?.GetAttributes().Any(x => x.AttributeClass?.Name is nameof(ObsoleteAttribute)) is true;
+
+    /// <summary>Determines whether the symbol is declared with the <see langword="partial"/> keyword.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is <see langword="partial"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsPartial([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol
+          ?.DeclaringSyntaxReferences
+           .Select(x => x.GetSyntax())
+           .OfType<TypeDeclarationSyntax>()
+           .Any(x => x.Modifiers.Any(x => x.ValueText is "partial")) is true;
+
+    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
+    /// </returns>
+    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is
+            not null and
+            not IDynamicTypeSymbol and
+            not IPointerTypeSymbol and
+            not { SpecialType: SpecialType.System_Void } and
+            not { IsRefLikeType: true };
+
+    /// <summary>Determines whether the symbol has a default implementation.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
+    public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
+
+    /// <summary>Determines whether the symbol has a parameterless constructor.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// has a parameterless constructor, otherwise; <see langword="false"/>.
+    /// </returns>
+    public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters.IsEmpty);
+
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
+    /// <param name="symbol">The symbol to get its keyword.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string Keyword(this ITypeSymbol symbol) =>
+        symbol switch
+        {
+            { IsValueType: true, IsRecord: true } => "record struct",
+            { IsRecord: true } => "record",
+            { IsValueType: true } => "struct",
+            { IsReferenceType: true } => "class",
+            _ => throw Unreachable,
+        };
+
     /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
     public static string? MemberName(this ExpressionSyntax syntax)
     {
@@ -6893,6 +7000,13 @@ public enum ControlFlow : byte
     /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
     public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
+
+    /// <summary>Gets the containing symbol so long as it isn't the global namespace.</summary>
+    /// <param name="symbol">The symbol to use.</param>
+    /// <returns>The containing symbol, or <see langword="null"/> if it is the global namespace.</returns>
+    [Pure]
+    public static ISymbol? ContainingWithoutGlobal(this ISymbol? symbol) =>
+        symbol?.ContainingSymbol is var x && x is INamespaceSymbol { IsGlobalNamespace: true } ? null : x;
 
     /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this Compilation symbol) =>
@@ -7201,96 +7315,11 @@ public enum ControlFlow : byte
 
 // ReSharper disable CheckNamespace RedundantUsingDirective
 
-#pragma warning disable 8500
+#pragma warning disable 1574 8500
 
 
 /// <summary>Provides the method to convert spans.</summary>
 
-#if !CSHARPREPL
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>
-    /// This method is aggressively inlined.
-    /// </para><para>
-    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Alloc<T>(this in int length)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            length <= 0 ? default :
-            IsStack<T>(length) ? length.Stackalloc<T>() : new T[length];
-#endif
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-    /// <summary>Stack-allocates the buffer, and gives it to the caller.</summary>
-    /// <remarks><para>This method is aggressively inlined.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <returns>The stack-allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> Stackalloc<T>(this in int length)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        var pointer = stackalloc byte[InBytes<T>(length)];
-        return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<T>(pointer), length);
-    }
-#endif
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <summary>Reinterprets the span as a series of managed types.</summary>
-    /// <typeparam name="T">The type of span to convert to.</typeparam>
-    /// <param name="span">The span to convert.</param>
-    /// <returns>
-    /// The span that points to the same region as <paramref name="span"/>
-    /// but with each time assumed to be <typeparamref name="T"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Reinterpret<T>(this Span<nint> span)
-        where T : class =>
-        MemoryMarshal.CreateSpan(ref Unsafe.As<nint, T>(ref span[0]), span.Length);
-
-    /// <summary>Reinterprets the span as a series of managed types.</summary>
-    /// <typeparam name="T">The type of span to convert to.</typeparam>
-    /// <param name="span">The span to convert.</param>
-    /// <returns>
-    /// The span that points to the same region as <paramref name="span"/>
-    /// but with each time assumed to be <typeparamref name="T"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Reinterpret<T>(this Span<nuint> span)
-        where T : class =>
-        MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref span[0]), span.Length);
-
-    /// <summary>Reinterprets the span as a series of managed types.</summary>
-    /// <typeparam name="T">The type of span to convert to.</typeparam>
-    /// <param name="span">The span to convert.</param>
-    /// <returns>
-    /// The span that points to the same region as <paramref name="span"/>
-    /// but with each time assumed to be <typeparamref name="T"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Reinterpret<T>(this ReadOnlySpan<nint> span) =>
-        MemoryMarshal.CreateSpan(ref Unsafe.As<nint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
-
-    /// <summary>Reinterprets the span as a series of managed types.</summary>
-    /// <typeparam name="T">The type of span to convert to.</typeparam>
-    /// <param name="span">The span to convert.</param>
-    /// <returns>
-    /// The span that points to the same region as <paramref name="span"/>
-    /// but with each time assumed to be <typeparamref name="T"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Reinterpret<T>(this ReadOnlySpan<nuint> span) =>
-        MemoryMarshal.CreateSpan(ref Unsafe.As<nuint, T>(ref Unsafe.AsRef(in span[0])), span.Length);
-#endif
-#pragma warning disable 1574
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
