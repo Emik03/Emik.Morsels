@@ -5813,11 +5813,7 @@ public sealed partial class BadLogger : IDisposable
     static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
     {
         int count = lists.Count, index = 0, pos = 0;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var indices = count.AsPooledSmallList<int>();
-#else
         var indices = count.AsUninitSmallList<int>();
-#endif
         var accumulator = count.AsUninitSmallList<T>();
 
         while (true)
