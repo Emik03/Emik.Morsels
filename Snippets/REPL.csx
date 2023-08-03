@@ -2483,21 +2483,7 @@ public
             return builder.Append(val);
 
         if (type.GetElementType() is { } underlying)
-        {
-            if (type.IsByRef)
-                builder.Append('r').Append('e').Append('f').Append(' ');
-
-            var underlyingName = UnfoldedName(underlying);
-            builder.Append(underlyingName);
-
-            if (type.IsArray)
-                builder.Append('[').Append(']');
-
-            if (type.IsPointer)
-                builder.Append('*');
-
-            return builder;
-        }
+            return UnfoldedElementName(type, builder, underlying);
 
         var name = type.Name;
 
@@ -2511,6 +2497,23 @@ public
         types.Skip(1).Select(Append).Enumerate();
 
         return builder.Append('>');
+    }
+
+    static StringBuilder UnfoldedElementName(Type type, StringBuilder builder, Type underlying)
+    {
+        if (type.IsByRef)
+            builder.Append('r').Append('e').Append('f').Append(' ');
+
+        var underlyingName = UnfoldedName(underlying);
+        builder.Append(underlyingName);
+
+        if (type.IsArray)
+            builder.Append('[').Append(']');
+
+        if (type.IsPointer)
+            builder.Append('*');
+
+        return builder;
     }
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
@@ -5789,14 +5792,32 @@ public sealed partial class BadLogger : IDisposable
     [Pure]
     public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
     {
-        // ReSharper disable NullableWarningSuppressionIsUsed
-        // ReSharper disable once LoopCanBePartlyConvertedToQuery ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var list in lists)
             if (list is [])
-                yield break;
+                return Enumerable.Empty<SmallList<T>>();
 
+        return lists.CombinationsIterator();
+    }
+
+    /// <summary>Generates all combinations of the nested enumerable.</summary>
+    /// <typeparam name="T">The type of nested enumerable.</typeparam>
+    /// <param name="iterator">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
+    [Pure]
+    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+
+    static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
+    {
         int count = lists.Count, index = 0, pos = 0;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var indices = count.AsPooledSmallList<int>();
+#else
         var indices = count.AsUninitSmallList<int>();
+#endif
         var accumulator = count.AsUninitSmallList<T>();
 
         while (true)
@@ -5820,16 +5841,6 @@ public sealed partial class BadLogger : IDisposable
             } while (index >= lists[pos].Count);
         }
     }
-
-    /// <summary>Generates all combinations of the nested enumerable.</summary>
-    /// <typeparam name="T">The type of nested enumerable.</typeparam>
-    /// <param name="iterator">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
-    [Pure]
-    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -7319,6 +7330,7 @@ public enum ControlFlow : byte
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+
 
 
 
@@ -14505,7 +14517,7 @@ abstract partial class Assert
 #if NET6_0_OR_GREATER
                 : $"{e.GetType().UnfoldedName()}: {e.Message}. {e.StackTrace?.ReplaceLineEndings(" ")}";
 #else
-                : $"{e.GetType().UnfoldedName()}: {e.Message}. {e.StackTrace?.Replace("\n", " ")}";
+                : $"{e.GetType().UnfoldedName()}: {e.Message}. {e.StackTrace?.Replace('\n', ' ')}";
 #endif
     }
 }
