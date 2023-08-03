@@ -242,6 +242,7 @@
         <PackageReference Remove="$(AssemblyName)"/>
         <None Remove="$(AssemblyName).Generated.Tests/**"/>
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
+        <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
     </ItemGroup>
     <!-- Allow the project to opt-out of this reference. -->
     <ItemGroup Condition="$(DisableDefaultDocumentation) != 'true'">
