@@ -9,6 +9,17 @@ namespace Emik.Morsels;
 /// </summary>
 static partial class IncludedSyntaxNodeRegistrant
 {
+    /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <param name="name">The name to get.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// has the attribute <paramref name="name"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
+        symbol?.GetAttributes().Any(x => x.AttributeClass?.Name == name) is true;
+
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
@@ -57,7 +68,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// </returns>
     [Pure]
     public static bool IsObsolete([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol?.GetAttributes().Any(x => x.AttributeClass?.Name is nameof(ObsoleteAttribute)) is true;
+        symbol.HasAttribute(nameof(ObsoleteAttribute));
 
     /// <summary>Determines whether the symbol is declared with the <see langword="partial"/> keyword.</summary>
     /// <param name="symbol">The symbol to check.</param>
