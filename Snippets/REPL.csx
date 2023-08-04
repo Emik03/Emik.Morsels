@@ -1749,7 +1749,6 @@ public
         FirstOrd = "st",
         Invalid = $"!<{nameof(InvalidOperationException)}>",
         KeyValueSeparator = ": ",
-        Negative = "-",
         Null = "null",
         SecondOrd = "nd",
         Separator = ", ",
@@ -2238,7 +2237,7 @@ public
 
     [Pure]
     static string ToOrdinal(this int i) =>
-        $"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
+        $"{i}{Mod(i) switch
         {
             1 => FirstOrd,
             2 => SecondOrd,
@@ -6804,6 +6803,17 @@ public enum ControlFlow : byte
 /// with a wrapped callback which filters out ignored contexts.
 /// </summary>
 
+    /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <param name="name">The name to get.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// has the attribute <paramref name="name"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
+        symbol?.GetAttributes().Any(x => x.AttributeClass?.Name == name) is true;
+
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
@@ -6852,7 +6862,7 @@ public enum ControlFlow : byte
     /// </returns>
     [Pure]
     public static bool IsObsolete([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol?.GetAttributes().Any(x => x.AttributeClass?.Name is nameof(ObsoleteAttribute)) is true;
+        symbol.HasAttribute(nameof(ObsoleteAttribute));
 
     /// <summary>Determines whether the symbol is declared with the <see langword="partial"/> keyword.</summary>
     /// <param name="symbol">The symbol to check.</param>
@@ -11118,14 +11128,6 @@ public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnume
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => list.Count;
-
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
@@ -11133,6 +11135,14 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
         [CollectionAccess(Read)] get => list[Mod(index)];
         [CollectionAccess(ModifyExistingContent)] set => list[Mod(index)] = value;
     }
+
+    /// <inheritdoc/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public bool IsReadOnly => list.IsReadOnly;
+
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
+    public int Count => list.Count;
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
@@ -11210,14 +11220,6 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => list.Count;
-
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
@@ -11225,6 +11227,14 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
         [CollectionAccess(Read)] get => list[Clamp(index)];
         [CollectionAccess(ModifyExistingContent)] set => list[Clamp(index)] = value;
     }
+
+    /// <inheritdoc/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public bool IsReadOnly => list.IsReadOnly;
+
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
+    public int Count => list.Count;
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]

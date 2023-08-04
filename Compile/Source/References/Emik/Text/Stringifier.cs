@@ -37,7 +37,6 @@ static partial class Stringifier
         FirstOrd = "st",
         Invalid = $"!<{nameof(InvalidOperationException)}>",
         KeyValueSeparator = ": ",
-        Negative = "-",
         Null = "null",
         SecondOrd = "nd",
         Separator = ", ",
@@ -526,7 +525,7 @@ static partial class Stringifier
 
     [Pure]
     static string ToOrdinal(this int i) =>
-        $"{(i < 0 ? Negative : "")}{i}{Mod(i) switch
+        $"{i}{Mod(i) switch
         {
             1 => FirstOrd,
             2 => SecondOrd,
