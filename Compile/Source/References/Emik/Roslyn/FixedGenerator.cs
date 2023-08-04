@@ -4,16 +4,16 @@
 namespace Emik.Morsels;
 
 /// <summary>Generates the attribute needed to use this analyzer.</summary>
-/// <param name="fileName">The file name of the source.</param>
+/// <param name="hintName">The file name of the source.</param>
 /// <param name="contents">The contents of the source.</param>
 public abstract class FixedGenerator(
-    [StringSyntax(StringSyntaxAttribute.Uri), UriString] string fileName,
+    [StringSyntax(StringSyntaxAttribute.Uri), UriString] string hintName,
     [StringSyntax("C#")] string contents
 ) : ISourceGenerator
 {
     /// <inheritdoc />
     void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
-        context.AddSource($"{fileName}.g.cs", contents.NthLast(1) is null or '\n' or '\r' ? contents : contents + '\n');
+        context.AddSource($"{hintName}.g.cs", contents.NthLast(1) is null or '\n' or '\r' ? contents : contents + '\n');
 
     /// <inheritdoc />
     void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
