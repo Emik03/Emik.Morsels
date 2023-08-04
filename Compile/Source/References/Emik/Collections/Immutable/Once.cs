@@ -32,6 +32,24 @@ static partial class OnceFactory
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
     public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? new(source) : default;
+
+    /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> YieldValued<T>(this T? source)
+        where T : class =>
+        source is null ? default : new(source);
+
+    /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> YieldValued<T>(this T? source)
+        where T : struct =>
+        source.HasValue ? new(source.Value) : default;
 }
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
@@ -41,7 +59,7 @@ static partial class OnceFactory
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
