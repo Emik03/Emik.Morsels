@@ -49,6 +49,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
     /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
     /// </returns>
+    [Pure]
     public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is { BaseType: null, SpecialType: not SpecialType.System_Object };
 
@@ -95,6 +96,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
     /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
     /// </returns>
+    [Pure]
     public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is
             not null and
@@ -106,6 +108,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
+    [Pure]
     public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
 
@@ -115,6 +118,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
     /// has a parameterless constructor, otherwise; <see langword="false"/>.
     /// </returns>
+    [Pure]
     public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters.IsEmpty);
 
@@ -133,6 +137,7 @@ static partial class IncludedSyntaxNodeRegistrant
         };
 
     /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
+    [Pure]
     public static string? MemberName(this ExpressionSyntax syntax)
     {
         syntax.TryGetMemberName(out var result);
@@ -140,6 +145,7 @@ static partial class IncludedSyntaxNodeRegistrant
     }
 
     /// <inheritdoc cref="AttributeArgumentSyntaxExt.TryGetStringValue(AttributeArgumentSyntax, SemanticModel, CancellationToken, out string)"/>
+    [Pure]
     public static string? StringValue(this SyntaxNodeAnalysisContext context, AttributeArgumentSyntax syntax)
     {
         syntax.TryGetStringValue(context.SemanticModel, context.CancellationToken, out var result);
@@ -172,6 +178,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <param name="diagnostic">The diagnostic to append.</param>
     /// <param name="message">The string to append.</param>
     /// <returns>The diagnostic with added information.</returns>
+    [MustUseReturnValue]
     public static Diagnostic And<T>(this Diagnostic diagnostic, T message) =>
         Diagnostic.Create(
             new(
@@ -197,6 +204,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
     /// interfaces and base types, and any subsequent interfaces and base types from those.
     /// </returns>
+    [Pure]
     public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol symbol) =>
         symbol
            .BaseType
@@ -208,6 +216,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <param name="context">The context to use.</param>
     /// <param name="syntax">The syntax to lookup.</param>
     /// <returns>The symbols that likely define it.</returns>
+    [Pure]
     public static IEnumerable<ISymbol> Symbols(this SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
         (syntax.MemberName() ?? $"{syntax}") is var name && syntax is PredefinedTypeSyntax
             ? context.Compilation.GetSymbolsWithName(
@@ -219,6 +228,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <summary>Gets the containing <see cref="INamespaceOrTypeSymbol"/>.</summary>
     /// <param name="syntax">The syntax to lookup.</param>
     /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
+    [Pure]
     public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
 
@@ -230,10 +240,12 @@ static partial class IncludedSyntaxNodeRegistrant
         symbol?.ContainingSymbol is var x && x is INamespaceSymbol { IsGlobalNamespace: true } ? null : x;
 
     /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
+    [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this Compilation symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
 
     /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
+    [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
 
@@ -242,12 +254,14 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <returns>
     /// The <see cref="IEnumerable{T}"/> of all types defined in the parameter <paramref name="symbol"/>.
     /// </returns>
+    [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
         symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
+    [Pure]
     public static ITypeSymbol? ToUnderlying(this ISymbol? symbol) =>
         symbol switch
         {
@@ -267,6 +281,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <summary>Gets the underlying symbol if the provided parameter is the nullable type.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type of <paramref name="symbol"/>, if it exists.</returns>
+    [Pure]
     public static ITypeSymbol? UnderlyingNullable(this ISymbol? symbol) =>
         symbol is INamedTypeSymbol
         {
@@ -281,6 +296,7 @@ static partial class IncludedSyntaxNodeRegistrant
             ? underlying
             : null;
 
+    [Pure]
     static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
         where TSyntaxNode : SyntaxNode =>
         context =>
@@ -289,6 +305,7 @@ static partial class IncludedSyntaxNodeRegistrant
                 action(context, node);
         };
 
+    [Pure]
     static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
         ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
 }
