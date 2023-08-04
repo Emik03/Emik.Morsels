@@ -175,9 +175,7 @@ static partial class TryTake
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
     [Pure]
     public static char? NthLast(this string str, [NonNegativeValue] int index) =>
-#pragma warning disable IDE0056
         index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
-#pragma warning restore IDE0056
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>

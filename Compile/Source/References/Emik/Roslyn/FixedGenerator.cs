@@ -13,7 +13,7 @@ public abstract class FixedGenerator(
 {
     /// <inheritdoc />
     void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
-        context.AddSource($"{hintName}.g.cs", contents.NthLast(1) is null or '\n' or '\r' ? contents : contents + '\n');
+        context.AddSource($"{hintName}.g.cs", contents.Nth(^1) is null or '\n' or '\r' ? contents : contents + '\n');
 
     /// <inheritdoc />
     void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }

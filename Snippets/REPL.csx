@@ -5452,9 +5452,7 @@ public sealed partial class BadLogger : IDisposable
     /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
     [Pure]
     public static char? NthLast(this string str, [NonNegativeValue] int index) =>
-#pragma warning disable IDE0056
         index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
-#pragma warning restore IDE0056
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -7097,7 +7095,7 @@ public abstract class FixedGenerator(
 {
     /// <inheritdoc />
     void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
-        context.AddSource($"{hintName}.g.cs", contents.NthLast(1) is null or '\n' or '\r' ? contents : contents + '\n');
+        context.AddSource($"{hintName}.g.cs", contents.Nth(^1) is null or '\n' or '\r' ? contents : contents + '\n');
 
     /// <inheritdoc />
     void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
