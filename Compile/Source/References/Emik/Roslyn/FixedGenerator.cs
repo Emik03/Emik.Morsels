@@ -6,7 +6,6 @@ namespace Emik.Morsels;
 /// <summary>Generates the attribute needed to use this analyzer.</summary>
 /// <param name="fileName">The file name of the source.</param>
 /// <param name="contents">The contents of the source.</param>
-[Generator]
 public abstract class FixedGenerator(
     [StringSyntax(StringSyntaxAttribute.Uri), UriString] string fileName,
     [StringSyntax("C#")] string contents

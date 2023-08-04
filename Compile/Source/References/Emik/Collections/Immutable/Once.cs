@@ -56,6 +56,9 @@ static partial class OnceFactory
 /// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
 #if !NO_READONLY_STRUCTS
 readonly
 #endif

@@ -7083,6 +7083,27 @@ public enum ControlFlow : byte
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
+#if ROSLYN
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Generates the attribute needed to use this analyzer.</summary>
+/// <param name="fileName">The file name of the source.</param>
+/// <param name="contents">The contents of the source.</param>
+public abstract class FixedGenerator(
+    [StringSyntax(StringSyntaxAttribute.Uri), UriString] string fileName,
+    [StringSyntax("C#")] string contents
+) : ISourceGenerator
+{
+    /// <inheritdoc />
+    void ISourceGenerator.Execute(GeneratorExecutionContext context) => context.AddSource($"{fileName}.g.cs", contents);
+
+    /// <inheritdoc />
+    void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
 
@@ -10818,14 +10839,35 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
     [Pure]
     public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? new(source) : default;
 
+    /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> YieldValued<T>(this T? source)
+        where T : class =>
+        source is null ? default : new(source);
+
+    /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
+    [Pure]
+    public static Once<T> YieldValued<T>(this T? source)
+        where T : struct =>
+        source.HasValue ? new(source.Value) : default;
+
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 [StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
