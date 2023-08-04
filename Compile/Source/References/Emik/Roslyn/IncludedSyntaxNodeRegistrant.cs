@@ -18,7 +18,12 @@ static partial class IncludedSyntaxNodeRegistrant
     /// </returns>
     [Pure]
     public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
-        symbol?.GetAttributes().Any(x => x.AttributeClass?.Name == name) is true;
+        symbol is not null &&
+        (name is null
+            ? symbol.GetAttributes().Any()
+            : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
+            (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
+            symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
 
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
