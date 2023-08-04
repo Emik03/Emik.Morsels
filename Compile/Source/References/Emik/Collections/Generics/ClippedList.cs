@@ -30,14 +30,6 @@ static partial class ClippedFactory
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc/>
-    [CollectionAccess(None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => list.Count;
-
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
@@ -45,6 +37,14 @@ sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>,
         [CollectionAccess(Read)] get => list[Clamp(index)];
         [CollectionAccess(ModifyExistingContent)] set => list[Clamp(index)] = value;
     }
+
+    /// <inheritdoc/>
+    [CollectionAccess(None), Pure]
+    public bool IsReadOnly => list.IsReadOnly;
+
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(None), Pure, ValueRange(1, int.MaxValue)]
+    public int Count => list.Count;
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
