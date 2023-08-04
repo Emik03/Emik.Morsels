@@ -7096,7 +7096,8 @@ public abstract class FixedGenerator(
 ) : ISourceGenerator
 {
     /// <inheritdoc />
-    void ISourceGenerator.Execute(GeneratorExecutionContext context) => context.AddSource($"{fileName}.g.cs", contents);
+    void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
+        context.AddSource($"{fileName}.g.cs", contents.NthLast(1) is null or '\n' or '\r' ? contents : contents + '\n');
 
     /// <inheritdoc />
     void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
