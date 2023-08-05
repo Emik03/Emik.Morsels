@@ -20,7 +20,7 @@ static partial class IncludedSyntaxNodeRegistrant
     public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
         symbol is not null &&
         (name is null
-            ? symbol.GetAttributes().Any()
+            ? !symbol.GetAttributes().IsEmpty
             : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
             (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
             symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
@@ -102,8 +102,8 @@ static partial class IncludedSyntaxNodeRegistrant
             not null and
             not IDynamicTypeSymbol and
             not IPointerTypeSymbol and
-            not { SpecialType: SpecialType.System_Void } and
-            not { IsRefLikeType: true };
+            not { IsRefLikeType: true } and
+            not { SpecialType: SpecialType.System_Void };
 
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>
