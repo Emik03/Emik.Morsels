@@ -242,7 +242,26 @@ static partial class Stringifier
 
         return $"{builder}";
     }
+#if !WAWA
+    /// <summary>Gets the field count of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to use.</param>
+    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static int FieldCount(this Version? version) =>
+        version switch
+        {
+            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
+            { Build: <= 0, Revision: <= 0 } => 2,
+            { Revision: <= 0 } => 3,
+            _ => 4,
+        };
 
+    /// <summary>Gets the short display form of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to convert.</param>
+    /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static string ToShortString(this Version? version) => version?.ToString(version.FieldCount()) ?? "0";
+#endif
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if !WAWA
     /// <summary>Gets the full type name, with its generics extended.</summary>

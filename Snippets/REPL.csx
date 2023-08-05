@@ -1954,7 +1954,26 @@ public
 
         return $"{builder}";
     }
+#if !WAWA
+    /// <summary>Gets the field count of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to use.</param>
+    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static int FieldCount(this Version? version) =>
+        version switch
+        {
+            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
+            { Build: <= 0, Revision: <= 0 } => 2,
+            { Revision: <= 0 } => 3,
+            _ => 4,
+        };
 
+    /// <summary>Gets the short display form of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to convert.</param>
+    /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static string ToShortString(this Version? version) => version?.ToString(version.FieldCount()) ?? "0";
+#endif
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if !WAWA
     /// <summary>Gets the full type name, with its generics extended.</summary>
@@ -6812,7 +6831,7 @@ public enum ControlFlow : byte
     public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
         symbol is not null &&
         (name is null
-            ? symbol.GetAttributes().Any()
+            ? !symbol.GetAttributes().IsEmpty
             : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
             (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
             symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
@@ -6894,8 +6913,8 @@ public enum ControlFlow : byte
             not null and
             not IDynamicTypeSymbol and
             not IPointerTypeSymbol and
-            not { SpecialType: SpecialType.System_Void } and
-            not { IsRefLikeType: true };
+            not { IsRefLikeType: true } and
+            not { SpecialType: SpecialType.System_Void };
 
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>
