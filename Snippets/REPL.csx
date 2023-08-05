@@ -1954,12 +1954,26 @@ public
 
         return $"{builder}";
     }
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if !WAWA
+    /// <summary>Gets the full type name, with its generics extended.</summary>
+    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
+    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
+    [Pure]
+    public static string UnfoldedFullName(this Type? type) =>
+        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
+#endif
+
     /// <summary>Gets the field count of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to use.</param>
     /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
     [Pure]
-    public static int FieldCount(this Version? version) =>
+    public static int FieldCount(
+#if !WAWA
+        this
+#endif
+            Version? version
+    ) =>
         version switch
         {
             { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
@@ -1972,17 +1986,13 @@ public
     /// <param name="version">The <see cref="Version"/> to convert.</param>
     /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
     [Pure]
-    public static string ToShortString(this Version? version) => version?.ToString(version.FieldCount()) ?? "0";
-#endif
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+    public static string ToShortString(
 #if !WAWA
-    /// <summary>Gets the full type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
-    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static string UnfoldedFullName(this Type? type) =>
-        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
+        this
 #endif
+            Version? version
+    ) =>
+        version?.ToString(version.FieldCount()) ?? "0";
 
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
@@ -2083,6 +2093,7 @@ public
                 x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
             )}) = {x.EnumStringifier()}",
             Type x => UnfoldedName(x),
+            Version x => x.ToShortString(),
 #if KTANE
             Object x => x.name,
 #endif

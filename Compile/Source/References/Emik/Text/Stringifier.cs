@@ -98,7 +98,26 @@ static partial class Stringifier
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
         s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
 #pragma warning restore MA0110, SYSLIB1045
+#endif
 
+    /// <summary>Gets the field count of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to use.</param>
+    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static int FieldCount(
+#if !WAWA
+        this
+#endif
+            Version? version
+    ) =>
+        version switch
+        {
+            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
+            { Build: <= 0, Revision: <= 0 } => 2,
+            { Revision: <= 0 } => 3,
+            _ => 4,
+        };
+#if !WAWA
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -242,26 +261,18 @@ static partial class Stringifier
 
         return $"{builder}";
     }
-#if !WAWA
-    /// <summary>Gets the field count of the version.</summary>
-    /// <param name="version">The <see cref="Version"/> to use.</param>
-    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
-    [Pure]
-    public static int FieldCount(this Version? version) =>
-        version switch
-        {
-            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
-            { Build: <= 0, Revision: <= 0 } => 2,
-            { Revision: <= 0 } => 3,
-            _ => 4,
-        };
 
     /// <summary>Gets the short display form of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to convert.</param>
     /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
     [Pure]
-    public static string ToShortString(this Version? version) => version?.ToString(version.FieldCount()) ?? "0";
+    public static string ToShortString(
+#if !WAWA
+        this
 #endif
+            Version? version
+    ) =>
+        version?.ToString(version.FieldCount()) ?? "0";
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if !WAWA
     /// <summary>Gets the full type name, with its generics extended.</summary>
@@ -371,6 +382,7 @@ static partial class Stringifier
                 x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
             )}) = {x.EnumStringifier()}",
             Type x => UnfoldedName(x),
+            Version x => x.ToShortString(),
 #if KTANE
             Object x => x.name,
 #endif
