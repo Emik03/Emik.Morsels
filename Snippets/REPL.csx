@@ -14592,7 +14592,8 @@ abstract partial class Assert(
     /// <param name="y">The right-hand side.</param>
     /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> have the same items.</returns>
     [Format("Expected @x to have the same items as @y, received #x and #y."), Pure]
-    public static bool SequenceEqualTo<T>(IEnumerable<T> x, IEnumerable<T> y) => x.SequenceEqual(y);
+    public static bool SequenceEqualTo<T>([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
+        x.SequenceEqual(y);
 
     /// <summary>Assertion that both parameters must be equal.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
@@ -14635,11 +14636,22 @@ abstract partial class Assert(
     public static bool LessThanOrEqualTo<T>(T x, T y) => Compare(x, y) <= 0;
 
     /// <summary>Assertion that the enumerable must not be null.</summary>
-    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
+    /// <param name="x">The value that must not be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
+    [Format("Expected @x to be not null, received null."), Pure]
+    public static bool NotNull([NotNullWhen(true)] object? x) => x is not null;
+
+    /// <summary>Assertion that the enumerable must not be null.</summary>
     /// <param name="x">The value that must not be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
     [Format("Expected @x to be not null, received null."), Pure]
     public static bool NotNull<T>([NotNullWhen(true)] T x) => x is not null;
+
+    /// <summary>Assertion that the enumerable must be null.</summary>
+    /// <param name="x">The value that must be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
+    [Format("Expected @x to be null, received #x."), Pure]
+    public static bool Null([NotNullWhen(false)] object? x) => x is null;
 
     /// <summary>Assertion that the enumerable must be null.</summary>
     /// <typeparam name="T">The type of value to do the null check on.</typeparam>
@@ -15364,39 +15376,40 @@ abstract partial class Assert<T> : Assert
 {
     /// <inheritdoc cref="Assert.EqualTo{T}"/>
     [Format("Expected @x to be equal to @y, received #x and #y.")]
-    public static bool EqualTo(T x, T y) => EqualityComparer<T>.Default.Equals(x, y);
+    public static bool EqualTo(T x, T y) => EqualTo<T>(x, y);
 
     /// <inheritdoc cref="Assert.GreaterThan{T}"/>
     [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y.")]
-    public static bool GreaterThan(T x, T y) => Compare(x, y) > 0;
+    public static bool GreaterThan(T x, T y) => GreaterThan<T>(x, y);
 
     /// <inheritdoc cref="Assert.GreaterThanOrEqualTo{T}"/>
     [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y.")]
-    public static bool GreaterThanOrEqualTo(T x, T y) => Compare(x, y) >= 0;
+    public static bool GreaterThanOrEqualTo(T x, T y) => GreaterThanOrEqualTo<T>(x, y);
 
     /// <inheritdoc cref="Assert.LessThan{T}"/>
     [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y.")]
-    public static bool LessThan(T x, T y) => Compare(x, y) < 0;
+    public static bool LessThan(T x, T y) => LessThan<T>(x, y);
 
     /// <inheritdoc cref="Assert.LessThanOrEqualTo{T}"/>
     [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y.")]
-    public static bool LessThanOrEqualTo(T x, T y) => Compare(x, y) <= 0;
+    public static bool LessThanOrEqualTo(T x, T y) => LessThanOrEqualTo<T>(x, y);
 
     /// <inheritdoc cref="Assert.NotNull{T}"/>
     [Format("Expected @x to be not null, received null.")]
-    public static bool NotNull(T x) => x is not null;
+    public static bool NotNull(T x) => NotNull<T>(x);
 
     /// <inheritdoc cref="Assert.Null{T}"/>
     [Format("Expected @x to be null, received #x.")]
-    public static bool Null(T x) => x is null;
+    public static bool Null(T x) => Null<T>(x);
 
     /// <inheritdoc cref="Assert.SequenceEqualTo{T}"/>
     [Format("Expected @x to have the same items as @y, received #x and #y.")]
-    public static bool SequenceEqualTo(IEnumerable<T> x, IEnumerable<T> y) => x.SequenceEqual(y);
+    public static bool SequenceEqualTo([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
+        SequenceEqualTo<T>(x, y);
 
     /// <inheritdoc cref="Assert.UnequalTo{T}"/>
     [Format("Expected @x to not be equal to @y, received #x.")]
-    public static bool UnequalTo(T x, T y) => !EqualTo(x, y);
+    public static bool UnequalTo(T x, T y) => UnequalTo<T>(x, y);
 
     /// <inheritdoc cref="Assert.Compare{T}"/>
     [Pure]
