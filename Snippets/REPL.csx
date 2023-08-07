@@ -538,6 +538,86 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 // ReSharper disable once CheckNamespace
 
+#pragma warning disable CS1574, CS1580
+/// <summary>Methods that deconstructs <see cref="Version"/> instances.</summary>
+
+    /// <summary>Deconstructs this instance into the major and minor versions.</summary>
+    /// <remarks><para>
+    /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
+    /// </para></remarks>
+    /// <param name="version">The <see cref="Version"/> to deconstruct.</param>
+    /// <param name="major">The resulting major version.</param>
+    /// <param name="minor">The resulting minor version.</param>
+    public static void Deconstruct(
+        this Version? version,
+        [NonNegativeValue] out int major,
+        [NonNegativeValue] out int minor
+    ) =>
+        (major, minor) = version is null ? default : (version.Major, version.Minor);
+
+    /// <summary>Deconstructs this instance into the major, minor, and build versions.</summary>
+    /// <remarks><para>
+    /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
+    /// </para></remarks>
+    /// <param name="version">The <see cref="Version"/> to deconstruct.</param>
+    /// <param name="major">The resulting major version.</param>
+    /// <param name="minor">The resulting minor version.</param>
+    /// <param name="build">The resulting build version.</param>
+    public static void Deconstruct(
+        this Version? version,
+        [NonNegativeValue] out int major,
+        [NonNegativeValue] out int minor,
+        [NonNegativeValue] out int build
+    ) =>
+        (major, minor, build) = version is null ? default : (version.Major, version.Minor, version.Build);
+
+    /// <summary>Deconstructs this instance into the major, minor, build, and revision versions.</summary>
+    /// <remarks><para>
+    /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
+    /// </para></remarks>
+    /// <param name="version">The <see cref="Version"/> to deconstruct.</param>
+    /// <param name="major">The resulting major version.</param>
+    /// <param name="minor">The resulting minor version.</param>
+    /// <param name="build">The resulting build version.</param>
+    /// <param name="revision">The resulting revision version.</param>
+    public static void Deconstruct(
+        this Version? version,
+        [NonNegativeValue] out int major,
+        [NonNegativeValue] out int minor,
+        [NonNegativeValue] out int build,
+        [NonNegativeValue] out int revision
+    ) =>
+        (major, minor, build, revision) =
+        version is null ? default : (version.Major, version.Minor, version.Build, version.Revision);
+
+    /// <summary>
+    /// Deconstructs this instance into the major, minor, build, major revision, and minor revision versions.
+    /// </summary>
+    /// <remarks><para>
+    /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
+    /// </para></remarks>
+    /// <param name="version">The <see cref="Version"/> to deconstruct.</param>
+    /// <param name="major">The resulting major version.</param>
+    /// <param name="minor">The resulting minor version.</param>
+    /// <param name="build">The resulting build version.</param>
+    /// <param name="majorRevision">The resulting major revision version.</param>
+    /// <param name="minorRevision">The resulting minor revision version.</param>
+    public static void Deconstruct(
+        this Version? version,
+        [NonNegativeValue] out int major,
+        [NonNegativeValue] out int minor,
+        [NonNegativeValue] out int build,
+        [NonNegativeValue] out int majorRevision,
+        [NonNegativeValue] out int minorRevision
+    ) =>
+        (major, minor, build, majorRevision, minorRevision) = version is null
+            ? default
+            : (version.Major, version.Minor, version.Build, version.MajorRevision, version.MinorRevision);
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
 
 /// <summary>Extension methods for nullable types and booleans.</summary>
 
@@ -1383,6 +1463,146 @@ using static JetBrains.Annotations.CollectionAccessType;
 // ReSharper disable once CheckNamespace
 
 
+/// <summary>Extension methods to count digits in numbers.</summary>
+
+    /// <summary>Gets the amount of digits of the number.</summary>
+    /// <param name="number">The number to count.</param>
+    /// <returns>The amount of digits in the parameter <paramref name="number"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
+    public static byte DigitCount(this byte number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            _ => 3,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
+    public static byte DigitCount(this sbyte number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            _ => 3,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
+    public static byte DigitCount(this ushort number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            < 1000 => 3,
+            < 10000 => 4,
+            _ => 5,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
+    public static byte DigitCount(this short number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            < 1000 and > -1000 => 3,
+            < 10000 and > -10000 => 4,
+            _ => 5,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
+    public static byte DigitCount(this uint number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            < 1000 => 3,
+            < 10000 => 4,
+            < 100000 => 5,
+            < 1000000 => 6,
+            < 10000000 => 7,
+            < 100000000 => 8,
+            < 1000000000 => 9,
+            _ => 10,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
+    public static byte DigitCount(this int number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            < 1000 and > -1000 => 3,
+            < 10000 and > -10000 => 4,
+            < 100000 and > -100000 => 5,
+            < 1000000 and > -1000000 => 6,
+            < 10000000 and > -10000000 => 7,
+            < 100000000 and > -100000000 => 8,
+            < 1000000000 and > -1000000000 => 9,
+            _ => 10,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 20)]
+    public static byte DigitCount(this ulong number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            < 1000 => 3,
+            < 10000 => 4,
+            < 100000 => 5,
+            < 1000000 => 6,
+            < 10000000 => 7,
+            < 100000000 => 8,
+            < 1000000000 => 9,
+            < 10000000000 => 10,
+            < 100000000000 => 11,
+            < 1000000000000 => 12,
+            < 10000000000000 => 13,
+            < 100000000000000 => 14,
+            < 1000000000000000 => 15,
+            < 10000000000000000 => 16,
+            < 100000000000000000 => 17,
+            < 1000000000000000000 => 18,
+            < 10000000000000000000 => 19,
+            _ => 20,
+        };
+
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 19)]
+    public static byte DigitCount(this long number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            < 1000 and > -1000 => 3,
+            < 10000 and > -10000 => 4,
+            < 100000 and > -100000 => 5,
+            < 1000000 and > -1000000 => 6,
+            < 10000000 and > -10000000 => 7,
+            < 100000000 and > -100000000 => 8,
+            < 1000000000 and > -1000000000 => 9,
+            < 10000000000 and > -10000000000 => 10,
+            < 100000000000 and > -100000000000 => 11,
+            < 1000000000000 and > -1000000000000 => 12,
+            < 10000000000000 and > -10000000000000 => 13,
+            < 100000000000000 and > -100000000000000 => 14,
+            < 1000000000000000 and > -1000000000000000 => 15,
+            < 10000000000000000 and > -10000000000000000 => 16,
+            < 100000000000000000 and > -100000000000000000 => 17,
+            < 1000000000000000000 and > -1000000000000000000 => 18,
+            _ => 19,
+        };
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
 /// <summary>Provides methods for heap-allocation analysis.</summary>
 
     /// <summary>
@@ -1810,7 +2030,26 @@ public
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
         s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
 #pragma warning restore MA0110, SYSLIB1045
+#endif
 
+    /// <summary>Gets the field count of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to use.</param>
+    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static int FieldCount(
+#if !WAWA
+        this
+#endif
+            Version? version
+    ) =>
+        version switch
+        {
+            (_, <= 0, <= 0, <= 0) => 1,
+            (_, _, <= 0, <= 0) => 2,
+            (_, _, _, <= 0) => 3,
+            _ => 4,
+        };
+#if !WAWA
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -1954,33 +2193,6 @@ public
 
         return $"{builder}";
     }
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-#if !WAWA
-    /// <summary>Gets the full type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
-    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static string UnfoldedFullName(this Type? type) =>
-        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
-#endif
-
-    /// <summary>Gets the field count of the version.</summary>
-    /// <param name="version">The <see cref="Version"/> to use.</param>
-    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
-    [Pure]
-    public static int FieldCount(
-#if !WAWA
-        this
-#endif
-            Version? version
-    ) =>
-        version switch
-        {
-            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
-            { Build: <= 0, Revision: <= 0 } => 2,
-            { Revision: <= 0 } => 3,
-            _ => 4,
-        };
 
     /// <summary>Gets the short display form of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to convert.</param>
@@ -1991,8 +2203,28 @@ public
         this
 #endif
             Version? version
-    ) =>
-        version?.ToString(version.FieldCount()) ?? "0";
+    )
+    {
+        if (version is not var (major, minor, build, revision) ||
+            major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
+            return "v0";
+
+        var length = Length(major, revision, minor, build);
+
+        Span<char> span = stackalloc char[length];
+        Format(span, version);
+        return span.ToString();
+    }
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if !WAWA
+    /// <summary>Gets the full type name, with its generics extended.</summary>
+    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
+    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
+    [Pure]
+    public static string UnfoldedFullName(this Type? type) =>
+        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
+#endif
 
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
@@ -2162,7 +2394,58 @@ public
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+
+    static void Push(char c, scoped ref Span<char> span)
+    {
+        span[0] = c;
+        span = span[1..];
+    }
+
+    // ReSharper disable RedundantAssignment
+    static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
+    {
+        var it = next.TryFormat(span, out var slice);
+        System.Diagnostics.Debug.Assert(it, "TryFormat");
+        span = span[slice..];
+    }
+
+    // ReSharper disable RedundantAssignment
+    static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
+    {
+        Push(next, ref span);
+        Push(c, ref span);
+    }
+
+    public static void Format(scoped Span<char> span, Version version)
+    {
+        Push('v', ref span);
+
+        switch (version)
+        {
+            case (var major, var minor, var build, > 0 and var revision):
+                Push(major, '.', ref span);
+                Push(minor, '.', ref span);
+                Push(build, '.', ref span);
+                Push(revision, ref span);
+                break;
+            case (var major, var minor, > 0 and var build):
+                Push(major, '.', ref span);
+                Push(minor, '.', ref span);
+                Push(build, ref span);
+                break;
+            case (var major, > 0 and var minor):
+                Push(major, '.', ref span);
+                Push(minor, ref span);
+                break;
+            default:
+                Push(version.Major, ref span);
+                break;
+        }
+
+        System.Diagnostics.Debug.Assert(span.IsEmpty, nameof(Span<char>.IsEmpty));
+    }
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
@@ -2191,6 +2474,14 @@ public
         typeof(T)
            .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
            .Any(IsEqualityContract);
+
+    [Pure]
+    static int Length(int major, int revision, int minor, int build) =>
+        (major.DigitCount() + 1 is var length && revision > 0 ?
+            minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
+            build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
+                minor > 0 ? minor.DigitCount() + 1 : 0) +
+        length;
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;

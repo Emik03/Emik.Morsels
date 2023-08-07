@@ -112,9 +112,9 @@ static partial class Stringifier
     ) =>
         version switch
         {
-            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => 1,
-            { Build: <= 0, Revision: <= 0 } => 2,
-            { Revision: <= 0 } => 3,
+            (_, <= 0, <= 0, <= 0) => 1,
+            (_, _, <= 0, <= 0) => 2,
+            (_, _, _, <= 0) => 3,
             _ => 4,
         };
 #if !WAWA
@@ -271,8 +271,19 @@ static partial class Stringifier
         this
 #endif
             Version? version
-    ) =>
-        version?.ToString(version.FieldCount()) ?? "0";
+    )
+    {
+        if (version is not var (major, minor, build, revision) ||
+            major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
+            return "v0";
+
+        var length = Length(major, revision, minor, build);
+
+        Span<char> span = stackalloc char[length];
+        Format(span, version);
+        return span.ToString();
+    }
+
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if !WAWA
     /// <summary>Gets the full type name, with its generics extended.</summary>
@@ -451,7 +462,58 @@ static partial class Stringifier
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+
+    static void Push(char c, scoped ref Span<char> span)
+    {
+        span[0] = c;
+        span = span[1..];
+    }
+
+    // ReSharper disable RedundantAssignment
+    static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
+    {
+        var it = next.TryFormat(span, out var slice);
+        System.Diagnostics.Debug.Assert(it, "TryFormat");
+        span = span[slice..];
+    }
+
+    // ReSharper disable RedundantAssignment
+    static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
+    {
+        Push(next, ref span);
+        Push(c, ref span);
+    }
+
+    public static void Format(scoped Span<char> span, Version version)
+    {
+        Push('v', ref span);
+
+        switch (version)
+        {
+            case (var major, var minor, var build, > 0 and var revision):
+                Push(major, '.', ref span);
+                Push(minor, '.', ref span);
+                Push(build, '.', ref span);
+                Push(revision, ref span);
+                break;
+            case (var major, var minor, > 0 and var build):
+                Push(major, '.', ref span);
+                Push(minor, '.', ref span);
+                Push(build, ref span);
+                break;
+            case (var major, > 0 and var minor):
+                Push(major, '.', ref span);
+                Push(minor, ref span);
+                break;
+            default:
+                Push(version.Major, ref span);
+                break;
+        }
+
+        System.Diagnostics.Debug.Assert(span.IsEmpty, nameof(Span<char>.IsEmpty));
+    }
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
     // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
@@ -480,6 +542,14 @@ static partial class Stringifier
         typeof(T)
            .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
            .Any(IsEqualityContract);
+
+    [Pure]
+    static int Length(int major, int revision, int minor, int build) =>
+        (major.DigitCount() + 1 is var length && revision > 0 ?
+            minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
+            build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
+                minor > 0 ? minor.DigitCount() + 1 : 0) +
+        length;
 
     [Pure]
     static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
