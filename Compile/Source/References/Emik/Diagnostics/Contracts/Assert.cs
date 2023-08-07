@@ -110,7 +110,8 @@ abstract partial class Assert(
     /// <param name="y">The right-hand side.</param>
     /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> have the same items.</returns>
     [Format("Expected @x to have the same items as @y, received #x and #y."), Pure]
-    public static bool SequenceEqualTo<T>(IEnumerable<T> x, IEnumerable<T> y) => x.SequenceEqual(y);
+    public static bool SequenceEqualTo<T>([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
+        x.SequenceEqual(y);
 
     /// <summary>Assertion that both parameters must be equal.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
@@ -153,11 +154,22 @@ abstract partial class Assert(
     public static bool LessThanOrEqualTo<T>(T x, T y) => Compare(x, y) <= 0;
 
     /// <summary>Assertion that the enumerable must not be null.</summary>
-    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
+    /// <param name="x">The value that must not be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
+    [Format("Expected @x to be not null, received null."), Pure]
+    public static bool NotNull([NotNullWhen(true)] object? x) => x is not null;
+
+    /// <summary>Assertion that the enumerable must not be null.</summary>
     /// <param name="x">The value that must not be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
     [Format("Expected @x to be not null, received null."), Pure]
     public static bool NotNull<T>([NotNullWhen(true)] T x) => x is not null;
+
+    /// <summary>Assertion that the enumerable must be null.</summary>
+    /// <param name="x">The value that must be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
+    [Format("Expected @x to be null, received #x."), Pure]
+    public static bool Null([NotNullWhen(false)] object? x) => x is null;
 
     /// <summary>Assertion that the enumerable must be null.</summary>
     /// <typeparam name="T">The type of value to do the null check on.</typeparam>
