@@ -26,7 +26,7 @@ static partial class Int32TryFormatPolyfill
     /// </param>
     /// <exception cref="NotSupportedException">The parameter <paramref name="format"/> isn't empty.</exception>
     /// <returns><see keyword="true"/> if the formatting was successful; otherwise, <see keyword="false"/>.</returns>
-    public static bool TryFormatt(
+    public static bool TryFormat(
         this int value,
         scoped Span<char> destination,
         out int charsWritten,
