@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
-// ReSharper disable CheckNamespace
+// ReSharper disable CheckNamespace RedundantAssignment
 namespace System;
 #pragma warning disable RCS1163
 /// <summary>Provides the polyfill to <c>int.TryFormat</c>.</summary>
