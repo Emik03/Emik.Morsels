@@ -484,7 +484,7 @@ static partial class Stringifier
         Push(c, ref span);
     }
 
-    public static void Format(scoped Span<char> span, Version version)
+    static void Format(scoped Span<char> span, Version version)
     {
         Push('v', ref span);
 
