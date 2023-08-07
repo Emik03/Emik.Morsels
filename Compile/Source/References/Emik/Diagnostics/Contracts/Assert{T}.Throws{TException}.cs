@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
-    /// <inheritdoc cref="Assert.Throws{TException}"/>
+    /// <inheritdoc cref="Emik.Morsels.Assert.Throws{TException}"/>
     public new abstract partial class Throws<TException> : Assert.Throws<TException>
         where TException : Exception
     {

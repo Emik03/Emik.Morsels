@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-/// <inheritdoc cref="Assert"/>
+/// <inheritdoc cref="Emik.Morsels.Assert"/>
 abstract partial class Assert
 {
     /// <summary>Represents the way an assertion be formatted.</summary>

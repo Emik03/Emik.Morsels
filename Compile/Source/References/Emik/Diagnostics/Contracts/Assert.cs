@@ -20,7 +20,7 @@ abstract partial class Assert(
     static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToListLazily();
 #endif
 
-    /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Emik.Morsels.Assert"/> class.</summary>
     /// <param name="that">The condition that must be true.</param>
     /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
     /// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>
@@ -41,8 +41,8 @@ abstract partial class Assert(
 #endif
 
     /// <summary>
-    /// Gets the enumeration responsible for running every <see cref="Assert"/> instance defined in the current
-    /// <see cref="Assembly"/>, and returning every instance of a failed assert.
+    /// Gets the enumeration responsible for running every <see cref="Emik.Morsels.Assert"/> instance
+    /// defined in the current <see cref="Assembly"/>, and returning every instance of a failed assert.
     /// </summary>
     [Pure]
     public static IEnumerable<Result> Runner =>
@@ -275,9 +275,11 @@ abstract partial class Assert(
     [Pure]
     public override string ToString() => new Result(this, GetType()).ToString();
 
-    /// <summary>Determines whether the type implements <see cref="Assert"/> and can be instantiated.</summary>
+    /// <summary>
+    /// Determines whether the type implements <see cref="Emik.Morsels.Assert"/> and can be instantiated.
+    /// </summary>
     /// <param name="type">The type to check.</param>
-    /// <returns>Whether the type implements <see cref="Assert"/> and can be instantiated.</returns>
+    /// <returns>Whether the type implements <see cref="Emik.Morsels.Assert"/> and can be instantiated.</returns>
     [Pure]
     static bool IsAssertable([NotNullWhen(true)] Type? type) =>
         type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&

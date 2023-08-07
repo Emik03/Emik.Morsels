@@ -278,7 +278,7 @@ static partial class SpanSimdQueries
         };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged

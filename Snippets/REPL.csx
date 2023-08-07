@@ -9321,7 +9321,7 @@ readonly
         };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9748,7 +9748,7 @@ readonly
 #pragma warning disable 8500
         length * sizeof(T);
 #pragma warning restore 8500
-#endif
+#endif // ReSharper disable RedundantUnsafeContext
 #pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
@@ -14343,7 +14343,9 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.</summary>
+/// <summary>
+/// Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.
+/// </summary>
 #pragma warning disable MA0048
 
     /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
@@ -14521,8 +14523,8 @@ abstract partial class Assert(
 #endif
 
     /// <summary>
-    /// Gets the enumeration responsible for running every <see cref="Assert"/> instance defined in the current
-    /// <see cref="Assembly"/>, and returning every instance of a failed assert.
+    /// Gets the enumeration responsible for running every <see cref="Assert"/> instance
+    /// defined in the current <see cref="Assembly"/>, and returning every instance of a failed assert.
     /// </summary>
     [Pure]
     public static IEnumerable<Result> Runner =>
@@ -14755,7 +14757,9 @@ abstract partial class Assert(
     [Pure]
     public override string ToString() => new Result(this, GetType()).ToString();
 
-    /// <summary>Determines whether the type implements <see cref="Assert"/> and can be instantiated.</summary>
+    /// <summary>
+    /// Determines whether the type implements <see cref="Assert"/> and can be instantiated.
+    /// </summary>
     /// <param name="type">The type to check.</param>
     /// <returns>Whether the type implements <see cref="Assert"/> and can be instantiated.</returns>
     [Pure]
@@ -14886,7 +14890,9 @@ abstract partial class Assert
     public abstract partial class Throws<TException> : Assert
         where TException : Exception
     {
-        /// <summary>Initializes a new instance of the <see cref="Assert.Throws{TException}"/> class.</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Assert.Throws{TException}"/> class.
+        /// </summary>
         /// <param name="that">The condition that must throw <typeparamref name="TException"/>.</param>
         /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
         /// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>

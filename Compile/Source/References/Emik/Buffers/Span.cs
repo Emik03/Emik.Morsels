@@ -290,7 +290,7 @@ static partial class Span
 #pragma warning disable 8500
         length * sizeof(T);
 #pragma warning restore 8500
-#endif
+#endif // ReSharper disable RedundantUnsafeContext
 #pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP

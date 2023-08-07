@@ -3,7 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-/// <summary>Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.</summary>
+/// <summary>
+/// Methods that provide functions for enumerations of <see cref="Emik.Morsels.Assert.Result"/> instances.
+/// </summary>
 #pragma warning disable MA0048
 static partial class AssertResultEnumerableOperations
 #pragma warning restore MA0048
@@ -30,7 +32,7 @@ static partial class AssertResultEnumerableOperations
         enumerable.Select(x => x.Run()).ToListLazily();
 }
 
-/// <inheritdoc cref="Assert"/>
+/// <inheritdoc cref="Emik.Morsels.Assert"/>
 abstract partial class Assert
 {
     /// <summary>Represents the result of running an assertion.</summary>

@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-/// <inheritdoc cref="Assert"/>
+/// <inheritdoc cref="Emik.Morsels.Assert"/>
 abstract partial class Assert
 {
     /// <summary>
@@ -13,7 +13,9 @@ abstract partial class Assert
     public abstract partial class Throws<TException> : Assert
         where TException : Exception
     {
-        /// <summary>Initializes a new instance of the <see cref="Assert.Throws{TException}"/> class.</summary>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Emik.Morsels.Assert.Throws{TException}"/> class.
+        /// </summary>
         /// <param name="that">The condition that must throw <typeparamref name="TException"/>.</param>
         /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
         /// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>
@@ -24,7 +26,7 @@ abstract partial class Assert
         )
             : base(Try(that, ref message, thatEx), message, thatEx) { }
 
-        /// <inheritdoc cref="Assert.Throws{TException}(Action, string, string)"/>
+        /// <inheritdoc cref="Emik.Morsels.Assert.Throws{TException}(Action, string, string)"/>
         protected Throws(
             [InstantHandle] Func<object> that,
             string? message = null,
