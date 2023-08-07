@@ -160,6 +160,7 @@ abstract partial class Assert(
     public static bool NotNull([NotNullWhen(true)] object? x) => x is not null;
 
     /// <summary>Assertion that the enumerable must not be null.</summary>
+    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
     /// <param name="x">The value that must not be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
     [Format("Expected @x to be not null, received null."), Pure]
