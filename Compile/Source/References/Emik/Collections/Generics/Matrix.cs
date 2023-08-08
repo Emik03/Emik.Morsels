@@ -41,6 +41,78 @@ static partial class MatrixFactory
 /// <typeparam name="T">The type of item within the list.</typeparam>
 sealed partial class Matrix<T> : IList<IList<T>>
 {
+    /// <summary>Represents a slice of a matrix.</summary>
+    /// <param name="matrix">The matrix to reference.</param>
+    /// <param name="ordinal">The first index of the matrix.</param>
+#pragma warning disable IDE0044
+    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
+#pragma warning restore IDE0044
+    {
+        /// <inheritdoc />
+        public T this[[NonNegativeValue] int index]
+        {
+            [Pure] get => matrix.List[Count * ordinal + index];
+            set => matrix.List[Count * ordinal + index] = value;
+        }
+
+        /// <inheritdoc />
+        public bool IsReadOnly
+        {
+            [Pure] get => matrix.List.IsReadOnly;
+        }
+
+        /// <inheritdoc />
+        public int Count
+        {
+            [Pure] get => matrix.CountPerList;
+        }
+
+        /// <inheritdoc />
+        public void Add(T item) => matrix.List.Add(item);
+
+        /// <inheritdoc />
+        public void Clear()
+        {
+            for (var i = 0; i < Count; i++)
+                matrix.List.RemoveAt(Count * ordinal);
+        }
+
+        /// <inheritdoc />
+        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+        {
+            for (var i = 0; i < Count; i++)
+                array[arrayIndex + i] = this[i];
+        }
+
+        /// <inheritdoc />
+        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
+
+        /// <inheritdoc />
+        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Contains(T item) =>
+            Enumerable
+               .Range(0, Count)
+               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
+
+        /// <inheritdoc />
+        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
+
+        /// <inheritdoc />
+        [Pure, ValueRange(-1, int.MaxValue)]
+        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
     readonly int _countPerListEager;
 
     readonly Func<int>? _countPerListLazy;
@@ -94,6 +166,23 @@ sealed partial class Matrix<T> : IList<IList<T>>
         _countPerListLazy = countPerList;
         _listLazy = list;
     }
+#if !WAWA
+    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
+    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
+    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
+    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
+    {
+        [Pure] get => List[Count * x + y];
+        set => List[Count * x + y] = value;
+    }
+#endif
+
+    /// <inheritdoc />
+    public IList<T> this[[NonNegativeValue] int index]
+    {
+        [Pure] get => new Slice(this, index);
+        set => Add(value);
+    }
 
     /// <summary>Gets the amount of items per list.</summary>
     public int CountPerList
@@ -110,23 +199,6 @@ sealed partial class Matrix<T> : IList<IList<T>>
         get => _listLazy?.Invoke() ?? _listEager;
     }
 #pragma warning restore CS8603
-
-    /// <inheritdoc />
-    public IList<T> this[[NonNegativeValue] int index]
-    {
-        [Pure] get => new Slice(this, index);
-        set => Add(value);
-    }
-#if !WAWA
-    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
-    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
-    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
-    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
-    {
-        [Pure] get => List[Count * x + y];
-        set => List[Count * x + y] = value;
-    }
-#endif
 
     /// <inheritdoc />
     public bool IsReadOnly
@@ -186,84 +258,11 @@ sealed partial class Matrix<T> : IList<IList<T>>
 
     /// <inheritdoc />
     [Pure]
-    public IEnumerator<IList<T>> GetEnumerator() =>
-        Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+    public IEnumerator<IList<T>> GetEnumerator() => Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
 
     /// <inheritdoc />
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <summary>Represents a slice of a matrix.</summary>
-    /// <param name="matrix">The matrix to reference.</param>
-    /// <param name="ordinal">The first index of the matrix.</param>
-#pragma warning disable IDE0044
-    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
-#pragma warning restore IDE0044
-    {
-        /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            [Pure] get => matrix.List.IsReadOnly;
-        }
-
-        /// <inheritdoc />
-        public int Count
-        {
-            [Pure] get => matrix.CountPerList;
-        }
-
-        /// <inheritdoc />
-        public T this[[NonNegativeValue] int index]
-        {
-            [Pure] get => matrix.List[Count * ordinal + index];
-            set => matrix.List[Count * ordinal + index] = value;
-        }
-
-        /// <inheritdoc />
-        public void Add(T item) => matrix.List.Add(item);
-
-        /// <inheritdoc />
-        public void Clear()
-        {
-            for (var i = 0; i < Count; i++)
-                matrix.List.RemoveAt(Count * ordinal);
-        }
-
-        /// <inheritdoc />
-        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-        {
-            for (var i = 0; i < Count; i++)
-                array[arrayIndex + i] = this[i];
-        }
-
-        /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
-
-        /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
-
-        /// <inheritdoc />
-        [Pure]
-        public bool Contains(T item) =>
-            Enumerable
-               .Range(0, Count)
-               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
-
-        /// <inheritdoc />
-        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
-
-        /// <inheritdoc />
-        [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
-
-        /// <inheritdoc />
-        [Pure]
-        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
-
-        /// <inheritdoc />
-        [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
 }
 
 #endif

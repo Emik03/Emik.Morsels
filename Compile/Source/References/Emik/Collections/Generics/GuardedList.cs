@@ -18,8 +18,7 @@ static partial class GuardedFactory
     /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
+    public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) => iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
 }
 #endif
 
@@ -31,14 +30,6 @@ static partial class GuardedFactory
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
-    /// <inheritdoc/>
-    [CollectionAccess(None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(None), NonNegativeValue, Pure]
-    public int Count => list.Count;
-
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T? this[int index]
@@ -51,6 +42,14 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
                 list[index] = value;
         }
     }
+
+    /// <inheritdoc/>
+    [CollectionAccess(None), Pure]
+    public bool IsReadOnly => list.IsReadOnly;
+
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(None), NonNegativeValue, Pure]
+    public int Count => list.Count;
 
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
