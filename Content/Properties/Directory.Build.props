@@ -8,6 +8,7 @@
         <Nullable>enable</Nullable>
         <FileVersion>1.0</FileVersion>
         <WarningLevel>4</WarningLevel>
+        <AnalysisMode>All</AnalysisMode>
         <RunAnalyzers>true</RunAnalyzers>
         <LangVersion>preview</LangVersion>
         <Deterministic>true</Deterministic>
@@ -17,7 +18,6 @@
         <RunCodeAnalysis>true</RunCodeAnalysis>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
@@ -119,24 +119,24 @@
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.80" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.81" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.6" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.4.0" PrivateAssets="all"/>
+        <PackageReference Include="Collections.Analyzer" Version="0.2.10" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
-        <PackageReference Include="Collections.Analyzer" Version="0.2.9" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.0" PrivateAssets="all"/>
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507" PrivateAssets="all"/>
-        <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.0" PrivateAssets="all"/>
+        <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.2" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.4.0" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.5-beta1.23320.2" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23364.2" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.7.1-preview" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.5-beta1.23320.2" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.23364.2" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Community Toolkit starts at .NET Standard 2.0. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
