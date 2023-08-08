@@ -221,6 +221,7 @@
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <NoWarn>$(NoWarn);AsyncifyInvocation;CS0419;CS1574;CS1580;CS3001;CS3002;CS3003;CS3009;CS3024;CS8601;CS8604;CS8669;CS8767;CS9124</NoWarn>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
@@ -278,7 +279,6 @@
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
         <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.0" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.7.0-2.final" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
