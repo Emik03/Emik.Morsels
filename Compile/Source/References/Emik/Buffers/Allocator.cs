@@ -2,7 +2,7 @@
 
 // ReSharper disable CheckNamespace RedundantUsingDirective
 namespace Emik.Morsels;
-#pragma warning disable 1574 8500
+#pragma warning disable 1574, 8500
 using static Span;
 
 /// <summary>Provides the method to convert spans.</summary>
