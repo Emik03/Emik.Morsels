@@ -197,8 +197,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
-using Enum = System.Enum;
 using static System.Linq.Expressions.Expression;
+using Enum = System.Enum;
 using static System.Linq.Expressions.Expression;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
@@ -210,330 +210,6 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Provides methods for unfolding.</summary>
-
-    /// <summary>Applies a selector and collects the returned items recursively until the value becomes null.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The initial value.</param>
-    /// <param name="converter">The converter to apply.</param>
-    /// <returns>
-    /// The parameter <paramref name="value"/>, followed by each non-null
-    /// returned value from the parameter <paramref name="converter"/>.
-    /// </returns>
-    [Pure]
-    public static IEnumerable<T> FindPathToNull<T>(this T? value, Converter<T, T?> converter)
-        where T : class
-    {
-        while (value is not null)
-        {
-            yield return value;
-
-            value = converter(value);
-        }
-    }
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-#pragma warning disable RCS1163, RCS1175
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
-#pragma warning restore RCS1163, RCS1175
-        where T : struct =>
-        throw Unreachable;
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
-        where T : struct
-    {
-        T? maybe = value;
-
-        while (maybe is { } yes)
-        {
-            yield return yes;
-
-            maybe = converter(yes);
-        }
-    }
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-#pragma warning disable RCS1163, RCS1175
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
-#pragma warning restore RCS1163, RCS1175
-        where T : struct =>
-        throw Unreachable;
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
-        where T : struct =>
-        value is { } t
-            ? FindPathToEmptyNullable(t, converter)
-#if NET20 || NET30
-            : new T[0];
-#else
-            : Enumerable.Empty<T>();
-#endif
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
-        where T : class
-    {
-        SmallList<T> output = default;
-
-        while (value is not null)
-        {
-            output.Add(value);
-            value = converter(value);
-        }
-
-        return output;
-    }
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-#pragma warning disable RCS1163, RCS1175
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
-#pragma warning restore RCS1163, RCS1175
-        where T : struct =>
-        throw Unreachable;
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
-        where T : struct
-    {
-        SmallList<T> output = default;
-        T? maybe = value;
-
-        while (maybe is { } yes)
-        {
-            output.Add(yes);
-            maybe = converter(yes);
-        }
-
-        return output;
-    }
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
-#pragma warning disable RCS1163, RCS1175
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
-#pragma warning restore RCS1163, RCS1175
-        where T : struct =>
-        throw Unreachable;
-
-    /// <inheritdoc cref="FindPathToNull{T}"/>
-    [Pure]
-    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
-        where T : struct =>
-        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : default;
-
-// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-#pragma warning disable CS1574, CS1580
-/// <summary>Methods that creates enumerations from individual items.</summary>
-
-#if !NETSTANDARD || NETSTANDARD1_5_OR_GREATER
-    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
-    /// <param name="assembly">The assembly to get the types from.</param>
-    /// <returns>
-    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    public static IEnumerable<Type> TryGetTypes(this Assembly? assembly)
-    {
-        try
-        {
-            return assembly?.GetTypes() ?? Enumerable.Empty<Type>();
-        }
-        catch (ReflectionTypeLoadException ex)
-        {
-            return ex.Types.Filter();
-        }
-    }
-#endif
-
-    /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="item">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="item"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, MustUseReturnValue]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        this T? item,
-        [InstantHandle] Converter<T, IEnumerable<TResult>?> map
-    ) =>
-        item is not null && map(item) is { } iterable ? iterable : Enumerable.Empty<TResult>();
-
-    /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="item">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="item"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, MustUseReturnValue]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        this T? item,
-        [InstantHandle] Converter<T, IEnumerable<TResult>?> map
-    )
-        where T : struct =>
-        item.HasValue && map(item.Value) is { } iterable ? iterable : Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, IEnumerable<TResult?>?> map
-    ) =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, IEnumerable<TResult?>?> map
-    )
-        where T : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, IEnumerable<TResult?>?> map
-    )
-        where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, IEnumerable<TResult?>?> map
-    )
-        where T : struct
-        where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, int, IEnumerable<TResult?>?> map
-    ) =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, int, IEnumerable<TResult?>?> map
-    )
-        where T : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, int, IEnumerable<TResult?>?> map
-    )
-        where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-
-    /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but with exhaustive null guards that fall back to empty enumerables.
-    /// </summary>
-    /// <typeparam name="T">The source of the item.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="iterator">The item to check.</param>
-    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
-    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
-        [NoEnumeration] this IEnumerable<T?>? iterator,
-        Func<T, int, IEnumerable<TResult?>?> map
-    )
-        where T : struct
-        where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
-#endif
-
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
@@ -613,6 +289,45 @@ using static JetBrains.Annotations.CollectionAccessType;
         (major, minor, build, majorRevision, minorRevision) = version is null
             ? default
             : (version.Major, version.Minor, version.Build, version.MajorRevision, version.MinorRevision);
+
+// SPDX-License-Identifier: MPL-2.0
+#pragma warning disable GlobalUsingsAnalyzer
+
+// ReSharper disable once RedundantUsingDirective.Global
+
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Methods to get elements of a tuple.</summary>
+
+    /// <summary>Gets the first item of the tuple.</summary>
+    /// <typeparam name="T1">The first type of the tuple.</typeparam>
+    /// <typeparam name="T2">The second type of the tuple.</typeparam>
+    /// <param name="tuple">The tuple to get the value from.</param>
+    /// <returns>The field <see cref="ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.</returns>
+    public static T1 First<T1, T2>((T1, T2) tuple) => tuple.Item1;
+
+    /// <summary>Gets the second item of the tuple.</summary>
+    /// <typeparam name="T1">The first type of the tuple.</typeparam>
+    /// <typeparam name="T2">The second type of the tuple.</typeparam>
+    /// <param name="tuple">The tuple to get the value from.</param>
+    /// <returns>The field <see cref="ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.</returns>
+    public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
+#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0 // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
+    /// <summary>Gets the enumeration of the tuple.</summary>
+    /// <param name="tuple">The tuple to enumerate.</param>
+    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
+    public static IEnumerable<object?> AsEnumerable(this ITuple tuple) => tuple.Length.For(i => tuple[i]);
+
+    /// <summary>Gets the enumeration of the tuple.</summary>
+    /// <typeparam name="T">The type of tuple.</typeparam>
+    /// <param name="tuple">The tuple to enumerate.</param>
+    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
+    public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
+        where T : ITuple =>
+        tuple.Length.For(i => tuple[i]);
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -819,42 +534,202 @@ using static JetBrains.Annotations.CollectionAccessType;
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer
-
-// ReSharper disable once RedundantUsingDirective.Global
-
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 
+#pragma warning disable CS1574, CS1580
+/// <summary>Methods that creates enumerations from individual items.</summary>
 
-/// <summary>Methods to get elements of a tuple.</summary>
+#if !NETSTANDARD || NETSTANDARD1_5_OR_GREATER
+    /// <summary>Gets the types from an assembly even if type loads occur.</summary>
+    /// <param name="assembly">The assembly to get the types from.</param>
+    /// <returns>
+    /// The enumeration of all successfully loaded types from the parameter <paramref name="assembly"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static IEnumerable<Type> TryGetTypes(this Assembly? assembly)
+    {
+        try
+        {
+            return assembly?.GetTypes() ?? Enumerable.Empty<Type>();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Filter();
+        }
+    }
+#endif
 
-    /// <summary>Gets the first item of the tuple.</summary>
-    /// <typeparam name="T1">The first type of the tuple.</typeparam>
-    /// <typeparam name="T2">The second type of the tuple.</typeparam>
-    /// <param name="tuple">The tuple to get the value from.</param>
-    /// <returns>The field <see cref="ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.</returns>
-    public static T1 First<T1, T2>((T1, T2) tuple) => tuple.Item1;
+    /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="item">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="item"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, MustUseReturnValue]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        this T? item,
+        [InstantHandle] Converter<T, IEnumerable<TResult>?> map
+    ) =>
+        item is not null && map(item) is { } iterable ? iterable : Enumerable.Empty<TResult>();
 
-    /// <summary>Gets the second item of the tuple.</summary>
-    /// <typeparam name="T1">The first type of the tuple.</typeparam>
-    /// <typeparam name="T2">The second type of the tuple.</typeparam>
-    /// <param name="tuple">The tuple to get the value from.</param>
-    /// <returns>The field <see cref="ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.</returns>
-    public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
-#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0 // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
-    /// <summary>Gets the enumeration of the tuple.</summary>
-    /// <param name="tuple">The tuple to enumerate.</param>
-    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
-    public static IEnumerable<object?> AsEnumerable(this ITuple tuple) => tuple.Length.For(i => tuple[i]);
+    /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="item">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="item"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, MustUseReturnValue]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        this T? item,
+        [InstantHandle] Converter<T, IEnumerable<TResult>?> map
+    )
+        where T : struct =>
+        item.HasValue && map(item.Value) is { } iterable ? iterable : Enumerable.Empty<TResult>();
 
-    /// <summary>Gets the enumeration of the tuple.</summary>
-    /// <typeparam name="T">The type of tuple.</typeparam>
-    /// <param name="tuple">The tuple to enumerate.</param>
-    /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
-    public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
-        where T : ITuple =>
-        tuple.Length.For(i => tuple[i]);
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, IEnumerable<TResult?>?> map
+    ) =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, IEnumerable<TResult?>?> map
+    )
+        where T : struct =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, IEnumerable<TResult?>?> map
+    )
+        where TResult : struct =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, IEnumerable<TResult?>?> map
+    )
+        where T : struct
+        where TResult : struct =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, int, IEnumerable<TResult?>?> map
+    ) =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, int, IEnumerable<TResult?>?> map
+    )
+        where T : struct =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, int, IEnumerable<TResult?>?> map
+    )
+        where TResult : struct =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
+
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but with exhaustive null guards that fall back to empty enumerables.
+    /// </summary>
+    /// <typeparam name="T">The source of the item.</typeparam>
+    /// <typeparam name="TResult">The resulting type.</typeparam>
+    /// <param name="iterator">The item to check.</param>
+    /// <param name="map">The callback to use when <paramref name="iterator"/> is non-<see langword="null"/>.</param>
+    /// <returns>The result of the parameter <paramref name="map"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> ManyOrEmpty<T, TResult>(
+        [NoEnumeration] this IEnumerable<T?>? iterator,
+        Func<T, int, IEnumerable<TResult?>?> map
+    )
+        where T : struct
+        where TResult : struct =>
+        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
+        Enumerable.Empty<TResult>();
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -952,2151 +827,2527 @@ using static JetBrains.Annotations.CollectionAccessType;
     }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NETFRAMEWORK || NET35_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier
-
-
-
-
-/// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
-[UsedImplicitly]
-
-    static readonly Dictionary<Type, IList> s_dictionary = new();
-
-    /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="left"/> has the values
-    /// of the parameter <paramref name="right"/>; otherwise, <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool Has<T>(this T left, T right)
-        where T : Enum =>
-        left.Op(right, static (x, y) => (x & y) == x);
-
-    /// <summary>Performs a conversion operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The <see cref="int"/> cast of <paramref name="value"/>.</returns>
-    [Pure]
-    public static int AsInt<T>(this T value)
-        where T : Enum =>
-        MathCaching<T>.From(value);
-
-    /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
-    /// <typeparam name="T">The type of enum to get the values from.</typeparam>
-    /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
-    public static IList<T> GetValues<T>()
-        where T : Enum =>
-        s_dictionary.TryGetValue(typeof(T), out var list)
-            ? (IList<T>)list
-            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
-
-    /// <summary>Performs a conversion operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The <typeparamref name="T"/> cast of <paramref name="value"/>.</returns>
-    [Pure]
-    public static T As<T>(this int value)
-        where T : Enum =>
-        MathCaching<T>.To(value);
-
-    /// <summary>Performs a negation operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
-    [Pure]
-    public static T Negate<T>(this T value)
-        where T : Enum =>
-        value.Op(static x => unchecked(-x));
-
-    /// <summary>Performs an decrement operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately before it.</returns>
-    [Pure]
-    public static T Predecessor<T>(this T value)
-        where T : Enum =>
-        value.Op(static x => unchecked(--x));
-
-    /// <summary>Performs a increment operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately after it.</returns>
-    [Pure]
-    public static T Successor<T>(this T value)
-        where T : Enum =>
-        value.Op(static x => unchecked(++x));
-
-    /// <summary>Performs an addition operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The sum of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [Pure]
-    public static T Add<T>(this T left, T right)
-        where T : Enum =>
-        left.Op(right, static (x, y) => unchecked(x + y));
-
-    /// <summary>Performs a subtraction operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The difference of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [Pure]
-    public static T Subtract<T>(this T left, T right)
-        where T : Enum =>
-        left.Op(right, static (x, y) => unchecked(x - y));
-
-    /// <summary>Performs a multiplication operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The product of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [Pure]
-    public static T Multiply<T>(this T left, T right)
-        where T : Enum =>
-        left.Op(right, static (x, y) => unchecked(x * y));
-
-    /// <summary>Performs a division operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The quotient of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [Pure]
-    public static T Divide<T>(this T left, T right)
-        where T : Enum =>
-        left.Op(right, static (x, y) => x / y);
-
-    /// <summary>Performs a modulo operation.</summary>
-    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>The remainder of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
-    [Pure]
-    public static T Modulo<T>(this T left, T right)
-        where T : Enum =>
-        left.Op(right, static (x, y) => x % y);
-
-    /// <summary>Computes the product of a sequence of <typeparamref name="T"/> values.</summary>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the product of.</param>
-    /// <returns>The product of the values in the sequence.</returns>
-    [Pure]
-    public static T Product<T>(this IEnumerable<T> source)
-        where T : Enum =>
-        source.Aggregate(Multiply);
-
-    /// <summary>Computes the sum of a sequence of <typeparamref name="T"/> values.</summary>
-    /// <typeparam name="T">The type of sequence.</typeparam>
-    /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the sum of.</param>
-    /// <returns>The sum of the values in the sequence.</returns>
-    [Pure]
-    public static T Sum<T>(this IEnumerable<T> source)
-        where T : Enum =>
-        source.Aggregate(Add);
-
-    [Pure]
-    static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
-        where T : Enum =>
-        op(value.AsInt()).As<T>();
-
-    [Pure]
-    static T Op<T>(this T left, T right, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
-        where T : Enum =>
-        op(left.AsInt(), right.AsInt()).As<T>();
-
-    [Pure]
-    static TResult Op<T, TResult>(
-        this T left,
-        T right,
-        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, TResult> op
-    )
-        where T : Enum =>
-        op(left.AsInt(), right.AsInt());
-
-    static class MathCaching<T>
-        where T : Enum
-    {
-        public static Converter<T, int> From { get; } = Make<Converter<T, int>>(false);
-
-        public static Converter<int, T> To { get; } = Make<Converter<int, T>>(true);
-
-        static TFunc Make<TFunc>(bool isReverse)
-            where TFunc : Delegate
-        {
-            var parameter = Parameter(isReverse ? typeof(int) : typeof(T), nameof(T));
-            var underlying = GetUnderlyingType(typeof(T));
-            Expression cast = isReverse ? parameter : Convert(parameter, underlying);
-
-            cast = underlying != typeof(int) ? Convert(parameter, isReverse ? underlying : typeof(int)) : cast;
-            cast = isReverse ? Convert(cast, typeof(T)) : cast;
-
-            return Lambda<TFunc>(cast, parameter).Compile();
-        }
-    }
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-// ReSharper disable once CheckNamespace
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-
-
-/// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
-
-    /// <summary>Increments the value.</summary>
-    /// <typeparam name="T">The type of value to increment.</typeparam>
-    /// <param name="t">The value to increment.</param>
-    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>The value <see langword="true"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Increment<T>(ref T t) =>
-        typeof(T) switch
-        {
-            var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
-            var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
-            var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
-            var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
-#if NET5_0_OR_GREATER
-            var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
-            var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
-#endif
-            var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
-            var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
-            var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
-            var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
-            var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
-            _ when DirectOperators<T>.IsSupported => (t = DirectOperators<T>.Increment(t)) is var _,
-            _ => Fail<T>() is var _,
-        };
-
-    /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
-    /// <typeparam name="T">The type to check.</typeparam>
-    /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
-
-    /// <summary>Performs an addition operation to return the sum.</summary>
-    /// <typeparam name="T">The type of value to add.</typeparam>
-    /// <param name="l">The left-hand side.</param>
-    /// <param name="r">The right-hand side.</param>
-    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Adder<T>(T l, T r) =>
-        typeof(T) switch
-        {
-            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
-            var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
-            var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
-            var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
-            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
-            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
-            var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
-            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
-            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
-            _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Adder(l, r),
-            _ => Fail<T>(),
-        };
-
-    /// <summary>Performs a dividing operation to return the quotient.</summary>
-    /// <typeparam name="T">The type of value to divide.</typeparam>
-    /// <param name="l">The left-hand side.</param>
-    /// <param name="r">The right-hand side.</param>
-    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Divider<T>(T l, int r) =>
-        typeof(T) switch
-        {
-            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
-            var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
-            var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
-            var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
-            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
-            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
-            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
-            var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
-            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
-            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
-            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
-            _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Divider(l, r),
-            _ => Fail<T>(),
-        };
-
-    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
-    /// <typeparam name="T">The type that failed.</typeparam>
-    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>This method does not return.</returns>
-    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Fail<T>() =>
-        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
-
-    /// <summary>Gets the minimum value.</summary>
-    /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
-    /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T MinValue<T>() =>
-        typeof(T) switch
-        {
-            var x when x == typeof(byte) => (T)(object)byte.MinValue,
-            var x when x == typeof(double) => (T)(object)double.MinValue,
-            var x when x == typeof(float) => (T)(object)float.MinValue,
-            var x when x == typeof(int) => (T)(object)int.MinValue,
-#if NET5_0_OR_GREATER
-            var x when x == typeof(nint) => (T)(object)nint.MinValue,
-            var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
-#endif
-            var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-            var x when x == typeof(short) => (T)(object)short.MinValue,
-            var x when x == typeof(uint) => (T)(object)uint.MinValue,
-            var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-            var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-            _ => DirectOperators<T>.MinValue,
-        };
-
-    /// <summary>Caches operators.</summary>
-    /// <typeparam name="T">The containing member of operators.</typeparam>
-    // ReSharper disable once ClassNeverInstantiated.Local
-    sealed partial class DirectOperators<T>
-    {
-        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
-
-        static readonly Type[]
-            s_binary = new[] { typeof(T), typeof(T) },
-            s_unary = new[] { typeof(T) };
-
-        static DirectOperators()
-        {
-            try
-            {
-                Increment = Make("op_Increment", Expression.Increment);
-                Adder = Make<T>("op_Addition", Expression.AddChecked);
-                Divider = Make<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(T))));
-            }
-            catch (InvalidOperationException)
-            {
-                IsSupported = false;
-            }
-        }
-#pragma warning disable RCS1158
-        /// <summary>
-        /// Gets a value indicating whether the functions can be used.
-        /// <see cref="MinValue"/> can be used regardless of its output.
-        /// </summary>
-        [CLSCompliant(false)]
-        public static bool IsSupported
-        {
-            [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
-             MethodImpl(MethodImplOptions.AggressiveInlining),
-             Pure]
-            get;
-        } = true;
-#pragma warning restore RCS1158
-        /// <summary>Gets the minimum value.</summary>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
-        public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!;
-
-        /// <summary>Gets the function for dividing.</summary>
-        public static Converter<T?, T>? Increment { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
-        /// <summary>Gets the function for adding.</summary>
-        public static Func<T?, T?, T>? Adder { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
-        /// <summary>Gets the function for dividing.</summary>
-        public static Func<T?, int, T>? Divider { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
-        [Pure]
-        static Converter<T?, T> Make(string name, [InstantHandle] Func<Expression, UnaryExpression> go) =>
-            typeof(T).GetMethod(name, Flags, null, s_unary, null) is not { } method &&
-            Expression.Parameter(typeof(T), "unit") is var unit
-                ? Expression.Lambda<Converter<T?, T>>(go(unit), unit).Compile()
-                : (Converter<T?, T>)Delegate.CreateDelegate(typeof(Converter<T?, T>), method);
-
-        [Pure]
-        static Func<T?, TRight?, T> Make<TRight>(
-            string name,
-            [InstantHandle] Func<Expression, Expression, BinaryExpression> go
-        ) =>
-            (typeof(T).GetMethod(name, Flags, null, s_binary, null) is not { } method ||
-                (Func<T?, T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T?, T>), method) is not { } func) &&
-            Expression.Parameter(typeof(T), "left") is var left &&
-            Expression.Parameter(typeof(TRight), "right") is var right
-                ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
-                : (x, y) => func(x, (T?)(object?)y);
-    }
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Extension methods to clamp numbers.</summary>
+/// <summary>Provides methods for unfolding.</summary>
 
-#if !NET7_0_OR_GREATER
-    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
-    /// <param name="number">The number to clip.</param>
-    /// <param name="min">If specified, the smallest number to return.</param>
-    /// <param name="max">If specified, the greatest number to return.</param>
+    /// <summary>Applies a selector and collects the returned items recursively until the value becomes null.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="value">The initial value.</param>
+    /// <param name="converter">The converter to apply.</param>
     /// <returns>
-    /// The parameter <paramref name="min"/> if <paramref name="number"/> is smaller than <paramref name="min"/>,
-    /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
-    /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
+    /// The parameter <paramref name="value"/>, followed by each non-null
+    /// returned value from the parameter <paramref name="converter"/>.
     /// </returns>
     [Pure]
-    public static int Clamp(this int number, int? min = null, int? max = null) =>
-        (min ?? number) is var small &&
-        (max ?? number) is var big &&
-        number <= small ? small :
-        number >= big ? big : number;
+    public static IEnumerable<T> FindPathToNull<T>(this T? value, Converter<T, T?> converter)
+        where T : class
+    {
+        while (value is not null)
+        {
+            yield return value;
 
-    /// <inheritdoc cref="Clamp(int, int?, int?)"/>
+            value = converter(value);
+        }
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
-    public static float Clamp(this float number, float? min = null, float? max = null) =>
-        (min ?? number) is var small &&
-        (max ?? number) is var big &&
-        number <= small ? small :
-        number >= big ? big : number;
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
+        where T : struct
+    {
+        T? maybe = value;
+
+        while (maybe is { } yes)
+        {
+            yield return yes;
+
+            maybe = converter(yes);
+        }
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [Pure]
+    public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
+        where T : struct =>
+        value is { } t
+            ? FindPathToEmptyNullable(t, converter)
+#if NET20 || NET30
+            : new T[0];
 #else
-    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
-    /// <typeparam name="T">The type of numeric value for comparisons.</typeparam>
-    /// <param name="number">The number to clip.</param>
-    /// <param name="min">If specified, the smallest number to return.</param>
-    /// <param name="max">If specified, the greatest number to return.</param>
-    /// <returns>
-    /// The parameter <paramref name="min"/> if <paramref name="number"/> is smaller than <paramref name="min"/>,
-    /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
-    /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
-    /// </returns>
-    [Pure]
-    public static T Clamp<T>(this T number, T? min = null, T? max = null)
-        where T : class, IComparisonOperators<T, T, bool> =>
-        (min ?? number) is var small &&
-        (max ?? number) is var big &&
-        number <= small ? small :
-        number >= big ? big : number;
+            : Enumerable.Empty<T>();
+#endif
 
-    /// <inheritdoc cref="Clamp{T}(T, T?, T?)"/>
+    /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
-    public static T Clamp<T>(this T number, T? min = null, T? max = null)
-        where T : struct, IComparisonOperators<T, T, bool> =>
-        (min ?? number) is var small &&
-        (max ?? number) is var big &&
-        number <= small ? small :
-        number >= big ? big : number;
+    public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
+        where T : class
+    {
+        SmallList<T> output = default;
 
+        while (value is not null)
+        {
+            output.Add(value);
+            value = converter(value);
+        }
+
+        return output;
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [Pure]
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
+        where T : struct
+    {
+        SmallList<T> output = default;
+        T? maybe = value;
+
+        while (maybe is { } yes)
+        {
+            output.Add(yes);
+            maybe = converter(yes);
+        }
+
+        return output;
+    }
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
+#pragma warning disable RCS1163, RCS1175
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T> converter)
+#pragma warning restore RCS1163, RCS1175
+        where T : struct =>
+        throw Unreachable;
+
+    /// <inheritdoc cref="FindPathToNull{T}"/>
+    [Pure]
+    public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
+        where T : struct =>
+        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : default;
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+#if !NET20 && !NET30 && !NET471_OR_GREATER && !NETSTANDARD1_6_OR_GREATER && !NETCOREAPP
+/// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
+
+    /// <summary>Appends a value to the end of the sequence.</summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+    /// <param name="source">A sequence of values.</param>
+    /// <param name="element">The value to append to <paramref name="source"/>.</param>
+    /// <returns>A new sequence that ends with <paramref name="element"/>.</returns>
+    public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) =>
+        source.Concat(element.Yield());
+
+    /// <summary>Prepends a value to the end of the sequence.</summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
+    /// <param name="source">A sequence of values.</param>
+    /// <param name="element">The value to prepend to <paramref name="source"/>.</param>
+    /// <returns>A new sequence that starts with <paramref name="element"/>.</returns>
+    public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element) =>
+        element.Yield().Concat(source);
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantNameQualifier
-
-
-
-
-/// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
-
-    /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
-    /// <remarks><para>
-    /// For performance reasons, we don't validate the input length parameter against negative values.
-    /// It is expected Range will be used with collections which always have non negative length/count.
-    /// We validate the range is inside the length scope though.
-    /// </para></remarks>
-    /// <param name="range">The <see cref="Range"/> that contains the range of elements.</param>
-    /// <param name="length">
-    /// The length of the collection that the range will be used with.
-    /// <paramref name="length"/> has to be a positive value.
-    /// </param>
-    /// <param name="outOffset">The resulting offset.</param>
-    /// <param name="outLength">The resulting length.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void GetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
-    {
-        if (!TryGetOffsetAndLength(range, length, out outOffset, out outLength))
-            throw new ArgumentOutOfRangeException(nameof(length));
-    }
-
-    /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
-    /// <param name="range">The <see cref="Range"/> that contains the range of elements.</param>
-    /// <param name="length">
-    /// The length of the collection that the range will be used with.
-    /// <paramref name="length"/> has to be a positive value.
-    /// </param>
-    /// <param name="outOffset">The resulting offset.</param>
-    /// <param name="outLength">The resulting length.</param>
-    /// <returns>Whether the values are set.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool TryGetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
-    {
-        var startIndex = range.Start;
-        var start = startIndex.IsFromEnd ? length - startIndex.Value : startIndex.Value;
-
-        var endIndex = range.End;
-        var end = endIndex.IsFromEnd ? length - endIndex.Value : endIndex.Value;
-
-        outOffset = start;
-        outLength = end - start;
-
-        return unchecked((uint)end <= (uint)length && (uint)start <= (uint)end);
-    }
-
-// SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 
-
-/// <summary>Extension methods to count digits in numbers.</summary>
-
-    /// <summary>Gets the amount of digits of the number.</summary>
-    /// <param name="number">The number to count.</param>
-    /// <returns>The amount of digits in the parameter <paramref name="number"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
-    public static byte DigitCount(this byte number) =>
-        number switch
-        {
-            < 10 => 1,
-            < 100 => 2,
-            _ => 3,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
-    public static byte DigitCount(this sbyte number) =>
-        number switch
-        {
-            < 10 and > -10 => 1,
-            < 100 and > -100 => 2,
-            _ => 3,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
-    public static byte DigitCount(this ushort number) =>
-        number switch
-        {
-            < 10 => 1,
-            < 100 => 2,
-            < 1000 => 3,
-            < 10000 => 4,
-            _ => 5,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
-    public static byte DigitCount(this short number) =>
-        number switch
-        {
-            < 10 and > -10 => 1,
-            < 100 and > -100 => 2,
-            < 1000 and > -1000 => 3,
-            < 10000 and > -10000 => 4,
-            _ => 5,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
-    public static byte DigitCount(this uint number) =>
-        number switch
-        {
-            < 10 => 1,
-            < 100 => 2,
-            < 1000 => 3,
-            < 10000 => 4,
-            < 100000 => 5,
-            < 1000000 => 6,
-            < 10000000 => 7,
-            < 100000000 => 8,
-            < 1000000000 => 9,
-            _ => 10,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
-    public static byte DigitCount(this int number) =>
-        number switch
-        {
-            < 10 and > -10 => 1,
-            < 100 and > -100 => 2,
-            < 1000 and > -1000 => 3,
-            < 10000 and > -10000 => 4,
-            < 100000 and > -100000 => 5,
-            < 1000000 and > -1000000 => 6,
-            < 10000000 and > -10000000 => 7,
-            < 100000000 and > -100000000 => 8,
-            < 1000000000 and > -1000000000 => 9,
-            _ => 10,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 20)]
-    public static byte DigitCount(this ulong number) =>
-        number switch
-        {
-            < 10 => 1,
-            < 100 => 2,
-            < 1000 => 3,
-            < 10000 => 4,
-            < 100000 => 5,
-            < 1000000 => 6,
-            < 10000000 => 7,
-            < 100000000 => 8,
-            < 1000000000 => 9,
-            < 10000000000 => 10,
-            < 100000000000 => 11,
-            < 1000000000000 => 12,
-            < 10000000000000 => 13,
-            < 100000000000000 => 14,
-            < 1000000000000000 => 15,
-            < 10000000000000000 => 16,
-            < 100000000000000000 => 17,
-            < 1000000000000000000 => 18,
-            < 10000000000000000000 => 19,
-            _ => 20,
-        };
-
-    /// <inheritdoc cref="DigitCount(byte)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 19)]
-    public static byte DigitCount(this long number) =>
-        number switch
-        {
-            < 10 and > -10 => 1,
-            < 100 and > -100 => 2,
-            < 1000 and > -1000 => 3,
-            < 10000 and > -10000 => 4,
-            < 100000 and > -100000 => 5,
-            < 1000000 and > -1000000 => 6,
-            < 10000000 and > -10000000 => 7,
-            < 100000000 and > -100000000 => 8,
-            < 1000000000 and > -1000000000 => 9,
-            < 10000000000 and > -10000000000 => 10,
-            < 100000000000 and > -100000000000 => 11,
-            < 1000000000000 and > -1000000000000 => 12,
-            < 10000000000000 and > -10000000000000 => 13,
-            < 100000000000000 and > -100000000000000 => 14,
-            < 1000000000000000 and > -1000000000000000 => 15,
-            < 10000000000000000 and > -10000000000000000 => 16,
-            < 100000000000000000 and > -100000000000000000 => 17,
-            < 1000000000000000000 and > -1000000000000000000 => 18,
-            _ => 19,
-        };
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Provides methods for heap-allocation analysis.</summary>
+#pragma warning disable 8604
+/// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
+// ReSharper disable LoopCanBePartlyConvertedToQuery
 
     /// <summary>
-    /// A <see langword="string"/> to use in an <see cref="ObsoleteAttribute"/> to indicate that the API isn't meant
-    /// for production, but not for deprecated reasons.
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    const string NotForProduction = "NOT deprecated. While this can be used in Release builds to run this on " +
-        "optimized code; This API exists for debugging builds and should be excluded from final production builds.";
-
-    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
-    /// <param name="action">The dangerous callback.</param>
-    /// <returns>An exception, if caught.</returns>
-    [Inline, Obsolete(NotForProduction)]
-    public static Exception? Swallow([InstantHandle] this Action action)
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<ControlFlow> func)
     {
-        try
+        for (var i = 0; i < upper; i++)
+            if (func() is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<int, ControlFlow> func)
+    {
+        for (var i = 0; i < upper; i++)
+            if (func(i) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int BreakableFor<TExternal>(
+        [NonNegativeValue] this int upper,
+        TExternal external,
+        [InstantHandle] Func<TExternal, ControlFlow> func
+    )
+    {
+        for (var i = 0; i < upper; i++)
+            if (func(external) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int BreakableFor<TExternal>(
+        [NonNegativeValue] this int upper,
+        TExternal external,
+        [InstantHandle] Func<int, TExternal, ControlFlow> func
+    )
+    {
+        for (var i = 0; i < upper; i++)
+            if (func(i, external) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+#if !NET20 && !NET30
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> BreakableFor<T>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        [InstantHandle] Func<T, ControlFlow> func
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+
+        foreach (var item in list)
+            if (func(item) is ControlFlow.Break)
+                break;
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> BreakableFor<T, TExternal>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        TExternal external,
+        [InstantHandle] Func<T, TExternal, ControlFlow> func
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+
+        foreach (var item in list)
+            if (func(item, external) is ControlFlow.Break)
+                break;
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> BreakableFor<T>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        [InstantHandle] Func<T, int, ControlFlow> func
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+        var i = 0;
+
+        foreach (var item in list)
+            if (func(item, checked(i++)) is ControlFlow.Break)
+                break;
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> BreakableFor<T, TExternal>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        TExternal external,
+        [InstantHandle] Func<T, int, TExternal, ControlFlow> func
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+        var i = 0;
+
+        foreach (var item in list)
+            if (func(item, checked(i++), external) is ControlFlow.Break)
+                break;
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        [InstantHandle] Func<TKey, TValue, ControlFlow> func
+    )
+        where TKey : notnull
+    {
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
+                break;
+
+        return dictionary;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        TExternal external,
+        [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
+    )
+        where TKey : notnull
+    {
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
+                break;
+
+        return dictionary;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        [InstantHandle] Func<TKey, TValue, int, ControlFlow> func
+    )
+        where TKey : notnull
+    {
+        var i = 0;
+
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value, checked(i++)) is ControlFlow.Break)
+                break;
+
+        return dictionary;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        TExternal external,
+        [InstantHandle] Func<TKey, TValue, int, TExternal, ControlFlow> func
+    )
+        where TKey : notnull
+    {
+        var i = 0;
+
+        foreach (var kvp in dictionary)
+            if (func(kvp.Key, kvp.Value, checked(i++), external) is ControlFlow.Break)
+                break;
+
+        return dictionary;
+    }
+#endif
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            if (func() is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            if (func(i) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T BreakableFor<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Func<TExternal, ControlFlow> func
+    )
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            if (func(external) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="func">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T BreakableFor<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Func<T, TExternal, ControlFlow> func
+    )
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            if (func(i, external) is ControlFlow.Break)
+                break;
+
+        return upper;
+    }
+#endif
+
+/// <summary>Determines control flow for loops in <see cref="Each"/>.</summary>
+#pragma warning disable MA0048
+public enum ControlFlow : byte
+#pragma warning restore MA0048
+{
+    /// <summary>The value indicating that the loop should continue.</summary>
+    Continue,
+
+    /// <summary>The value indicating that the loop should break.</summary>
+    Break,
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable RedundantExtendsListEntry
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
+        new Enumerable<T, object?>(iterable, null, action);
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Lazily<T, TExternal>(
+        [NoEnumeration] this IEnumerable<T> iterable,
+        TExternal external,
+        Action<T, TExternal> action
+    ) =>
+        new Enumerable<T, TExternal>(iterable, external, action);
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
+        new Enumerable<T, object?>(iterable, null, action);
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Lazily<T, TExternal>(
+        [NoEnumeration] this IEnumerable<T> iterable,
+        TExternal external,
+        Action<T, int, TExternal> action
+    ) =>
+        new Enumerable<T, TExternal>(iterable, external, action);
+
+/// <summary>
+/// Defines an <see cref="IEnumerable{T}"/> with a <see cref="Delegate"/> that is invoked on iteration.
+/// </summary>
+/// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
+/// <typeparam name="TExternal">The context element to pass into the <see cref="Delegate"/>.</typeparam>
+#pragma warning disable MA0048
+public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
+#pragma warning restore MA0048
+{
+    readonly Delegate _action;
+
+    readonly IEnumerable<T> _enumerable;
+
+    readonly TExternal _external;
+
+    /// <inheritdoc />
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T> action)
+        : this(enumerable, external, (Delegate)action) { }
+
+    /// <inheritdoc />
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
+        : this(enumerable, external, (Delegate)action) { }
+
+    /// <inheritdoc />
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
+        : this(enumerable, external, (Delegate)action) { }
+
+    /// <inheritdoc />
+    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
+        : this(enumerable, external, (Delegate)action) { }
+
+    /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
+    /// <param name="enumerable">
+    /// The <see cref="IEnumerable{T}"/> to create an <see cref="IEnumerator{T}"/> from.
+    /// </param>
+    /// <param name="external">The context element.</param>
+    /// <param name="action">The <see cref="Delegate"/> to invoke on iteration.</param>
+    Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Delegate action)
+    {
+        _enumerable = enumerable;
+        _external = external;
+        _action = action;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(CollectionAccessType.Read), Pure]
+#pragma warning disable IDISP004
+    public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
+#pragma warning restore IDISP004
+    /// <inheritdoc />
+    [CollectionAccess(CollectionAccessType.Read), Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    sealed class Enumerator(
+        [ProvidesContext] IEnumerator<T> enumerator,
+        TExternal external,
+        Delegate action
+    ) : IEnumerator<T>
+    {
+        int _index;
+
+        /// <inheritdoc />
+        // ReSharper disable once AssignNullToNotNullAttribute
+        public T Current => enumerator.Current;
+
+        /// <inheritdoc />
+        object? IEnumerator.Current => ((IEnumerator)enumerator).Current;
+
+        /// <inheritdoc />
+        public void Reset()
         {
+            enumerator.Reset();
+            _index = 0;
+        }
+
+        /// <inheritdoc />
+#pragma warning disable IDISP007
+        public void Dispose() => enumerator.Dispose();
+#pragma warning restore IDISP007
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            if (!enumerator.MoveNext())
+                return false;
+
+            var current = Current;
+
+            switch (action)
+            {
+                case Action<T> action:
+                    action(current);
+                    break;
+                case Action<T, int> action:
+                    action(current, _index);
+                    break;
+                case Action<T, TExternal> action:
+                    action(current, external);
+                    break;
+                case Action<T, int, TExternal> action:
+                    action(current, _index, external);
+                    break;
+            }
+
+            _index++;
+            return true;
+        }
+    }
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+#pragma warning disable 8603, 8604
+/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int For([NonNegativeValue] this int upper, [InstantHandle] Action action)
+    {
+        for (var i = 0; i < upper; i++)
             action();
-            return null;
-        }
-#pragma warning disable CA1031
-        catch (Exception ex)
-#pragma warning restore CA1031
-        {
-            return ex;
-        }
+
+        return upper;
     }
 
-    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
-    /// <typeparam name="T">The type of return.</typeparam>
-    /// <param name="func">The dangerous callback.</param>
-    /// <returns>The value returned from <paramref name="func"/>, or the exception caught.</returns>
-    [Inline, Obsolete(NotForProduction)]
-    public static (T?, Exception?) Swallow<T>([InstantHandle] this Func<T> func)
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int For([NonNegativeValue] this int upper, [InstantHandle] Action<int> action)
     {
-        try
-        {
-            return (func(), null);
-        }
-#pragma warning disable CA1031
-        catch (Exception ex)
-#pragma warning restore CA1031
-        {
-            return (default, ex);
-        }
+        for (var i = 0; i < upper; i++)
+            action(i);
+
+        return upper;
     }
 
-    /// <summary>Gets the amount of bytes a callback uses.</summary>
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int For<TExternal>(
+        [NonNegativeValue] this int upper,
+        TExternal external,
+        [InstantHandle] Action<TExternal> action
+    )
+    {
+        for (var i = 0; i < upper; i++)
+            action(external);
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static int For<TExternal>(
+        [NonNegativeValue] this int upper,
+        TExternal external,
+        [InstantHandle] Action<int, TExternal> action
+    )
+    {
+        for (var i = 0; i < upper; i++)
+            action(i, external);
+
+        return upper;
+    }
+#if !NET20 && !NET30
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> For<T>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        [InstantHandle] Action<T> action
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+
+        foreach (var item in list)
+            action(item);
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> For<T, TExternal>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        TExternal external,
+        [InstantHandle] Action<T, TExternal> action
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+
+        foreach (var item in list)
+            action(item, external);
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> For<T>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        [InstantHandle] Action<T, int> action
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+        var i = 0;
+
+        foreach (var item in list)
+            action(item, checked(i++));
+
+        return list;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/>.</returns>
+    public static ICollection<T> For<T, TExternal>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        TExternal external,
+        [InstantHandle] Action<T, int, TExternal> action
+    )
+    {
+        var list = iterable.ToCollectionLazily();
+        var i = 0;
+
+        foreach (var item in list)
+            action(item, checked(i++), external);
+
+        return list;
+    }
+#endif
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> For<TKey, TValue>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        [InstantHandle] Action<TKey, TValue> action
+    )
+        where TKey : notnull
+    {
+        foreach (var kvp in dictionary)
+            action(kvp.Key, kvp.Value);
+
+        return dictionary;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        TExternal external,
+        [InstantHandle] Action<TKey, TValue, TExternal> action
+    )
+        where TKey : notnull
+    {
+        foreach (var kvp in dictionary)
+            action(kvp.Key, kvp.Value, external);
+
+        return dictionary;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> For<TKey, TValue>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        [InstantHandle] Action<TKey, TValue, int> action
+    )
+        where TKey : notnull
+    {
+        var i = 0;
+
+        foreach (var kvp in dictionary)
+            action(kvp.Key, kvp.Value, checked(i++));
+
+        return dictionary;
+    }
+
+    /// <summary>
+    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
+    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
+    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
+    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
+        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
+        TExternal external,
+        [InstantHandle] Action<TKey, TValue, int, TExternal> action
+    )
+        where TKey : notnull
+    {
+        var i = 0;
+
+        foreach (var kvp in dictionary)
+            action(kvp.Key, kvp.Value, checked(i++), external);
+
+        return dictionary;
+    }
+#if !NET20 && !NET30
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="num">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
+    /// <returns>An enumeration from a range's start to end.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<int> For(this int num) =>
+        Math.Abs(num) is var abs && num < 0
+            ? Enumerable.Repeat(abs, abs).Select((x, i) => x - i - 1)
+            : Enumerable.Range(0, num);
+
+    /// <summary>Gets an enumeration of a number.</summary>
+    /// <param name="num">The index to count up or down to.</param>
+    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
+    [Pure]
+    public static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TExternal> For<TExternal>([NonNegativeValue] this int upper, TExternal external) =>
+        Enumerable.Repeat(external, upper);
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<TResult>(
+        [NonNegativeValue] this int upper,
+        [InstantHandle] Func<TResult> func
+    ) =>
+        Enumerable.Repeat(func, upper).Select(x => x());
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<TResult>(
+        [NonNegativeValue] this int upper,
+        [InstantHandle] Converter<int, TResult> func
+    ) =>
+        Enumerable.Repeat(func, upper).Select((x, i) => x(i));
+#endif
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
+    /// <returns>An enumeration from a range's start to end.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> For<T>(this T upper)
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return isNegative ? upper - i : i;
+    }
+
+    /// <summary>Gets an enumeration of a number.</summary>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="num">The index to count up or down to.</param>
+    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
+    [Pure]
+    public static IEnumerator<T> GetEnumerator<T>(this T num)
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T> =>
+        num.For().GetEnumerator();
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return external;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<T, TResult>(
+        [NonNegativeValue] this T upper,
+        [InstantHandle] Func<TResult> func
+    )
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return func();
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TResult">The type of iterator.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="func">The function for each loop.</param>
+    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<TResult> For<T, TResult>(
+        [NonNegativeValue] this T upper,
+        [InstantHandle] Converter<T, TResult> func
+    )
+        where T : IComparisonOperators<T?, T?, bool>,
+        ISubtractionOperators<T, T, T>,
+        IIncrementOperators<T>,
+        IUnaryNegationOperators<T, T>
+    {
+        var isNegative = upper < default(T);
+        var abs = isNegative ? -upper : upper;
+
+        for (T? i = default; i < abs; i++)
+            yield return func(isNegative ? upper - i : i);
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            action();
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            action(i);
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T For<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Action<TExternal> action
+    )
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            action(external);
+
+        return upper;
+    }
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <typeparam name="T">The type of number for the loop.</typeparam>
+    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
+    /// <param name="upper">The length to reach to in the for loop.</param>
+    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
+    /// <param name="action">The action for each loop.</param>
+    /// <returns>The parameter <paramref name="upper"/>.</returns>
+    [NonNegativeValue]
+    public static T For<T, TExternal>(
+        [NonNegativeValue] this T upper,
+        TExternal external,
+        [InstantHandle] Action<T, TExternal> action
+    )
+        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+    {
+        for (T? i = default; i < upper; i++)
+            action(i, external);
+
+        return upper;
+    }
+
+    /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
+    public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter) =>
+        Array.ConvertAll(array, converter);
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods to create power sets.</summary>
+
+    /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<IEnumerable<object>> PowerSet(this ICollection collection) =>
+        collection.Cast<object>().PowerSetInner(collection.Count);
+
+    /// <summary>Creates a power set from a collection.</summary>
     /// <remarks><para>
-    /// This method temporarily tunes the <see cref="GC"/> to <see cref="GCLatencyMode.LowLatency"/>
-    /// for accurate results. As such, the parameter <paramref name="heap"/> should not cause
-    /// substantial allocation such that collecting mid-way is required.
+    /// The power set is defined as the set of all subsets, including the empty set and the set itself.
     /// </para></remarks>
-    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
-    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
-    /// <returns>The number of bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.</returns>
-    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    public static long CountAllocation([InstantHandle, RequireStaticDelegate] Action heap, bool willWarmup = true)
-    {
-        if (willWarmup)
-            heap.Swallow();
-#if !(NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER)
-        var mode = GCSettings.LatencyMode;
-#endif
-        try
-        {
-#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            GC.TryStartNoGCRegion(ushort.MaxValue, ushort.MaxValue);
-#else
-            GCSettings.LatencyMode = GCLatencyMode.LowLatency;
-#endif
-#if NETCOREAPP3_0_OR_GREATER
-            var before = GC.GetTotalAllocatedBytes(true);
-#else
-            var before = GC.GetTotalMemory(true);
-#endif
-            heap.Swallow();
-#if NETCOREAPP3_0_OR_GREATER
-            var after = GC.GetTotalAllocatedBytes(true);
-#else
-            var after = GC.GetTotalMemory(false); // Prevents last-second garbage collection.
+    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The argument <paramref name="collection"/> has 32 or more elements.
+    /// </exception>
+    /// <param name="collection">The set to create a power set.</param>
+    /// <returns>The power set of the parameter <paramref name="collection"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this ICollection<T> collection) =>
+        collection.PowerSetInner(collection.Count);
+
+    /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this IReadOnlyCollection<T> collection) =>
+        collection.PowerSetInner(collection.Count);
+
+    /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this T[] collection) =>
+        ((ICollection<T>)collection).PowerSet();
+
+    [LinqTunnel, Pure]
+    static IEnumerable<IEnumerable<T>> PowerSetInner<T>(this IEnumerable<T> iterable, int count) =>
+        count < 32
+            ? Enumerable.Range(0, 1 << count).Select(mask => iterable.Where((_, j) => (1 << j & mask) is not 0))
+            : throw new ArgumentOutOfRangeException(nameof(count), count, $"Cannot exceed bits in {nameof(Int32)}.");
 #endif
 
-            return after - before;
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable InvertIf
+#pragma warning disable IDE0059
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods to force full enumerations.</summary>
+
+    /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    public static void Enumerate([InstantHandle] this IEnumerable? iterable)
+    {
+        if (iterable is not null)
+            foreach (var unused in iterable) { }
+    }
+
+    /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    public static void Enumerate<T>([InstantHandle] this IEnumerable<T>? iterable)
+    {
+        if (iterable is not null)
+            foreach (var unused in iterable) { }
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
+
+#pragma warning disable CS1574, CS1580
+/// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
+
+    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+    /// <remarks><para>
+    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
+    /// Each duplicate appears exactly once within the returned value.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
+    /// <param name="source">The source to filter.</param>
+    /// <param name="comparer">The comparer to assess distinctiveness.</param>
+    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> DistinctDuplicates<T>(
+        [NoEnumeration] this IEnumerable<T> source,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        source.GroupDuplicates(comparer).Select(x => x.Key);
+
+    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+    /// <remarks><para>
+    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
+    /// Each duplicate appears two or more times within the returned value.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
+    /// <param name="source">The source to filter.</param>
+    /// <param name="comparer">The comparer to assess distinctiveness.</param>
+    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Duplicates<T>(
+        [NoEnumeration] this IEnumerable<T> source,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        source.GroupDuplicates(comparer).SelectMany(x => x);
+
+    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
+    /// <remarks><para>Filters out unique elements within an <see cref="Enumerable{T}"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
+    /// <param name="source">The source to filter.</param>
+    /// <param name="comparer">The comparer to assess distinctiveness.</param>
+    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
+        [NoEnumeration] this IEnumerable<T> source,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
+
+    /// <summary>Negated <see cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input sequence starting at
+    /// the first element in the linear series that does pass the test specified by the predicate.
+    /// </returns>
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+        source.SkipWhile(Not1(predicate));
+
+    /// <summary>Negated <see cref="Enumerable.SelectMany{T}(IEnumerable{T}, Func{T, IEnumerable{T}})"/>.</summary>
+    /// <remarks><para>
+    /// Splits the <see cref="IEnumerable{T}"/> into multiple <see cref="IEnumerable{T}"/>
+    /// instances in at most the specified length.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the <see cref="IEnumerable{T}"/>.</typeparam>
+    /// <param name="source">The <see cref="IEnumerable{T}"/> to chop into slices.</param>
+    /// <param name="count">The maximum length of any given returned <see cref="IEnumerable{T}"/> instances.</param>
+    /// <returns>The wrapper of the parameter <paramref name="source"/> that returns slices of it.</returns>
+    [Pure]
+    public static IEnumerable<IEnumerable<T>> SplitEvery<T>(
+        [InstantHandle] this IEnumerable<T> source,
+        [ValueRange(1, int.MaxValue)] int count
+    )
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (count <= 0)
+            yield break;
+
+        using var e = source.GetEnumerator();
+
+        while (e.MoveNext())
+            yield return e.SplitEvery(count);
+    }
+
+    /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input
+    /// sequence that occur before the element at which the test no longer fails.
+    /// </returns>
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+        source.TakeWhile(Not1(predicate));
+
+    /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}" /> that contains elements from
+    /// the input sequence that do not satisfy the condition.
+    /// </returns>
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> TakeUntil<T>(
+        [NoEnumeration] this IEnumerable<T> source,
+        Func<T, int, bool> predicate
+    ) =>
+        source.TakeWhile(Not2(predicate));
+
+    /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}" /> that contains elements from
+    /// the input sequence that do not satisfy the condition.
+    /// </returns>
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
+        source.Where(Not1(predicate));
+
+    /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}" /> that contains elements from
+    /// the input sequence that do not satisfy the condition.
+    /// </returns>
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Omit<T>(
+        [NoEnumeration] this IEnumerable<T> source,
+        Func<T, int, bool> predicate
+    ) =>
+        source.Where(Not2(predicate));
+
+    static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
+    {
+        do
+        {
+            yield return e.Current;
+
+            count--;
+        } while (count > 0 && e.MoveNext());
+    }
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+
+    /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
+    /// <typeparam name="T">The type of item within the enumeration.</typeparam>
+    /// <param name="iterable">The potentially empty collection.</param>
+    /// <param name="fallback">The fallback value.</param>
+    /// <returns>
+    /// The parameter <paramref name="iterable"/> when non-empty, otherwise; <paramref name="fallback"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> DefaultIfEmpty<T>(this IEnumerable<T>? iterable, IEnumerable<T> fallback)
+    {
+        using var a = iterable?.GetEnumerator();
+
+        if (a?.MoveNext() ?? false)
+            do
+                yield return a.Current;
+            while (a.MoveNext());
+        else
+            foreach (var b in fallback)
+                yield return b;
+    }
+#if !NETFRAMEWORK || NET35_OR_GREATER
+    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
+#endif
+
+    /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as ICollection<T> ??
+            (iterable.TryGetNonEnumeratedCount(out var count)
+                ? new Collection<T>(iterable, count)
+#if NETFRAMEWORK && NET40_OR_GREATER
+                : new List<T>(iterable));
+#else
+                : iterable.ToList());
+#endif
+
+    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+#if NETFRAMEWORK && NET40_OR_GREATER
+        iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
+#else
+        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
+#endif
+#if !NETFRAMEWORK || NET40_OR_GREATER
+    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
+
+    /// <summary>Creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
+    /// <param name="comparer">The comparer to use.</param>
+    /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSet<T>(
+        [InstantHandle] this IEnumerable<T>? iterable,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        iterable is null ? null : new HashSet<T>(iterable, comparer);
+
+    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <param name="comparer">The comparer to use if one needs to be generated.</param>
+    /// <returns>Itself as <see cref="ISet{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSetLazily<T>(
+        [InstantHandle] this IEnumerable<T>? iterable,
+        IEqualityComparer<T> comparer
+    ) =>
+        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
+#endif
+
+    /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
+    /// <typeparam name="TList">The destination type.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to convert.</param>
+    /// <param name="converter">The <see cref="IList{T}"/> to convert it to.</param>
+    /// <returns>
+    /// A <typeparamref name="TList"/> from <paramref name="converter"/>, as long as every element returned
+    /// is not <paramref langword="null"/>, otherwise <paramref langword="default"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static TList? Collect<T, TList>(
+        [InstantHandle] this IEnumerable<T?> iterable,
+        [InstantHandle] Converter<IEnumerable<T>, TList> converter
+    )
+        where TList : IList<T> => // ReSharper disable once NullableWarningSuppressionIsUsed
+#pragma warning disable CS8620 // Checked later, technically could cause problems, but most factory methods are fine.
+        (TList?)converter(iterable);
+#pragma warning restore CS8620
+
+    /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
+    /// <param name="enumerable">The enumerable to encapsulate.</param>
+    /// <param name="count">The pre-computed count.</param>
+    /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
+#pragma warning disable IDE0044
+    sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) : ICollection,
+#pragma warning restore IDE0044
+        ICollection<T>,
+        IReadOnlyCollection<T>
+    {
+        /// <inheritdoc />
+        [Pure]
+        bool ICollection.IsSynchronized => true;
+
+        /// <inheritdoc />
+        [Pure]
+        bool ICollection<T>.IsReadOnly => true;
+
+        /// <inheritdoc cref="ICollection{T}.Count" />
+        [NonNegativeValue, Pure]
+        public int Count => count;
+
+        /// <inheritdoc />
+        [Pure]
+        public object SyncRoot => enumerable;
+
+        /// <inheritdoc />
+        public void CopyTo(Array array, [NonNegativeValue] int index)
+        {
+            var i = 0;
+
+            foreach (var next in enumerable)
+            {
+                array.SetValue(next, index);
+                _ = checked(i++);
+            }
+        }
+
+        /// <inheritdoc />
+        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+        {
+            var i = 0;
+
+            foreach (var next in enumerable)
+            {
+                array[arrayIndex] = next;
+                _ = checked(i++);
+            }
+        }
+
+        /// <inheritdoc />
+#pragma warning disable RCS1163
+        void ICollection<T>.Add(T? item) { }
+#pragma warning restore RCS1163
+
+        /// <inheritdoc />
+        void ICollection<T>.Clear() { }
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Contains(T item)
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var next in enumerable)
+                if (EqualityComparer<T>.Default.Equals(next, item))
+                    return true;
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        [Pure]
+#pragma warning disable RCS1163
+        bool ICollection<T>.Remove(T? item) => false;
+#pragma warning restore RCS1163
+
+        /// <inheritdoc />
+        [Pure]
+        IEnumerator IEnumerable.GetEnumerator() => enumerable.GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
+
+
+/// <summary>Extension methods to attempt to grab values from enumerables.</summary>
+
+    /// <summary>Takes the last item lazily, or a fallback value.</summary>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
+    [Pure]
+    public static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
+    {
+#if NETCOREAPP || ROSLYN
+        if (iterable is ImmutableArray<T> { IsDefaultOrEmpty: true })
+            return fallback;
+#endif
+        using var iterator = iterable.GetEnumerator();
+
+        if (!iterator.MoveNext())
+            return fallback;
+
+        var last = iterator.Current;
+
+        while (iterator.MoveNext())
+            last = iterator.Current;
+
+        return last;
+    }
+
+    /// <summary>Takes the first item, or a fallback value.</summary>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The first item, or the parameter <paramref name="fallback"/>.</returns>
+    [MustUseReturnValue]
+    public static T FirstOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
+    {
+        switch (iterable)
+        {
+            case string str:
+                return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
+#if NETCOREAPP || ROSLYN
+            case ImmutableArray<T> array:
+                return array.IsDefaultOrEmpty ? fallback : array[0];
+#endif
+            case IList<T> list:
+                return list.Count is 0 ? fallback : list[0];
+            case IReadOnlyList<T> list:
+                return list.Count is 0 ? fallback : list[0];
+            case var _ when iterable.TryGetNonEnumeratedCount(out var count):
+                return count is 0 ? fallback : iterable.First();
+            default:
+            {
+                using var iterator = iterable.GetEnumerator();
+                return iterator.MoveNext() ? iterator.Current : fallback;
+            }
+        }
+    }
+
+    /// <summary>Takes the last item, or a fallback value.</summary>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The collection of items to go through one-by-one.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
+    [MustUseReturnValue]
+    public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
+#pragma warning disable IDE0056
+        iterable switch
+        {
+            string str => str.Length is 0 ? fallback : Reinterpret<T>(str[str.Length - 1]),
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array => array.IsDefaultOrEmpty ? fallback : array[array.Length - 1],
+#endif
+            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
+            IList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
+            _ when iterable.TryGetNonEnumeratedCount(out var count) => count is 0 ? fallback : iterable.Last(),
+            _ => iterable.EnumerateOr(fallback),
+        };
+#pragma warning restore IDE0056
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <typeparam name="TKey">The key item in the collection.</typeparam>
+    /// <typeparam name="TValue">The value item in the collection.</typeparam>
+    /// <param name="dictionary">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="key">The key to use to get the value.</param>
+    /// <returns>An element from the parameter <paramref name="dictionary"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue]
+    public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
+        where TKey : notnull =>
+        dictionary.TryGetValue(key, out var value) ? value : default;
+
+#if !NET20 && !NET30
+    /// <summary>Returns the item, or a fallback.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="self">The item to potentially return.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The parameter <paramref name="self"/>, or <paramref name="fallback"/>.</returns>
+    [Pure]
+    public static T Or<T>(this T? self, T fallback)
+        where T : class =>
+        self ?? fallback;
+
+    /// <summary>Returns the item, or a fallback.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="self">The item to potentially return.</param>
+    /// <param name="fallback">The fallback item.</param>
+    /// <returns>The parameter <paramref name="self"/>, or <paramref name="fallback"/>.</returns>
+    [Pure]
+    public static T Or<T>(this T? self, T fallback)
+        where T : struct =>
+        self ?? fallback;
+
+    /// <summary>Returns the item, or a fallback.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="self">The item to potentially return.</param>
+    /// <returns>The parameter <paramref name="self"/>, or a new instance.</returns>
+    [Pure]
+    public static T OrNew<T>(this T? self)
+        where T : class, new() =>
+        self ?? new();
+
+    /// <summary>Returns the string, or an empty string.</summary>
+    /// <param name="str">The string to potentially return.</param>
+    /// <returns>The parameter <paramref name="str"/>, or <see cref="string.Empty"/>.</returns>
+    [Pure]
+    public static string OrEmpty(this string? str) => str ?? "";
+
+    /// <summary>Returns the enumeration, or an empty enumeration.</summary>
+    /// <typeparam name="T">The type of iterator.</typeparam>
+    /// <param name="iterable">The enumeration to potentially return.</param>
+    /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
+        iterable ?? Enumerable.Empty<T>();
+
+    /// <summary>Gets a specific character from a string.</summary>
+    /// <param name="str">The string to get the character from.</param>
+    /// <param name="index">The index to use.</param>
+    /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
+    [Pure]
+    public static char? Nth(this string str, [NonNegativeValue] int index) =>
+        index >= 0 && index < str.Length ? str[index] : null;
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue]
+    public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
+    {
+        // Runtime check.
+        if (index < 0)
+            return default;
+
+        return iterable switch
+        {
+            string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
+#endif
+            IReadOnlyList<T> list => index < list.Count ? list[index] : default,
+            IList<T> list => index < list.Count ? list[index] : default,
+            _ => iterable.Skip(index).FirstOrDefault(),
+        };
+    }
+
+    /// <summary>Gets a specific character from a string.</summary>
+    /// <param name="str">The string to get the character from.</param>
+    /// <param name="index">The index to use.</param>
+    /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
+    [Pure]
+    public static char? NthLast(this string str, [NonNegativeValue] int index) =>
+        index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue]
+    public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
+    {
+        // Runtime check.
+        if (index < 0)
+            return default;
+
+        return iterable switch
+        {
+            string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
+#if NETCOREAPP || ROSLYN
+            ImmutableArray<T> array =>
+                !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
+#endif
+            IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
+            IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
+            _ when iterable.TryGetNonEnumeratedCount(out var count) =>
+                index < count ? iterable.Skip(count - index - 1).FirstOrDefault() : default,
+            _ => iterable.Reverse().Skip(index).FirstOrDefault(),
+        };
+    }
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Reinterpret<T>(char c)
+    {
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
+        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
+#pragma warning disable 8500
+        return *(T*)&c;
+#pragma warning restore 8500
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable CheckNamespace RedundantNameQualifier
+
+
+
+
+/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
+    /// <returns>An enumeration from a range's start to end.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
+
+    /// <summary>
+    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
+    /// Boolean expression evaluates to <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <param name="range">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
+    /// <returns>An enumeration from a range's start to end.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<int> For(this Range range) =>
+        range.Start.Value is var start &&
+        range.End.Value is var end &&
+        start == end ? Enumerable.Empty<int>() :
+        Math.Abs(start - end) is var len &&
+        start < end ? Enumerable.Range(start, len) : Enumerable.Repeat(start, len).Select((x, i) => x - i - 1);
+
+    /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
+    /// <remarks><para>
+    /// The tail is not guaranteed to be able to be enumerated over multiple times.
+    /// As such, use a method like <see cref="Collected.ToCollectionLazily{T}"/> if multiple enumerations are needed.
+    /// </para></remarks>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="enumerable">The enumerable to split.</param>
+    /// <param name="head">The first element of the parameter <paramref name="enumerable"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
+    public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
+    {
+        head = default;
+        tail = Enumerable.Empty<T>();
+
+        if (enumerable?.GetEnumerator() is not { } enumerator)
+            return;
+
+        head = enumerator.MoveNext() ? enumerator.Current : default;
+        tail = enumerator.AsEnumerable();
+    }
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static char? Nth(this string str, Index index) =>
+        index.IsFromEnd ? str.NthLast(index.Value - 1) : str.Nth(index.Value);
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, Index index) =>
+        index.IsFromEnd ? iterable.NthLast(index.Value - 1) : iterable.Nth(index.Value);
+
+    /// <summary>Gets a specific item from a collection.</summary>
+    /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
+    /// <param name="range">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static string? Nth(this string str, Range range) =>
+        range.TryGetOffsetAndLength(str.Length, out var offset, out var length)
+            ? str.Substring(offset, length)
+            : default;
+
+    /// <summary>Gets a range of items from a collection.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get a range of items from.</param>
+    /// <param name="range">The ranges to get.</param>
+    /// <returns>A slice from the parameter <paramref name="iterable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Nth<T>([InstantHandle] this IEnumerable<T> iterable, Range range)
+    {
+        [LinqTunnel, Pure]
+        static IEnumerable<TT> Sub<TT>([InstantHandle] IEnumerable<TT> iterable, Range range) =>
+            iterable.Skip(range.Start.Value).Take(range.End.Value - range.Start.Value);
+
+        if (!range.Start.IsFromEnd && !range.End.IsFromEnd)
+            return Sub(iterable, range);
+
+        if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
+            return Sub(iterable, startRange);
+
+        var arr = iterable.ToList();
+        var arrRange = RangeStart(range, arr.Count);
+        return Sub(arr, arrRange);
+    }
+
+    /// <summary>Gets an enumeration of an index.</summary>
+    /// <param name="index">The index to count up or down to.</param>
+    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
+    [Pure]
+    public static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
+
+    /// <summary>Gets an enumeration of a range.</summary>
+    /// <param name="range">The range to iterate over.</param>
+    /// <returns>An enumeration from the range's start to end.</returns>
+    [Pure]
+    public static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
+
+    [Pure]
+    static Index IndexStart(Index index, int length) => index.IsFromEnd ? length - index.Value - 1 : index;
+
+    [Pure]
+    static Range RangeStart(Range range, int length) =>
+        new(IndexStart(range.Start, length), IndexStart(range.End, length));
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable RedundantExtendsListEntry
+// ReSharper disable once CheckNamespace
+
+#pragma warning disable MA0048
+/// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
+
+    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
+    /// <returns>
+    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
+    /// </returns>
+    [Pure]
+    public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
+
+    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
+    /// <returns>
+    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
+#pragma warning disable CA2000, IDISP004
+        enumerator.AsGeneric().AsEnumerable();
+#pragma warning restore CA2000, IDISP004
+
+    /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item to enumerate.</typeparam>
+    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
+    /// <returns>
+    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) => new Enumerable<T>(enumerator);
+
+    /// <summary>
+    /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
+    /// </summary>
+    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
+    /// <typeparam name="T">The type of item to enumerate.</typeparam>
+    sealed partial class Enumerable<T>([ProvidesContext] IEnumerator<T> enumerator) : IEnumerable<T>
+    {
+        /// <inheritdoc />
+        [CollectionAccess(CollectionAccessType.Read), Pure]
+        public IEnumerator<T> GetEnumerator() => enumerator;
+
+        /// <inheritdoc />
+        [CollectionAccess(CollectionAccessType.Read), Pure]
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+#pragma warning disable SA1643
+        /// <summary>Finalizes an instance of the <see cref="Enumerable{T}"/> class.</summary>
+#pragma warning restore SA1643
+#pragma warning disable MA0055, IDISP007, IDISP023
+        ~Enumerable() => enumerator.Dispose();
+#pragma warning restore MA0055, IDISP007, IDISP023
+    }
+
+    /// <summary>
+    /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
+    /// </summary>
+    /// <param name="enumerator">The enumerator to encapsulate.</param>
+    sealed partial class Enumerator([ProvidesContext] IEnumerator enumerator) : IEnumerator<object?>
+    {
+        /// <inheritdoc cref="IEnumerator{T}.Current" />
+        [Pure]
+        public object? Current => enumerator.Current;
+
+        /// <inheritdoc />
+        public void Reset() => enumerator.Reset();
+
+        /// <inheritdoc />
+        public void Dispose() { }
+
+        /// <inheritdoc />
+        public bool MoveNext() => enumerator.MoveNext();
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Extension methods to create cartesian products.</summary>
+
+    /// <summary>Creates a cartesian product from two collections.</summary>
+    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <param name="first">The first set to create a cartesian product of.</param>
+    /// <param name="second">The second set to create a cartesian product of.</param>
+    /// <returns>
+    /// The cartesian product of the parameter <paramref name="first"/> and <paramref name="second"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<(T1 First, T2 Second)> CartesianProduct<T1, T2>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second
+    ) =>
+        first.SelectMany(_ => second, (x, y) => (x, y));
+
+    /// <summary>Creates a cartesian product from three collections.</summary>
+    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <typeparam name="T3">The type of item in the third set.</typeparam>
+    /// <param name="first">The first set to create a cartesian product of.</param>
+    /// <param name="second">The second set to create a cartesian product of.</param>
+    /// <param name="third">The third set to create a cartesian product of.</param>
+    /// <returns>
+    /// The cartesian product of the parameter <paramref name="first"/>,
+    /// <paramref name="second"/>, and <paramref name="third"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<(T1 First, T2 Second, T3 Third)> CartesianProduct<T1, T2, T3>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second,
+        IEnumerable<T3> third
+    ) =>
+        first
+           .SelectMany(_ => second, (x, y) => (x, y))
+           .SelectMany(_ => third, (xy, z) => (xy.x, xy.y, z));
+
+    /// <summary>Creates a cartesian product from four collections.</summary>
+    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
+    /// <typeparam name="T1">The type of item in the first set.</typeparam>
+    /// <typeparam name="T2">The type of item in the second set.</typeparam>
+    /// <typeparam name="T3">The type of item in the third set.</typeparam>
+    /// <typeparam name="T4">The type of item in the fourth set.</typeparam>
+    /// <param name="first">The first set to create a cartesian product of.</param>
+    /// <param name="second">The second set to create a cartesian product of.</param>
+    /// <param name="third">The third set to create a cartesian product of.</param>
+    /// <param name="fourth">The fourth set to create a cartesian product of.</param>
+    /// <returns>
+    /// The cartesian product of the parameter <paramref name="first"/>, <paramref name="second"/>,
+    /// <paramref name="third"/>, and <paramref name="fourth"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<(T1 First, T2 Second, T3 Third, T4 Fourth)> CartesianProduct<T1, T2, T3, T4>(
+        this IEnumerable<T1> first,
+        IEnumerable<T2> second,
+        IEnumerable<T3> third,
+        IEnumerable<T4> fourth
+    ) =>
+        first
+           .SelectMany(_ => second, (x, y) => (x, y))
+           .SelectMany(_ => third, (xy, z) => (xy, z))
+           .SelectMany(_ => fourth, (xyz, w) => (xyz.xy.x, xyz.xy.y, xyz.z, w));
+
+    /// <summary>Creates a cartesian product from n-collections.</summary>
+    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
+    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <param name="first">The first set to create a cartesian product of.</param>
+    /// <param name="rest">The rest of the sets to create a cartesian product of.</param>
+    /// <returns>
+    /// The cartesian product of the parameter <paramref name="first"/>, and all of <paramref name="rest"/>.
+    /// </returns>
+    public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(
+        this IEnumerable<T> first,
+        params IEnumerable<T>[] rest
+    ) =>
+        Enumerable.Repeat(first, 1).Concat(rest).CartesianProduct();
+
+    /// <summary>Creates a cartesian product from n-collections.</summary>
+    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
+    /// <typeparam name="T">The type of item in the set.</typeparam>
+    /// <param name="iterable">The sets to create a cartesian product of.</param>
+    /// <returns>The cartesian product of all of the parameter <paramref name="iterable"/>.</returns>
+    public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> iterable) =>
+        iterable.Aggregate(
+            Enumerable.Repeat(Enumerable.Empty<T>(), 1),
+            (sum, next) => sum.SelectMany(_ => next, (s, n) => s.Concat(Enumerable.Repeat(n, 1)))
+        );
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Provides methods to flatten <see cref="IEnumerable{T}"/> instances.</summary>
+
+    /// <summary>Flattens the nested collection.</summary>
+    /// <typeparam name="T">The type of collection.</typeparam>
+    /// <param name="enumerable">The collection to flatten.</param>
+    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable) =>
+        enumerable.SelectMany(Enumerable.AsEnumerable);
+
+    /// <summary>Flattens the nested collection.</summary>
+    /// <typeparam name="T">The type of collection.</typeparam>
+    /// <param name="enumerable">The collection to flatten.</param>
+    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Flatten2<T>(this IEnumerable<IEnumerable<IEnumerable<T>>> enumerable) =>
+        enumerable.SelectMany(Enumerable.AsEnumerable).SelectMany(Enumerable.AsEnumerable);
+
+    /// <summary>Flattens the nested collection.</summary>
+    /// <typeparam name="T">The type of collection.</typeparam>
+    /// <param name="enumerable">The collection to flatten.</param>
+    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Flatten3<T>(this IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>> enumerable) =>
+        enumerable
+           .SelectMany(Enumerable.AsEnumerable)
+           .SelectMany(Enumerable.AsEnumerable)
+           .SelectMany(Enumerable.AsEnumerable);
+
+    /// <summary>
+    /// Flattens the nested collection by taking all the first elements of the enumerations,
+    /// then all the second elements of the enumerations, the third, and so on.
+    /// When any enumeration runs out, it simply moves onto the next enumeration until all enumerations are finished.
+    /// </summary>
+    /// <typeparam name="T">The type of collection.</typeparam>
+    /// <param name="enumerable">The collection to flatten.</param>
+    /// <returns>
+    /// The flattened collection by taking items in order of appearance of each individual enumerable,
+    /// and only then by the outer enumerable.
+    /// </returns>
+    [Pure]
+    public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
+    {
+        var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
+        falsy.For(x => x.Dispose());
+
+        try
+        {
+            while (truthy is not [])
+            {
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+                yield return truthy.ConvertAll(x => x.Current);
+#else
+                yield return new(truthy.Select(x => x.Current));
+#endif
+                (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
+                falsy.For(x => x.Dispose());
+            }
         }
         finally
         {
-#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            if (GCSettings.LatencyMode is GCLatencyMode.NoGCRegion)
-                GC.EndNoGCRegion();
-#else
-            GCSettings.LatencyMode = mode;
-#endif
+            truthy.For(x => x.Dispose());
         }
     }
-
-    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
-    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
-    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
-    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
-    /// <returns>
-    /// An <see cref="Array"/> where each entry is a separate test of the number of
-    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
-    /// </returns>
-    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    public static long[] CountAllocations(
-        [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
-        bool willWarmup = true
-    )
-    {
-        if (willWarmup)
-            heap.Swallow();
-
-        var all = new long[times];
-
-        for (var i = 0; i < times; i++)
-            all[i] += CountAllocation(heap, false);
-
-        return all;
-    }
-
-    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
-    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
-    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
-    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
-    /// <returns>
-    /// An <see cref="Array"/> where each entry is a separate test of the number of
-    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
-    /// </returns>
-    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    public static bool HasAllocations(
-        [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
-        bool willWarmup = true
-    )
-    {
-        if (willWarmup)
-            heap.Swallow();
-
-        for (var i = 0; i < times; i++)
-            if (CountAllocation(heap, false) is not 0)
-                return true;
-
-        return false;
-    }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Provides extension methods for <see cref="char"/>.</summary>
+/// <summary>Provides methods for creating combinations of items.</summary>
 
-    /// <inheritdoc cref="char.IsControl(char)"/>
+    /// <summary>Generates all combinations of the nested enumerable.</summary>
+    /// <typeparam name="T">The type of nested enumerable.</typeparam>
+    /// <param name="iterator">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
     [Pure]
-    public static bool IsControl(this char c) => char.IsControl(c);
-
-    /// <inheritdoc cref="char.IsDigit(char)"/>
-    [Pure]
-    public static bool IsDigit(this char c) => char.IsDigit(c);
-
-    /// <inheritdoc cref="char.IsHighSurrogate(char)"/>
-    [Pure]
-    public static bool IsHighSurrogate(this char c) => char.IsHighSurrogate(c);
-
-    /// <inheritdoc cref="char.IsLetter(char)"/>
-    [Pure]
-    public static bool IsLetter(this char c) => char.IsLetter(c);
-
-    /// <inheritdoc cref="char.IsLetterOrDigit(char)"/>
-    [Pure]
-    public static bool IsLetterOrDigit(this char c) => char.IsLetterOrDigit(c);
-
-    /// <inheritdoc cref="char.IsLower(char)"/>
-    [Pure]
-    public static bool IsLower(this char c) => char.IsLower(c);
-
-    /// <inheritdoc cref="char.IsLowSurrogate(char)"/>
-    [Pure]
-    public static bool IsLowSurrogate(this char c) => char.IsLowSurrogate(c);
-
-    /// <inheritdoc cref="string.IsNullOrEmpty(string)"/>
-    [Pure]
-    public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
-
-#if NET35
-    /// <summary>
-    /// Indicates whether a specified string is <see langword="null"/>,
-    /// empty, or consists only of white-space characters.
-    /// </summary>
-    /// <param name="value">The string to test.</param>
-    /// <returns>
-    /// <see langword="true"/> if the <paramref name="value"/> parameter is <see langword="null"/>,
-    /// or <see cref="string.Empty"/>, or if <paramref name="value"/> consists exclusively of white-space characters.
-    /// </returns>
-    [Pure]
-    public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
-        value?.All(char.IsWhiteSpace) != false;
-#elif !NET20 && !NET30
-    /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
-    [Pure]
-    public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
-#endif
-
-    /// <inheritdoc cref="char.IsNumber(char)"/>
-    [Pure]
-    public static bool IsNumber(this char c) => char.IsNumber(c);
-
-    /// <inheritdoc cref="char.IsPunctuation(char)"/>
-    [Pure]
-    public static bool IsPunctuation(this char c) => char.IsPunctuation(c);
-
-    /// <inheritdoc cref="char.IsSeparator(char)"/>
-    [Pure]
-    public static bool IsSeparator(this char c) => char.IsSeparator(c);
-
-    /// <inheritdoc cref="char.IsSurrogate(char)"/>
-    [Pure]
-    public static bool IsSurrogate(this char c) => char.IsSurrogate(c);
-
-    /// <inheritdoc cref="char.IsSymbol(char)"/>
-    [Pure]
-    public static bool IsSymbol(this char c) => char.IsSymbol(c);
-
-    /// <inheritdoc cref="char.IsUpper(char)"/>
-    public static bool IsUpper(this char c) => char.IsUpper(c);
-
-    /// <inheritdoc cref="char.IsWhiteSpace(char)"/>
-    [Pure]
-    public static bool IsWhitespace(this char c) => char.IsWhiteSpace(c);
-
-    /// <summary>Converts the character to the byte-equivalent, 0-9.</summary>
-    /// <param name="c">The character to convert.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="c"/> isn't between '0' and '9', inclusively on both ends.
-    /// </exception>
-    /// <returns>The number 0-9 representing the character.</returns>
-    [Pure]
-    public static byte AsDigit(this char c) =>
-        c is >= '0' and <= '9'
-            ? (byte)(c - '0')
-            : throw new ArgumentOutOfRangeException(nameof(c), c, "Character must be 0-9.");
-
-    /// <summary>Attempts to convert the character to the byte-equivalent, 0-9.</summary>
-    /// <param name="c">The character to convert.</param>
-    /// <returns>The number 0-9 representing the character, or <see langword="null"/>.</returns>
-    [Pure]
-    public static byte? TryAsDigit(this char c) => c is >= '0' and <= '9' ? (byte)(c - '0') : null;
-
-    /// <inheritdoc cref="char.ToLower(char)"/>
-    [Pure]
-    public static char ToLower(this char c) => char.ToLowerInvariant(c);
-
-    /// <inheritdoc cref="char.ToUpper(char)"/>
-    [Pure]
-    public static char ToUpper(this char c) => char.ToUpperInvariant(c);
-
-    /// <inheritdoc cref="char.GetNumericValue(char)"/>
-    [Pure]
-    public static double GetNumericValue(this char c) => char.GetNumericValue(c);
-
-    /// <inheritdoc cref="string.Trim(char[])"/>
-    [Pure]
-    public static string Trim(this string s, string trim)
-    {
-        int start = 0, end = 1;
-
-        for (; start < s.Length; start++)
-            if (start >= trim.Length || s[start] != trim[start])
-                break;
-
-        for (; end <= s.Length; end++)
-            if (end > trim.Length || s[^end] != trim[^end])
-                return s[..^(end - 1)];
-
-        return s[start..^end];
-    }
-
-    /// <inheritdoc cref="string.TrimEnd(char[])"/>
-    [Pure]
-    public static string TrimEnd(this string s, string trim)
-    {
-        for (var i = 1; i <= s.Length; i++)
-            if (i > trim.Length || s[^i] != trim[^i])
-                return s[..^(i - 1)];
-
-        return "";
-    }
-
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    [Pure]
-    public static string TrimStart(this string s, string trim)
-    {
-        for (var i = 0; i < s.Length; i++)
-            if (i >= trim.Length || s[i] != trim[i])
-                return s[i..];
-
-        return "";
-    }
-
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
-    [Pure]
-    public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
-    public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
-    public const string NonBreaking =
-        "\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
-
-    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
-    public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
-    public const string Unicode = $"{Breaking}{NonBreaking}";
-
-    /// <summary>All unicode characters that appear to be whitespace.</summary>
-    public const string Combined = $"{Unicode}{Related}";
-
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier
-#pragma warning disable 1696, SA1137, SA1216
-#if WAWA
-namespace Wawa.Modules;
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>(
 #else
-
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
 #endif
-
-
-#if !(NET20 || NET30)
-#endif
-
-
-
-/// <summary>Provides stringification methods.</summary>
-// ReSharper disable once BadPreprocessorIndent
-#if WAWA
-public
-#endif
-
-    const int MaxIteration = 32, MaxRecursion = 3;
-#if !WAWA
-    const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
-#endif
-
-    // ReSharper disable UnusedMember.Local
-#pragma warning disable CA1823, IDE0051
-    const string
-        Else = "th",
-        EqualityContract = nameof(EqualityContract),
-        False = "false",
-        FirstOrd = "st",
-        Invalid = $"!<{nameof(InvalidOperationException)}>",
-        KeyValueSeparator = ": ",
-        Null = "null",
-        SecondOrd = "nd",
-        Separator = ", ",
-        ThirdOrd = "rd",
-        True = "true",
-        Unsupported = $"!<{nameof(NotSupportedException)}>",
-        UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
-#pragma warning restore CA1823, IDE0051
-
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static readonly Dictionary<Type, bool> s_hasMethods = new();
-
-    static readonly Dictionary<Type, Delegate> s_stringifiers = new();
-
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static readonly Dictionary<Type, string> s_unfoldedNames = new()
-    {
-        [typeof(bool)] = "bool",
-        [typeof(byte)] = "byte",
-        [typeof(char)] = "char",
-        [typeof(decimal)] = "decimal",
-        [typeof(double)] = "double",
-        [typeof(float)] = "float",
-        [typeof(int)] = "int",
-        [typeof(long)] = "long",
-        [typeof(nint)] = "nint",
-        [typeof(nuint)] = "nuint",
-        [typeof(object)] = "object",
-        [typeof(sbyte)] = "sbyte",
-        [typeof(short)] = "short",
-        [typeof(string)] = "string",
-        [typeof(uint)] = "uint",
-        [typeof(ulong)] = "ulong",
-        [typeof(ushort)] = "ushort",
-        [typeof(void)] = "void",
-    };
-#endif
-    static readonly ConstantExpression
-        s_exEmpty = Constant(""),
-#if !NETFRAMEWORK || NET40_OR_GREATER
-        s_exInvalid = Constant(Invalid),
-        s_exUnsupported = Constant(Unsupported),
-        s_exUnsupportedPlatform = Constant(UnsupportedPlatform),
-#endif
-        s_exSeparator = Constant(Separator),
-        s_exTrue = Constant(true);
-
-    static readonly MethodInfo
-        s_combine = ((Func<string, string, string>)string.Concat).Method,
-        s_stringify = ((Func<bool, int, bool, string>)Stringify).Method.GetGenericMethodDefinition();
-#endif
-    static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
-#if !WAWA
-#pragma warning disable MA0110, SYSLIB1045
-    static readonly Regex
-        s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
-        s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
-        s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
-        s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
-        s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
-#pragma warning restore MA0110, SYSLIB1045
-#endif
-
-    /// <summary>Gets the field count of the version.</summary>
-    /// <param name="version">The <see cref="Version"/> to use.</param>
-    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
-    [Pure]
-    public static int FieldCount(
-#if !WAWA
-        this
-#endif
-            Version? version
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
-        version switch
-        {
-            (_, <= 0, <= 0, <= 0) => 1,
-            (_, _, <= 0, <= 0) => 2,
-            (_, _, _, <= 0) => 3,
-            _ => 4,
-        };
-#if !WAWA
-    /// <summary>Creates the collapsed form of the string.</summary>
-    /// <param name="s">The string to collapse.</param>
-    /// <returns>The collapsed string.</returns>
-    public static string Collapse(this string s)
-    {
-        s = s_parentheses.Replace(s, "(…)");
-        s = s_brackets.Replace(s, "[…]");
-        s = s_curlies.Replace(s, "{…}");
-        s = s_angles.Replace(s, "<…>");
-        return s_quotes.Replace(s, "\"…\"");
-    }
-
-    /// <summary>Converts a number to an ordinal.</summary>
-    /// <param name="i">The number to convert.</param>
-    /// <param name="one">The string for the value 1 or -1.</param>
-    /// <param name="many">The string to concatenate. Use prefixed dashes to trim <paramref name="one"/>.</param>
-    /// <returns>The conjugation of all the parameters.</returns>
-    [Pure]
-    public static string Conjugate(this int i, string one, string many = "s") =>
-        i is not 1 and not -1 && Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length) is var trim
-            ? $"{i} {one[..^trim]}{many[trim..]}"
-            : $"{i} {one}";
-
-    /// <summary>Creates the prettified form of the string.</summary>
-    /// <param name="s">The string to prettify.</param>
-    /// <returns>The prettified string.</returns>
-    public static string Prettify(this string s) => Prettify(s, separator: ",;");
-
-    /// <summary>Creates the prettified form of the string.</summary>
-    /// <param name="s">The string to prettify.</param>
-    /// <param name="start">The characters considered to be starting blocks.</param>
-    /// <param name="end">The characters considered to be ending blocks.</param>
-    /// <param name="separator">The characters considered to be separators.</param>
-    /// <param name="indent">The amount of spaces for indentation.</param>
-    /// <returns>The prettified string.</returns>
-    public static string Prettify(
-        this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
-        string start = "([{<",
-        string end = ")]}>",
-        string separator = ",;",
-        string indent = "    "
-    )
-#pragma warning disable CA1508
-    {
-        // Inspired by https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7.
-        var seen = false;
-        var nest = 0;
-        StringBuilder sb = new();
-
-        for (var i = 0; i < s.Length; i++)
-            (seen, nest, sb) = s[i] switch
-            {
-                not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => throw Unreachable,
-                _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
-                    (seen, ++nest, sb.Append(s[i]).Indent(indent, nest)),
-                _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>
-                    (seen, --nest, sb.Indent(indent, nest).Append(s[i])),
-                _ when separator.Contains(s[i]) => (true, nest, sb.Append(s[i])),
-                ' ' when seen && nest > 0 ||
-                    s.Nth(i - 1) is { } prev && start.Contains(prev) ||
-                    s.Nth(i + 1) is { } next && end.Contains(next) => (seen, nest, sb),
-                _ => (seen, nest, sb.Append(s[i])),
-            };
-
-        return $"{sb}";
-    }
-#pragma warning restore CA1508
-#endif
-#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
-    /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
-    /// <remarks><para>
-    /// This method is more efficient than using <see cref="Conjoin{T}(IEnumerable{T}, string)"/>
-    /// for <see cref="char"/> enumerations.
-    /// </para></remarks>
-    /// <param name="chars">The enumeration of characters.</param>
-    /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
-    [Pure]
-    public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
-#endif
-
-    /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
-    /// <remarks><para>
-    /// This method is more efficient than using
-    /// <see cref="Conjoin{T}(IEnumerable{T}, string)"/> for <see cref="char"/> separators.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of each item in the collection.</typeparam>
-    /// <param name="values">The values to join.</param>
-    /// <param name="separator">The separator between each item.</param>
-    /// <returns>One long <see cref="string"/>.</returns>
-    // ReSharper disable BadPreprocessorIndent
-    [Pure]
-    public static string Conjoin<T>(
-#if !WAWA
-        this
-#endif
-            IEnumerable<T> values,
-        char separator
-    )
-    {
-        StringBuilder builder = new();
-        using var enumerator = values.GetEnumerator();
-
-        if (enumerator.MoveNext())
-            builder.Append(enumerator.Current);
-        else
-            return "";
-
-        while (enumerator.MoveNext())
-            builder.Append(separator).Append(enumerator.Current);
-
-        return $"{builder}";
-    }
-
-    /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
-    /// <typeparam name="T">The type of each item in the collection.</typeparam>
-    /// <param name="values">The values to join.</param>
-    /// <param name="separator">The separator between each item.</param>
-    /// <returns>One long <see cref="string"/>.</returns>
-    [Pure]
-    public static string Conjoin<T>(
-#if !WAWA
-        this
-#endif
-            IEnumerable<T> values,
-        string separator = Separator
-    )
-    {
-        if (values is string value && separator is "")
-            return value;
-
-        StringBuilder builder = new();
-        using var enumerator = values.GetEnumerator();
-
-        if (enumerator.MoveNext())
-            builder.Append(enumerator.Current);
-        else
-            return "";
-
-        while (enumerator.MoveNext())
-            builder.Append(separator).Append(enumerator.Current);
-
-        return $"{builder}";
-    }
-
-    /// <summary>Gets the short display form of the version.</summary>
-    /// <param name="version">The <see cref="Version"/> to convert.</param>
-    /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
-    [Pure]
-    public static string ToShortString(
-#if !WAWA
-        this
-#endif
-            Version? version
-    )
-    {
-        if (version is not var (major, minor, build, revision) ||
-            major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
-            return "v0";
-
-        var length = Length(major, revision, minor, build);
-
-        Span<char> span = stackalloc char[length];
-        Format(span, version);
-        return span.ToString();
-    }
-
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-#if !WAWA
-    /// <summary>Gets the full type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
-    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static string UnfoldedFullName(this Type? type) =>
-        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
-#endif
-
-    /// <summary>Gets the type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the name of.</param>
-    /// <returns>The name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static string UnfoldedName(
-#if !WAWA
-        this
-#endif
-            Type? type
-    ) =>
-        type is null ? Null :
-        s_unfoldedNames.TryGetValue(type, out var val) ? val :
-        s_unfoldedNames[type] = $"{type.UnfoldedName(new())}";
-#endif
-
-    /// <summary>Converts a number to an ordinal.</summary>
-    /// <param name="i">The number to convert.</param>
-    /// <param name="indexByZero">Determines whether to index from zero or one.</param>
-    /// <returns>The parameter <paramref name="i"/> as an ordinal.</returns>
-    [Pure]
-    public static string Nth(
-#if !WAWA
-        this
-#endif
-            int i,
-        bool indexByZero = false
-    ) =>
-        indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
-
-    /// <inheritdoc cref="string.Split(string[], StringSplitOptions)"/>
-    // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static string[] Chop(
-#if !WAWA
-        this
-#endif
-            string source,
-        string separator
-    ) =>
-        source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
-
-    /// <summary>
-    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
-    /// in which case each item within is printed out separately.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-    public static string Stringify<T>(
-#if !WAWA
-        this
-#endif
-            T? source
-    ) =>
-        Stringify(source, MaxRecursion);
-
-    /// <summary>
-    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
-    /// in which case each item within is printed out separately.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <param name="depth">Determines how deep the recursive function should go.</param>
-    /// <param name="useQuotes">
-    /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
-    /// </param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-    public static string Stringify<T>(
-#if !WAWA
-        this
-#endif
-#pragma warning disable SA1114 RCS1163
-            T? source,
-        int depth,
-        bool useQuotes = false
-#pragma warning restore SA1114 RCS1163
-    ) =>
-        source switch
-        {
-            null => Null,
-            true => True,
-            false => False,
-            nint x => $"{x}",
-            nuint x => $"{x}",
-            char x => useQuotes ? Escape(x) : $"{x}",
-            string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}({(
-                x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
-            )}) = {x.EnumStringifier()}",
-            Type x => UnfoldedName(x),
-            Version x => x.ToShortString(),
-#if KTANE
-            Object x => x.name,
-#endif
-            IConvertible x => x.ToString(CultureInfo.InvariantCulture),
-            ICustomFormatter x => x.Format("", x, CultureInfo.InvariantCulture),
-            _ when depth <= 0 =>
-#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
-                source.ToString(),
+#if NETFRAMEWORK && !NET45_OR_GREATER
+        iterator.Select(x => x.ToListLazily()).ToListLazily().Combinations();
 #else
-                source.StringifyObject(depth - 1),
+        iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
 #endif
-#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
-            IEnumerable<char> x => useQuotes ? $@"""{x.Concat()}""" : x.Concat(),
+
+    /// <summary>Generates all combinations of the nested list.</summary>
+    /// <typeparam name="T">The type of nested list.</typeparam>
+    /// <param name="lists">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
+    [Pure]
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> lists)
 #else
-            IEnumerable<char> x => useQuotes ? $@"""{Conjoin(x, "")}""" : Conjoin(x, ""),
+    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> lists)
 #endif
-            IDictionary { Count: 0 } => "{ }",
-            IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
-            ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
-            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
-#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-#pragma warning disable IDISP004
-            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
-#pragma warning restore IDISP004
-#endif
-#if !NETFRAMEWORK || NET40_OR_GREATER
-            IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
-            IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
-#endif
-#if ROSLYN
-            ISymbol x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-#endif
-#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
-            _ => source.ToString(),
-#else
-            _ => source.StringifyObject(depth - 1),
-#endif
-        };
-
-    /// <summary>Forces the use of reflective stringification.</summary>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <param name="depth">The amount of nesting.</param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-#if !WAWA
-    public
-#endif
-        static string UseStringifier<T>(this T source, int depth = MaxRecursion)
     {
-        // Method can be called if 'forceReflection' is true.
-        if (!typeof(T).IsValueType && source is null)
-            return Null;
-
-        if (!s_stringifiers.ContainsKey(typeof(T)))
-            s_stringifiers[typeof(T)] = GenerateStringifier<T>();
-
-        var name = source?.GetType() is { } type && type != typeof(T)
-            ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
-            : UnfoldedName(typeof(T));
-
-        return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
-            ? $"{name} {{ {str} }}"
-            : name;
-    }
-
-    static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
-        builder.Append(key).Append(KeyValueSeparator).Append(value);
-
-    static void Push(char c, scoped ref Span<char> span)
-    {
-        span[0] = c;
-        span = span[1..];
-    }
-
-    // ReSharper disable RedundantAssignment
-    static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
-    {
-        var it = next.TryFormat(span, out var slice);
-        System.Diagnostics.Debug.Assert(it, "TryFormat");
-        span = span[slice..];
-    }
-
-    // ReSharper disable RedundantAssignment
-    static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
-    {
-        Push(next, ref span);
-        Push(c, ref span);
-    }
-
-    static void Format(scoped Span<char> span, Version version)
-    {
-        Push('v', ref span);
-
-        switch (version)
-        {
-            case (var major, var minor, var build, > 0 and var revision):
-                Push(major, '.', ref span);
-                Push(minor, '.', ref span);
-                Push(build, '.', ref span);
-                Push(revision, ref span);
-                break;
-            case (var major, var minor, > 0 and var build):
-                Push(major, '.', ref span);
-                Push(minor, '.', ref span);
-                Push(build, ref span);
-                break;
-            case (var major, > 0 and var minor):
-                Push(major, '.', ref span);
-                Push(minor, ref span);
-                break;
-            default:
-                Push(version.Major, ref span);
-                break;
-        }
-
-        System.Diagnostics.Debug.Assert(span.IsEmpty, nameof(Span<char>.IsEmpty));
-    }
-
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
-    // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-    [MustUseReturnValue]
-    static bool CanUse(PropertyInfo p) =>
-        p is { CanRead: true, PropertyType.Name: not "SyntaxTree" } &&
-        p.GetIndexParameters().Length is 0 &&
-        p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
-#endif
-    [Pure]
-    static bool IsEqualityContract(PropertyInfo x) =>
-        x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
-        x.PropertyType == typeof(Type) &&
-        x.GetIndexParameters().Length is 0;
-
-    [Pure] // ReSharper disable once SuggestBaseTypeForParameter
-    static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
-
-    [Pure]
-    static bool IsOneBitSet(this Enum value, Enum next) =>
-        System.Convert.ToInt32(next) is not 0 and var filter &&
-        (filter & filter - 1) is 0 &&
-        System.Convert.ToInt32(value) is var bits &&
-        (bits & filter) is not 0;
-
-    [Pure]
-    static bool IsRecord<T>() =>
-        typeof(T)
-           .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
-           .Any(IsEqualityContract);
-
-    [Pure]
-    static int Length(int major, int revision, int minor, int build) =>
-        (major.DigitCount() + 1 is var length && revision > 0 ?
-            minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
-            build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
-                minor > 0 ? minor.DigitCount() + 1 : 0) +
-        length;
-
-    [Pure]
-    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
-
-    [MustUseReturnValue]
-    static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
-        count is 0
-            ? "[Count: 0]"
-            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth, useQuotes, count)}]";
-
-    [Pure]
-    static string Escape(char c) =>
-        c switch
-        {
-            '\'' => "'\\''",
-            '\"' => "'\\\"'",
-            '\\' => @"'\\'",
-            '\0' => "'\\0'",
-            '\a' => "'\\a'",
-            '\b' => "'\\b'",
-            '\f' => "'\\f'",
-            '\n' => "'\\n'",
-            '\r' => "'\\r'",
-            '\t' => "'\\t'",
-            '\v' => "'\\v'",
-            _ => $"{c}",
-        };
-
-    [Pure]
-    static string EnumStringifier(this Enum value)
-    {
-        var values = Enum
-           .GetValues(value.GetType())
-           .Cast<Enum>()
-           .Where(value.IsOneBitSet)
-           .OrderBy(System.Convert.ToInt32)
-#if WAWA
-           .ToList();
-#else
-           .ToCollectionLazily();
-#endif
-
-        string BitStringifier(int x) =>
-#if WAWA
-            values.Find(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
-#else
-            values.FirstOrDefault(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
-#endif
-            x is -1 ? "0" : $"1 << {x}";
-
-        return !value.IsFlagsDefined() || System.Convert.ToInt32(value) is var i && i is 0
-            ? $"{value}"
-            : Conjoin(System.Convert.ToInt32(i).Bits().Select(BitStringifier), " | ");
-    }
-
-    static IEnumerable<int> Bits(this int number)
-    {
-        const int BitsInByte = 8;
-
-        if (number is 0)
-        {
-            yield return -1;
-
+        if (lists.Any(x => x is []))
             yield break;
-        }
 
-        for (var i = 0; i < sizeof(int) * BitsInByte; i++)
-            if ((number >> i & 1) is not 0)
-                yield return i;
-    }
+        int count = lists.Count, index = 0, pos = 0;
+        var indices = new int[count];
+        var accumulator = new T[count];
 
-    [Pure]
-    static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
-
-    [Pure]
-    static string ToOrdinal(this int i) =>
-        $"{i}{Mod(i) switch
+        while (true)
         {
-            1 => FirstOrd,
-            2 => SecondOrd,
-            3 => ThirdOrd,
-            _ => Else,
-        }}";
-
-    [MustUseReturnValue]
-    static StringBuilder EnumeratorStringifier(
-        this IEnumerator iterator,
-        [NonNegativeValue] int depth,
-        bool useQuotes,
-        [NonNegativeValue] int? count = null
-    )
-    {
-        StringBuilder builder = new();
-
-        if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, depth));
-
-        var i = 0;
-
-        while (iterator.MoveNext())
-        {
-            if (checked(++i) >= MaxIteration)
+            while (pos < accumulator.Length)
             {
-                builder.Append(Separator).Append(Etcetera(count - i));
-                break;
+                indices[pos] = index;
+                accumulator[pos] = lists[pos][index];
+                index = 0;
+                pos++;
             }
 
-            builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
-        }
+            var result = new T[count];
+            Array.Copy(accumulator, result, count);
+            yield return result;
 
-        return builder;
-    }
-#if !WAWA
-    [MustUseReturnValue]
-    static StringBuilder Indent(this StringBuilder sb, string indent, int nest)
-    {
-        sb.AppendLine();
-
-        for (var i = 0; i < nest && nest >= 0; i++)
-            sb.Append(indent);
-
-        return sb;
-    }
-#endif
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    [MustUseReturnValue]
-    static string StringifyObject<T>(this T source, int depth)
-    {
-        if (source is null)
-            return Null;
-
-        if (!s_hasMethods.ContainsKey(typeof(T)))
-            s_hasMethods[typeof(T)] =
-                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
-                !IsRecord<T>();
-
-        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
-        if (depth < 0)
-            return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
-#pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
-        if (source.GetType() is var t && t != typeof(T))
-            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
-#pragma warning restore 8600, 8603
-
-        // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        return UseStringifier(source, depth);
-    }
-
-    [MustUseReturnValue]
-    static Func<T, int, string> GenerateStringifier<T>()
-    {
-        static MethodCallExpression Combine(Expression prev, Expression curr)
-        {
-            var call = Call(s_combine, prev, s_exSeparator);
-            return Call(s_combine, call, curr);
-        }
-
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
-
-        ParameterExpression
-            exInstance = Parameter(typeof(T), nameof(T)),
-            exDepth = Parameter(typeof(int), nameof(Int32));
-
-        var deeperProperties = typeof(T).IsInterface
-            ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties())
-            : Enumerable.Empty<PropertyInfo>();
-
-        var deeperFields = typeof(T).IsInterface
-            ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields())
-            : Enumerable.Empty<FieldInfo>();
-
-        // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
-        var properties = typeof(T)
-           .GetProperties(Flags)
-           .Concat(deeperProperties)
-           .Where(CanUse)
-           .OrderBy(x => x.Name, StringComparer.Ordinal)
-#if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exInstance, exDepth, static x => x.PropertyType));
-#else
-           .Select(p => GetMethodCaller(p, exInstance, exDepth, static x => x.PropertyType));
-#endif
-        var fields = typeof(T)
-           .GetFields(Flags)
-           .Concat(deeperFields)
-           .OrderBy(x => x.Name, StringComparer.Ordinal)
-#if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
-#else
-           .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
-#endif
-
-        var all = fields
-           .Concat(properties)
-#if WAWA
-           .ToList();
-#else
-           .ToCollectionLazily();
-#endif
-        var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
-        return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
-    }
-
-    // ReSharper disable SuggestBaseTypeForParameter
-    [MustUseReturnValue]
-#pragma warning disable CA1859
-#if NETFRAMEWORK && !NET40_OR_GREATER
-    static Expression GetMethodCaller<T, TMember>(
-#else
-    static Expression GetMethodCaller<TMember>(
-#endif
-        TMember info,
-        ParameterExpression exInstance,
-        ParameterExpression exDepth,
-        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
-    )
-#pragma warning restore CA1859
-        where TMember : MemberInfo
-    {
-        var type = selector(info);
-        var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (type.IsByRef || type.IsByRefLike)
-#else
-        if (type.IsByRef)
-#endif
-            return Call(s_combine, exConstant, Call(exInstance, s_toString));
-
-        var method = s_stringify.MakeGenericMethod(type);
-
-        // ReSharper disable once NullableWarningSuppressionIsUsed
-        Expression
-            exMember = MakeMemberAccess(exInstance, info),
-            exCall = Call(method, exMember, exDepth, s_exTrue);
-#if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
-        var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
-        Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
-
-        exCall = Invoke(wrapped, exInstance, exDepth);
-#else
-        CatchBlock
-            invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
-            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
-            unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
-
-        exCall = TryCatch(exCall, unsupportedPlatform, unsupported, invalid);
-#endif
-        return Call(s_combine, exConstant, exCall);
-    }
-#endif
-#if NETFRAMEWORK && !NET40_OR_GREATER
-    static string TryStringify<T>(T instance, int depth, [InstantHandle] Func<T, int, string> stringify)
-    {
-        try
-        {
-            return stringify(instance, depth);
-        }
-        catch (PlatformNotSupportedException)
-        {
-            return UnsupportedPlatform;
-        }
-        catch (NotSupportedException)
-        {
-            return Unsupported;
-        }
-        catch (InvalidOperationException)
-        {
-            return Invalid;
-        }
-    }
-#endif
-    [Pure]
-    static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
-    {
-        var iterator = dictionary.GetEnumerator();
-        StringBuilder builder = new();
-
-        if (iterator.MoveNext())
-            builder.AppendKeyValuePair(
-                Stringify(iterator.Key, depth, useQuotes),
-                Stringify(iterator.Value, depth, useQuotes)
-            );
-
-        var i = 0;
-
-        while (iterator.MoveNext())
-        {
-            if (checked(++i) >= MaxIteration)
+            do
             {
-                builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
-                break;
+                if (pos is 0)
+                    yield break;
+
+                index = indices[--pos] + 1;
+            } while (index >= lists[pos].Count);
+        }
+    }
+
+    /// <summary>Generates all combinations of the nested list.</summary>
+    /// <typeparam name="T">The type of nested list.</typeparam>
+    /// <param name="lists">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
+    [Pure]
+    public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
+    {
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var list in lists)
+            if (list is [])
+                return Enumerable.Empty<SmallList<T>>();
+
+        return lists.CombinationsIterator();
+    }
+
+    /// <summary>Generates all combinations of the nested enumerable.</summary>
+    /// <typeparam name="T">The type of nested enumerable.</typeparam>
+    /// <param name="iterator">The input to generate combinations of.</param>
+    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
+    [Pure]
+    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
+        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
+    ) =>
+        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
+
+    static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
+    {
+        int count = lists.Count, index = 0, pos = 0;
+        var indices = count.AsUninitSmallList<int>();
+        var accumulator = count.AsUninitSmallList<T>();
+
+        while (true)
+        {
+            while (pos < accumulator.Count)
+            {
+                indices[pos] = index;
+                accumulator[pos] = lists[pos][index];
+                index = 0;
+                pos++;
             }
 
-            builder
-               .Append(Separator)
-               .AppendKeyValuePair(
-                    Stringify(iterator.Key, depth, useQuotes),
-                    Stringify(iterator.Value, depth, useQuotes)
-                );
+            yield return accumulator.Cloned;
+
+            do
+            {
+                if (pos is 0)
+                    yield break;
+
+                index = indices[--pos] + 1;
+            } while (index >= lists[pos].Count);
         }
-
-        return builder;
-    }
-
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static StringBuilder UnfoldedName(this Type? type, StringBuilder builder)
-    {
-        StringBuilder Append(Type x)
-        {
-            builder.Append(',').Append(' ');
-            return x.UnfoldedName(builder);
-        }
-
-        if (type is null)
-            return builder;
-
-        if (s_unfoldedNames.TryGetValue(type, out var val))
-            return builder.Append(val);
-
-        if (type.GetElementType() is { } underlying)
-            return UnfoldedElementName(type, builder, underlying);
-
-        var name = type.Name;
-
-        if (!type.IsGenericType)
-            return builder.Append(name);
-
-        var len = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
-        var types = type.GetGenericArguments();
-
-        types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, len).Append('<'));
-        types.Skip(1).Select(Append).Enumerate();
-
-        return builder.Append('>');
-    }
-
-    static StringBuilder UnfoldedElementName(Type type, StringBuilder builder, Type underlying)
-    {
-        if (type.IsByRef)
-            builder.Append('r').Append('e').Append('f').Append(' ');
-
-        var underlyingName = UnfoldedName(underlying);
-        builder.Append(underlyingName);
-
-        if (type.IsArray)
-            builder.Append('[').Append(']');
-
-        if (type.IsPointer)
-            builder.Append('*');
-
-        return builder;
-    }
-#endif
-#if !NETFRAMEWORK || NET40_OR_GREATER
-    sealed class FakeComparer(int depth) : IComparer, IEqualityComparer
-    {
-        StringBuilder? _builder;
-
-        /// <inheritdoc />
-        public override string ToString() =>
-            _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(')').ToString() ?? "()";
-
-        /// <inheritdoc />
-        bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
-
-        /// <inheritdoc />
-        int IComparer.Compare(object? x, object? y) => Append(x, 0);
-
-        /// <inheritdoc />
-        int IEqualityComparer.GetHashCode(object? obj) => Append(obj, 0);
-
-        T Append<T>(object? obj, T ret)
-        {
-#pragma warning disable RCS1196
-            (_builder ??= new("(")).Append(Stringify(obj, depth)).Append(Separator);
-#pragma warning restore RCS1196
-            return ret;
-        }
-    }
-#endif
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier
-
-
-
-
-
-/// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
-[UsedImplicitly]
-
-    const string ParameterName = "value";
-#pragma warning disable CA2208, MA0015
-    static readonly ConstantExpression s_parameterName = Constant(ParameterName, typeof(string));
-#pragma warning restore CA2208, MA0015
-
-    static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public,
-            null,
-            new[] { typeof(string), typeof(string) },
-            null
-        ) ??
-        throw Unreachable;
-
-    static readonly ConstructorInfo s_newInvalidEnumArgument = typeof(InvalidEnumArgumentException).GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public,
-            null,
-            new[] { typeof(string), typeof(int), typeof(Type) },
-            null
-        ) ??
-        throw Unreachable;
-
-    /// <summary>Converts the value to a constant <see cref="string"/>.</summary>
-    /// <remarks><para>
-    /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <exception cref="InvalidEnumArgumentException">The value doesn't represent an exact value.</exception>
-    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
-    [Pure]
-    public static string AsString<T>(this T value)
-        where T : Enum =>
-        StringCaching<T>.From(value);
-
-    /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
-    /// <remarks><para>
-    /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <exception cref="ArgumentException">The value doesn't represent an exact value.</exception>
-    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
-    [Pure]
-    public static T As<T>(this string value)
-        where T : Enum =>
-        StringCaching<T>.To(value);
-
-    static class StringCaching<T>
-        where T : Enum
-    {
-        public static Converter<T, string> From { get; } = Make<Converter<T, string>>(false);
-
-        public static Converter<string, T> To { get; } = Make<Converter<string, T>>(true);
-
-        static TFunc Make<TFunc>(bool isToT)
-            where TFunc : Delegate
-        {
-            var parameter = Parameter(isToT ? typeof(string) : typeof(T), ParameterName);
-            var cases = Cases(isToT);
-            var thrower = Thrower(parameter, isToT);
-            var ret = Switch(parameter, thrower, cases);
-
-            return Lambda<TFunc>(ret, parameter).Compile();
-        }
-
-        static SwitchCase[] Cases(bool isToT) =>
-            typeof(T)
-               .GetFields(BindingFlags.Static | BindingFlags.Public)
-               .Select(x => Case(x, isToT))
-               .ToArray();
-
-        static SwitchCase Case(FieldInfo x, bool isToT)
-        {
-            var str = Constant(x.Name, typeof(string));
-            var t = Constant(x.GetValue(null), typeof(T));
-            var from = isToT ? str : t;
-            var to = isToT ? t : str;
-
-            return SwitchCase(to, from);
-        }
-
-        static UnaryExpression Thrower(Expression parameter, bool isToT) =>
-            Throw(isToT ? Format(parameter) : InvalidEnumArgument(parameter), isToT ? typeof(T) : typeof(string));
-
-        static NewExpression Format(Expression parameter) => New(s_newArgument, parameter, s_parameterName);
-
-        static NewExpression InvalidEnumArgument(Expression parameter) =>
-            New(
-                s_newInvalidEnumArgument,
-                s_parameterName,
-                Convert(parameter, typeof(int)),
-                Constant(typeof(T), typeof(Type))
-            );
     }
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace RedundantNameQualifier
-
-
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
 
 
-/// <summary>Provides extension methods for <see cref="char"/>.</summary>
+/// <summary>Extension methods for randomized getters.</summary>
 
-    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, int index, out char popped)
+    /// <summary>Shuffles a collection.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
+    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
+    /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static IList<T> Shuffle<T>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        [InstantHandle] Func<int, int, int>? selector = null
+    )
     {
-        if (index >= 0 && index < str.Length)
+        selector ??= Rand();
+
+        var list = iterable.ToListLazily();
+
+        for (var j = list.Count; j >= 1; j--)
         {
-            popped = str[index];
-            return str.Remove(index, 1);
+            var item = selector(0, j);
+
+            if (item >= j - 1)
+                continue;
+
+            // Tuples might not necessarily be imported.
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
+            var t = list[item];
+            list[item] = list[j - 1];
+            list[j - 1] = t;
+#pragma warning restore IDE0180
         }
 
-        popped = default;
-        return str;
+        return list;
     }
 
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static string Pop(this string str, Index index, out char popped) =>
-        str.Pop(index.GetOffset(str.Length), out popped);
-
-    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, Range range, out string popped)
+    /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
     {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        popped = str[range];
-        return str.Remove(startIndex, length);
-    }
+        selector ??= Rand();
 
-    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Remove(this string str, Range range)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        return str.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
-    {
-        if (index >= 0 && index < builder.Length)
+        for (var j = iterable.Length; j >= 1; j--)
         {
-            popped = builder[index];
-            return builder.Remove(index, 1);
+            var item = selector(0, j);
+
+            if (item >= j - 1)
+                continue;
+
+            // Tuples might not necessarily be imported.
+#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
+            var t = iterable[item];
+            iterable[item] = iterable[j - 1];
+            iterable[j - 1] = t;
+#pragma warning restore IDE0180
         }
 
-        popped = default;
-        return builder;
+        return iterable;
     }
 
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
-        builder.Pop(index.GetOffset(builder.Length), out popped);
-
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
+    /// <summary>Shuffles a collection.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
+    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
+    /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
+    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static T PickRandom<T>(
+        [InstantHandle] this IEnumerable<T> iterable,
+        [InstantHandle] Func<int, int, int>? selector = null
+    )
     {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        popped = string.Create(
-            length,
-            (builder, startIndex),
-            static (span, tuple) =>
-            {
-                var (builder, startIndex) = tuple;
+        selector ??= Rand();
 
-                for (var i = 0; i < span.Length; i++)
-                    span[i] = builder[i + startIndex];
-            }
-        );
+        return iterable switch
+        {
+            IList<T> list => list[selector(0, list.Count)],
+            IReadOnlyList<T> list => list[selector(0, list.Count)],
+            _ when iterable.ToList() is var list => list[selector(0, list.Count)],
+            _ => throw Unreachable,
+        };
+    }
+
+    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue]
+    public static T PickRandom<T>([InstantHandle] this scoped Span<T> iterable, Func<int, int, int>? selector = null) =>
+        PickRandom((ReadOnlySpan<T>)iterable, selector);
+
+    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
+    [MustUseReturnValue]
+    public static T PickRandom<T>(
+        [InstantHandle] this scoped ReadOnlySpan<T> iterable,
+        Func<int, int, int>? selector = null
+    )
+    {
+        selector ??= Rand();
+        return iterable[selector(0, iterable.Length)];
+    }
+
+    [Pure]
+    static Func<int, int, int> Rand() =>
+#if KTANE
+        UnityEngine.Random.Range;
+#elif NET6_0_OR_GREATER
+        Random.Shared.Next;
 #else
-        StringBuilder poppedBuilder = new(length);
-
-        for (var i = 0; i < length; i++)
-            poppedBuilder[i] = builder[startIndex + i];
-
-        popped = $"{poppedBuilder}";
+        // ReSharper disable once RedundantNameQualifier
+        new Random().Next;
 #endif
-        return builder.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Remove(this StringBuilder builder, Range range)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-        return builder.Remove(startIndex, length);
-    }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -4121,5341 +4372,2002 @@ public
     }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods for randomized getters.</summary>
-
-    /// <summary>Shuffles a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
-    /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static IList<T> Shuffle<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<int, int, int>? selector = null
-    )
-    {
-        selector ??= Rand();
-
-        var list = iterable.ToListLazily();
-
-        for (var j = list.Count; j >= 1; j--)
-        {
-            var item = selector(0, j);
-
-            if (item >= j - 1)
-                continue;
-
-            // Tuples might not necessarily be imported.
-#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
-            var t = list[item];
-            list[item] = list[j - 1];
-            list[j - 1] = t;
-#pragma warning restore IDE0180
-        }
-
-        return list;
-    }
-
-    /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
-    {
-        selector ??= Rand();
-
-        for (var j = iterable.Length; j >= 1; j--)
-        {
-            var item = selector(0, j);
-
-            if (item >= j - 1)
-                continue;
-
-            // Tuples might not necessarily be imported.
-#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
-            var t = iterable[item];
-            iterable[item] = iterable[j - 1];
-            iterable[j - 1] = t;
-#pragma warning restore IDE0180
-        }
-
-        return iterable;
-    }
-
-    /// <summary>Shuffles a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
-    /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static T PickRandom<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<int, int, int>? selector = null
-    )
-    {
-        selector ??= Rand();
-
-        return iterable switch
-        {
-            IList<T> list => list[selector(0, list.Count)],
-            IReadOnlyList<T> list => list[selector(0, list.Count)],
-            _ when iterable.ToList() is var list => list[selector(0, list.Count)],
-            _ => throw Unreachable,
-        };
-    }
-
-    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
-    [MustUseReturnValue]
-    public static T PickRandom<T>([InstantHandle] this scoped Span<T> iterable, Func<int, int, int>? selector = null) =>
-        PickRandom((ReadOnlySpan<T>)iterable, selector);
-
-    /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
-    [MustUseReturnValue]
-    public static T PickRandom<T>(
-        [InstantHandle] this scoped ReadOnlySpan<T> iterable,
-        Func<int, int, int>? selector = null
-    )
-    {
-        selector ??= Rand();
-        return iterable[selector(0, iterable.Length)];
-    }
-
-    [Pure]
-    static Func<int, int, int> Rand() =>
-#if KTANE
-        UnityEngine.Random.Range;
-#elif NET6_0_OR_GREATER
-        Random.Shared.Next;
-#else
-        // ReSharper disable once RedundantNameQualifier
-        new Random().Next;
-#endif
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632, MA0048, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-#endif
-
-// ReSharper disable once CheckNamespace
-
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-#endif
-
-/// <summary>Provides methods for exiting the program.</summary>
-
-    /// <remarks><para>This method represents the exit code 0, indicating success.</para></remarks>
-    /// <inheritdoc cref="With"/>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-    public static Exception Success(string? message = null) => throw With(0, message);
-
-    /// <remarks><para>This method represents the exit code 1, indicating failure.</para></remarks>
-    /// <inheritdoc cref="With"/>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-    public static Exception Failure(string? message = null) => throw With(1, message);
-
-    /// <remarks><para>This method represents the exit code 2, indicating invalid parameters.</para></remarks>
-    /// <inheritdoc cref="With"/>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-    public static Exception Usage(string? message = null) => throw With(2, message);
-
-    /// <typeparam name="T">Only used for type coercion.</typeparam>
-    /// <inheritdoc cref="Success"/>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-    public static T Success<T>(string? message = null) => throw With(0, message);
-
-    /// <typeparam name="T">Only used for type coercion.</typeparam>
-    /// <inheritdoc cref="Failure"/>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-    public static T Failure<T>(string? message = null) => throw With(1, message);
-
-    /// <typeparam name="T">Only used for type coercion.</typeparam>
-    /// <inheritdoc cref="Usage"/>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-    public static T Usage<T>(string? message = null) => throw With(2, message);
-
-    /// <summary>Terminates this process and returns the exit code to the operating system.</summary>
-    /// <param name="message">The message to print into the standard output/error, if specified.</param>
-    /// <exception cref="SecurityException">
-    /// The caller does not have sufficient security permission to perform this function.
-    /// </exception>
-    /// <returns>This method does not return. Specified to allow <see keyword="throw"/> expressions.</returns>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
-#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
-     SecurityPermission(Demand, Flags = UnmanagedCode),
-#endif
-    ]
-#pragma warning disable CS1573
-    static Exception With(byte exitCode, string? message)
-#pragma warning restore CS1573
-    {
-        if (message is not null)
-            (exitCode is 0 ? Console.Out : Console.Error).WriteLine(message);
-
-        Environment.Exit(exitCode);
-        throw Unreachable;
-    }
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer
-
-
-
-// ReSharper disable once CheckNamespace RedundantUsingDirective.Global
-
-
-/// <summary>Provides a reference for an <c>UnreachableException</c>.</summary>
-#pragma warning disable MA0048
-
-    /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>
-    public static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");
-
-    /// <summary>Gets the <see cref="Exception"/> that represents unfinished logic.</summary>
-    public static NotImplementedException Todo { get; } = new();
-
-    /// <summary>Gets the <see cref="Exception"/> that represents an unreachable state.</summary>
-    public static UnreachableException Unreachable { get; } = new();
-
-// SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
-// ReSharper disable once CheckNamespace
-
-
-// ReSharper disable once RedundantUsingDirective
-
-
-
-/// <summary>An extremely bad logger.</summary>
-public sealed partial class BadLogger : IDisposable
-{
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Clear"/>
-#endif
-    static readonly byte[] s_clear = { 0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a };
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <summary>Gets the buffer that clears the console when printed. Only on certain Linux terminals though.</summary>
-    /// <remarks><para>
-    /// Buffer is based on the following command:
-    /// </para><code>
-    /// ~$ clear | xxd
-    /// 00000000: 1b5b 481b 5b32 4a1b 5b33 4a.[H.[2J.[3J
-    /// </code></remarks>
-    [Pure]
-    public static ReadOnlySpan<byte> Clear => s_clear;
-#endif
-
-    /// <summary>Gets the default interval when one is left unspecified.</summary>
-    [Pure]
-    public static TimeSpan DefaultInterval { get; } = TimeSpan.FromMilliseconds(100);
-
-    readonly Stopwatch _stopwatch = new();
-
-    readonly FileStream _stream;
-
-    readonly TimeSpan _interval;
-
-    TimeSpan _last;
-
-    /// <summary>Initializes a new instance of the <see cref="BadLogger"/> class.</summary>
-    /// <param name="path">The path to the file to write.</param>
-    /// <param name="interval">The rate of flushing the stream.</param>
-    public BadLogger(string path = "/tmp/morsels.log", TimeSpan? interval = null)
-    {
-        _interval = interval ?? DefaultInterval;
-        (_stream = File.OpenWrite(path)).SetLength(0);
-        _stream.Write(s_clear, 0, s_clear.Length);
-        OnWrite += Log;
-        "..".Debug();
-        _stopwatch.Start();
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        _stopwatch.Stop();
-        "(◕_◕)🎉".Debug();
-        _stopwatch.ElapsedMilliseconds.ToString("0ms").Debug();
-        OnWrite -= Log;
-        _stream.Dispose();
-    }
-
-    /// <summary>Logs the message.</summary>
-    /// <param name="entry">The entry to log.</param>
-    public void Log(string entry)
-    {
-        var log = $"[{DateTime.Now:HH:mm:ss.fff}]: {entry}\n";
-#if NETCOREAPP3_0_OR_GREATER
-        const int MaxBytesInUtf16 = 3;
-        Allocate(log.Length * MaxBytesInUtf16, (this, log), Write());
-#else
-        var bytes = Encoding.UTF8.GetBytes(log);
-        _stream.Write(bytes, 0, bytes.Length);
-#endif
-        TryFlush();
-    }
-
-    /// <summary>Attempts to flush if enough time has elapsed.</summary>
-    /// <returns>Whether it flushed.</returns>
-    public bool TryFlush()
-    {
-        if (_stopwatch.Elapsed is var elapsed && elapsed - _last <= _interval)
-            return false;
-
-        _last = elapsed;
-        _stream.Flush();
-        return true;
-    }
-
-    /// <summary>Produces the side effect specified by the passed in <see cref="Action"/>.</summary>
-    /// <param name="action">The <see cref="Action"/>.</param>
-    /// <returns>Itself.</returns>
-    public BadLogger Try([InstantHandle] Action action)
-    {
-        try
-        {
-            action();
-            return this;
-        }
-        catch (Exception ex)
-        {
-            $"{ex}".Debug();
-            throw;
-        }
-    }
-
-    /// <summary>Produces the side effect specified by the passed in <see cref="Action"/>.</summary>
-    /// <typeparam name="T">The type of <paramref name="context"/>.</typeparam>
-    /// <param name="action">The <see cref="Action"/>.</param>
-    /// <param name="context">The context value.</param>
-    /// <returns>Itself.</returns>
-    public BadLogger Try<T>([InstantHandle] Action<T> action, T context)
-    {
-        try
-        {
-            action(context);
-            return this;
-        }
-        catch (Exception ex)
-        {
-            $"{ex}".Debug();
-            throw;
-        }
-    }
-#if NETCOREAPP3_0_OR_GREATER
-    static SpanAction<byte, (BadLogger, string)> Write() =>
-        static (span, tuple) =>
-        {
-            var (that, log) = tuple;
-            Utf8.FromUtf16(log, span, out _, out var wrote);
-            that._stream.Write(span[..wrote]);
-        };
-#endif
-}
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632, RCS1196
 
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Provides methods to use callbacks within a statement.</summary>
-#pragma warning disable MA0048
+/// <summary>Extension methods to count digits in numbers.</summary>
 
-    /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
-    // ReSharper disable RedundantCast
-    // ReSharper disable once EventNeverSubscribedTo.Global
-    public static event Action<string> OnWrite =
-#if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
-        Shout;
-#else
-        (Action<string>)Shout +
-#if KTANE
-        (Action<string>)UnityEngine.Debug.Log +
-#endif
-        (Action<string>)Console.WriteLine;
-#endif
-#if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <summary>Gets all of the types currently loaded.</summary>
-    [Pure]
-    public static IEnumerable<Type> AllTypes =>
-        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
-#endif
-#pragma warning disable CS1574
-    /// <summary>
-    /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// This method exists to be able to hook both conditional methods in <see cref="OnWrite"/>,
-    /// and to allow the consumer to be able to remove this method to the same <see cref="OnWrite"/>.
-    /// </para></remarks>
-    /// <param name="message">The value to send a message.</param>
-#pragma warning restore CS1574
-    public static void Shout(string message)
-    {
-        // ReSharper disable once InvocationIsSkipped
-        System.Diagnostics.Debug.WriteLine(message);
-#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
-        Trace.WriteLine(message);
-#endif
-    }
-
-    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
-    /// <param name="message">The value to send a message.</param>
-    /// <exception cref="InvalidOperationException">
-    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
-    /// every callback has been manually removed as it is always valid by default.
-    /// </exception>
-    public static void Write(this string message) => (OnWrite ?? throw new InvalidOperationException(message))(message);
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The value to stringify.</param>
-    /// <exception cref="InvalidOperationException">
-    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
-    /// every callback has been manually removed as it is always valid by default.
-    /// </exception>
-    // ReSharper disable once InvokeAsExtensionMethod
-    public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
-
-    /// <summary>Quick and dirty debugging function.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The value to stringify and return.</param>
-    /// <param name="shouldPrettify">Determines whether to prettify the resulting <see cref="string"/>.</param>
-    /// <param name="shouldLogExpression">Determines whether <paramref name="expression"/> is logged.</param>
-    /// <param name="map">The map callback.</param>
-    /// <param name="filter">The filter callback.</param>
-    /// <param name="logger">The logging callback.</param>
-    /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="value"/>.</param>
-    /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
-    /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
-    /// <param name="member">Automatically filled by compilers; the member's name where this method was called.</param>
-    /// <exception cref="InvalidOperationException">
-    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
-    /// every callback has been manually removed as it is always valid by default.
-    /// </exception>
-    /// <returns>The parameter <paramref name="value"/>.</returns>
-    [return: NotNullIfNotNull(nameof(value))]
-    public static T Debug<T>(
-        this T value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = true,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [InstantHandle] Predicate<T>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-    {
-        const string
-            Indent = "\n        ",
-            Of = $"{Indent}of ";
-
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-#pragma warning disable 8500
-        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+    /// <summary>Gets the amount of digits of the number.</summary>
+    /// <param name="number">The number to count.</param>
+    /// <returns>The amount of digits in the parameter <paramref name="number"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
+    public static byte DigitCount(this byte number) =>
+        number switch
         {
-            var trimmed = next.Trim();
-
-            fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, trimmed.Length).Append(' ');
-
-            return accumulator;
-        }
-#pragma warning restore 8500
-#endif
-
-        if (!(filter ?? (_ => true))(value))
-            return value;
-
-        logger ??= Write;
-
-        // ReSharper disable ExplicitCallerInfoArgument InvokeAsExtensionMethod RedundantNameQualifier
-        var stringified = (map ?? (x => x))(value) switch
-        {
-            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
-            string x => x,
-            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
-            var x => Stringifier.Stringify(x),
+            < 10 => 1,
+            < 100 => 2,
+            _ => 3,
         };
 
-        var location = shouldLogExpression
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Of), Accumulator)
-#else
-            ? expression
-              ?.Collapse()
-               .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-               .Select(x => x.Trim())
-               .Prepend(Of)
-               .Conjoin("")
-#endif
-            : default;
-
-        var log = $"{stringified}{location}{Indent}at {member} in {Path.GetFileName(path)}:line {line}";
-        logger(log);
-        return value;
-    }
-
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    [return: NotNullIfNotNull(nameof(value))]
-    public static T Debug<T, TAs>(
-        this T value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = true,
-        [InstantHandle] Converter<T, TAs?>? map = null,
-        [InstantHandle] Predicate<T>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-    {
-        if (!(filter ?? (_ => true))(value))
-            return value;
-
-        var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
+    public static byte DigitCount(this sbyte number) =>
+        number switch
         {
-            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x as object,
-            string x => x,
-            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
-            var x => Stringifier.Stringify(x),
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            _ => 3,
         };
 
-        Debug(
-            stringified,
-            false,
-            shouldLogExpression,
-            logger: logger,
-            expression: expression,
-            path: path,
-            line: line,
-            member: member
-        );
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
+    public static byte DigitCount(this ushort number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            < 1000 => 3,
+            < 10000 => 4,
+            _ => 5,
+        };
 
-        return value;
-    }
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
+    public static byte DigitCount(this short number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            < 1000 and > -1000 => 3,
+            < 10000 and > -10000 => 4,
+            _ => 5,
+        };
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static Span<T> Debug<T>(
-        this Span<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [InstantHandle] Predicate<T[]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        // ReSharper disable ExplicitCallerInfoArgument
-        _ = value
-           .ToArray()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
+    public static byte DigitCount(this uint number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            < 1000 => 3,
+            < 10000 => 4,
+            < 100000 => 5,
+            < 1000000 => 6,
+            < 10000000 => 7,
+            < 100000000 => 8,
+            < 1000000000 => 9,
+            _ => 10,
+        };
 
-        // ReSharper restore ExplicitCallerInfoArgument
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static PooledSmallList<T> Debug<T>(
-        this PooledSmallList<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [InstantHandle] Predicate<T[]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        // ReSharper disable ExplicitCallerInfoArgument
-        _ = value
-           .View
-           .ToArray()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
+    public static byte DigitCount(this int number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            < 1000 and > -1000 => 3,
+            < 10000 and > -10000 => 4,
+            < 100000 and > -100000 => 5,
+            < 1000000 and > -1000000 => 6,
+            < 10000000 and > -10000000 => 7,
+            < 100000000 and > -100000000 => 8,
+            < 1000000000 and > -1000000000 => 9,
+            _ => 10,
+        };
 
-        // ReSharper restore ExplicitCallerInfoArgument
-        return value;
-    }
-#endif
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 20)]
+    public static byte DigitCount(this ulong number) =>
+        number switch
+        {
+            < 10 => 1,
+            < 100 => 2,
+            < 1000 => 3,
+            < 10000 => 4,
+            < 100000 => 5,
+            < 1000000 => 6,
+            < 10000000 => 7,
+            < 100000000 => 8,
+            < 1000000000 => 9,
+            < 10000000000 => 10,
+            < 100000000000 => 11,
+            < 1000000000000 => 12,
+            < 10000000000000 => 13,
+            < 100000000000000 => 14,
+            < 1000000000000000 => 15,
+            < 10000000000000000 => 16,
+            < 100000000000000000 => 17,
+            < 1000000000000000000 => 18,
+            < 10000000000000000000 => 19,
+            _ => 20,
+        };
 
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static SplitSpan<T> Debug<T>(
-        this SplitSpan<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<List<T[]>, object?>? map = null,
-        [InstantHandle] Predicate<List<T[]>>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
-        where T : IEquatable<T>?
-#endif
-    {
-        // ReSharper disable ExplicitCallerInfoArgument
-        _ = value
-           .ToList()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-
-        // ReSharper restore ExplicitCallerInfoArgument
-        return value;
-    }
-
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static ReadOnlySpan<T> Debug<T>(
-        this ReadOnlySpan<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [InstantHandle] Predicate<T[]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        // ReSharper disable ExplicitCallerInfoArgument
-        _ = value
-           .ToArray()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-
-        // ReSharper restore ExplicitCallerInfoArgument
-        return value;
-    }
-#endif
-
-    /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
-    /// <typeparam name="T">The type of value and action parameter.</typeparam>
-    /// <param name="value">The value to pass into the callback.</param>
-    /// <param name="action">The callback to perform.</param>
-    /// <returns>The parameter <paramref name="value"/>.</returns>
-    public static T Peek<T>(this T value, [InstantHandle] Action<T> action)
-    {
-        action(value);
-        return value;
-    }
-#if !NETFRAMEWORK
-    /// <summary>Executes a <see langword="delegate"/> pointer, and returns the argument.</summary>
-    /// <typeparam name="T">The type of value and delegate pointer parameter.</typeparam>
-    /// <param name="value">The value to pass into the callback.</param>
-    /// <param name="call">The callback to perform.</param>
-    /// <exception cref="ArgumentNullException">
-    /// The value <paramref name="call"/> points to <see langword="null"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="value"/>.</returns>
-    public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void> call)
-    {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (call is not null)
-            call(value);
-
-        return value;
-    }
-#endif
-
-    /// <summary>Executes the function, and returns the result.</summary>
-    /// <typeparam name="T">The type of value and input parameter.</typeparam>
-    /// <typeparam name="TResult">The type of output and return value.</typeparam>
-    /// <param name="value">The value to pass into the callback.</param>
-    /// <param name="converter">The callback to perform.</param>
-    /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
-    public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
-        converter(value);
+    /// <inheritdoc cref="DigitCount(byte)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 19)]
+    public static byte DigitCount(this long number) =>
+        number switch
+        {
+            < 10 and > -10 => 1,
+            < 100 and > -100 => 2,
+            < 1000 and > -1000 => 3,
+            < 10000 and > -10000 => 4,
+            < 100000 and > -100000 => 5,
+            < 1000000 and > -1000000 => 6,
+            < 10000000 and > -10000000 => 7,
+            < 100000000 and > -100000000 => 8,
+            < 1000000000 and > -1000000000 => 9,
+            < 10000000000 and > -10000000000 => 10,
+            < 100000000000 and > -100000000000 => 11,
+            < 1000000000000 and > -1000000000000 => 12,
+            < 10000000000000 and > -10000000000000 => 13,
+            < 100000000000000 and > -100000000000000 => 14,
+            < 1000000000000000 and > -1000000000000000 => 15,
+            < 10000000000000000 and > -10000000000000000 => 16,
+            < 100000000000000000 and > -100000000000000000 => 17,
+            < 1000000000000000000 and > -1000000000000000000 => 18,
+            _ => 19,
+        };
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
+
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Provides methods to flatten <see cref="IEnumerable{T}"/> instances.</summary>
+/// <summary>Extension methods to clamp numbers.</summary>
 
-    /// <summary>Flattens the nested collection.</summary>
-    /// <typeparam name="T">The type of collection.</typeparam>
-    /// <param name="enumerable">The collection to flatten.</param>
-    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable) =>
-        enumerable.SelectMany(Enumerable.AsEnumerable);
-
-    /// <summary>Flattens the nested collection.</summary>
-    /// <typeparam name="T">The type of collection.</typeparam>
-    /// <param name="enumerable">The collection to flatten.</param>
-    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten2<T>(this IEnumerable<IEnumerable<IEnumerable<T>>> enumerable) =>
-        enumerable.SelectMany(Enumerable.AsEnumerable).SelectMany(Enumerable.AsEnumerable);
-
-    /// <summary>Flattens the nested collection.</summary>
-    /// <typeparam name="T">The type of collection.</typeparam>
-    /// <param name="enumerable">The collection to flatten.</param>
-    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten3<T>(this IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>> enumerable) =>
-        enumerable
-           .SelectMany(Enumerable.AsEnumerable)
-           .SelectMany(Enumerable.AsEnumerable)
-           .SelectMany(Enumerable.AsEnumerable);
-
-    /// <summary>
-    /// Flattens the nested collection by taking all the first elements of the enumerations,
-    /// then all the second elements of the enumerations, the third, and so on.
-    /// When any enumeration runs out, it simply moves onto the next enumeration until all enumerations are finished.
-    /// </summary>
-    /// <typeparam name="T">The type of collection.</typeparam>
-    /// <param name="enumerable">The collection to flatten.</param>
+#if !NET7_0_OR_GREATER
+    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <param name="number">The number to clip.</param>
+    /// <param name="min">If specified, the smallest number to return.</param>
+    /// <param name="max">If specified, the greatest number to return.</param>
     /// <returns>
-    /// The flattened collection by taking items in order of appearance of each individual enumerable,
-    /// and only then by the outer enumerable.
+    /// The parameter <paramref name="min"/> if <paramref name="number"/> is smaller than <paramref name="min"/>,
+    /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
+    /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
     /// </returns>
     [Pure]
-    public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
-    {
-        var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
-        falsy.For(x => x.Dispose());
+    public static int Clamp(this int number, int? min = null, int? max = null) =>
+        (min ?? number) is var small &&
+        (max ?? number) is var big &&
+        number <= small ? small :
+        number >= big ? big : number;
 
-        try
-        {
-            while (truthy is not [])
-            {
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-                yield return truthy.ConvertAll(x => x.Current);
+    /// <inheritdoc cref="Clamp(int, int?, int?)"/>
+    [Pure]
+    public static float Clamp(this float number, float? min = null, float? max = null) =>
+        (min ?? number) is var small &&
+        (max ?? number) is var big &&
+        number <= small ? small :
+        number >= big ? big : number;
 #else
-                yield return new(truthy.Select(x => x.Current));
-#endif
-                (truthy, falsy) = truthy.SplitBy(x => x.MoveNext());
-                falsy.For(x => x.Dispose());
-            }
-        }
-        finally
-        {
-            truthy.For(x => x.Dispose());
-        }
-    }
+    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <typeparam name="T">The type of numeric value for comparisons.</typeparam>
+    /// <param name="number">The number to clip.</param>
+    /// <param name="min">If specified, the smallest number to return.</param>
+    /// <param name="max">If specified, the greatest number to return.</param>
+    /// <returns>
+    /// The parameter <paramref name="min"/> if <paramref name="number"/> is smaller than <paramref name="min"/>,
+    /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
+    /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
+    /// </returns>
+    [Pure]
+    public static T Clamp<T>(this T number, T? min = null, T? max = null)
+        where T : class, IComparisonOperators<T, T, bool> =>
+        (min ?? number) is var small &&
+        (max ?? number) is var big &&
+        number <= small ? small :
+        number >= big ? big : number;
+
+    /// <inheritdoc cref="Clamp{T}(T, T?, T?)"/>
+    [Pure]
+    public static T Clamp<T>(this T number, T? min = null, T? max = null)
+        where T : struct, IComparisonOperators<T, T, bool> =>
+        (min ?? number) is var small &&
+        (max ?? number) is var big &&
+        number <= small ? small :
+        number >= big ? big : number;
+
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
+#if !NETFRAMEWORK || NET35_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier
 
 
 
 
-/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+/// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
+[UsedImplicitly]
 
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
-    /// <returns>An enumeration from a range's start to end.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
+    static readonly Dictionary<Type, IList> s_dictionary = new();
 
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="range">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
-    /// <returns>An enumeration from a range's start to end.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<int> For(this Range range) =>
-        range.Start.Value is var start &&
-        range.End.Value is var end &&
-        start == end ? Enumerable.Empty<int>() :
-        Math.Abs(start - end) is var len &&
-        start < end ? Enumerable.Range(start, len) : Enumerable.Repeat(start, len).Select((x, i) => x - i - 1);
-
-    /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
-    /// <remarks><para>
-    /// The tail is not guaranteed to be able to be enumerated over multiple times.
-    /// As such, use a method like <see cref="Collected.ToCollectionLazily{T}"/> if multiple enumerations are needed.
-    /// </para></remarks>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="enumerable">The enumerable to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="enumerable"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
-    public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
-    {
-        head = default;
-        tail = Enumerable.Empty<T>();
-
-        if (enumerable?.GetEnumerator() is not { } enumerator)
-            return;
-
-        head = enumerator.MoveNext() ? enumerator.Current : default;
-        tail = enumerator.AsEnumerable();
-    }
-
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static char? Nth(this string str, Index index) =>
-        index.IsFromEnd ? str.NthLast(index.Value - 1) : str.Nth(index.Value);
-
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, Index index) =>
-        index.IsFromEnd ? iterable.NthLast(index.Value - 1) : iterable.Nth(index.Value);
-
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static string? Nth(this string str, Range range) =>
-        range.TryGetOffsetAndLength(str.Length, out var offset, out var length)
-            ? str.Substring(offset, length)
-            : default;
-
-    /// <summary>Gets a range of items from a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get a range of items from.</param>
-    /// <param name="range">The ranges to get.</param>
-    /// <returns>A slice from the parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Nth<T>([InstantHandle] this IEnumerable<T> iterable, Range range)
-    {
-        [LinqTunnel, Pure]
-        static IEnumerable<TT> Sub<TT>([InstantHandle] IEnumerable<TT> iterable, Range range) =>
-            iterable.Skip(range.Start.Value).Take(range.End.Value - range.Start.Value);
-
-        if (!range.Start.IsFromEnd && !range.End.IsFromEnd)
-            return Sub(iterable, range);
-
-        if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
-            return Sub(iterable, startRange);
-
-        var arr = iterable.ToList();
-        var arrRange = RangeStart(range, arr.Count);
-        return Sub(arr, arrRange);
-    }
-
-    /// <summary>Gets an enumeration of an index.</summary>
-    /// <param name="index">The index to count up or down to.</param>
-    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
+    /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="left"/> has the values
+    /// of the parameter <paramref name="right"/>; otherwise, <see langword="false"/>.
+    /// </returns>
     [Pure]
-    public static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
+    public static bool Has<T>(this T left, T right)
+        where T : Enum =>
+        left.Op(right, static (x, y) => (x & y) == x);
 
-    /// <summary>Gets an enumeration of a range.</summary>
-    /// <param name="range">The range to iterate over.</param>
-    /// <returns>An enumeration from the range's start to end.</returns>
+    /// <summary>Performs a conversion operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The <see cref="int"/> cast of <paramref name="value"/>.</returns>
     [Pure]
-    public static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
+    public static int AsInt<T>(this T value)
+        where T : Enum =>
+        MathCaching<T>.From(value);
+
+    /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
+    /// <typeparam name="T">The type of enum to get the values from.</typeparam>
+    /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
+    public static IList<T> GetValues<T>()
+        where T : Enum =>
+        s_dictionary.TryGetValue(typeof(T), out var list)
+            ? (IList<T>)list
+            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
+
+    /// <summary>Performs a conversion operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The <typeparamref name="T"/> cast of <paramref name="value"/>.</returns>
+    [Pure]
+    public static T As<T>(this int value)
+        where T : Enum =>
+        MathCaching<T>.To(value);
+
+    /// <summary>Performs a negation operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
+    [Pure]
+    public static T Negate<T>(this T value)
+        where T : Enum =>
+        value.Op(static x => unchecked(-x));
+
+    /// <summary>Performs an decrement operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately before it.</returns>
+    [Pure]
+    public static T Predecessor<T>(this T value)
+        where T : Enum =>
+        value.Op(static x => unchecked(--x));
+
+    /// <summary>Performs a increment operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <returns>The predecessor of the parameter <paramref name="value"/>; the number immediately after it.</returns>
+    [Pure]
+    public static T Successor<T>(this T value)
+        where T : Enum =>
+        value.Op(static x => unchecked(++x));
+
+    /// <summary>Performs an addition operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>The sum of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
+    public static T Add<T>(this T left, T right)
+        where T : Enum =>
+        left.Op(right, static (x, y) => unchecked(x + y));
+
+    /// <summary>Performs a subtraction operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>The difference of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
+    public static T Subtract<T>(this T left, T right)
+        where T : Enum =>
+        left.Op(right, static (x, y) => unchecked(x - y));
+
+    /// <summary>Performs a multiplication operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>The product of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
+    public static T Multiply<T>(this T left, T right)
+        where T : Enum =>
+        left.Op(right, static (x, y) => unchecked(x * y));
+
+    /// <summary>Performs a division operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>The quotient of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
+    public static T Divide<T>(this T left, T right)
+        where T : Enum =>
+        left.Op(right, static (x, y) => x / y);
+
+    /// <summary>Performs a modulo operation.</summary>
+    /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>The remainder of the parameters <paramref name="left"/> and <paramref name="right"/>.</returns>
+    [Pure]
+    public static T Modulo<T>(this T left, T right)
+        where T : Enum =>
+        left.Op(right, static (x, y) => x % y);
+
+    /// <summary>Computes the product of a sequence of <typeparamref name="T"/> values.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the product of.</param>
+    /// <returns>The product of the values in the sequence.</returns>
+    [Pure]
+    public static T Product<T>(this IEnumerable<T> source)
+        where T : Enum =>
+        source.Aggregate(Multiply);
+
+    /// <summary>Computes the sum of a sequence of <typeparamref name="T"/> values.</summary>
+    /// <typeparam name="T">The type of sequence.</typeparam>
+    /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the sum of.</param>
+    /// <returns>The sum of the values in the sequence.</returns>
+    [Pure]
+    public static T Sum<T>(this IEnumerable<T> source)
+        where T : Enum =>
+        source.Aggregate(Add);
 
     [Pure]
-    static Index IndexStart(Index index, int length) => index.IsFromEnd ? length - index.Value - 1 : index;
+    static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
+        where T : Enum =>
+        op(value.AsInt()).As<T>();
 
     [Pure]
-    static Range RangeStart(Range range, int length) =>
-        new(IndexStart(range.Start, length), IndexStart(range.End, length));
-#endif
+    static T Op<T>(this T left, T right, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
+        where T : Enum =>
+        op(left.AsInt(), right.AsInt()).As<T>();
 
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable InvertIf
-#pragma warning disable IDE0059
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods to force full enumerations.</summary>
-
-    /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    public static void Enumerate([InstantHandle] this IEnumerable? iterable)
-    {
-        if (iterable is not null)
-            foreach (var unused in iterable) { }
-    }
-
-    /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    public static void Enumerate<T>([InstantHandle] this IEnumerable<T>? iterable)
-    {
-        if (iterable is not null)
-            foreach (var unused in iterable) { }
-    }
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-#pragma warning disable 8603, 8604
-/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int For([NonNegativeValue] this int upper, [InstantHandle] Action action)
-    {
-        for (var i = 0; i < upper; i++)
-            action();
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int For([NonNegativeValue] this int upper, [InstantHandle] Action<int> action)
-    {
-        for (var i = 0; i < upper; i++)
-            action(i);
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int For<TExternal>(
-        [NonNegativeValue] this int upper,
-        TExternal external,
-        [InstantHandle] Action<TExternal> action
-    )
-    {
-        for (var i = 0; i < upper; i++)
-            action(external);
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int For<TExternal>(
-        [NonNegativeValue] this int upper,
-        TExternal external,
-        [InstantHandle] Action<int, TExternal> action
-    )
-    {
-        for (var i = 0; i < upper; i++)
-            action(i, external);
-
-        return upper;
-    }
-#if !NET20 && !NET30
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Action<T> action
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-
-        foreach (var item in list)
-            action(item);
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        TExternal external,
-        [InstantHandle] Action<T, TExternal> action
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-
-        foreach (var item in list)
-            action(item, external);
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Action<T, int> action
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-        var i = 0;
-
-        foreach (var item in list)
-            action(item, checked(i++));
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> For<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        TExternal external,
-        [InstantHandle] Action<T, int, TExternal> action
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-        var i = 0;
-
-        foreach (var item in list)
-            action(item, checked(i++), external);
-
-        return list;
-    }
-#endif
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        [InstantHandle] Action<TKey, TValue> action
-    )
-        where TKey : notnull
-    {
-        foreach (var kvp in dictionary)
-            action(kvp.Key, kvp.Value);
-
-        return dictionary;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        TExternal external,
-        [InstantHandle] Action<TKey, TValue, TExternal> action
-    )
-        where TKey : notnull
-    {
-        foreach (var kvp in dictionary)
-            action(kvp.Key, kvp.Value, external);
-
-        return dictionary;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        [InstantHandle] Action<TKey, TValue, int> action
-    )
-        where TKey : notnull
-    {
-        var i = 0;
-
-        foreach (var kvp in dictionary)
-            action(kvp.Key, kvp.Value, checked(i++));
-
-        return dictionary;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> For<TKey, TValue, TExternal>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        TExternal external,
-        [InstantHandle] Action<TKey, TValue, int, TExternal> action
-    )
-        where TKey : notnull
-    {
-        var i = 0;
-
-        foreach (var kvp in dictionary)
-            action(kvp.Key, kvp.Value, checked(i++), external);
-
-        return dictionary;
-    }
-#if !NET20 && !NET30
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="num">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
-    /// <returns>An enumeration from a range's start to end.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<int> For(this int num) =>
-        Math.Abs(num) is var abs && num < 0
-            ? Enumerable.Repeat(abs, abs).Select((x, i) => x - i - 1)
-            : Enumerable.Range(0, num);
-
-    /// <summary>Gets an enumeration of a number.</summary>
-    /// <param name="num">The index to count up or down to.</param>
-    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
     [Pure]
-    public static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TExternal> For<TExternal>([NonNegativeValue] this int upper, TExternal external) =>
-        Enumerable.Repeat(external, upper);
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TResult">The type of iterator.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The function for each loop.</param>
-    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> For<TResult>(
-        [NonNegativeValue] this int upper,
-        [InstantHandle] Func<TResult> func
-    ) =>
-        Enumerable.Repeat(func, upper).Select(x => x());
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TResult">The type of iterator.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The function for each loop.</param>
-    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> For<TResult>(
-        [NonNegativeValue] this int upper,
-        [InstantHandle] Converter<int, TResult> func
-    ) =>
-        Enumerable.Repeat(func, upper).Select((x, i) => x(i));
-#endif
-#if NET7_0_OR_GREATER
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
-    /// <returns>An enumeration from a range's start to end.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> For<T>(this T upper)
-        where T : IComparisonOperators<T?, T?, bool>,
-        ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T>
-    {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
-
-        for (T? i = default; i < abs; i++)
-            yield return isNegative ? upper - i : i;
-    }
-
-    /// <summary>Gets an enumeration of a number.</summary>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="num">The index to count up or down to.</param>
-    /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
-    public static IEnumerator<T> GetEnumerator<T>(this T num)
-        where T : IComparisonOperators<T?, T?, bool>,
-        ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T> =>
-        num.For().GetEnumerator();
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
-    {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
-
-        for (T? i = default; i < abs; i++)
-            yield return external;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TResult">The type of iterator.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The function for each loop.</param>
-    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> For<T, TResult>(
-        [NonNegativeValue] this T upper,
-        [InstantHandle] Func<TResult> func
+    static TResult Op<T, TResult>(
+        this T left,
+        T right,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, TResult> op
     )
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+        where T : Enum =>
+        op(left.AsInt(), right.AsInt());
+
+    static class MathCaching<T>
+        where T : Enum
     {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        public static Converter<T, int> From { get; } = Make<Converter<T, int>>(false);
 
-        for (T? i = default; i < abs; i++)
-            yield return func();
-    }
+        public static Converter<int, T> To { get; } = Make<Converter<int, T>>(true);
 
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TResult">The type of iterator.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The function for each loop.</param>
-    /// <returns>All instances that <paramref name="func"/> used in an <see cref="IEnumerable{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<TResult> For<T, TResult>(
-        [NonNegativeValue] this T upper,
-        [InstantHandle] Converter<T, TResult> func
-    )
-        where T : IComparisonOperators<T?, T?, bool>,
-        ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T>
-    {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
-
-        for (T? i = default; i < abs; i++)
-            yield return func(isNegative ? upper - i : i);
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            action();
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            action(i);
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T For<T, TExternal>(
-        [NonNegativeValue] this T upper,
-        TExternal external,
-        [InstantHandle] Action<TExternal> action
-    )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            action(external);
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T For<T, TExternal>(
-        [NonNegativeValue] this T upper,
-        TExternal external,
-        [InstantHandle] Action<T, TExternal> action
-    )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            action(i, external);
-
-        return upper;
-    }
-
-    /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
-    public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter) =>
-        Array.ConvertAll(array, converter);
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
-
-
-/// <summary>Extension methods to attempt to grab values from enumerables.</summary>
-
-    /// <summary>Takes the last item lazily, or a fallback value.</summary>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="fallback">The fallback item.</param>
-    /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
-    [Pure]
-    public static T EnumerateOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
-    {
-#if NETCOREAPP || ROSLYN
-        if (iterable is ImmutableArray<T> { IsDefaultOrEmpty: true })
-            return fallback;
-#endif
-        using var iterator = iterable.GetEnumerator();
-
-        if (!iterator.MoveNext())
-            return fallback;
-
-        var last = iterator.Current;
-
-        while (iterator.MoveNext())
-            last = iterator.Current;
-
-        return last;
-    }
-
-    /// <summary>Takes the first item, or a fallback value.</summary>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="fallback">The fallback item.</param>
-    /// <returns>The first item, or the parameter <paramref name="fallback"/>.</returns>
-    [MustUseReturnValue]
-    public static T FirstOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback)
-    {
-        switch (iterable)
+        static TFunc Make<TFunc>(bool isReverse)
+            where TFunc : Delegate
         {
-            case string str:
-                return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
-#if NETCOREAPP || ROSLYN
-            case ImmutableArray<T> array:
-                return array.IsDefaultOrEmpty ? fallback : array[0];
-#endif
-            case IList<T> list:
-                return list.Count is 0 ? fallback : list[0];
-            case IReadOnlyList<T> list:
-                return list.Count is 0 ? fallback : list[0];
-            case var _ when iterable.TryGetNonEnumeratedCount(out var count):
-                return count is 0 ? fallback : iterable.First();
-            default:
-            {
-                using var iterator = iterable.GetEnumerator();
-                return iterator.MoveNext() ? iterator.Current : fallback;
-            }
-        }
-    }
+            var parameter = Parameter(isReverse ? typeof(int) : typeof(T), nameof(T));
+            var underlying = GetUnderlyingType(typeof(T));
+            Expression cast = isReverse ? parameter : Convert(parameter, underlying);
 
-    /// <summary>Takes the last item, or a fallback value.</summary>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="fallback">The fallback item.</param>
-    /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
-    [MustUseReturnValue]
-    public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
-#pragma warning disable IDE0056
-        iterable switch
-        {
-            string str => str.Length is 0 ? fallback : Reinterpret<T>(str[str.Length - 1]),
-#if NETCOREAPP || ROSLYN
-            ImmutableArray<T> array => array.IsDefaultOrEmpty ? fallback : array[array.Length - 1],
-#endif
-            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
-            IList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
-            _ when iterable.TryGetNonEnumeratedCount(out var count) => count is 0 ? fallback : iterable.Last(),
-            _ => iterable.EnumerateOr(fallback),
-        };
-#pragma warning restore IDE0056
+            cast = underlying != typeof(int) ? Convert(parameter, isReverse ? underlying : typeof(int)) : cast;
+            cast = isReverse ? Convert(cast, typeof(T)) : cast;
 
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <typeparam name="TKey">The key item in the collection.</typeparam>
-    /// <typeparam name="TValue">The value item in the collection.</typeparam>
-    /// <param name="dictionary">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="key">The key to use to get the value.</param>
-    /// <returns>An element from the parameter <paramref name="dictionary"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue]
-    public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
-        where TKey : notnull =>
-        dictionary.TryGetValue(key, out var value) ? value : default;
-
-#if !NET20 && !NET30
-    /// <summary>Returns the item, or a fallback.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="self">The item to potentially return.</param>
-    /// <param name="fallback">The fallback item.</param>
-    /// <returns>The parameter <paramref name="self"/>, or <paramref name="fallback"/>.</returns>
-    [Pure]
-    public static T Or<T>(this T? self, T fallback)
-        where T : class =>
-        self ?? fallback;
-
-    /// <summary>Returns the item, or a fallback.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="self">The item to potentially return.</param>
-    /// <param name="fallback">The fallback item.</param>
-    /// <returns>The parameter <paramref name="self"/>, or <paramref name="fallback"/>.</returns>
-    [Pure]
-    public static T Or<T>(this T? self, T fallback)
-        where T : struct =>
-        self ?? fallback;
-
-    /// <summary>Returns the item, or a fallback.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="self">The item to potentially return.</param>
-    /// <returns>The parameter <paramref name="self"/>, or a new instance.</returns>
-    [Pure]
-    public static T OrNew<T>(this T? self)
-        where T : class, new() =>
-        self ?? new();
-
-    /// <summary>Returns the string, or an empty string.</summary>
-    /// <param name="str">The string to potentially return.</param>
-    /// <returns>The parameter <paramref name="str"/>, or <see cref="string.Empty"/>.</returns>
-    [Pure]
-    public static string OrEmpty(this string? str) => str ?? "";
-
-    /// <summary>Returns the enumeration, or an empty enumeration.</summary>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The enumeration to potentially return.</param>
-    /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
-        iterable ?? Enumerable.Empty<T>();
-
-    /// <summary>Gets a specific character from a string.</summary>
-    /// <param name="str">The string to get the character from.</param>
-    /// <param name="index">The index to use.</param>
-    /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    [Pure]
-    public static char? Nth(this string str, [NonNegativeValue] int index) =>
-        index >= 0 && index < str.Length ? str[index] : null;
-
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue]
-    public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
-    {
-        // Runtime check.
-        if (index < 0)
-            return default;
-
-        return iterable switch
-        {
-            string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
-#if NETCOREAPP || ROSLYN
-            ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
-#endif
-            IReadOnlyList<T> list => index < list.Count ? list[index] : default,
-            IList<T> list => index < list.Count ? list[index] : default,
-            _ => iterable.Skip(index).FirstOrDefault(),
-        };
-    }
-
-    /// <summary>Gets a specific character from a string.</summary>
-    /// <param name="str">The string to get the character from.</param>
-    /// <param name="index">The index to use.</param>
-    /// <returns>The character based on the parameters <paramref name="str"/> and <paramref name="index"/>.</returns>
-    [Pure]
-    public static char? NthLast(this string str, [NonNegativeValue] int index) =>
-        index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
-
-    /// <summary>Gets a specific item from a collection.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue]
-    public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
-    {
-        // Runtime check.
-        if (index < 0)
-            return default;
-
-        return iterable switch
-        {
-            string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
-#if NETCOREAPP || ROSLYN
-            ImmutableArray<T> array =>
-                !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
-#endif
-            IReadOnlyList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
-            IList<T> list => index < list.Count ? list[list.Count - index - 1] : default,
-            _ when iterable.TryGetNonEnumeratedCount(out var count) =>
-                index < count ? iterable.Skip(count - index - 1).FirstOrDefault() : default,
-            _ => iterable.Reverse().Skip(index).FirstOrDefault(),
-        };
-    }
-#endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Reinterpret<T>(char c)
-    {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
-        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
-#pragma warning disable 8500
-        return *(T*)&c;
-#pragma warning restore 8500
-    }
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable RedundantExtendsListEntry
-// ReSharper disable once CheckNamespace
-
-#pragma warning disable MA0048
-/// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
-
-    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The enumerator to encapsulate.</param>
-    /// <returns>
-    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
-    /// </returns>
-    [Pure]
-    public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
-
-    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <param name="enumerator">The enumerator to encapsulate.</param>
-    /// <returns>
-    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
-#pragma warning disable CA2000, IDISP004
-        enumerator.AsGeneric().AsEnumerable();
-#pragma warning restore CA2000, IDISP004
-
-    /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside a <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item to enumerate.</typeparam>
-    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-    /// <returns>
-    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) => new Enumerable<T>(enumerator);
-
-    /// <summary>
-    /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
-    /// </summary>
-    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-    /// <typeparam name="T">The type of item to enumerate.</typeparam>
-    sealed partial class Enumerable<T>([ProvidesContext] IEnumerator<T> enumerator) : IEnumerable<T>
-    {
-        /// <inheritdoc />
-        [CollectionAccess(CollectionAccessType.Read), Pure]
-        public IEnumerator<T> GetEnumerator() => enumerator;
-
-        /// <inheritdoc />
-        [CollectionAccess(CollectionAccessType.Read), Pure]
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-#pragma warning disable SA1643
-        /// <summary>Finalizes an instance of the <see cref="Enumerable{T}"/> class.</summary>
-#pragma warning restore SA1643
-#pragma warning disable MA0055, IDISP007, IDISP023
-        ~Enumerable() => enumerator.Dispose();
-#pragma warning restore MA0055, IDISP007, IDISP023
-    }
-
-    /// <summary>
-    /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
-    /// </summary>
-    /// <param name="enumerator">The enumerator to encapsulate.</param>
-    sealed partial class Enumerator([ProvidesContext] IEnumerator enumerator) : IEnumerator<object?>
-    {
-        /// <inheritdoc cref="IEnumerator{T}.Current" />
-        [Pure]
-        public object? Current => enumerator.Current;
-
-        /// <inheritdoc />
-        public void Reset() => enumerator.Reset();
-
-        /// <inheritdoc />
-        public void Dispose() { }
-
-        /// <inheritdoc />
-        public bool MoveNext() => enumerator.MoveNext();
-    }
-
-// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-#pragma warning disable CS1574, CS1580
-/// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
-
-    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>
-    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
-    /// Each duplicate appears exactly once within the returned value.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
-    /// <param name="source">The source to filter.</param>
-    /// <param name="comparer">The comparer to assess distinctiveness.</param>
-    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> DistinctDuplicates<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        source.GroupDuplicates(comparer).Select(x => x.Key);
-
-    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>
-    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
-    /// Each duplicate appears two or more times within the returned value.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
-    /// <param name="source">The source to filter.</param>
-    /// <param name="comparer">The comparer to assess distinctiveness.</param>
-    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Duplicates<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        source.GroupDuplicates(comparer).SelectMany(x => x);
-
-    /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>Filters out unique elements within an <see cref="Enumerable{T}"/>.</para></remarks>
-    /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
-    /// <param name="source">The source to filter.</param>
-    /// <param name="comparer">The comparer to assess distinctiveness.</param>
-    /// <returns>The parameter <paramref name="source"/>, filtering out all elements that only appear once.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<IGrouping<T, T>> GroupDuplicates<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
-
-    /// <summary>Negated <see cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input sequence starting at
-    /// the first element in the linear series that does pass the test specified by the predicate.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.SkipWhile(Not1(predicate));
-
-    /// <summary>Negated <see cref="Enumerable.SelectMany{T}(IEnumerable{T}, Func{T, IEnumerable{T}})"/>.</summary>
-    /// <remarks><para>
-    /// Splits the <see cref="IEnumerable{T}"/> into multiple <see cref="IEnumerable{T}"/>
-    /// instances in at most the specified length.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the <see cref="IEnumerable{T}"/>.</typeparam>
-    /// <param name="source">The <see cref="IEnumerable{T}"/> to chop into slices.</param>
-    /// <param name="count">The maximum length of any given returned <see cref="IEnumerable{T}"/> instances.</param>
-    /// <returns>The wrapper of the parameter <paramref name="source"/> that returns slices of it.</returns>
-    [Pure]
-    public static IEnumerable<IEnumerable<T>> SplitEvery<T>(
-        [InstantHandle] this IEnumerable<T> source,
-        [ValueRange(1, int.MaxValue)] int count
-    )
-    {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (count <= 0)
-            yield break;
-
-        using var e = source.GetEnumerator();
-
-        while (e.MoveNext())
-            yield return e.SplitEvery(count);
-    }
-
-    /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains the elements from the input
-    /// sequence that occur before the element at which the test no longer fails.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.TakeWhile(Not1(predicate));
-
-    /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> TakeUntil<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        Func<T, int, bool> predicate
-    ) =>
-        source.TakeWhile(Not2(predicate));
-
-    /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.Where(Not1(predicate));
-
-    /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
-    /// <returns>
-    /// An <see cref="IEnumerable{T}" /> that contains elements from
-    /// the input sequence that do not satisfy the condition.
-    /// </returns>
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Omit<T>(
-        [NoEnumeration] this IEnumerable<T> source,
-        Func<T, int, bool> predicate
-    ) =>
-        source.Where(Not2(predicate));
-
-    static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
-    {
-        do
-        {
-            yield return e.Current;
-
-            count--;
-        } while (count > 0 && e.MoveNext());
-    }
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Provides methods for creating combinations of items.</summary>
-
-    /// <summary>Generates all combinations of the nested enumerable.</summary>
-    /// <typeparam name="T">The type of nested enumerable.</typeparam>
-    /// <param name="iterator">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
-    [Pure]
-#if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(
-#else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(
-#endif
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-#if NETFRAMEWORK && !NET45_OR_GREATER
-        iterator.Select(x => x.ToListLazily()).ToListLazily().Combinations();
-#else
-        iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
-#endif
-
-    /// <summary>Generates all combinations of the nested list.</summary>
-    /// <typeparam name="T">The type of nested list.</typeparam>
-    /// <param name="lists">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
-    [Pure]
-#if NETFRAMEWORK && !NET45_OR_GREATER
-    public static IEnumerable<IList<T>> Combinations<T>(this IList<IList<T>> lists)
-#else
-    public static IEnumerable<IReadOnlyList<T>> Combinations<T>(this IReadOnlyList<IReadOnlyList<T>> lists)
-#endif
-    {
-        if (lists.Any(x => x is []))
-            yield break;
-
-        int count = lists.Count, index = 0, pos = 0;
-        var indices = new int[count];
-        var accumulator = new T[count];
-
-        while (true)
-        {
-            while (pos < accumulator.Length)
-            {
-                indices[pos] = index;
-                accumulator[pos] = lists[pos][index];
-                index = 0;
-                pos++;
-            }
-
-            var result = new T[count];
-            Array.Copy(accumulator, result, count);
-            yield return result;
-
-            do
-            {
-                if (pos is 0)
-                    yield break;
-
-                index = indices[--pos] + 1;
-            } while (index >= lists[pos].Count);
-        }
-    }
-
-    /// <summary>Generates all combinations of the nested list.</summary>
-    /// <typeparam name="T">The type of nested list.</typeparam>
-    /// <param name="lists">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="lists"/>.</returns>
-    [Pure]
-    public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
-    {
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var list in lists)
-            if (list is [])
-                return Enumerable.Empty<SmallList<T>>();
-
-        return lists.CombinationsIterator();
-    }
-
-    /// <summary>Generates all combinations of the nested enumerable.</summary>
-    /// <typeparam name="T">The type of nested enumerable.</typeparam>
-    /// <param name="iterator">The input to generate combinations of.</param>
-    /// <returns>Every combination of the items in <paramref name="iterator"/>.</returns>
-    [Pure]
-    public static IEnumerable<SmallList<T>> SmallListCombinations<T>(
-        [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
-    ) =>
-        iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
-
-    static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
-    {
-        int count = lists.Count, index = 0, pos = 0;
-        var indices = count.AsUninitSmallList<int>();
-        var accumulator = count.AsUninitSmallList<T>();
-
-        while (true)
-        {
-            while (pos < accumulator.Count)
-            {
-                indices[pos] = index;
-                accumulator[pos] = lists[pos][index];
-                index = 0;
-                pos++;
-            }
-
-            yield return accumulator.Cloned;
-
-            do
-            {
-                if (pos is 0)
-                    yield break;
-
-                index = indices[--pos] + 1;
-            } while (index >= lists[pos].Count);
+            return Lambda<TFunc>(cast, parameter).Compile();
         }
     }
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
-// ReSharper disable once CheckNamespace
+// ReSharper disable CheckNamespace RedundantNameQualifier
 
 
-/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
-        new Enumerable<T, object?>(iterable, null, action);
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T, TExternal>(
-        [NoEnumeration] this IEnumerable<T> iterable,
-        TExternal external,
-        Action<T, TExternal> action
-    ) =>
-        new Enumerable<T, TExternal>(iterable, external, action);
+/// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
 
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
-        new Enumerable<T, object?>(iterable, null, action);
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Lazily<T, TExternal>(
-        [NoEnumeration] this IEnumerable<T> iterable,
-        TExternal external,
-        Action<T, int, TExternal> action
-    ) =>
-        new Enumerable<T, TExternal>(iterable, external, action);
-
-/// <summary>
-/// Defines an <see cref="IEnumerable{T}"/> with a <see cref="Delegate"/> that is invoked on iteration.
-/// </summary>
-/// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
-/// <typeparam name="TExternal">The context element to pass into the <see cref="Delegate"/>.</typeparam>
-#pragma warning disable MA0048
-public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
-#pragma warning restore MA0048
-{
-    readonly Delegate _action;
-
-    readonly IEnumerable<T> _enumerable;
-
-    readonly TExternal _external;
-
-    /// <inheritdoc />
-    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T> action)
-        : this(enumerable, external, (Delegate)action) { }
-
-    /// <inheritdoc />
-    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
-        : this(enumerable, external, (Delegate)action) { }
-
-    /// <inheritdoc />
-    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
-        : this(enumerable, external, (Delegate)action) { }
-
-    /// <inheritdoc />
-    public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int, TExternal> action)
-        : this(enumerable, external, (Delegate)action) { }
-
-    /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
-    /// <param name="enumerable">
-    /// The <see cref="IEnumerable{T}"/> to create an <see cref="IEnumerator{T}"/> from.
+    /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
+    /// <remarks><para>
+    /// For performance reasons, we don't validate the input length parameter against negative values.
+    /// It is expected Range will be used with collections which always have non negative length/count.
+    /// We validate the range is inside the length scope though.
+    /// </para></remarks>
+    /// <param name="range">The <see cref="Range"/> that contains the range of elements.</param>
+    /// <param name="length">
+    /// The length of the collection that the range will be used with.
+    /// <paramref name="length"/> has to be a positive value.
     /// </param>
-    /// <param name="external">The context element.</param>
-    /// <param name="action">The <see cref="Delegate"/> to invoke on iteration.</param>
-    Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Delegate action)
+    /// <param name="outOffset">The resulting offset.</param>
+    /// <param name="outLength">The resulting length.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void GetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
     {
-        _enumerable = enumerable;
-        _external = external;
-        _action = action;
+        if (!TryGetOffsetAndLength(range, length, out outOffset, out outLength))
+            throw new ArgumentOutOfRangeException(nameof(length));
     }
 
-    /// <inheritdoc />
-    [CollectionAccess(CollectionAccessType.Read), Pure]
-#pragma warning disable IDISP004
-    public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
-#pragma warning restore IDISP004
-    /// <inheritdoc />
-    [CollectionAccess(CollectionAccessType.Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    sealed class Enumerator(
-        [ProvidesContext] IEnumerator<T> enumerator,
-        TExternal external,
-        Delegate action
-    ) : IEnumerator<T>
+    /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
+    /// <param name="range">The <see cref="Range"/> that contains the range of elements.</param>
+    /// <param name="length">
+    /// The length of the collection that the range will be used with.
+    /// <paramref name="length"/> has to be a positive value.
+    /// </param>
+    /// <param name="outOffset">The resulting offset.</param>
+    /// <param name="outLength">The resulting length.</param>
+    /// <returns>Whether the values are set.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool TryGetOffsetAndLength(this Range range, int length, out int outOffset, out int outLength)
     {
-        int _index;
+        var startIndex = range.Start;
+        var start = startIndex.IsFromEnd ? length - startIndex.Value : startIndex.Value;
 
-        /// <inheritdoc />
-        // ReSharper disable once AssignNullToNotNullAttribute
-        public T Current => enumerator.Current;
+        var endIndex = range.End;
+        var end = endIndex.IsFromEnd ? length - endIndex.Value : endIndex.Value;
 
-        /// <inheritdoc />
-        object? IEnumerator.Current => ((IEnumerator)enumerator).Current;
+        outOffset = start;
+        outLength = end - start;
 
-        /// <inheritdoc />
-        public void Reset()
-        {
-            enumerator.Reset();
-            _index = 0;
-        }
-
-        /// <inheritdoc />
-#pragma warning disable IDISP007
-        public void Dispose() => enumerator.Dispose();
-#pragma warning restore IDISP007
-
-        /// <inheritdoc />
-        public bool MoveNext()
-        {
-            if (!enumerator.MoveNext())
-                return false;
-
-            var current = Current;
-
-            switch (action)
-            {
-                case Action<T> action:
-                    action(current);
-                    break;
-                case Action<T, int> action:
-                    action(current, _index);
-                    break;
-                case Action<T, TExternal> action:
-                    action(current, external);
-                    break;
-                case Action<T, int, TExternal> action:
-                    action(current, _index, external);
-                    break;
-            }
-
-            _index++;
-            return true;
-        }
-    }
-}
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-
-    /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
-    /// <typeparam name="T">The type of item within the enumeration.</typeparam>
-    /// <param name="iterable">The potentially empty collection.</param>
-    /// <param name="fallback">The fallback value.</param>
-    /// <returns>
-    /// The parameter <paramref name="iterable"/> when non-empty, otherwise; <paramref name="fallback"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> DefaultIfEmpty<T>(this IEnumerable<T>? iterable, IEnumerable<T> fallback)
-    {
-        using var a = iterable?.GetEnumerator();
-
-        if (a?.MoveNext() ?? false)
-            do
-                yield return a.Current;
-            while (a.MoveNext());
-        else
-            foreach (var b in fallback)
-                yield return b;
-    }
-#if !NETFRAMEWORK || NET35_OR_GREATER
-    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
-#endif
-
-    /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as ICollection<T> ??
-            (iterable.TryGetNonEnumeratedCount(out var count)
-                ? new Collection<T>(iterable, count)
-#if NETFRAMEWORK && NET40_OR_GREATER
-                : new List<T>(iterable));
-#else
-                : iterable.ToList());
-#endif
-
-    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-#if NETFRAMEWORK && NET40_OR_GREATER
-        iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
-#else
-        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
-#endif
-#if !NETFRAMEWORK || NET40_OR_GREATER
-    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
-
-    /// <summary>Creates an <see cref="ISet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
-    /// <param name="comparer">The comparer to use.</param>
-    /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSet<T>(
-        [InstantHandle] this IEnumerable<T>? iterable,
-        IEqualityComparer<T>? comparer = null
-    ) =>
-        iterable is null ? null : new HashSet<T>(iterable, comparer);
-
-    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <param name="comparer">The comparer to use if one needs to be generated.</param>
-    /// <returns>Itself as <see cref="ISet{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSetLazily<T>(
-        [InstantHandle] this IEnumerable<T>? iterable,
-        IEqualityComparer<T> comparer
-    ) =>
-        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
-#endif
-
-    /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
-    /// <typeparam name="TList">The destination type.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to convert.</param>
-    /// <param name="converter">The <see cref="IList{T}"/> to convert it to.</param>
-    /// <returns>
-    /// A <typeparamref name="TList"/> from <paramref name="converter"/>, as long as every element returned
-    /// is not <paramref langword="null"/>, otherwise <paramref langword="default"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    public static TList? Collect<T, TList>(
-        [InstantHandle] this IEnumerable<T?> iterable,
-        [InstantHandle] Converter<IEnumerable<T>, TList> converter
-    )
-        where TList : IList<T> => // ReSharper disable once NullableWarningSuppressionIsUsed
-#pragma warning disable CS8620 // Checked later, technically could cause problems, but most factory methods are fine.
-        (TList?)converter(iterable);
-#pragma warning restore CS8620
-
-    /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
-    /// <param name="enumerable">The enumerable to encapsulate.</param>
-    /// <param name="count">The pre-computed count.</param>
-    /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
-#pragma warning disable IDE0044
-    sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) : ICollection,
-#pragma warning restore IDE0044
-        ICollection<T>,
-        IReadOnlyCollection<T>
-    {
-        /// <inheritdoc />
-        [Pure]
-        bool ICollection.IsSynchronized => true;
-
-        /// <inheritdoc />
-        [Pure]
-        bool ICollection<T>.IsReadOnly => true;
-
-        /// <inheritdoc cref="ICollection{T}.Count" />
-        [NonNegativeValue, Pure]
-        public int Count => count;
-
-        /// <inheritdoc />
-        [Pure]
-        public object SyncRoot => enumerable;
-
-        /// <inheritdoc />
-        public void CopyTo(Array array, [NonNegativeValue] int index)
-        {
-            var i = 0;
-
-            foreach (var next in enumerable)
-            {
-                array.SetValue(next, index);
-                _ = checked(i++);
-            }
-        }
-
-        /// <inheritdoc />
-        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-        {
-            var i = 0;
-
-            foreach (var next in enumerable)
-            {
-                array[arrayIndex] = next;
-                _ = checked(i++);
-            }
-        }
-
-        /// <inheritdoc />
-#pragma warning disable RCS1163
-        void ICollection<T>.Add(T? item) { }
-#pragma warning restore RCS1163
-
-        /// <inheritdoc />
-        void ICollection<T>.Clear() { }
-
-        /// <inheritdoc />
-        [Pure]
-        public bool Contains(T item)
-        {
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var next in enumerable)
-                if (EqualityComparer<T>.Default.Equals(next, item))
-                    return true;
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        [Pure]
-#pragma warning disable RCS1163
-        bool ICollection<T>.Remove(T? item) => false;
-#pragma warning restore RCS1163
-
-        /// <inheritdoc />
-        [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => enumerable.GetEnumerator();
-
-        /// <inheritdoc />
-        [Pure]
-        public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
+        return unchecked((uint)end <= (uint)length && (uint)start <= (uint)end);
     }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods to create cartesian products.</summary>
-
-    /// <summary>Creates a cartesian product from two collections.</summary>
-    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T1">The type of item in the first set.</typeparam>
-    /// <typeparam name="T2">The type of item in the second set.</typeparam>
-    /// <param name="first">The first set to create a cartesian product of.</param>
-    /// <param name="second">The second set to create a cartesian product of.</param>
-    /// <returns>
-    /// The cartesian product of the parameter <paramref name="first"/> and <paramref name="second"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<(T1 First, T2 Second)> CartesianProduct<T1, T2>(
-        this IEnumerable<T1> first,
-        IEnumerable<T2> second
-    ) =>
-        first.SelectMany(_ => second, (x, y) => (x, y));
-
-    /// <summary>Creates a cartesian product from three collections.</summary>
-    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T1">The type of item in the first set.</typeparam>
-    /// <typeparam name="T2">The type of item in the second set.</typeparam>
-    /// <typeparam name="T3">The type of item in the third set.</typeparam>
-    /// <param name="first">The first set to create a cartesian product of.</param>
-    /// <param name="second">The second set to create a cartesian product of.</param>
-    /// <param name="third">The third set to create a cartesian product of.</param>
-    /// <returns>
-    /// The cartesian product of the parameter <paramref name="first"/>,
-    /// <paramref name="second"/>, and <paramref name="third"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<(T1 First, T2 Second, T3 Third)> CartesianProduct<T1, T2, T3>(
-        this IEnumerable<T1> first,
-        IEnumerable<T2> second,
-        IEnumerable<T3> third
-    ) =>
-        first
-           .SelectMany(_ => second, (x, y) => (x, y))
-           .SelectMany(_ => third, (xy, z) => (xy.x, xy.y, z));
-
-    /// <summary>Creates a cartesian product from four collections.</summary>
-    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T1">The type of item in the first set.</typeparam>
-    /// <typeparam name="T2">The type of item in the second set.</typeparam>
-    /// <typeparam name="T3">The type of item in the third set.</typeparam>
-    /// <typeparam name="T4">The type of item in the fourth set.</typeparam>
-    /// <param name="first">The first set to create a cartesian product of.</param>
-    /// <param name="second">The second set to create a cartesian product of.</param>
-    /// <param name="third">The third set to create a cartesian product of.</param>
-    /// <param name="fourth">The fourth set to create a cartesian product of.</param>
-    /// <returns>
-    /// The cartesian product of the parameter <paramref name="first"/>, <paramref name="second"/>,
-    /// <paramref name="third"/>, and <paramref name="fourth"/>.
-    /// </returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<(T1 First, T2 Second, T3 Third, T4 Fourth)> CartesianProduct<T1, T2, T3, T4>(
-        this IEnumerable<T1> first,
-        IEnumerable<T2> second,
-        IEnumerable<T3> third,
-        IEnumerable<T4> fourth
-    ) =>
-        first
-           .SelectMany(_ => second, (x, y) => (x, y))
-           .SelectMany(_ => third, (xy, z) => (xy, z))
-           .SelectMany(_ => fourth, (xyz, w) => (xyz.xy.x, xyz.xy.y, xyz.z, w));
-
-    /// <summary>Creates a cartesian product from n-collections.</summary>
-    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
-    /// <param name="first">The first set to create a cartesian product of.</param>
-    /// <param name="rest">The rest of the sets to create a cartesian product of.</param>
-    /// <returns>
-    /// The cartesian product of the parameter <paramref name="first"/>, and all of <paramref name="rest"/>.
-    /// </returns>
-    public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(
-        this IEnumerable<T> first,
-        params IEnumerable<T>[] rest
-    ) =>
-        Enumerable.Repeat(first, 1).Concat(rest).CartesianProduct();
-
-    /// <summary>Creates a cartesian product from n-collections.</summary>
-    /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
-    /// <param name="iterable">The sets to create a cartesian product of.</param>
-    /// <returns>The cartesian product of all of the parameter <paramref name="iterable"/>.</returns>
-    public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> iterable) =>
-        iterable.Aggregate(
-            Enumerable.Repeat(Enumerable.Empty<T>(), 1),
-            (sum, next) => sum.SelectMany(_ => next, (s, n) => s.Concat(Enumerable.Repeat(n, 1)))
-        );
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods to create power sets.</summary>
-
-    /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<IEnumerable<object>> PowerSet(this ICollection collection) =>
-        collection.Cast<object>().PowerSetInner(collection.Count);
-
-    /// <summary>Creates a power set from a collection.</summary>
-    /// <remarks><para>
-    /// The power set is defined as the set of all subsets, including the empty set and the set itself.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of item in the set.</typeparam>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The argument <paramref name="collection"/> has 32 or more elements.
-    /// </exception>
-    /// <param name="collection">The set to create a power set.</param>
-    /// <returns>The power set of the parameter <paramref name="collection"/>.</returns>
-    [LinqTunnel, Pure]
-    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this ICollection<T> collection) =>
-        collection.PowerSetInner(collection.Count);
-
-    /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this IReadOnlyCollection<T> collection) =>
-        collection.PowerSetInner(collection.Count);
-
-    /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<IEnumerable<T>> PowerSet<T>(this T[] collection) =>
-        ((ICollection<T>)collection).PowerSet();
-
-    [LinqTunnel, Pure]
-    static IEnumerable<IEnumerable<T>> PowerSetInner<T>(this IEnumerable<T> iterable, int count) =>
-        count < 32
-            ? Enumerable.Range(0, 1 << count).Select(mask => iterable.Where((_, j) => (1 << j & mask) is not 0))
-            : throw new ArgumentOutOfRangeException(nameof(count), count, $"Cannot exceed bits in {nameof(Int32)}.");
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace EmptyNamespace
-
-#if !NET20 && !NET30 && !NET471_OR_GREATER && !NETSTANDARD1_6_OR_GREATER && !NETCOREAPP
-/// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
-
-    /// <summary>Appends a value to the end of the sequence.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">A sequence of values.</param>
-    /// <param name="element">The value to append to <paramref name="source"/>.</param>
-    /// <returns>A new sequence that ends with <paramref name="element"/>.</returns>
-    public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) =>
-        source.Concat(element.Yield());
-
-    /// <summary>Prepends a value to the end of the sequence.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <param name="source">A sequence of values.</param>
-    /// <param name="element">The value to prepend to <paramref name="source"/>.</param>
-    /// <returns>A new sequence that starts with <paramref name="element"/>.</returns>
-    public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element) =>
-        element.Yield().Concat(source);
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-#pragma warning disable 8604
-/// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
-// ReSharper disable LoopCanBePartlyConvertedToQuery
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<ControlFlow> func)
-    {
-        for (var i = 0; i < upper; i++)
-            if (func() is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<int, ControlFlow> func)
-    {
-        for (var i = 0; i < upper; i++)
-            if (func(i) is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor<TExternal>(
-        [NonNegativeValue] this int upper,
-        TExternal external,
-        [InstantHandle] Func<TExternal, ControlFlow> func
-    )
-    {
-        for (var i = 0; i < upper; i++)
-            if (func(external) is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor<TExternal>(
-        [NonNegativeValue] this int upper,
-        TExternal external,
-        [InstantHandle] Func<int, TExternal, ControlFlow> func
-    )
-    {
-        for (var i = 0; i < upper; i++)
-            if (func(i, external) is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-#if !NET20 && !NET30
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<T, ControlFlow> func
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-
-        foreach (var item in list)
-            if (func(item) is ControlFlow.Break)
-                break;
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        TExternal external,
-        [InstantHandle] Func<T, TExternal, ControlFlow> func
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-
-        foreach (var item in list)
-            if (func(item, external) is ControlFlow.Break)
-                break;
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<T, int, ControlFlow> func
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-        var i = 0;
-
-        foreach (var item in list)
-            if (func(item, checked(i++)) is ControlFlow.Break)
-                break;
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        TExternal external,
-        [InstantHandle] Func<T, int, TExternal, ControlFlow> func
-    )
-    {
-        var list = iterable.ToCollectionLazily();
-        var i = 0;
-
-        foreach (var item in list)
-            if (func(item, checked(i++), external) is ControlFlow.Break)
-                break;
-
-        return list;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        [InstantHandle] Func<TKey, TValue, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
-                break;
-
-        return dictionary;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        TExternal external,
-        [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
-                break;
-
-        return dictionary;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        [InstantHandle] Func<TKey, TValue, int, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        var i = 0;
-
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value, checked(i++)) is ControlFlow.Break)
-                break;
-
-        return dictionary;
-    }
-
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        TExternal external,
-        [InstantHandle] Func<TKey, TValue, int, TExternal, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        var i = 0;
-
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value, checked(i++), external) is ControlFlow.Break)
-                break;
-
-        return dictionary;
-    }
-#endif
-#if NET7_0_OR_GREATER
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            if (func() is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            if (func(i) is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T, TExternal>(
-        [NonNegativeValue] this T upper,
-        TExternal external,
-        [InstantHandle] Func<TExternal, ControlFlow> func
-    )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            if (func(external) is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T, TExternal>(
-        [NonNegativeValue] this T upper,
-        TExternal external,
-        [InstantHandle] Func<T, TExternal, ControlFlow> func
-    )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i++)
-            if (func(i, external) is ControlFlow.Break)
-                break;
-
-        return upper;
-    }
-#endif
-
-/// <summary>Determines control flow for loops in <see cref="Each"/>.</summary>
-#pragma warning disable MA0048
-public enum ControlFlow : byte
-#pragma warning restore MA0048
-{
-    /// <summary>The value indicating that the loop should continue.</summary>
-    Continue,
-
-    /// <summary>The value indicating that the loop should break.</summary>
-    Break,
-}
-
-// SPDX-License-Identifier: MPL-2.0
-#if ROSLYN
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>
-/// <see cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
-/// with a wrapped callback which filters out ignored contexts.
-/// </summary>
-
-    /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <param name="name">The name to get.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// has the attribute <paramref name="name"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
-        symbol is not null &&
-        (name is null
-            ? !symbol.GetAttributes().IsEmpty
-            : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
-            (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
-            symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
-
-    /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
-    /// <param name="accessibility">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="accessibility"/> is accessible externally.
-    /// </returns>
-    [Pure]
-    public static bool IsAccessible(this Accessibility accessibility) =>
-        accessibility is Accessibility.Protected or Accessibility.ProtectedOrInternal or Accessibility.Public;
-
-    /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> is accessible externally.
-    /// </returns>
-    [Pure]
-    public static bool IsAccessible([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol?.DeclaredAccessibility.IsAccessible() is true;
-
-    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is { BaseType: null, SpecialType: not SpecialType.System_Object };
-
-    /// <summary>
-    /// Determines whether the symbol and all subsequent parent types
-    /// are declared with the <see langword="partial"/> keyword.
-    /// </summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> and all its subsequent
-    /// parent types are <see langword="partial"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsCompletelyPartial([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol?.FindPathToNull(x => x.ContainingType).All(IsPartial) is true;
-
-    /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is obsolete, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsObsolete([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol.HasAttribute(nameof(ObsoleteAttribute));
-
-    /// <summary>Determines whether the symbol is declared with the <see langword="partial"/> keyword.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is <see langword="partial"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsPartial([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol
-          ?.DeclaringSyntaxReferences
-           .Select(x => x.GetSyntax())
-           .OfType<TypeDeclarationSyntax>()
-           .Any(x => x.Modifiers.Any(x => x.ValueText is "partial")) is true;
-
-    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is
-            not null and
-            not IDynamicTypeSymbol and
-            not IPointerTypeSymbol and
-            not { IsRefLikeType: true } and
-            not { SpecialType: SpecialType.System_Void };
-
-    /// <summary>Determines whether the symbol has a default implementation.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
-    [Pure]
-    public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
-
-    /// <summary>Determines whether the symbol has a parameterless constructor.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// has a parameterless constructor, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters.IsEmpty);
-
-    /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
-    /// <param name="symbol">The symbol to get its keyword.</param>
-    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
-    [Pure]
-    public static string Keyword(this ITypeSymbol symbol) =>
-        symbol switch
-        {
-            { IsValueType: true, IsRecord: true } => "record struct",
-            { IsRecord: true } => "record",
-            { IsValueType: true } => "struct",
-            { IsReferenceType: true } => "class",
-            _ => throw Unreachable,
-        };
-
-    /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
-    [Pure]
-    public static string? MemberName(this ExpressionSyntax syntax)
-    {
-        syntax.TryGetMemberName(out var result);
-        return result;
-    }
-
-    /// <inheritdoc cref="AttributeArgumentSyntaxExt.TryGetStringValue(AttributeArgumentSyntax, SemanticModel, CancellationToken, out string)"/>
-    [Pure]
-    public static string? StringValue(this SyntaxNodeAnalysisContext context, AttributeArgumentSyntax syntax)
-    {
-        syntax.TryGetStringValue(context.SemanticModel, context.CancellationToken, out var result);
-        return result;
-    }
-
-    /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
-    public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
-        this AnalysisContext context,
-        Action<SyntaxNodeAnalysisContext, TSyntaxNode> action,
-        params SyntaxKind[] syntaxKinds
-    )
-        where TSyntaxNode : SyntaxNode =>
-        context.RegisterSyntaxNodeAction(action, ImmutableArray.Create(syntaxKinds));
-
-    /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, ImmutableArray{TLanguageKindEnum})"/>
-    public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
-        this AnalysisContext context,
-        Action<SyntaxNodeAnalysisContext, TSyntaxNode> action,
-        ImmutableArray<SyntaxKind> syntaxKinds
-    )
-        where TSyntaxNode : SyntaxNode
-    {
-        context.RegisterSyntaxNodeAction(Filter(action), syntaxKinds);
-        return context;
-    }
-
-    /// <summary>Adds information to a diagnostic.</summary>
-    /// <typeparam name="T">The type of <paramref name="message"/>.</typeparam>
-    /// <param name="diagnostic">The diagnostic to append.</param>
-    /// <param name="message">The string to append.</param>
-    /// <returns>The diagnostic with added information.</returns>
-    [MustUseReturnValue]
-    public static Diagnostic And<T>(this Diagnostic diagnostic, T message) =>
-        Diagnostic.Create(
-            new(
-                diagnostic.Descriptor.Id,
-                diagnostic.Descriptor.Title,
-                $"{diagnostic.Descriptor.MessageFormat} {message.Stringify()}",
-                diagnostic.Descriptor.Category,
-                diagnostic.Descriptor.DefaultSeverity,
-                diagnostic.Descriptor.IsEnabledByDefault,
-                $"{diagnostic.Descriptor.Description} {message.Stringify()}",
-                diagnostic.Descriptor.HelpLinkUri,
-                diagnostic.Descriptor.CustomTags.ToArrayLazily()
-            ),
-            diagnostic.Location,
-            diagnostic.Severity,
-            diagnostic.AdditionalLocations,
-            diagnostic.Properties
-        );
-
-    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
-    /// <param name="symbol">The symbol to get all of the members of.</param>
-    /// <returns>
-    /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
-    /// interfaces and base types, and any subsequent interfaces and base types from those.
-    /// </returns>
-    [Pure]
-    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol symbol) =>
-        symbol
-           .BaseType
-           .FindPathToNull(x => x.BaseType)
-           .SelectMany(GetAllMembers)
-           .Concat(symbol.GetMembers());
-
-    /// <summary>Gets the symbol from a lookup.</summary>
-    /// <param name="context">The context to use.</param>
-    /// <param name="syntax">The syntax to lookup.</param>
-    /// <returns>The symbols that likely define it.</returns>
-    [Pure]
-    public static IEnumerable<ISymbol> Symbols(this SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
-        (syntax.MemberName() ?? $"{syntax}") is var name && syntax is PredefinedTypeSyntax
-            ? context.Compilation.GetSymbolsWithName(
-                x => x.Contains(name),
-                cancellationToken: context.CancellationToken
-            )
-            : context.SemanticModel.LookupSymbols(syntax.SpanStart, name: name);
-
-    /// <summary>Gets the containing <see cref="INamespaceOrTypeSymbol"/>.</summary>
-    /// <param name="syntax">The syntax to lookup.</param>
-    /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
-    [Pure]
-    public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
-        syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
-
-    /// <summary>Gets the containing symbol so long as it isn't the global namespace.</summary>
-    /// <param name="symbol">The symbol to use.</param>
-    /// <returns>The containing symbol, or <see langword="null"/> if it is the global namespace.</returns>
-    [Pure]
-    public static ISymbol? ContainingWithoutGlobal(this ISymbol? symbol) =>
-        symbol?.ContainingSymbol is var x && x is INamespaceSymbol { IsGlobalNamespace: true } ? null : x;
-
-    /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
-    [Pure]
-    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this Compilation symbol) =>
-        symbol.GlobalNamespace.GetAllMembers();
-
-    /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
-    [Pure]
-    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
-        symbol.GlobalNamespace.GetAllMembers();
-
-    /// <summary>Gets all of the types declared by this symbol.</summary>
-    /// <param name="symbol">The symbol to get all of the type symbols of.</param>
-    /// <returns>
-    /// The <see cref="IEnumerable{T}"/> of all types defined in the parameter <paramref name="symbol"/>.
-    /// </returns>
-    [Pure]
-    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
-        symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
-
-    /// <summary>Gets the underlying type symbol of another symbol.</summary>
-    /// <param name="symbol">The symbol to get the underlying type from.</param>
-    /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
-    [Pure]
-    public static ITypeSymbol? ToUnderlying(this ISymbol? symbol) =>
-        symbol switch
-        {
-            IEventSymbol x => x.Type,
-            IFieldSymbol x => x.Type,
-            ILocalSymbol x => x.Type,
-            IDiscardSymbol x => x.Type,
-            IPropertySymbol x => x.Type,
-            IParameterSymbol x => x.Type,
-            IMethodSymbol x => x.ReturnType,
-            IArrayTypeSymbol x => x.ElementType,
-            IPointerTypeSymbol x => x.PointedAtType,
-            IFunctionPointerTypeSymbol x => x.Signature.ReturnType,
-            _ => null,
-        };
-
-    /// <summary>Gets the underlying symbol if the provided parameter is the nullable type.</summary>
-    /// <param name="symbol">The symbol to get the underlying type from.</param>
-    /// <returns>The underlying type of <paramref name="symbol"/>, if it exists.</returns>
-    [Pure]
-    public static ITypeSymbol? UnderlyingNullable(this ISymbol? symbol) =>
-        symbol is INamedTypeSymbol
-        {
-            ContainingNamespace: { ContainingNamespace.IsGlobalNamespace: true, Name: nameof(System) },
-            Name: nameof(Nullable),
-            IsValueType: true,
-            TypeArguments:
-            [
-                { } underlying and not { Name: nameof(Nullable) },
-            ],
-        }
-            ? underlying
-            : null;
-
-    [Pure]
-    static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
-        where TSyntaxNode : SyntaxNode =>
-        context =>
-        {
-            if (!context.IsExcludedFromAnalysis() && context.Node is TSyntaxNode node)
-                action(context, node);
-        };
-
-    [Pure]
-    static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
-        ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if ROSLYN
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Generates the attribute needed to use this analyzer.</summary>
-/// <param name="hintName">The file name of the source.</param>
-/// <param name="contents">The contents of the source.</param>
-public abstract class FixedGenerator(
-    [StringSyntax(StringSyntaxAttribute.Uri), UriString] string hintName,
-    [StringSyntax("C#")] string contents
-) : ISourceGenerator
-{
-    /// <inheritdoc />
-    void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
-        context.AddSource($"{hintName}.g.cs", contents.Nth(^1) is null or '\n' or '\r' ? contents : contents + '\n');
-
-    /// <inheritdoc />
-    void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
-}
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed
-#pragma warning disable MA0048
-
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IMemoryOwner<T> BreakableFor<T>(
-        this IMemoryOwner<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
-    )
-    {
-        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
-        return iterable;
-    }
-
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> BreakableFor<T>(
-        this Memory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
-    )
-    {
-        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> BreakableFor<T>(
-        this Span<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
-    )
-    {
-        BreakableFor((ReadOnlySpan<T>)iterable, func);
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlyMemory<T> BreakableFor<T>(
-        this ReadOnlyMemory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
-    )
-    {
-        BreakableFor(iterable.Span, func);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> BreakableFor<T>(
-        this ReadOnlySpan<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
-    )
-    {
-        foreach (var x in iterable)
-            if (func(x) is ControlFlow.Break)
-                break;
-
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IMemoryOwner<T> BreakableFor<T>(
-        this IMemoryOwner<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
-    )
-    {
-        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
-        return iterable;
-    }
-
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> BreakableFor<T>(
-        this Memory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
-    )
-    {
-        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> BreakableFor<T>(
-        this Span<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
-    )
-    {
-        BreakableFor((ReadOnlySpan<T>)iterable, func);
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlyMemory<T> BreakableFor<T>(
-        this ReadOnlyMemory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
-    )
-    {
-        BreakableFor(iterable.Span, func);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> BreakableFor<T>(
-        this ReadOnlySpan<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
-    )
-    {
-        for (var i = 0; i < iterable.Length; i++)
-            if (func(iterable[i], i) is ControlFlow.Break)
-                break;
-
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IMemoryOwner<T> For<T>(
-        this IMemoryOwner<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T> action
-    )
-    {
-        For((ReadOnlySpan<T>)iterable.Memory.Span, action);
-        return iterable;
-    }
-
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> For<T>(this Memory<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
-    {
-        For((ReadOnlySpan<T>)iterable.Span, action);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> For<T>(this Span<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
-    {
-        For((ReadOnlySpan<T>)iterable, action);
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlyMemory<T> For<T>(
-        this ReadOnlyMemory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T> action
-    )
-    {
-        For(iterable.Span, action);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> For<T>(
-        this ReadOnlySpan<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T> action
-    )
-    {
-        foreach (var x in iterable)
-            action(x);
-
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IMemoryOwner<T> For<T>(
-        this IMemoryOwner<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T, int> action
-    )
-    {
-        For((ReadOnlySpan<T>)iterable.Memory.Span, action);
-        return iterable;
-    }
-
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> For<T>(
-        this Memory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T, int> action
-    )
-    {
-        For((ReadOnlySpan<T>)iterable.Span, action);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> For<T>(this Span<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T, int> action)
-    {
-        For((ReadOnlySpan<T>)iterable, action);
-        return iterable;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlyMemory<T> For<T>(
-        this ReadOnlyMemory<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T, int> action
-    )
-    {
-        For(iterable.Span, action);
-        return iterable;
-    }
-#endif
-
-    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> For<T>(
-        this ReadOnlySpan<T> iterable,
-        [InstantHandle, RequireStaticDelegate] Action<T, int> action
-    )
-    {
-        for (var i = 0; i < iterable.Length; i++)
-            action(iterable[i], i);
-
-        return iterable;
-    }
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace RedundantUsingDirective
-
-#pragma warning disable 1574, 8500
-
-
-/// <summary>Provides the method to convert spans.</summary>
-
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Raw{T}(T)" />
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>)).ToArray();
-#endif
-
-    /// <inheritdoc cref="Raw{T}(T)" />
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
-
-    /// <inheritdoc cref="Raw{T}(T)" />
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(scoped SplitSpan<T> value)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
-        where T : IEquatable<T>?
-#endif
-        =>
-            MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
-
-    /// <inheritdoc cref="Raw{T}(T)" />
-#pragma warning restore 1574
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-    /// <summary>Reads the raw memory of the object.</summary>
-    /// <typeparam name="T">The type of value to read.</typeparam>
-    /// <param name="value">The value to read.</param>
-    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static byte[] Raw<T>(T value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable RedundantUsingDirective
+// ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+#pragma warning disable GlobalUsingsAnalyzer
 
 
 
+#pragma warning restore GlobalUsingsAnalyzer
+/// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-/// <summary>
-/// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
-/// </summary>
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<T> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<T>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two) =>
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
-
-    /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Two<T> AsTwo<T>(this (T First, T Second) tuple) => tuple;
-#endif
-
-/// <summary>
-/// Represents two inlined elements, equivalent to <see cref="ValueTuple{T1, T2}"/>,
-/// but the memory layout is guaranteed to be sequential, and both elements are of the same type.
-/// </summary>
-/// <remarks><para>
-/// The name of this type may or may not derive from a specific algebralien from a show...
-/// </para></remarks>
-/// <typeparam name="T">The type of item to store.</typeparam>
-/// <param name="first">The first item.</param>
-/// <param name="second">The second item.</param>
-// ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
-[StructLayout(LayoutKind.Sequential)]
-#pragma warning disable MA0102
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-public partial struct Two<T>(T first, T second) :
-#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    ITuple,
-#endif
-    IComparable<Two<T>>,
-    IEquatable<Two<T>>
-{
-    /// <summary>The stored items.</summary>
-    public readonly T First = first, Second = second;
-
-    /// <summary>Applies the indexer and returns the instance according to the value.</summary>
-    /// <param name="back">Whether or not to return <see cref="Second"/>.</param>
-    [Pure]
-    public T this[bool back] => back ? Second : First;
-
-    /// <inheritdoc cref="Two{T}.op_Implicit(Two{T})"/>
-    public (T First, T Second) Tuple => this;
-
-#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <inheritdoc />
-    [Pure, ValueRange(2)]
-    int ITuple.Length => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    object? ITuple.this[int index] =>
-        index switch
-        {
-            0 => First,
-            1 => Second,
-            _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
-        };
-#endif
-
-    /// <summary>Deconstructs this instance into the two inlined elements.</summary>
-    /// <param name="first">The first item.</param>
-    /// <param name="second">The second item.</param>
-    public void Deconstruct(out T first, out T second)
-    {
-        first = First;
-        second = Second;
-    }
-
-    /// <summary>Determines whether both instances contain the same two values.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both instances have the same two values.</returns>
-    [Pure]
-    public static bool operator ==(Two<T> left, Two<T> right) => left.Equals(right);
-
-    /// <summary>Determines whether both instances contain different values.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both instances have different values.</returns>
-    [Pure]
-    public static bool operator !=(Two<T> left, Two<T> right) => !(left == right);
-
-    /// <summary>Determines whether the left instance is less than the right.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether the left instance is less than the right.</returns>
-    [Pure]
-    public static bool operator <(Two<T> left, Two<T> right) => left.CompareTo(right) < 0;
-
-    /// <summary>Determines whether the left instance is equal to or less than the right.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether the left instance is equal to or less than the right.</returns>
-    [Pure]
-    public static bool operator <=(Two<T> left, Two<T> right) => left.CompareTo(right) <= 0;
-
-    /// <summary>Determines whether the left instance is greater than the right.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether the left instance is greater than the right.</returns>
-    [Pure]
-    public static bool operator >(Two<T> left, Two<T> right) => left.CompareTo(right) > 0;
-
-    /// <summary>Determines whether the left instance is equal to or greater than the right.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether the left instance is equal to or greater than the right.</returns>
-    [Pure]
-    public static bool operator >=(Two<T> left, Two<T> right) => left.CompareTo(right) >= 0;
-
-    /// <summary>Implicitly converts the <see cref="Two{T}"/> into the <see cref="ValueTuple{T1, T2}"/>.</summary>
-    /// <param name="two">The <see cref="Two{T}"/> to convert.</param>
-    /// <returns>The equivalent tuple layout of the parameter <paramref name="two"/>.</returns>
-    [Pure]
-    public static implicit operator (T First, T Second)(Two<T> two) => (two.First, two.Second);
-
-    /// <summary>Implicitly converts the <see cref="ValueTuple{T1, T2}"/> into the <see cref="Two{T}"/>.</summary>
-    /// <param name="tuple">The <see cref="ValueTuple{T1, T2}"/> to convert.</param>
-    /// <returns>The equivalent sequential layout of the parameter <paramref name="tuple"/>.</returns>
-    [Pure]
-    public static implicit operator Two<T>((T First, T Second) tuple) => (tuple.First, tuple.Second);
-
-    /// <inheritdoc />
-    [Pure]
-    public override bool Equals(object? obj) => obj is Two<T> two && Equals(two);
-
-    /// <inheritdoc />
-    [Pure]
-    public bool Equals(Two<T> other) =>
-        EqualityComparer<T>.Default.Equals(First, other.First) &&
-        EqualityComparer<T>.Default.Equals(Second, other.Second);
-
-    /// <inheritdoc />
-    [Pure]
-    public int CompareTo(Two<T> other) =>
-        Comparer<T>.Default.Compare(First, other.First) is var first and not 0 ? first :
-        Comparer<T>.Default.Compare(Second, other.Second) is var second and not 0 ? second : 0;
-
-    /// <inheritdoc />
-    [Pure]
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            var hashCode = 0;
-
-            if (First is not null)
-                hashCode = EqualityComparer<T>.Default.GetHashCode(First);
-
-            if (Second is not null)
-                hashCode ^= EqualityComparer<T>.Default.GetHashCode(Second);
-
-            return hashCode;
-        }
-    }
-}
-
-// SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable once CheckNamespace EmptyNamespace RedundantUsingDirective
-
-
-
-
-/// <inheritdoc cref="SpanQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-#pragma warning disable MA0048
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Range{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
-
-    /// <inheritdoc cref="Range{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Memory<T> source) => Range(source.Span);
-#endif
-
-    /// <summary>Creates the range.</summary>
-    /// <typeparam name="T">The type of number.</typeparam>
-    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <summary>Increments the value.</summary>
+    /// <typeparam name="T">The type of value to increment.</typeparam>
+    /// <param name="t">The value to increment.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>The parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Range<T>(this Span<T> source)
-    {
-        switch (source.Length)
-        {
-            case 0: return source;
-            case 1:
-                MemoryMarshal.GetReference(source) = default!;
-                return source;
-            case var length:
-                if (!IsNumericPrimitive<T>() && !IsSupported<T>())
-                    Fail<T>();
-
-                InAscendingOrder<T>.UpTo(length).CopyTo(source);
-                return source;
-        }
-    }
-
-    static class InAscendingOrder<T>
-    {
-        // Vector512<T> is the largest vector type.
-        const int InitialCapacity = 512;
-
-        static T[] s_values = new T[InitialCapacity];
-
-        static InAscendingOrder() => Populate(s_values);
-
-        /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
-        /// <param name="length">The amount of items required.</param>
-        /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-        /// <returns>
-        /// The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <paramref name="length"/> - 1.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ReadOnlySpan<T> UpTo(int length)
-        {
-            ReadOnlySpan<T> original = s_values;
-
-            if (length <= original.Length)
-                return original[..length];
-
-            var replacement = new T[BitOperations.RoundUpToPowerOf2((uint)length)];
-            Span<T> span = replacement;
-            original.CopyTo(span);
-            Populate(span[(original.Length - 1)..]);
-            s_values = replacement;
-            return span[..length];
-        }
-
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Populate(scoped Span<T> span)
-        {
-            for (var i = 1; i < span.Length; i++)
-            {
-                span[i] = span[i - 1];
-                Increment(ref span[i]);
-            }
-        }
-    }
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace EmptyNamespace
-
-
-/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed
-#pragma warning disable MA0048
-
-    /// <summary>Determines whether the type is a numeric primitive.</summary>
-    /// <typeparam name="T">The type to test.</typeparam>
-    /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
+    /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsNumericPrimitive<T>() =>
-        typeof(T) == typeof(byte) ||
-        typeof(T) == typeof(double) ||
-        typeof(T) == typeof(float) ||
-        typeof(T) == typeof(int) ||
-        typeof(T) == typeof(long) ||
-        typeof(T) == typeof(nint) ||
-        typeof(T) == typeof(nuint) ||
-        typeof(T) == typeof(sbyte) ||
-        typeof(T) == typeof(short) ||
-        typeof(T) == typeof(uint) ||
-        typeof(T) == typeof(ulong) ||
-        typeof(T) == typeof(ushort);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
-        All((ReadOnlySpan<T>)source.Memory.Span, func);
+    public static bool Increment<T>(ref T t) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
+            var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
+            var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
+            var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
+#if NET5_0_OR_GREATER
+            var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
+            var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
+#endif
+            var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
+            var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
+            var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
+            var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
+            var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
+            _ when DirectOperators<T>.IsSupported => (t = DirectOperators<T>.Increment(t)) is var _,
+            _ => Fail<T>() is var _,
+        };
 
-    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
-        All((ReadOnlySpan<T>)source.Span, func);
-#endif
+    /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
+    /// <typeparam name="T">The type to check.</typeparam>
+    /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
 
-    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            All((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(
-        this ReadOnlyMemory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> func
-    ) =>
-        All(source.Span, func);
-#endif
+    /// <summary>Performs an addition operation to return the sum.</summary>
+    /// <typeparam name="T">The type of value to add.</typeparam>
+    /// <param name="l">The left-hand side.</param>
+    /// <param name="r">The right-hand side.</param>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T Adder<T>(T l, T r) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
+            var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+            _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Adder(l, r),
+            _ => Fail<T>(),
+        };
 
-    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(
-        this scoped ReadOnlySpan<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> func
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
+    /// <summary>Performs a dividing operation to return the quotient.</summary>
+    /// <typeparam name="T">The type of value to divide.</typeparam>
+    /// <param name="l">The left-hand side.</param>
+    /// <param name="r">The right-hand side.</param>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T Divider<T>(T l, int r) =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
+            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
+            var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
+            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
+            _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Divider(l, r),
+            _ => Fail<T>(),
+        };
+
+    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
+    /// <typeparam name="T">The type that failed.</typeparam>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>This method does not return.</returns>
+    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Fail<T>() =>
+        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
+
+    /// <summary>Gets the minimum value.</summary>
+    /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
+    /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T MinValue<T>() =>
+        typeof(T) switch
+        {
+            var x when x == typeof(byte) => (T)(object)byte.MinValue,
+            var x when x == typeof(double) => (T)(object)double.MinValue,
+            var x when x == typeof(float) => (T)(object)float.MinValue,
+            var x when x == typeof(int) => (T)(object)int.MinValue,
+#if NET5_0_OR_GREATER
+            var x when x == typeof(nint) => (T)(object)nint.MinValue,
+            var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
 #endif
+            var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+            var x when x == typeof(short) => (T)(object)short.MinValue,
+            var x when x == typeof(uint) => (T)(object)uint.MinValue,
+            var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+            var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+            _ => DirectOperators<T>.MinValue,
+        };
+
+    /// <summary>Caches operators.</summary>
+    /// <typeparam name="T">The containing member of operators.</typeparam>
+    // ReSharper disable once ClassNeverInstantiated.Local
+    sealed partial class DirectOperators<T>
     {
-        foreach (var next in source)
-            if (!func(next))
-                return false;
+        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
-        return true;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
-        Any((ReadOnlySpan<T>)source.Memory.Span, func);
+        static readonly Type[]
+            s_binary = new[] { typeof(T), typeof(T) },
+            s_unary = new[] { typeof(T) };
 
-    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
-        Any((ReadOnlySpan<T>)source.Span, func);
-#endif
+        static DirectOperators()
+        {
+            try
+            {
+                Increment = Make("op_Increment", Expression.Increment);
+                Adder = Make<T>("op_Addition", Expression.AddChecked);
+                Divider = Make<int>("op_Division", (x, y) => Expression.Divide(x, Expression.Convert(y, typeof(T))));
+            }
+            catch (InvalidOperationException)
+            {
+                IsSupported = false;
+            }
+        }
+#pragma warning disable RCS1158
+        /// <summary>
+        /// Gets a value indicating whether the functions can be used.
+        /// <see cref="MinValue"/> can be used regardless of its output.
+        /// </summary>
+        [CLSCompliant(false)]
+        public static bool IsSupported
+        {
+            [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
+             MethodImpl(MethodImplOptions.AggressiveInlining),
+             Pure]
+            get;
+        } = true;
+#pragma warning restore RCS1158
+        /// <summary>Gets the minimum value.</summary>
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!;
 
-    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Any((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(
-        this ReadOnlyMemory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> func
-    ) =>
-        Any(source.Span, func);
-#endif
+        /// <summary>Gets the function for dividing.</summary>
+        public static Converter<T?, T>? Increment { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
-    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(
-        this scoped ReadOnlySpan<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> func
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        foreach (var next in source)
-            if (func(next))
-                return true;
+        /// <summary>Gets the function for adding.</summary>
+        public static Func<T?, T?, T>? Adder { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
-        return false;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IMemoryOwner<T> Select<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, T> selector
-    )
-    {
-        Select(source.Memory.Span, selector);
-        return source;
-    }
+        /// <summary>Gets the function for dividing.</summary>
+        public static Func<T?, int, T>? Divider { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
-    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static IMemoryOwner<T> Select<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
-    )
-    {
-        Select(source.Memory.Span, selector);
-        return source;
-    }
+        [Pure]
+        static Converter<T?, T> Make(string name, [InstantHandle] Func<Expression, UnaryExpression> go) =>
+            typeof(T).GetMethod(name, Flags, null, s_unary, null) is not { } method &&
+            Expression.Parameter(typeof(T), "unit") is var unit
+                ? Expression.Lambda<Converter<T?, T>>(go(unit), unit).Compile()
+                : (Converter<T?, T>)Delegate.CreateDelegate(typeof(Converter<T?, T>), method);
 
-    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> Select<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
-    {
-        Select(source.Span, selector);
-        return source;
-    }
-
-    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> Select<T>(
-        this Memory<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
-    )
-    {
-        Select(source.Span, selector);
-        return source;
-    }
-#endif
-
-    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Select<T>(this Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            source[i] = selector(source[i]);
-
-        return source;
-    }
-
-    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Select<T>(
-        this Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            source[i] = selector(source[i], i);
-
-        return source;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> SkipWhile<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        SkipWhile(source.Memory, predicate);
-
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> SkipWhile<T>(
-        this Memory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-
-        for (var i = 0; i < source.Length; i++)
-            if (!predicate(span[i]))
-                return source[i..];
-
-        return source;
+        [Pure]
+        static Func<T?, TRight?, T> Make<TRight>(
+            string name,
+            [InstantHandle] Func<Expression, Expression, BinaryExpression> go
+        ) =>
+            (typeof(T).GetMethod(name, Flags, null, s_binary, null) is not { } method ||
+                (Func<T?, T?, T>)Delegate.CreateDelegate(typeof(Func<T?, T?, T>), method) is not { } func) &&
+            Expression.Parameter(typeof(T), "left") is var left &&
+            Expression.Parameter(typeof(TRight), "right") is var right
+                ? Expression.Lambda<Func<T?, TRight?, T>>(go(left, right), left, right).Compile()
+                : (x, y) => func(x, (T?)(object?)y);
     }
 #endif
-
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> SkipWhile<T>(
-        this Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            if (!predicate(source[i]))
-                return source[i..];
-
-        return source;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlyMemory<T> SkipWhile<T>(
-        this ReadOnlyMemory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-
-        for (var i = 0; i < source.Length; i++)
-            if (!predicate(span[i]))
-                return source[i..];
-
-        return source;
-    }
-#endif
-
-    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> SkipWhile<T>(
-        this ReadOnlySpan<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            if (!predicate(source[i]))
-                return source[i..];
-
-        return source;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> TakeWhile<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        TakeWhile(source.Memory, predicate);
-
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> TakeWhile<T>(
-        this Memory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-
-        for (var i = 0; i < source.Length; i++)
-            if (predicate(span[i]))
-                return source[..i];
-
-        return source;
-    }
-#endif
-
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> TakeWhile<T>(
-        this Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            if (predicate(source[i]))
-                return source[..i];
-
-        return source;
-    }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlyMemory<T> TakeWhile<T>(
-        this ReadOnlyMemory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-
-        for (var i = 0; i < source.Length; i++)
-            if (predicate(span[i]))
-                return source[..i];
-
-        return source;
-    }
-#endif
-
-    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> TakeWhile<T>(
-        this ReadOnlySpan<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        for (var i = 0; i < source.Length; i++)
-            if (predicate(source[i]))
-                return source[..i];
-
-        return source;
-    }
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
+// ReSharper disable once CheckNamespace
 
-#pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
 
-/// <summary>Methods to split spans into multiple spans.</summary>
-#pragma warning disable MA0048
+/// <summary>Provides extension methods for <see cref="char"/>.</summary>
 
-    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
-    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
+    /// <inheritdoc cref="char.IsControl(char)"/>
+    [Pure]
+    public static bool IsControl(this char c) => char.IsControl(c);
+
+    /// <inheritdoc cref="char.IsDigit(char)"/>
+    [Pure]
+    public static bool IsDigit(this char c) => char.IsDigit(c);
+
+    /// <inheritdoc cref="char.IsHighSurrogate(char)"/>
+    [Pure]
+    public static bool IsHighSurrogate(this char c) => char.IsHighSurrogate(c);
+
+    /// <inheritdoc cref="char.IsLetter(char)"/>
+    [Pure]
+    public static bool IsLetter(this char c) => char.IsLetter(c);
+
+    /// <inheritdoc cref="char.IsLetterOrDigit(char)"/>
+    [Pure]
+    public static bool IsLetterOrDigit(this char c) => char.IsLetterOrDigit(c);
+
+    /// <inheritdoc cref="char.IsLower(char)"/>
+    [Pure]
+    public static bool IsLower(this char c) => char.IsLower(c);
+
+    /// <inheritdoc cref="char.IsLowSurrogate(char)"/>
+    [Pure]
+    public static bool IsLowSurrogate(this char c) => char.IsLowSurrogate(c);
+
+    /// <inheritdoc cref="string.IsNullOrEmpty(string)"/>
+    [Pure]
+    public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
+
+#if NET35
+    /// <summary>
+    /// Indicates whether a specified string is <see langword="null"/>,
+    /// empty, or consists only of white-space characters.
+    /// </summary>
+    /// <param name="value">The string to test.</param>
     /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// <see langword="true"/> if the <paramref name="value"/> parameter is <see langword="null"/>,
+    /// or <see cref="string.Empty"/>, or if <paramref name="value"/> consists exclusively of white-space characters.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
-        where T : IEquatable<T>?
+    [Pure]
+    public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) =>
+        value?.All(char.IsWhiteSpace) != false;
+#elif !NET20 && !NET30
+    /// <inheritdoc cref="string.IsNullOrWhiteSpace(string)"/>
+    [Pure]
+    public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
 #endif
+
+    /// <inheritdoc cref="char.IsNumber(char)"/>
+    [Pure]
+    public static bool IsNumber(this char c) => char.IsNumber(c);
+
+    /// <inheritdoc cref="char.IsPunctuation(char)"/>
+    [Pure]
+    public static bool IsPunctuation(this char c) => char.IsPunctuation(c);
+
+    /// <inheritdoc cref="char.IsSeparator(char)"/>
+    [Pure]
+    public static bool IsSeparator(this char c) => char.IsSeparator(c);
+
+    /// <inheritdoc cref="char.IsSurrogate(char)"/>
+    [Pure]
+    public static bool IsSurrogate(this char c) => char.IsSurrogate(c);
+
+    /// <inheritdoc cref="char.IsSymbol(char)"/>
+    [Pure]
+    public static bool IsSymbol(this char c) => char.IsSymbol(c);
+
+    /// <inheritdoc cref="char.IsUpper(char)"/>
+    public static bool IsUpper(this char c) => char.IsUpper(c);
+
+    /// <inheritdoc cref="char.IsWhiteSpace(char)"/>
+    [Pure]
+    public static bool IsWhitespace(this char c) => char.IsWhiteSpace(c);
+
+    /// <summary>Converts the character to the byte-equivalent, 0-9.</summary>
+    /// <param name="c">The character to convert.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="c"/> isn't between '0' and '9', inclusively on both ends.
+    /// </exception>
+    /// <returns>The number 0-9 representing the character.</returns>
+    [Pure]
+    public static byte AsDigit(this char c) =>
+        c is >= '0' and <= '9'
+            ? (byte)(c - '0')
+            : throw new ArgumentOutOfRangeException(nameof(c), c, "Character must be 0-9.");
+
+    /// <summary>Attempts to convert the character to the byte-equivalent, 0-9.</summary>
+    /// <param name="c">The character to convert.</param>
+    /// <returns>The number 0-9 representing the character, or <see langword="null"/>.</returns>
+    [Pure]
+    public static byte? TryAsDigit(this char c) => c is >= '0' and <= '9' ? (byte)(c - '0') : null;
+
+    /// <inheritdoc cref="char.ToLower(char)"/>
+    [Pure]
+    public static char ToLower(this char c) => char.ToLowerInvariant(c);
+
+    /// <inheritdoc cref="char.ToUpper(char)"/>
+    [Pure]
+    public static char ToUpper(this char c) => char.ToUpperInvariant(c);
+
+    /// <inheritdoc cref="char.GetNumericValue(char)"/>
+    [Pure]
+    public static double GetNumericValue(this char c) => char.GetNumericValue(c);
+
+    /// <inheritdoc cref="string.Trim(char[])"/>
+    [Pure]
+    public static string Trim(this string s, string trim)
     {
-        if (left == right)
-            return true;
+        int start = 0, end = 1;
 
-        if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
-            return !e2.MoveNext();
+        for (; start < s.Length; start++)
+            if (start >= trim.Length || s[start] != trim[start])
+                break;
 
-        if (!e2.MoveNext())
-            return false;
+        for (; end <= s.Length; end++)
+            if (end > trim.Length || s[^end] != trim[^end])
+                return s[..^(end - 1)];
 
-        ReadOnlySpan<T>
-            reader1 = e1.Current,
-            reader2 = e2.Current;
-
-        while (true)
-            if (Next(ref reader1, ref reader2, ref e1, ref e2, out var ret))
-                return ret;
+        return s[start..^end];
     }
 
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
-        where T : IEquatable<T>?
-#endif
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    [Pure]
+    public static string TrimEnd(this string s, string trim)
     {
-        if (left == right)
-            return true;
+        for (var i = 1; i <= s.Length; i++)
+            if (i > trim.Length || s[^i] != trim[^i])
+                return s[..^(i - 1)];
 
-        var e1 = left.GetEnumerator();
-        var e2 = right.GetEnumerator();
-
-        while (e1.MoveNext())
-            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
-                return false;
-
-        return !e2.MoveNext();
+        return "";
     }
 
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, separator, true);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            ((ReadOnlySpan<T>)span).SplitAny(separator);
-
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, separator, false);
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            ((ReadOnlySpan<T>)span).SplitAll(separator);
-
-    /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The list containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<string> ToList(this SplitSpan<char> split)
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    [Pure]
+    public static string TrimStart(this string s, string trim)
     {
-        List<string> ret = new();
+        for (var i = 0; i < s.Length; i++)
+            if (i >= trim.Length || s[i] != trim[i])
+                return s[i..];
 
-        foreach (var next in split)
-            ret.Add(next.ToString());
-
-        return ret;
+        return "";
     }
 
-    /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The list containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<T[]> ToList<T>(this SplitSpan<T> split)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>?
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
+    [Pure]
+    public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
 #endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable CheckNamespace RedundantNameQualifier
+
+
+
+
+
+/// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
+[UsedImplicitly]
+
+    const string ParameterName = "value";
+#pragma warning disable CA2208, MA0015
+    static readonly ConstantExpression s_parameterName = Constant(ParameterName, typeof(string));
+#pragma warning restore CA2208, MA0015
+
+    static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
+            BindingFlags.Instance | BindingFlags.Public,
+            null,
+            new[] { typeof(string), typeof(string) },
+            null
+        ) ??
+        throw Unreachable;
+
+    static readonly ConstructorInfo s_newInvalidEnumArgument = typeof(InvalidEnumArgumentException).GetConstructor(
+            BindingFlags.Instance | BindingFlags.Public,
+            null,
+            new[] { typeof(string), typeof(int), typeof(Type) },
+            null
+        ) ??
+        throw Unreachable;
+
+    /// <summary>Converts the value to a constant <see cref="string"/>.</summary>
+    /// <remarks><para>
+    /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <exception cref="InvalidEnumArgumentException">The value doesn't represent an exact value.</exception>
+    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
+    [Pure]
+    public static string AsString<T>(this T value)
+        where T : Enum =>
+        StringCaching<T>.From(value);
+
+    /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
+    /// <remarks><para>
+    /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
+    /// <param name="value">The value.</param>
+    /// <exception cref="ArgumentException">The value doesn't represent an exact value.</exception>
+    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
+    [Pure]
+    public static T As<T>(this string value)
+        where T : Enum =>
+        StringCaching<T>.To(value);
+
+    static class StringCaching<T>
+        where T : Enum
     {
-        List<T[]> ret = new();
+        public static Converter<T, string> From { get; } = Make<Converter<T, string>>(false);
 
-        foreach (var next in split)
-            ret.Add(next.ToArray());
+        public static Converter<string, T> To { get; } = Make<Converter<string, T>>(true);
 
-        return ret;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAny(separator);
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAll(separator);
-
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this string span) => span.AsSpan().SplitLines();
-
-    /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
-        new(span, Breaking.AsSpan(), true);
-
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this string span) => span.AsSpan().SplitWhitespace();
-
-    /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
-        new(span, Unicode.AsSpan(), true);
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
-#endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Next<T>(
-        ref ReadOnlySpan<T> reader1,
-        ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
-        out bool ret
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
-        where T : IEquatable<T>?
-#endif
-    {
-        Unsafe.SkipInit(out ret);
-
-        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
-            return SameLength(ref reader1, ref reader2, ref e1, ref e2, ref ret);
-
-        if (length1 < length2)
+        static TFunc Make<TFunc>(bool isToT)
+            where TFunc : Delegate
         {
-            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
-            {
-                ret = false;
-                return true;
-            }
+            var parameter = Parameter(isToT ? typeof(string) : typeof(T), ParameterName);
+            var cases = Cases(isToT);
+            var thrower = Thrower(parameter, isToT);
+            var ret = Switch(parameter, thrower, cases);
 
-            reader1 = e1.Current;
-            reader2 = reader2[length1..];
-            return false;
+            return Lambda<TFunc>(ret, parameter).Compile();
         }
 
-        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
+        static SwitchCase[] Cases(bool isToT) =>
+            typeof(T)
+               .GetFields(BindingFlags.Static | BindingFlags.Public)
+               .Select(x => Case(x, isToT))
+               .ToArray();
+
+        static SwitchCase Case(FieldInfo x, bool isToT)
         {
-            ret = false;
-            return true;
+            var str = Constant(x.Name, typeof(string));
+            var t = Constant(x.GetValue(null), typeof(T));
+            var from = isToT ? str : t;
+            var to = isToT ? t : str;
+
+            return SwitchCase(to, from);
         }
 
-        reader1 = reader1[length2..];
-        reader2 = e2.Current;
-        return false;
+        static UnaryExpression Thrower(Expression parameter, bool isToT) =>
+            Throw(isToT ? Format(parameter) : InvalidEnumArgument(parameter), isToT ? typeof(T) : typeof(string));
+
+        static NewExpression Format(Expression parameter) => New(s_newArgument, parameter, s_parameterName);
+
+        static NewExpression InvalidEnumArgument(Expression parameter) =>
+            New(
+                s_newInvalidEnumArgument,
+                s_parameterName,
+                Convert(parameter, typeof(int)),
+                Constant(typeof(T), typeof(Type))
+            );
     }
+#endif
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool SameLength<T>(
-        ref ReadOnlySpan<T> reader1,
-        ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
-        ref bool ret
-    )
-        where T : IEquatable<T>?
-    {
-        if (!reader1.SequenceEqual(reader2))
-        {
-            ret = false;
-            return true;
-        }
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable CheckNamespace RedundantNameQualifier
+#pragma warning disable 1696, SA1137, SA1216
+#if WAWA
+namespace Wawa.Modules;
+#else
 
-        if (!e1.MoveNext())
-        {
-            ret = !e2.MoveNext();
-            return true;
-        }
+#endif
 
-        if (!e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
 
-        reader1 = e1.Current;
-        reader2 = e2.Current;
-        return false;
-    }
+#if !(NET20 || NET30)
+#endif
 
-/// <summary>Represents a split entry.</summary>
-/// <typeparam name="T">The type of element from the span.</typeparam>
-[StructLayout(LayoutKind.Auto)]
-#if CSHARPREPL
+
+
+/// <summary>Provides stringification methods.</summary>
+// ReSharper disable once BadPreprocessorIndent
+#if WAWA
 public
 #endif
-#if !NO_READONLY_STRUCTS
-readonly
+
+    const int MaxIteration = 32, MaxRecursion = 3;
+#if !WAWA
+    const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
 #endif
-#if !NO_REF_STRUCTS
-    ref
+
+    // ReSharper disable UnusedMember.Local
+#pragma warning disable CA1823, IDE0051
+    const string
+        Else = "th",
+        EqualityContract = nameof(EqualityContract),
+        False = "false",
+        FirstOrd = "st",
+        Invalid = $"!<{nameof(InvalidOperationException)}>",
+        KeyValueSeparator = ": ",
+        Null = "null",
+        SecondOrd = "nd",
+        Separator = ", ",
+        ThirdOrd = "rd",
+        True = "true",
+        Unsupported = $"!<{nameof(NotSupportedException)}>",
+        UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
+#pragma warning restore CA1823, IDE0051
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+    static readonly Dictionary<Type, bool> s_hasMethods = new();
+
+    static readonly Dictionary<Type, Delegate> s_stringifiers = new();
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+    static readonly Dictionary<Type, string> s_unfoldedNames = new()
+    {
+        [typeof(bool)] = "bool",
+        [typeof(byte)] = "byte",
+        [typeof(char)] = "char",
+        [typeof(decimal)] = "decimal",
+        [typeof(double)] = "double",
+        [typeof(float)] = "float",
+        [typeof(int)] = "int",
+        [typeof(long)] = "long",
+        [typeof(nint)] = "nint",
+        [typeof(nuint)] = "nuint",
+        [typeof(object)] = "object",
+        [typeof(sbyte)] = "sbyte",
+        [typeof(short)] = "short",
+        [typeof(string)] = "string",
+        [typeof(uint)] = "uint",
+        [typeof(ulong)] = "ulong",
+        [typeof(ushort)] = "ushort",
+        [typeof(void)] = "void",
+    };
 #endif
-    partial struct SplitSpan<T>
-#if UNMANAGED_SPAN
-    where T : unmanaged, IEquatable<T>?
-#else
-    where T : IEquatable<T>?
+    static readonly ConstantExpression
+        s_exEmpty = Constant(""),
+#if !NETFRAMEWORK || NET40_OR_GREATER
+        s_exInvalid = Constant(Invalid),
+        s_exUnsupported = Constant(Unsupported),
+        s_exUnsupportedPlatform = Constant(UnsupportedPlatform),
 #endif
-{
-    readonly bool _isAny;
+        s_exSeparator = Constant(Separator),
+        s_exTrue = Constant(true);
 
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
-    /// <param name="body">The line to split.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body) => Body = body;
+    static readonly MethodInfo
+        s_combine = ((Func<string, string, string>)string.Concat).Method,
+        s_stringify = ((Func<bool, int, bool, string>)Stringify).Method.GetGenericMethodDefinition();
+#endif
+    static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
+#if !WAWA
+#pragma warning disable MA0110, SYSLIB1045
+    static readonly Regex
+        s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
+        s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
+        s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
+        s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
+        s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
+#pragma warning restore MA0110, SYSLIB1045
+#endif
 
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
-    /// <param name="body">The line to split.</param>
-    /// <param name="separator">The characters for separation.</param>
-    /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator, bool isAny)
-    {
-        Body = body;
-        Separator = separator;
-        _isAny = isAny;
-    }
-
-    /// <summary>Gets the specified index.</summary>
-    /// <param name="index">The index to get.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
-    public ReadOnlySpan<T> this[[NonNegativeValue] int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
+    /// <summary>Gets the field count of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to use.</param>
+    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static int FieldCount(
+#if !WAWA
+        this
+#endif
+            Version? version
+    ) =>
+        version switch
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
-
-            var e = GetEnumerator();
-
-            for (var i = 0; i <= index; i++)
-                if (!e.MoveNext())
-                    return default;
-
-            return e.Current;
-        }
-    }
-
-    /// <summary>Gets the empty split span.</summary>
-    public static SplitSpan<T> Empty
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
-    /// or if all of them match.
-    /// </summary>
-    public bool IsAny
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _isAny || Separator.Length is 1;
-    }
-
-    /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Body
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
-    }
-
-    /// <summary>Gets the separator.</summary>
-    public ReadOnlySpan<T> Separator
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
-    }
-
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are equal.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(SplitSpan<T> left, SplitSpan<T> right) => left.Equals(right);
-
-    /// <summary>Determines whether both splits are not equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are not equal.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(SplitSpan<T> left, SplitSpan<T> right) => !left.Equals(right);
-
-    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
-    /// <param name="head">The first element of this enumeration.</param>
-    /// <param name="tail">The rest of this enumeration.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out ReadOnlySpan<T> head, out SplitSpan<T> tail)
-    {
-        if (GetEnumerator() is var e && !e.MoveNext())
-        {
-            head = default;
-            tail = default;
-            return;
-        }
-
-        head = e.Current;
-
-        tail = this with
-        {
-            Body = Body[e.Index..],
+            (_, <= 0, <= 0, <= 0) => 1,
+            (_, _, <= 0, <= 0) => 2,
+            (_, _, _, <= 0) => 3,
+            _ => 4,
         };
-    }
-
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object? other) => false;
-
-    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
-    // ReSharper disable NullableWarningSuppressionIsUsed
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(scoped SplitSpan<T> other) =>
-        Body.IsEmpty && other.Body.IsEmpty ||
-        Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
-        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
-
-    /// <summary>Computes the length.</summary>
-    /// <returns>The length.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int Count()
+#if !WAWA
+    /// <summary>Creates the collapsed form of the string.</summary>
+    /// <param name="s">The string to collapse.</param>
+    /// <returns>The collapsed string.</returns>
+    public static string Collapse(this string s)
     {
-        var e = GetEnumerator();
-        var count = 0;
-
-        while (e.MoveNext())
-            count++;
-
-        return count;
+        s = s_parentheses.Replace(s, "(…)");
+        s = s_brackets.Replace(s, "[…]");
+        s = s_curlies.Replace(s, "{…}");
+        s = s_angles.Replace(s, "<…>");
+        return s_quotes.Replace(s, "\"…\"");
     }
 
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
+    /// <summary>Converts a number to an ordinal.</summary>
+    /// <param name="i">The number to convert.</param>
+    /// <param name="one">The string for the value 1 or -1.</param>
+    /// <param name="many">The string to concatenate. Use prefixed dashes to trim <paramref name="one"/>.</param>
+    /// <returns>The conjugation of all the parameters.</returns>
+    [Pure]
+    public static string Conjugate(this int i, string one, string many = "s") =>
+        i is not 1 and not -1 && Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length) is var trim
+            ? $"{i} {one[..^trim]}{many[trim..]}"
+            : $"{i} {one}";
 
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    // ReSharper restore NullableWarningSuppressionIsUsed
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => new(this);
+    /// <summary>Creates the prettified form of the string.</summary>
+    /// <param name="s">The string to prettify.</param>
+    /// <returns>The prettified string.</returns>
+    public static string Prettify(this string s) => Prettify(s, separator: ",;");
 
-    /// <summary>Gets the first element.</summary>
-    /// <returns>The first span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
-
-    /// <summary>Gets the last element.</summary>
-    /// <returns>The last span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> Last()
+    /// <summary>Creates the prettified form of the string.</summary>
+    /// <param name="s">The string to prettify.</param>
+    /// <param name="start">The characters considered to be starting blocks.</param>
+    /// <param name="end">The characters considered to be ending blocks.</param>
+    /// <param name="separator">The characters considered to be separators.</param>
+    /// <param name="indent">The amount of spaces for indentation.</param>
+    /// <returns>The prettified string.</returns>
+    public static string Prettify(
+        this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
+        string start = "([{<",
+        string end = ")]}>",
+        string separator = ",;",
+        string indent = "    "
+    )
+#pragma warning disable CA1508
     {
-        var e = GetEnumerator();
+        // Inspired by https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7.
+        var seen = false;
+        var nest = 0;
+        StringBuilder sb = new();
 
-        while (e.MoveNext()) { }
+        for (var i = 0; i < s.Length; i++)
+            (seen, nest, sb) = s[i] switch
+            {
+                not ' ' when seen && sb.Indent(indent, nest) is var _ && (seen = false) => throw Unreachable,
+                _ when start.Contains(s[i]) && (s.Nth(i + 1) is not { } next || !end.Contains(next)) =>
+                    (seen, ++nest, sb.Append(s[i]).Indent(indent, nest)),
+                _ when end.Contains(s[i]) && (s.Nth(i - 1) is not { } prev || !start.Contains(prev)) =>
+                    (seen, --nest, sb.Indent(indent, nest).Append(s[i])),
+                _ when separator.Contains(s[i]) => (true, nest, sb.Append(s[i])),
+                ' ' when seen && nest > 0 ||
+                    s.Nth(i - 1) is { } prev && start.Contains(prev) ||
+                    s.Nth(i + 1) is { } next && end.Contains(next) => (seen, nest, sb),
+                _ => (seen, nest, sb.Append(s[i])),
+            };
 
-        return e.Current;
+        return $"{sb}";
     }
+#pragma warning restore CA1508
+#endif
+#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
+    /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
+    /// <remarks><para>
+    /// This method is more efficient than using <see cref="Conjoin{T}(IEnumerable{T}, string)"/>
+    /// for <see cref="char"/> enumerations.
+    /// </para></remarks>
+    /// <param name="chars">The enumeration of characters.</param>
+    /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
+    [Pure]
+    public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
+#endif
 
-    /// <summary>Gets the single element.</summary>
-    /// <returns>The single span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> Single() =>
-        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
-
-    /// <summary>Gets the first element.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The first span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
-        TAccumulator seed,
-        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+    /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
+    /// <remarks><para>
+    /// This method is more efficient than using
+    /// <see cref="Conjoin{T}(IEnumerable{T}, string)"/> for <see cref="char"/> separators.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>One long <see cref="string"/>.</returns>
+    // ReSharper disable BadPreprocessorIndent
+    [Pure]
+    public static string Conjoin<T>(
+#if !WAWA
+        this
+#endif
+            IEnumerable<T> values,
+        char separator
     )
     {
-        var accumulator = seed;
+        StringBuilder builder = new();
+        using var enumerator = values.GetEnumerator();
 
-        foreach (var next in this)
-            accumulator = func(accumulator, next);
+        if (enumerator.MoveNext())
+            builder.Append(enumerator.Current);
+        else
+            return "";
 
-        return accumulator;
+        while (enumerator.MoveNext())
+            builder.Append(separator).Append(enumerator.Current);
+
+        return $"{builder}";
     }
 
-    /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
-    [StructLayout(LayoutKind.Auto)]
-    public
-#if !NO_REF_STRUCTS
-        ref
+    /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>One long <see cref="string"/>.</returns>
+    [Pure]
+    public static string Conjoin<T>(
+#if !WAWA
+        this
 #endif
-        partial struct Enumerator(SplitSpan<T> split)
+            IEnumerable<T> values,
+        string separator = Separator
+    )
     {
-        readonly SplitSpan<T> _split = split;
+        if (values is string value && separator is "")
+            return value;
 
-        [ValueRange(-1, int.MaxValue)]
-#pragma warning disable IDE0044
-        int _end = -1;
-#pragma warning restore IDE0044
+        StringBuilder builder = new();
+        using var enumerator = values.GetEnumerator();
 
-        /// <summary>Gets the current index.</summary>
-        public readonly int Index
+        if (enumerator.MoveNext())
+            builder.Append(enumerator.Current);
+        else
+            return "";
+
+        while (enumerator.MoveNext())
+            builder.Append(separator).Append(enumerator.Current);
+
+        return $"{builder}";
+    }
+
+    /// <summary>Gets the short display form of the version.</summary>
+    /// <param name="version">The <see cref="Version"/> to convert.</param>
+    /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
+    [Pure]
+    public static string ToShortString(
+#if !WAWA
+        this
+#endif
+            Version? version
+    )
+    {
+        if (version is not var (major, minor, build, revision) ||
+            major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
+            return "v0";
+
+        var length = Length(major, revision, minor, build);
+
+        Span<char> span = stackalloc char[length];
+        Format(span, version);
+        return span.ToString();
+    }
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if !WAWA
+    /// <summary>Gets the full type name, with its generics extended.</summary>
+    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
+    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
+    [Pure]
+    public static string UnfoldedFullName(this Type? type) =>
+        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
+#endif
+
+    /// <summary>Gets the type name, with its generics extended.</summary>
+    /// <param name="type">The <see cref="Type"/> to get the name of.</param>
+    /// <returns>The name of the parameter <paramref name="type"/>.</returns>
+    [Pure]
+    public static string UnfoldedName(
+#if !WAWA
+        this
+#endif
+            Type? type
+    ) =>
+        type is null ? Null :
+        s_unfoldedNames.TryGetValue(type, out var val) ? val :
+        s_unfoldedNames[type] = $"{type.UnfoldedName(new())}";
+#endif
+
+    /// <summary>Converts a number to an ordinal.</summary>
+    /// <param name="i">The number to convert.</param>
+    /// <param name="indexByZero">Determines whether to index from zero or one.</param>
+    /// <returns>The parameter <paramref name="i"/> as an ordinal.</returns>
+    [Pure]
+    public static string Nth(
+#if !WAWA
+        this
+#endif
+            int i,
+        bool indexByZero = false
+    ) =>
+        indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
+
+    /// <inheritdoc cref="string.Split(string[], StringSplitOptions)"/>
+    // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static string[] Chop(
+#if !WAWA
+        this
+#endif
+            string source,
+        string separator
+    ) =>
+        source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+
+    /// <summary>
+    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
+    /// in which case each item within is printed out separately.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the source.</typeparam>
+    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
+    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
+    [MustUseReturnValue]
+    public static string Stringify<T>(
+#if !WAWA
+        this
+#endif
+            T? source
+    ) =>
+        Stringify(source, MaxRecursion);
+
+    /// <summary>
+    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
+    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
+    /// in which case each item within is printed out separately.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the source.</typeparam>
+    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
+    /// <param name="depth">Determines how deep the recursive function should go.</param>
+    /// <param name="useQuotes">
+    /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
+    /// </param>
+    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
+    [MustUseReturnValue]
+    public static string Stringify<T>(
+#if !WAWA
+        this
+#endif
+#pragma warning disable SA1114 RCS1163
+            T? source,
+        int depth,
+        bool useQuotes = false
+#pragma warning restore SA1114 RCS1163
+    ) =>
+        source switch
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
+            null => Null,
+            true => True,
+            false => False,
+            nint x => $"{x}",
+            nuint x => $"{x}",
+            char x => useQuotes ? Escape(x) : $"{x}",
+            string x => useQuotes ? $@"""{x}""" : x,
+            Enum x => $"{x.GetType().Name}({(
+                x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
+            )}) = {x.EnumStringifier()}",
+            Type x => UnfoldedName(x),
+            Version x => x.ToShortString(),
+#if KTANE
+            Object x => x.name,
+#endif
+            IConvertible x => x.ToString(CultureInfo.InvariantCulture),
+            ICustomFormatter x => x.Format("", x, CultureInfo.InvariantCulture),
+            _ when depth <= 0 =>
+#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
+                source.ToString(),
+#else
+                source.StringifyObject(depth - 1),
+#endif
+#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
+            IEnumerable<char> x => useQuotes ? $@"""{x.Concat()}""" : x.Concat(),
+#else
+            IEnumerable<char> x => useQuotes ? $@"""{Conjoin(x, "")}""" : Conjoin(x, ""),
+#endif
+            IDictionary { Count: 0 } => "{ }",
+            IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
+            ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
+            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#pragma warning disable IDISP004
+            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
+#pragma warning restore IDISP004
+#endif
+#if !NETFRAMEWORK || NET40_OR_GREATER
+            IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
+            IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
+#endif
+#if ROSLYN
+            ISymbol x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+#endif
+#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
+            _ => source.ToString(),
+#else
+            _ => source.StringifyObject(depth - 1),
+#endif
+        };
+
+    /// <summary>Forces the use of reflective stringification.</summary>
+    /// <typeparam name="T">The type of the source.</typeparam>
+    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
+    /// <param name="depth">The amount of nesting.</param>
+    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
+    [MustUseReturnValue]
+#if !WAWA
+    public
+#endif
+        static string UseStringifier<T>(this T source, int depth = MaxRecursion)
+    {
+        // Method can be called if 'forceReflection' is true.
+        if (!typeof(T).IsValueType && source is null)
+            return Null;
+
+        if (!s_stringifiers.ContainsKey(typeof(T)))
+            s_stringifiers[typeof(T)] = GenerateStringifier<T>();
+
+        var name = source?.GetType() is { } type && type != typeof(T)
+            ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
+            : UnfoldedName(typeof(T));
+
+        return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
+            ? $"{name} {{ {str} }}"
+            : name;
+    }
+
+    static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
+        builder.Append(key).Append(KeyValueSeparator).Append(value);
+
+    static void Push(char c, scoped ref Span<char> span)
+    {
+        span[0] = c;
+        span = span[1..];
+    }
+
+    // ReSharper disable RedundantAssignment
+    static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
+    {
+        var it = next.TryFormat(span, out var slice);
+        System.Diagnostics.Debug.Assert(it, "TryFormat");
+        span = span[slice..];
+    }
+
+    // ReSharper disable RedundantAssignment
+    static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
+    {
+        Push(next, ref span);
+        Push(c, ref span);
+    }
+
+    static void Format(scoped Span<char> span, Version version)
+    {
+        Push('v', ref span);
+
+        switch (version)
+        {
+            case (var major, var minor, var build, > 0 and var revision):
+                Push(major, '.', ref span);
+                Push(minor, '.', ref span);
+                Push(build, '.', ref span);
+                Push(revision, ref span);
+                break;
+            case (var major, var minor, > 0 and var build):
+                Push(major, '.', ref span);
+                Push(minor, '.', ref span);
+                Push(build, ref span);
+                break;
+            case (var major, > 0 and var minor):
+                Push(major, '.', ref span);
+                Push(minor, ref span);
+                break;
+            default:
+                Push(version.Major, ref span);
+                break;
         }
 
-        /// <inheritdoc cref="IEnumerator{T}.Current"/>
-        public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+        System.Diagnostics.Debug.Assert(span.IsEmpty, nameof(Span<char>.IsEmpty));
+    }
 
-        /// <summary>
-        /// Sets the enumerator to its initial position, which is before the first element in the collection.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => _end = -1;
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
+    // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+    [MustUseReturnValue]
+    static bool CanUse(PropertyInfo p) =>
+        p is { CanRead: true, PropertyType.Name: not "SyntaxTree" } &&
+        p.GetIndexParameters().Length is 0 &&
+        p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
+#endif
+    [Pure]
+    static bool IsEqualityContract(PropertyInfo x) =>
+        x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
+        x.PropertyType == typeof(Type) &&
+        x.GetIndexParameters().Length is 0;
 
-        /// <summary>Advances the enumerator to the next element of the collection.</summary>
-        /// <returns>
-        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
-        /// <see langword="false"/> if the enumerator has passed the end of the collection.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
+    [Pure] // ReSharper disable once SuggestBaseTypeForParameter
+    static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
+
+    [Pure]
+    static bool IsOneBitSet(this Enum value, Enum next) =>
+        System.Convert.ToInt32(next) is not 0 and var filter &&
+        (filter & filter - 1) is 0 &&
+        System.Convert.ToInt32(value) is var bits &&
+        (bits & filter) is not 0;
+
+    [Pure]
+    static bool IsRecord<T>() =>
+        typeof(T)
+           .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
+           .Any(IsEqualityContract);
+
+    [Pure]
+    static int Length(int major, int revision, int minor, int build) =>
+        (major.DigitCount() + 1 is var length && revision > 0 ?
+            minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
+            build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
+                minor > 0 ? minor.DigitCount() + 1 : 0) +
+        length;
+
+    [Pure]
+    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
+
+    [MustUseReturnValue]
+    static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
+        count is 0
+            ? "[Count: 0]"
+            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth, useQuotes, count)}]";
+
+    [Pure]
+    static string Escape(char c) =>
+        c switch
         {
-            var body = _split.Body;
-            var separator = _split.Separator;
+            '\'' => "'\\''",
+            '\"' => "'\\\"'",
+            '\\' => @"'\\'",
+            '\0' => "'\\0'",
+            '\a' => "'\\a'",
+            '\b' => "'\\b'",
+            '\f' => "'\\f'",
+            '\n' => "'\\n'",
+            '\r' => "'\\r'",
+            '\t' => "'\\t'",
+            '\v' => "'\\v'",
+            _ => $"{c}",
+        };
 
-            if (separator.IsEmpty)
-                return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
+    [Pure]
+    static string EnumStringifier(this Enum value)
+    {
+        var values = Enum
+           .GetValues(value.GetType())
+           .Cast<Enum>()
+           .Where(value.IsOneBitSet)
+           .OrderBy(System.Convert.ToInt32)
+#if WAWA
+           .ToList();
+#else
+           .ToCollectionLazily();
+#endif
 
-            while (Step(_split.IsAny, body, separator, ref _end, out var start))
-                if (start != _end)
-                    return (Current = body[start.._end]) is var _;
+        string BitStringifier(int x) =>
+#if WAWA
+            values.Find(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+#else
+            values.FirstOrDefault(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+#endif
+            x is -1 ? "0" : $"1 << {x}";
 
-            return false;
+        return !value.IsFlagsDefined() || System.Convert.ToInt32(value) is var i && i is 0
+            ? $"{value}"
+            : Conjoin(System.Convert.ToInt32(i).Bits().Select(BitStringifier), " | ");
+    }
+
+    static IEnumerable<int> Bits(this int number)
+    {
+        const int BitsInByte = 8;
+
+        if (number is 0)
+        {
+            yield return -1;
+
+            yield break;
         }
 
-        /// <summary>Attempts to step through to the next slice.</summary>
-        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
-        /// <param name="body">The reference to its body.</param>
-        /// <param name="separator">The reference to its separator.</param>
-        /// <param name="end">The ending index of the slice.</param>
-        /// <param name="start">The starting index of the slice.</param>
-        /// <returns>Whether or not to continue looping.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Step(
-            bool isAny,
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
-            scoped ref int end,
-            out int start
-        ) =>
-            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
+        for (var i = 0; i < sizeof(int) * BitsInByte; i++)
+            if ((number >> i & 1) is not 0)
+                yield return i;
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAll(
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
-            scoped ref int end,
-            out int start
-        )
+    [Pure]
+    static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
+
+    [Pure]
+    static string ToOrdinal(this int i) =>
+        $"{i}{Mod(i) switch
         {
-            Unsafe.SkipInit(out start);
+            1 => FirstOrd,
+            2 => SecondOrd,
+            3 => ThirdOrd,
+            _ => Else,
+        }}";
 
-            if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
+    [MustUseReturnValue]
+    static StringBuilder EnumeratorStringifier(
+        this IEnumerator iterator,
+        [NonNegativeValue] int depth,
+        bool useQuotes,
+        [NonNegativeValue] int? count = null
+    )
+    {
+        StringBuilder builder = new();
+
+        if (iterator.MoveNext())
+            builder.Append(Stringify(iterator.Current, depth));
+
+        var i = 0;
+
+        while (iterator.MoveNext())
+        {
+            if (checked(++i) >= MaxIteration)
             {
-                if (body.SequenceEqual(separator))
-                    return false;
-
-                start = 0;
-                end = bodyLength;
-                return true;
+                builder.Append(Separator).Append(Etcetera(count - i));
+                break;
             }
 
-            start = end is -1 ? ++end : end += length;
-
-            while (end <= bodyLength)
-                switch (body[end..].IndexOf(separator))
-                {
-                    case -1:
-                        end = bodyLength;
-                        return true;
-                    case 0:
-                        end = start += length;
-                        continue;
-                    case var i:
-                        end += i;
-                        return true;
-                }
-
-            return false;
+            builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
-        {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            Unsafe.SkipInit(out start);
-#else
-            start = 0;
+        return builder;
+    }
+#if !WAWA
+    [MustUseReturnValue]
+    static StringBuilder Indent(this StringBuilder sb, string indent, int nest)
+    {
+        sb.AppendLine();
+
+        for (var i = 0; i < nest && nest >= 0; i++)
+            sb.Append(indent);
+
+        return sb;
+    }
 #endif
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+    [MustUseReturnValue]
+    static string StringifyObject<T>(this T source, int depth)
+    {
+        if (source is null)
+            return Null;
 
-            if (body.Length is var bodyLength && ++end >= bodyLength)
-                return false;
+        if (!s_hasMethods.ContainsKey(typeof(T)))
+            s_hasMethods[typeof(T)] =
+                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
+                !IsRecord<T>();
 
-            start = end;
-            goto Begin;
+        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+        if (depth < 0)
+            return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
+#pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
+        if (source.GetType() is var t && t != typeof(T))
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+#pragma warning restore 8600, 8603
 
-        Increment:
-            start++;
-            end++;
-
-        Begin:
-            var min = int.MaxValue;
-
-            foreach (var next in separator)
-                switch (body[end..].IndexOf(next))
-                {
-                    case -1: continue;
-                    case 0: goto Increment;
-                    case var i when i < min:
-                        min = i;
-                        continue;
-                }
-
-            end = min is int.MaxValue ? bodyLength : end + min;
-            return true;
-        }
+        // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        return UseStringifier(source, depth);
     }
 
-    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="accumulator">The accumulator.</param>
-    /// <param name="next">The next slice from the enumeration.</param>
-    /// <returns>The final accumulator value.</returns>
-    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
-}
+    [MustUseReturnValue]
+    static Func<T, int, string> GenerateStringifier<T>()
+    {
+        static MethodCallExpression Combine(Expression prev, Expression curr)
+        {
+            var call = Call(s_combine, prev, s_exSeparator);
+            return Call(s_combine, call, curr);
+        }
+
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
+
+        ParameterExpression
+            exInstance = Parameter(typeof(T), nameof(T)),
+            exDepth = Parameter(typeof(int), nameof(Int32));
+
+        var deeperProperties = typeof(T).IsInterface
+            ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties())
+            : Enumerable.Empty<PropertyInfo>();
+
+        var deeperFields = typeof(T).IsInterface
+            ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields())
+            : Enumerable.Empty<FieldInfo>();
+
+        // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+        var properties = typeof(T)
+           .GetProperties(Flags)
+           .Concat(deeperProperties)
+           .Where(CanUse)
+           .OrderBy(x => x.Name, StringComparer.Ordinal)
+#if NETFRAMEWORK && !NET40_OR_GREATER
+           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exInstance, exDepth, static x => x.PropertyType));
+#else
+           .Select(p => GetMethodCaller(p, exInstance, exDepth, static x => x.PropertyType));
+#endif
+        var fields = typeof(T)
+           .GetFields(Flags)
+           .Concat(deeperFields)
+           .OrderBy(x => x.Name, StringComparer.Ordinal)
+#if NETFRAMEWORK && !NET40_OR_GREATER
+           .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
+#else
+           .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
+#endif
+
+        var all = fields
+           .Concat(properties)
+#if WAWA
+           .ToList();
+#else
+           .ToCollectionLazily();
+#endif
+        var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
+        return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
+    }
+
+    // ReSharper disable SuggestBaseTypeForParameter
+    [MustUseReturnValue]
+#pragma warning disable CA1859
+#if NETFRAMEWORK && !NET40_OR_GREATER
+    static Expression GetMethodCaller<T, TMember>(
+#else
+    static Expression GetMethodCaller<TMember>(
+#endif
+        TMember info,
+        ParameterExpression exInstance,
+        ParameterExpression exDepth,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
+    )
+#pragma warning restore CA1859
+        where TMember : MemberInfo
+    {
+        var type = selector(info);
+        var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+        if (type.IsByRef || type.IsByRefLike)
+#else
+        if (type.IsByRef)
+#endif
+            return Call(s_combine, exConstant, Call(exInstance, s_toString));
+
+        var method = s_stringify.MakeGenericMethod(type);
+
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        Expression
+            exMember = MakeMemberAccess(exInstance, info),
+            exCall = Call(method, exMember, exDepth, s_exTrue);
+#if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
+        var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
+        Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
+
+        exCall = Invoke(wrapped, exInstance, exDepth);
+#else
+        CatchBlock
+            invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
+            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
+            unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
+
+        exCall = TryCatch(exCall, unsupportedPlatform, unsupported, invalid);
+#endif
+        return Call(s_combine, exConstant, exCall);
+    }
+#endif
+#if NETFRAMEWORK && !NET40_OR_GREATER
+    static string TryStringify<T>(T instance, int depth, [InstantHandle] Func<T, int, string> stringify)
+    {
+        try
+        {
+            return stringify(instance, depth);
+        }
+        catch (PlatformNotSupportedException)
+        {
+            return UnsupportedPlatform;
+        }
+        catch (NotSupportedException)
+        {
+            return Unsupported;
+        }
+        catch (InvalidOperationException)
+        {
+            return Invalid;
+        }
+    }
+#endif
+    [Pure]
+    static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
+    {
+        var iterator = dictionary.GetEnumerator();
+        StringBuilder builder = new();
+
+        if (iterator.MoveNext())
+            builder.AppendKeyValuePair(
+                Stringify(iterator.Key, depth, useQuotes),
+                Stringify(iterator.Value, depth, useQuotes)
+            );
+
+        var i = 0;
+
+        while (iterator.MoveNext())
+        {
+            if (checked(++i) >= MaxIteration)
+            {
+                builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
+                break;
+            }
+
+            builder
+               .Append(Separator)
+               .AppendKeyValuePair(
+                    Stringify(iterator.Key, depth, useQuotes),
+                    Stringify(iterator.Value, depth, useQuotes)
+                );
+        }
+
+        return builder;
+    }
+
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+    static StringBuilder UnfoldedName(this Type? type, StringBuilder builder)
+    {
+        StringBuilder Append(Type x)
+        {
+            builder.Append(',').Append(' ');
+            return x.UnfoldedName(builder);
+        }
+
+        if (type is null)
+            return builder;
+
+        if (s_unfoldedNames.TryGetValue(type, out var val))
+            return builder.Append(val);
+
+        if (type.GetElementType() is { } underlying)
+            return UnfoldedElementName(type, builder, underlying);
+
+        var name = type.Name;
+
+        if (!type.IsGenericType)
+            return builder.Append(name);
+
+        var len = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
+        var types = type.GetGenericArguments();
+
+        types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, len).Append('<'));
+        types.Skip(1).Select(Append).Enumerate();
+
+        return builder.Append('>');
+    }
+
+    static StringBuilder UnfoldedElementName(Type type, StringBuilder builder, Type underlying)
+    {
+        if (type.IsByRef)
+            builder.Append('r').Append('e').Append('f').Append(' ');
+
+        var underlyingName = UnfoldedName(underlying);
+        builder.Append(underlyingName);
+
+        if (type.IsArray)
+            builder.Append('[').Append(']');
+
+        if (type.IsPointer)
+            builder.Append('*');
+
+        return builder;
+    }
+#endif
+#if !NETFRAMEWORK || NET40_OR_GREATER
+    sealed class FakeComparer(int depth) : IComparer, IEqualityComparer
+    {
+        StringBuilder? _builder;
+
+        /// <inheritdoc />
+        public override string ToString() =>
+            _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(')').ToString() ?? "()";
+
+        /// <inheritdoc />
+        bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
+
+        /// <inheritdoc />
+        int IComparer.Compare(object? x, object? y) => Append(x, 0);
+
+        /// <inheritdoc />
+        int IEqualityComparer.GetHashCode(object? obj) => Append(obj, 0);
+
+        T Append<T>(object? obj, T ret)
+        {
+#pragma warning disable RCS1196
+            (_builder ??= new("(")).Append(Stringify(obj, depth)).Append(Separator);
+#pragma warning restore RCS1196
+            return ret;
+        }
+    }
+#endif
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace EmptyNamespace
-
-#pragma warning disable 1574, 1580, 1581, 1584 // ReSharper disable once RedundantUsingDirective
+// ReSharper disable once CheckNamespace
 
 
-/// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed
-#pragma warning disable MA0048
+/// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T>(this IMemoryOwner<T> enumerable)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Maximum>(enumerable.Memory.Span);
+    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
+    public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
 
-    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T>(this Memory<T> enumerable)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Maximum>(enumerable.Span);
-#endif
+    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
+    public const string NonBreaking =
+        "\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
 
-    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T>(this scoped Span<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Maximum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T>(this ReadOnlyMemory<T> enumerable)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Maximum>(enumerable.Span);
-#endif
+    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
+    public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
 
-    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Maximum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T>(this IMemoryOwner<T> enumerable)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Minimum>(enumerable.Memory.Span);
+    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
+    public const string Unicode = $"{Breaking}{NonBreaking}";
 
-    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T>(this Memory<T> enumerable)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Minimum>(enumerable.Span);
-#endif
+    /// <summary>All unicode characters that appear to be whitespace.</summary>
+    public const string Combined = $"{Unicode}{Related}";
 
-    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T>(this scoped Span<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Minimum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T>(this ReadOnlyMemory<T> enumerable)
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Minimum>(enumerable.Span);
-#endif
+// SPDX-License-Identifier: MPL-2.0
 
-    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, Minimum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T, TResult>(
-        this IMemoryOwner<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Maximum>(enumerable.Memory.Span, keySelector);
+// ReSharper disable CheckNamespace RedundantNameQualifier
 
-    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T, TResult>(
-        this Memory<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
-#endif
 
-    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T, TResult>(
-        this scoped Span<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Maximum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T, TResult>(
-        this ReadOnlyMemory<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
-#endif
 
-    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Max<T, TResult>(
-        this scoped ReadOnlySpan<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Maximum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T, TResult>(
-        this IMemoryOwner<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Minimum>(enumerable.Memory.Span, keySelector);
 
-    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T, TResult>(
-        this Memory<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
-#endif
+/// <summary>Provides extension methods for <see cref="char"/>.</summary>
 
-    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T, TResult>(
-        this scoped Span<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Minimum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T, TResult>(
-        this ReadOnlyMemory<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
-#endif
-
-    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Min<T, TResult>(
-        this scoped ReadOnlySpan<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-        =>
-            MinMax<T, TResult, Minimum>(enumerable, keySelector);
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Compare<T, TMinMax>(T l, T r) =>
-        typeof(TMinMax) switch
-        {
-            var x when x == typeof(Maximum) && typeof(T) == typeof(byte) => (byte)(object)l! > (byte)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(byte) => (byte)(object)l! < (byte)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(double) => (double)(object)l! > (double)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(double) => (double)(object)l! < (double)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(float) => (float)(object)l! > (float)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(float) => (float)(object)l! < (float)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(int) => (int)(object)l! > (int)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(int) => (int)(object)l! < (int)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(nint) => (nint)(object)l! > (nint)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(nint) => (nint)(object)l! < (nint)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(nuint) => (nuint)(object)l! > (nuint)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(nuint) => (nuint)(object)l! < (nuint)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! > (sbyte)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! < (sbyte)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(short) => (short)(object)l! > (short)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(short) => (short)(object)l! < (short)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(uint) => (uint)(object)l! > (uint)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(uint) => (uint)(object)l! < (uint)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(ulong) => (ulong)(object)l! > (ulong)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(ulong) => (ulong)(object)l! < (ulong)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(ushort) => (ushort)(object)l! > (ushort)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
-            var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(l, r) > 0,
-            var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
-            _ => throw Unreachable,
-        };
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#elif !NET8_0_OR_GREATER
-        where T : struct
-#endif
-#pragma warning restore MA0051
+    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, int index, out char popped)
     {
-        T value;
-
-        if (span.IsEmpty)
-            return default!;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
-#endif
+        if (index >= 0 && index < str.Length)
         {
-            value = span[0];
-
-            for (var i = 1; i < span.Length; i++)
-                if (Compare<T, TMinMax>(span[i], value))
-                    value = span[i];
+            popped = str[index];
+            return str.Remove(index, 1);
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
-        {
-            ref var current = ref MemoryMarshal.GetReference(span);
-            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector128<T>.Count);
 
-            var best = Vector128.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector128<T>.Count);
-
-            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
-            {
-                best = typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref current)),
-                    var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref current)),
-                    _ => throw Unreachable,
-                };
-
-                current = ref Unsafe.Add(ref current, Vector128<T>.Count);
-            }
-
-            best = typeof(TMinMax) switch
-            {
-                var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref lastVectorStart)),
-                var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref lastVectorStart)),
-                _ => throw Unreachable,
-            };
-
-            value = best[0];
-
-            for (var i = 1; i < Vector128<T>.Count; i++)
-                if (typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
-                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
-                    _ => throw Unreachable,
-                })
-                    value = best[i];
-        }
-        else
-        {
-            ref var current = ref MemoryMarshal.GetReference(span);
-            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector256<T>.Count);
-
-            var best = Vector256.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector256<T>.Count);
-
-            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
-            {
-                best = typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref current)),
-                    var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref current)),
-                    _ => throw Unreachable,
-                };
-
-                current = ref Unsafe.Add(ref current, Vector256<T>.Count);
-            }
-
-            best = typeof(TMinMax) switch
-            {
-                var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref lastVectorStart)),
-                var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref lastVectorStart)),
-                _ => throw Unreachable,
-            };
-
-            value = best[0];
-
-            for (var i = 1; i < Vector256<T>.Count; i++)
-                if (typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
-                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
-                    _ => throw Unreachable,
-                })
-                    value = best[i];
-        }
-#endif
-        return value;
+        popped = default;
+        return str;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static T MinMax<T, TResult, TMinMax>(
-        this scoped ReadOnlySpan<T> enumerable,
-        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static string Pop(this string str, Index index, out char popped) =>
+        str.Pop(index.GetOffset(str.Length), out popped);
+
+    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, Range range, out string popped)
     {
-        if (enumerable.IsEmpty)
-            return default!;
-
-        var value = enumerable[0];
-        var best = converter(value);
-
-        for (var i = 1; i < enumerable.Length; i++)
-            if (converter(enumerable[i]) is var next &&
-                typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, best),
-                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, best),
-                    _ => throw Unreachable,
-                })
-                (value, best) = (enumerable[i], next);
-
-        return value;
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        popped = str[range];
+        return str.Remove(startIndex, length);
     }
 
-    struct Minimum;
+    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Remove(this string str, Range range)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        return str.Remove(startIndex, length);
+    }
 
-    struct Maximum;
+    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
+    {
+        if (index >= 0 && index < builder.Length)
+        {
+            popped = builder[index];
+            return builder.Remove(index, 1);
+        }
+
+        popped = default;
+        return builder;
+    }
+
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
+        builder.Pop(index.GetOffset(builder.Length), out popped);
+
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
+    {
+        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        popped = string.Create(
+            length,
+            (builder, startIndex),
+            static (span, tuple) =>
+            {
+                var (builder, startIndex) = tuple;
+
+                for (var i = 0; i < span.Length; i++)
+                    span[i] = builder[i + startIndex];
+            }
+        );
+#else
+        StringBuilder poppedBuilder = new(length);
+
+        for (var i = 0; i < length; i++)
+            poppedBuilder[i] = builder[startIndex + i];
+
+        popped = $"{poppedBuilder}";
+#endif
+        return builder.Remove(startIndex, length);
+    }
+
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Remove(this StringBuilder builder, Range range)
+    {
+        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+        return builder.Remove(startIndex, length);
+    }
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -10199,6 +7111,2034 @@ readonly
     }
 
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Where<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source.Memory[..^Filter(source.Memory.Span, predicate)];
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Where<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        source[..^Filter(source.Span, predicate)];
+#endif
+
+    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Where<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            source[..^Filter(source, predicate)];
+
+    // Surprisingly, direct indexing is more efficient than .CopyTo despite latter guaranteeing SIMD.
+    // Benchmarked with various sizes and on function "static x => BitOperations.PopCount(x) % 2 is 0".
+    // This function was chosen as the baseline due to it being cheap to compute, evenly distributed,
+    // and ensuring all patterns of [[false, false], [false, true], [true, false], [true, true]] would appear.
+    // ReSharper disable CommentTypo
+    // https://sharplab.io/#v2:D4AQTAjAsAULIQGwAICWA7ALsg6gCwFMAnAgSXXWIB4AVAPgApZkXkBlABwEN1a7kAzgHsArkQDGBADTNWABRIATVOK6YCfZByUq1BWAEpYAb1ksAZkKLIGANy7XUyALzIADAG40yKoNESCADoAGQJ0AHNMPC9UAGpYoxhWZFMk5NZUcxttAmVVdQZhMUkAbVQAXQNE9JrkcSEsDBECD1gzdPtrAUwHbFdUVrg0msUhdtq0LIZ4pzpXIoCQsMi8aonakAB2QR6iTEGJgHc8VAAbAhsAQhy8vUL/UoqqwfHWTuRlAQ5TrkkAWzCfW8AFodr0DrUFo9AoFyoEAMJCDgATxoQnuxQIJW6vRhlQhNShF3mDyxMIAep9vr8CACsOUCeknMDXFSfv9AYyAL5tYbILZ+TFLCJRQZcoA
+    // https://cdn.discordapp.com/attachments/445375602648940544/1129045669148098610/image.png
+    // ReSharper restore CommentTypo
+
+    [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        var end = 0;
+
+        for (var i = 0; i < source.Length; i++)
+        {
+            if (IsPass(ref source, predicate, i, end))
+                continue;
+
+            var start = i;
+
+            if (!FindNextPass(source, predicate, ref i))
+                return end + i - start;
+
+            end += i - start;
+            source[i - end] = source[i];
+        }
+
+        return end;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool IsPass<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
+    {
+        if (!predicate(source[i]))
+            return false;
+
+        if (end > 0)
+            source[i - end] = source[i];
+
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool FindNextPass<T>(in ReadOnlySpan<T> source, Predicate<T> predicate, ref int i)
+    {
+        do
+            if (++i >= source.Length)
+                return false;
+        while (!predicate(source[i]));
+
+        return true;
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable CheckNamespace RedundantUsingDirective
+
+#pragma warning disable 1574, 8500
+
+
+/// <summary>Provides the method to convert spans.</summary>
+
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>)).ToArray();
+#endif
+
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
+
+    /// <inheritdoc cref="Raw{T}(T)" />
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(scoped SplitSpan<T> value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
+
+    /// <inheritdoc cref="Raw{T}(T)" />
+#pragma warning restore 1574
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+    /// <summary>Reads the raw memory of the object.</summary>
+    /// <typeparam name="T">The type of value to read.</typeparam>
+    /// <param name="value">The value to read.</param>
+    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static byte[] Raw<T>(T value) =>
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
+#pragma warning disable IDE0056
+/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
+// ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+
+    /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        if (span.IsEmpty)
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = span[0];
+        tail = span[1..];
+    }
+
+    /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        if (span.IsEmpty)
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = span[0];
+        tail = span[1..];
+    }
+
+    /// <summary>Gets the specific slice from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="range">The index to get.</param>
+    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
+                ? span.Slice(offset, length)
+                : default;
+
+    /// <summary>Gets the specific slice from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="range">The index to get.</param>
+    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> Nth<T>(this Span<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
+                ? span.Slice(offset, length)
+                : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index >= 0 && index < span.Length ? span[index] : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+                ? span[offset]
+                : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index > 0 && index <= span.Length ? span[span.Length - index] : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index >= 0 && index < span.Length ? span[index] : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped Span<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
+                ? span[offset]
+                : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index > 0 && index <= span.Length ? span[span.Length - index] : default;
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+    /// <summary>Determines whether the type is a numeric primitive.</summary>
+    /// <typeparam name="T">The type to test.</typeparam>
+    /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNumericPrimitive<T>() =>
+        typeof(T) == typeof(byte) ||
+        typeof(T) == typeof(double) ||
+        typeof(T) == typeof(float) ||
+        typeof(T) == typeof(int) ||
+        typeof(T) == typeof(long) ||
+        typeof(T) == typeof(nint) ||
+        typeof(T) == typeof(nuint) ||
+        typeof(T) == typeof(sbyte) ||
+        typeof(T) == typeof(short) ||
+        typeof(T) == typeof(uint) ||
+        typeof(T) == typeof(ulong) ||
+        typeof(T) == typeof(ushort);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        All((ReadOnlySpan<T>)source.Memory.Span, func);
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        All((ReadOnlySpan<T>)source.Span, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            All((ReadOnlySpan<T>)source, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    ) =>
+        All(source.Span, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool All<T>(
+        this scoped ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        foreach (var next in source)
+            if (!func(next))
+                return false;
+
+        return true;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        Any((ReadOnlySpan<T>)source.Memory.Span, func);
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+        Any((ReadOnlySpan<T>)source.Span, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            Any((ReadOnlySpan<T>)source, func);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    ) =>
+        Any(source.Span, func);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Any<T>(
+        this scoped ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> func
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        foreach (var next in source)
+            if (func(next))
+                return true;
+
+        return false;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> Select<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T> selector
+    )
+    {
+        Select(source.Memory.Span, selector);
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> Select<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+    {
+        Select(source.Memory.Span, selector);
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Select<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
+    {
+        Select(source.Span, selector);
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> Select<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+    {
+        Select(source.Span, selector);
+        return source;
+    }
+#endif
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Select<T>(this Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T> selector)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            source[i] = selector(source[i]);
+
+        return source;
+    }
+
+    /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Select<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            source[i] = selector(source[i], i);
+
+        return source;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> SkipWhile<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        SkipWhile(source.Memory, predicate);
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> SkipWhile<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(span[i]))
+                return source[i..];
+
+        return source;
+    }
+#endif
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> SkipWhile<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(source[i]))
+                return source[i..];
+
+        return source;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> SkipWhile<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(span[i]))
+                return source[i..];
+
+        return source;
+    }
+#endif
+
+    /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> SkipWhile<T>(
+        this ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (!predicate(source[i]))
+                return source[i..];
+
+        return source;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> TakeWhile<T>(
+        this IMemoryOwner<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    ) =>
+        TakeWhile(source.Memory, predicate);
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> TakeWhile<T>(
+        this Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(span[i]))
+                return source[..i];
+
+        return source;
+    }
+#endif
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> TakeWhile<T>(
+        this Span<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(source[i]))
+                return source[..i];
+
+        return source;
+    }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> TakeWhile<T>(
+        this ReadOnlyMemory<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+    {
+        var span = source.Span;
+
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(span[i]))
+                return source[..i];
+
+        return source;
+    }
+#endif
+
+    /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> TakeWhile<T>(
+        this ReadOnlySpan<T> source,
+        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        for (var i = 0; i < source.Length; i++)
+            if (predicate(source[i]))
+                return source[..i];
+
+        return source;
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+// ReSharper disable once CheckNamespace EmptyNamespace RedundantUsingDirective
+
+
+
+
+/// <inheritdoc cref="SpanQueries"/>
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
+
+    /// <inheritdoc cref="Range{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source) => Range(source.Span);
+#endif
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Span<T> source)
+    {
+        switch (source.Length)
+        {
+            case 0: return source;
+            case 1:
+                MemoryMarshal.GetReference(source) = default!;
+                return source;
+            case var length:
+                if (!IsNumericPrimitive<T>() && !IsSupported<T>())
+                    Fail<T>();
+
+                InAscendingOrder<T>.UpTo(length).CopyTo(source);
+                return source;
+        }
+    }
+
+    static class InAscendingOrder<T>
+    {
+        // Vector512<T> is the largest vector type.
+        const int InitialCapacity = 512;
+
+        static T[] s_values = new T[InitialCapacity];
+
+        static InAscendingOrder() => Populate(s_values);
+
+        /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
+        /// <param name="length">The amount of items required.</param>
+        /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+        /// <returns>
+        /// The <see cref="ReadOnlySpan{T}"/> containing a range from 0 to <paramref name="length"/> - 1.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ReadOnlySpan<T> UpTo(int length)
+        {
+            ReadOnlySpan<T> original = s_values;
+
+            if (length <= original.Length)
+                return original[..length];
+
+            var replacement = new T[BitOperations.RoundUpToPowerOf2((uint)length)];
+            Span<T> span = replacement;
+            original.CopyTo(span);
+            Populate(span[(original.Length - 1)..]);
+            s_values = replacement;
+            return span[..length];
+        }
+
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Populate(scoped Span<T> span)
+        {
+            for (var i = 1; i < span.Length; i++)
+            {
+                span[i] = span[i - 1];
+                Increment(ref span[i]);
+            }
+        }
+    }
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
+
+#pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
+
+/// <summary>Methods to split spans into multiple spans.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        if (left == right)
+            return true;
+
+        if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
+            return !e2.MoveNext();
+
+        if (!e2.MoveNext())
+            return false;
+
+        ReadOnlySpan<T>
+            reader1 = e1.Current,
+            reader2 = e2.Current;
+
+        while (true)
+            if (Next(ref reader1, ref reader2, ref e1, ref e2, out var ret))
+                return ret;
+    }
+
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        if (left == right)
+            return true;
+
+        var e1 = left.GetEnumerator();
+        var e2 = right.GetEnumerator();
+
+        while (e1.MoveNext())
+            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
+                return false;
+
+        return !e2.MoveNext();
+    }
+
+    /// <summary>Splits a span by the specified separator.</summary>
+    /// <typeparam name="T">The type of element from the span.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="separator">The separator.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            new(span, separator, true);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).SplitAny(separator);
+
+    /// <summary>Splits a span by the specified separator.</summary>
+    /// <typeparam name="T">The type of element from the span.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="separator">The separator.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAll<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            new(span, separator, false);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).SplitAll(separator);
+
+    /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
+    /// <param name="split">The instance to get the list from.</param>
+    /// <returns>The list containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static List<string> ToList(this SplitSpan<char> split)
+    {
+        List<string> ret = new();
+
+        foreach (var next in split)
+            ret.Add(next.ToString());
+
+        return ret;
+    }
+
+    /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
+    /// <typeparam name="T">The type of element from the span.</typeparam>
+    /// <param name="split">The instance to get the list from.</param>
+    /// <returns>The list containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static List<T[]> ToList<T>(this SplitSpan<T> split)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        List<T[]> ret = new();
+
+        foreach (var next in split)
+            ret.Add(next.ToArray());
+
+        return ret;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAny(this string span, string separator) =>
+        span.AsSpan().SplitAny(separator.AsSpan());
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitAny(separator);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAll(this string span, string separator) =>
+        span.AsSpan().SplitAll(separator.AsSpan());
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitAll(separator);
+
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this string span) => span.AsSpan().SplitLines();
+
+    /// <summary>Splits a span by line breaks.</summary>
+    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
+        new(span, Breaking.AsSpan(), true);
+
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this string span) => span.AsSpan().SplitWhitespace();
+
+    /// <summary>Splits a span by whitespace.</summary>
+    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
+        new(span, Unicode.AsSpan(), true);
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool Next<T>(
+        ref ReadOnlySpan<T> reader1,
+        ref ReadOnlySpan<T> reader2,
+        ref SplitSpan<T>.Enumerator e1,
+        ref SplitSpan<T>.Enumerator e2,
+        out bool ret
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        Unsafe.SkipInit(out ret);
+
+        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
+            return SameLength(ref reader1, ref reader2, ref e1, ref e2, ref ret);
+
+        if (length1 < length2)
+        {
+            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader1 = e1.Current;
+            reader2 = reader2[length1..];
+            return false;
+        }
+
+        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+
+        reader1 = reader1[length2..];
+        reader2 = e2.Current;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool SameLength<T>(
+        ref ReadOnlySpan<T> reader1,
+        ref ReadOnlySpan<T> reader2,
+        ref SplitSpan<T>.Enumerator e1,
+        ref SplitSpan<T>.Enumerator e2,
+        ref bool ret
+    )
+        where T : IEquatable<T>?
+    {
+        if (!reader1.SequenceEqual(reader2))
+        {
+            ret = false;
+            return true;
+        }
+
+        if (!e1.MoveNext())
+        {
+            ret = !e2.MoveNext();
+            return true;
+        }
+
+        if (!e2.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+
+        reader1 = e1.Current;
+        reader2 = e2.Current;
+        return false;
+    }
+
+/// <summary>Represents a split entry.</summary>
+/// <typeparam name="T">The type of element from the span.</typeparam>
+[StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+#if !NO_REF_STRUCTS
+    ref
+#endif
+    partial struct SplitSpan<T>
+#if UNMANAGED_SPAN
+    where T : unmanaged, IEquatable<T>?
+#else
+    where T : IEquatable<T>?
+#endif
+{
+    readonly bool _isAny;
+
+    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
+    /// <param name="body">The line to split.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<T> body) => Body = body;
+
+    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
+    /// <param name="body">The line to split.</param>
+    /// <param name="separator">The characters for separation.</param>
+    /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator, bool isAny)
+    {
+        Body = body;
+        Separator = separator;
+        _isAny = isAny;
+    }
+
+    /// <summary>Gets the specified index.</summary>
+    /// <param name="index">The index to get.</param>
+    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
+    public ReadOnlySpan<T> this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+
+            var e = GetEnumerator();
+
+            for (var i = 0; i <= index; i++)
+                if (!e.MoveNext())
+                    return default;
+
+            return e.Current;
+        }
+    }
+
+    /// <summary>Gets the empty split span.</summary>
+    public static SplitSpan<T> Empty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
+    /// or if all of them match.
+    /// </summary>
+    public bool IsAny
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _isAny || Separator.Length is 1;
+    }
+
+    /// <summary>Gets the line.</summary>
+    public ReadOnlySpan<T> Body
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
+
+    /// <summary>Gets the separator.</summary>
+    public ReadOnlySpan<T> Separator
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
+
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both splits are equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator ==(SplitSpan<T> left, SplitSpan<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether both splits are not equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both splits are not equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(SplitSpan<T> left, SplitSpan<T> right) => !left.Equals(right);
+
+    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
+    /// <param name="head">The first element of this enumeration.</param>
+    /// <param name="tail">The rest of this enumeration.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Deconstruct(out ReadOnlySpan<T> head, out SplitSpan<T> tail)
+    {
+        if (GetEnumerator() is var e && !e.MoveNext())
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+
+        head = e.Current;
+
+        tail = this with
+        {
+            Body = Body[e.Index..],
+        };
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public override bool Equals(object? other) => false;
+
+    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
+    // ReSharper disable NullableWarningSuppressionIsUsed
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool Equals(scoped SplitSpan<T> other) =>
+        Body.IsEmpty && other.Body.IsEmpty ||
+        Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
+        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
+
+    /// <summary>Computes the length.</summary>
+    /// <returns>The length.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public int Count()
+    {
+        var e = GetEnumerator();
+        var count = 0;
+
+        while (e.MoveNext())
+            count++;
+
+        return count;
+    }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
+
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    // ReSharper restore NullableWarningSuppressionIsUsed
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public Enumerator GetEnumerator() => new(this);
+
+    /// <summary>Gets the first element.</summary>
+    /// <returns>The first span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+
+    /// <summary>Gets the last element.</summary>
+    /// <returns>The last span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> Last()
+    {
+        var e = GetEnumerator();
+
+        while (e.MoveNext()) { }
+
+        return e.Current;
+    }
+
+    /// <summary>Gets the single element.</summary>
+    /// <returns>The single span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlySpan<T> Single() =>
+        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+
+    /// <summary>Gets the first element.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="seed">The accumulator.</param>
+    /// <param name="func">An accumulator function to be invoked on each element.</param>
+    /// <returns>The first span from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public TAccumulator Aggregate<TAccumulator>(
+        TAccumulator seed,
+        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+    )
+    {
+        var accumulator = seed;
+
+        foreach (var next in this)
+            accumulator = func(accumulator, next);
+
+        return accumulator;
+    }
+
+    /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
+    [StructLayout(LayoutKind.Auto)]
+    public
+#if !NO_REF_STRUCTS
+        ref
+#endif
+        partial struct Enumerator(SplitSpan<T> split)
+    {
+        readonly SplitSpan<T> _split = split;
+
+        [ValueRange(-1, int.MaxValue)]
+#pragma warning disable IDE0044
+        int _end = -1;
+#pragma warning restore IDE0044
+
+        /// <summary>Gets the current index.</summary>
+        public readonly int Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
+        }
+
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
+        public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+
+        /// <summary>
+        /// Sets the enumerator to its initial position, which is before the first element in the collection.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset() => _end = -1;
+
+        /// <summary>Advances the enumerator to the next element of the collection.</summary>
+        /// <returns>
+        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
+        /// <see langword="false"/> if the enumerator has passed the end of the collection.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext()
+        {
+            var body = _split.Body;
+            var separator = _split.Separator;
+
+            if (separator.IsEmpty)
+                return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
+
+            while (Step(_split.IsAny, body, separator, ref _end, out var start))
+                if (start != _end)
+                    return (Current = body[start.._end]) is var _;
+
+            return false;
+        }
+
+        /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
+        /// <param name="body">The reference to its body.</param>
+        /// <param name="separator">The reference to its separator.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
+        /// <returns>Whether or not to continue looping.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool Step(
+            bool isAny,
+            scoped ReadOnlySpan<T> body,
+            scoped ReadOnlySpan<T> separator,
+            scoped ref int end,
+            out int start
+        ) =>
+            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool StepAll(
+            scoped ReadOnlySpan<T> body,
+            scoped ReadOnlySpan<T> separator,
+            scoped ref int end,
+            out int start
+        )
+        {
+            Unsafe.SkipInit(out start);
+
+            if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
+            {
+                if (body.SequenceEqual(separator))
+                    return false;
+
+                start = 0;
+                end = bodyLength;
+                return true;
+            }
+
+            start = end is -1 ? ++end : end += length;
+
+            while (end <= bodyLength)
+                switch (body[end..].IndexOf(separator))
+                {
+                    case -1:
+                        end = bodyLength;
+                        return true;
+                    case 0:
+                        end = start += length;
+                        continue;
+                    case var i:
+                        end += i;
+                        return true;
+                }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
+        {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            Unsafe.SkipInit(out start);
+#else
+            start = 0;
+#endif
+
+            if (body.Length is var bodyLength && ++end >= bodyLength)
+                return false;
+
+            start = end;
+            goto Begin;
+
+        Increment:
+            start++;
+            end++;
+
+        Begin:
+            var min = int.MaxValue;
+
+            foreach (var next in separator)
+                switch (body[end..].IndexOf(next))
+                {
+                    case -1: continue;
+                    case 0: goto Increment;
+                    case var i when i < min:
+                        min = i;
+                        continue;
+                }
+
+            end = min is int.MaxValue ? bodyLength : end + min;
+            return true;
+        }
+    }
+
+    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="accumulator">The accumulator.</param>
+    /// <param name="next">The next slice from the enumeration.</param>
+    /// <returns>The final accumulator value.</returns>
+    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> BreakableFor<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> BreakableFor<T>(
+        this Memory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> BreakableFor<T>(
+        this Span<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable, func);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> BreakableFor<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        BreakableFor(iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> BreakableFor<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
+    )
+    {
+        foreach (var x in iterable)
+            if (func(x) is ControlFlow.Break)
+                break;
+
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> BreakableFor<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> BreakableFor<T>(
+        this Memory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> BreakableFor<T>(
+        this Span<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor((ReadOnlySpan<T>)iterable, func);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> BreakableFor<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        BreakableFor(iterable.Span, func);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> BreakableFor<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
+    )
+    {
+        for (var i = 0; i < iterable.Length; i++)
+            if (func(iterable[i], i) is ControlFlow.Break)
+                break;
+
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> For<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T> action
+    )
+    {
+        For((ReadOnlySpan<T>)iterable.Memory.Span, action);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> For<T>(this Memory<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
+    {
+        For((ReadOnlySpan<T>)iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> For<T>(this Span<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
+    {
+        For((ReadOnlySpan<T>)iterable, action);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> For<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T> action
+    )
+    {
+        For(iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> For<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T> action
+    )
+    {
+        foreach (var x in iterable)
+            action(x);
+
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMemoryOwner<T> For<T>(
+        this IMemoryOwner<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        For((ReadOnlySpan<T>)iterable.Memory.Span, action);
+        return iterable;
+    }
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Memory<T> For<T>(
+        this Memory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        For((ReadOnlySpan<T>)iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> For<T>(this Span<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T, int> action)
+    {
+        For((ReadOnlySpan<T>)iterable, action);
+        return iterable;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlyMemory<T> For<T>(
+        this ReadOnlyMemory<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        For(iterable.Span, action);
+        return iterable;
+    }
+#endif
+
+    /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> For<T>(
+        this ReadOnlySpan<T> iterable,
+        [InstantHandle, RequireStaticDelegate] Action<T, int> action
+    )
+    {
+        for (var i = 0; i < iterable.Length; i++)
+            action(iterable[i], i);
+
+        return iterable;
+    }
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace EmptyNamespace
+
+#pragma warning disable 1574, 1580, 1581, 1584 // ReSharper disable once RedundantUsingDirective
+
+
+/// <inheritdoc cref="SpanSimdQueries"/>
+// ReSharper disable NullableWarningSuppressionIsUsed
+#pragma warning disable MA0048
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this IMemoryOwner<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable.Memory.Span);
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this Memory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable.Span);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this scoped Span<T> enumerable)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this ReadOnlyMemory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable.Span);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Maximum>(enumerable);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this IMemoryOwner<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable.Memory.Span);
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this Memory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable.Span);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this scoped Span<T> enumerable)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this ReadOnlyMemory<T> enumerable)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable.Span);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, Minimum>(enumerable);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this IMemoryOwner<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable.Memory.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this Memory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
+#endif
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this scoped Span<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable, keySelector);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this ReadOnlyMemory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
+#endif
+
+    /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Max<T, TResult>(
+        this scoped ReadOnlySpan<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Maximum>(enumerable, keySelector);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this IMemoryOwner<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable.Memory.Span, keySelector);
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this Memory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
+#endif
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this scoped Span<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable, keySelector);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this ReadOnlyMemory<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
+#endif
+
+    /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Min<T, TResult>(
+        this scoped ReadOnlySpan<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> keySelector
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+            MinMax<T, TResult, Minimum>(enumerable, keySelector);
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool Compare<T, TMinMax>(T l, T r) =>
+        typeof(TMinMax) switch
+        {
+            var x when x == typeof(Maximum) && typeof(T) == typeof(byte) => (byte)(object)l! > (byte)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(byte) => (byte)(object)l! < (byte)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(double) => (double)(object)l! > (double)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(double) => (double)(object)l! < (double)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(float) => (float)(object)l! > (float)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(float) => (float)(object)l! < (float)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(int) => (int)(object)l! > (int)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(int) => (int)(object)l! < (int)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(nint) => (nint)(object)l! > (nint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(nint) => (nint)(object)l! < (nint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(nuint) => (nuint)(object)l! > (nuint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(nuint) => (nuint)(object)l! < (nuint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! > (sbyte)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! < (sbyte)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(short) => (short)(object)l! > (short)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(short) => (short)(object)l! < (short)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(uint) => (uint)(object)l! > (uint)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(uint) => (uint)(object)l! < (uint)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(ulong) => (ulong)(object)l! > (ulong)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(ulong) => (ulong)(object)l! < (ulong)(object)r!,
+            var x when x == typeof(Maximum) && typeof(T) == typeof(ushort) => (ushort)(object)l! > (ushort)(object)r!,
+            var x when x == typeof(Minimum) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
+            var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(l, r) > 0,
+            var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
+            _ => throw Unreachable,
+        };
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
+    static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#elif !NET8_0_OR_GREATER
+        where T : struct
+#endif
+#pragma warning restore MA0051
+    {
+        T value;
+
+        if (span.IsEmpty)
+            return default!;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+        if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
+#endif
+        {
+            value = span[0];
+
+            for (var i = 1; i < span.Length; i++)
+                if (Compare<T, TMinMax>(span[i], value))
+                    value = span[i];
+        }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+        else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
+        {
+            ref var current = ref MemoryMarshal.GetReference(span);
+            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector128<T>.Count);
+
+            var best = Vector128.LoadUnsafe(ref current);
+            current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+
+            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
+            {
+                best = typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref current)),
+                    var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref current)),
+                    _ => throw Unreachable,
+                };
+
+                current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+            }
+
+            best = typeof(TMinMax) switch
+            {
+                var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref lastVectorStart)),
+                var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref lastVectorStart)),
+                _ => throw Unreachable,
+            };
+
+            value = best[0];
+
+            for (var i = 1; i < Vector128<T>.Count; i++)
+                if (typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
+                    _ => throw Unreachable,
+                })
+                    value = best[i];
+        }
+        else
+        {
+            ref var current = ref MemoryMarshal.GetReference(span);
+            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector256<T>.Count);
+
+            var best = Vector256.LoadUnsafe(ref current);
+            current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+
+            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
+            {
+                best = typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref current)),
+                    var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref current)),
+                    _ => throw Unreachable,
+                };
+
+                current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+            }
+
+            best = typeof(TMinMax) switch
+            {
+                var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref lastVectorStart)),
+                var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref lastVectorStart)),
+                _ => throw Unreachable,
+            };
+
+            value = best[0];
+
+            for (var i = 1; i < Vector256<T>.Count; i++)
+                if (typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
+                    _ => throw Unreachable,
+                })
+                    value = best[i];
+        }
+#endif
+        return value;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static T MinMax<T, TResult, TMinMax>(
+        this scoped ReadOnlySpan<T> enumerable,
+        [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        if (enumerable.IsEmpty)
+            return default!;
+
+        var value = enumerable[0];
+        var best = converter(value);
+
+        for (var i = 1; i < enumerable.Length; i++)
+            if (converter(enumerable[i]) is var next &&
+                typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, best),
+                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, best),
+                    _ => throw Unreachable,
+                })
+                (value, best) = (enumerable[i], next);
+
+        return value;
+    }
+
+    struct Minimum;
+
+    struct Maximum;
+
+// SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace EmptyNamespace
 
@@ -10609,6 +9549,251 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+
+
+
+
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+/// <summary>
+/// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
+/// </summary>
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<T> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<T>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<T>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<T>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<T>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<T>>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> AsSpan<T>(this in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> two) =>
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+
+    /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Two<T> AsTwo<T>(this (T First, T Second) tuple) => tuple;
+#endif
+
+/// <summary>
+/// Represents two inlined elements, equivalent to <see cref="ValueTuple{T1, T2}"/>,
+/// but the memory layout is guaranteed to be sequential, and both elements are of the same type.
+/// </summary>
+/// <remarks><para>
+/// The name of this type may or may not derive from a specific algebralien from a show...
+/// </para></remarks>
+/// <typeparam name="T">The type of item to store.</typeparam>
+/// <param name="first">The first item.</param>
+/// <param name="second">The second item.</param>
+// ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
+[StructLayout(LayoutKind.Sequential)]
+#pragma warning disable MA0102
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+public partial struct Two<T>(T first, T second) :
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    ITuple,
+#endif
+    IComparable<Two<T>>,
+    IEquatable<Two<T>>
+{
+    /// <summary>The stored items.</summary>
+    public readonly T First = first, Second = second;
+
+    /// <summary>Applies the indexer and returns the instance according to the value.</summary>
+    /// <param name="back">Whether or not to return <see cref="Second"/>.</param>
+    [Pure]
+    public T this[bool back] => back ? Second : First;
+
+    /// <inheritdoc cref="Two{T}.op_Implicit(Two{T})"/>
+    public (T First, T Second) Tuple => this;
+
+#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <inheritdoc />
+    [Pure, ValueRange(2)]
+    int ITuple.Length => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    object? ITuple.this[int index] =>
+        index switch
+        {
+            0 => First,
+            1 => Second,
+            _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
+        };
+#endif
+
+    /// <summary>Deconstructs this instance into the two inlined elements.</summary>
+    /// <param name="first">The first item.</param>
+    /// <param name="second">The second item.</param>
+    public void Deconstruct(out T first, out T second)
+    {
+        first = First;
+        second = Second;
+    }
+
+    /// <summary>Determines whether both instances contain the same two values.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both instances have the same two values.</returns>
+    [Pure]
+    public static bool operator ==(Two<T> left, Two<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether both instances contain different values.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both instances have different values.</returns>
+    [Pure]
+    public static bool operator !=(Two<T> left, Two<T> right) => !(left == right);
+
+    /// <summary>Determines whether the left instance is less than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is less than the right.</returns>
+    [Pure]
+    public static bool operator <(Two<T> left, Two<T> right) => left.CompareTo(right) < 0;
+
+    /// <summary>Determines whether the left instance is equal to or less than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is equal to or less than the right.</returns>
+    [Pure]
+    public static bool operator <=(Two<T> left, Two<T> right) => left.CompareTo(right) <= 0;
+
+    /// <summary>Determines whether the left instance is greater than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is greater than the right.</returns>
+    [Pure]
+    public static bool operator >(Two<T> left, Two<T> right) => left.CompareTo(right) > 0;
+
+    /// <summary>Determines whether the left instance is equal to or greater than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left instance is equal to or greater than the right.</returns>
+    [Pure]
+    public static bool operator >=(Two<T> left, Two<T> right) => left.CompareTo(right) >= 0;
+
+    /// <summary>Implicitly converts the <see cref="Two{T}"/> into the <see cref="ValueTuple{T1, T2}"/>.</summary>
+    /// <param name="two">The <see cref="Two{T}"/> to convert.</param>
+    /// <returns>The equivalent tuple layout of the parameter <paramref name="two"/>.</returns>
+    [Pure]
+    public static implicit operator (T First, T Second)(Two<T> two) => (two.First, two.Second);
+
+    /// <summary>Implicitly converts the <see cref="ValueTuple{T1, T2}"/> into the <see cref="Two{T}"/>.</summary>
+    /// <param name="tuple">The <see cref="ValueTuple{T1, T2}"/> to convert.</param>
+    /// <returns>The equivalent sequential layout of the parameter <paramref name="tuple"/>.</returns>
+    [Pure]
+    public static implicit operator Two<T>((T First, T Second) tuple) => (tuple.First, tuple.Second);
+
+    /// <inheritdoc />
+    [Pure]
+    public override bool Equals(object? obj) => obj is Two<T> two && Equals(two);
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Equals(Two<T> other) =>
+        EqualityComparer<T>.Default.Equals(First, other.First) &&
+        EqualityComparer<T>.Default.Equals(Second, other.Second);
+
+    /// <inheritdoc />
+    [Pure]
+    public int CompareTo(Two<T> other) =>
+        Comparer<T>.Default.Compare(First, other.First) is var first and not 0 ? first :
+        Comparer<T>.Default.Compare(Second, other.Second) is var second and not 0 ? second : 0;
+
+    /// <inheritdoc />
+    [Pure]
+    public override int GetHashCode()
+    {
+        unchecked
+        {
+            var hashCode = 0;
+
+            if (First is not null)
+                hashCode = EqualityComparer<T>.Default.GetHashCode(First);
+
+            if (Second is not null)
+                hashCode ^= EqualityComparer<T>.Default.GetHashCode(Second);
+
+            return hashCode;
+        }
+    }
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
@@ -10803,261 +9988,1079 @@ readonly
 // ReSharper disable once CheckNamespace
 
 
-#pragma warning disable IDE0056
-/// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+/// <summary>Provides methods for heap-allocation analysis.</summary>
 
-    /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
+    /// <summary>
+    /// A <see langword="string"/> to use in an <see cref="ObsoleteAttribute"/> to indicate that the API isn't meant
+    /// for production, but not for deprecated reasons.
+    /// </summary>
+    const string NotForProduction = "NOT deprecated. While this can be used in Release builds to run this on " +
+        "optimized code; This API exists for debugging builds and should be excluded from final production builds.";
+
+    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
+    /// <param name="action">The dangerous callback.</param>
+    /// <returns>An exception, if caught.</returns>
+    [Inline, Obsolete(NotForProduction)]
+    public static Exception? Swallow([InstantHandle] this Action action)
     {
-        if (span.IsEmpty)
+        try
         {
-            head = default;
-            tail = default;
-            return;
+            action();
+            return null;
         }
-
-        head = span[0];
-        tail = span[1..];
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            return ex;
+        }
     }
 
-    /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
+    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
+    /// <typeparam name="T">The type of return.</typeparam>
+    /// <param name="func">The dangerous callback.</param>
+    /// <returns>The value returned from <paramref name="func"/>, or the exception caught.</returns>
+    [Inline, Obsolete(NotForProduction)]
+    public static (T?, Exception?) Swallow<T>([InstantHandle] this Func<T> func)
     {
-        if (span.IsEmpty)
+        try
         {
-            head = default;
-            tail = default;
-            return;
+            return (func(), null);
         }
-
-        head = span[0];
-        tail = span[1..];
+#pragma warning disable CA1031
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            return (default, ex);
+        }
     }
 
-    /// <summary>Gets the specific slice from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
-#if UNMANAGED_SPAN
-        where T : unmanaged
+    /// <summary>Gets the amount of bytes a callback uses.</summary>
+    /// <remarks><para>
+    /// This method temporarily tunes the <see cref="GC"/> to <see cref="GCLatencyMode.LowLatency"/>
+    /// for accurate results. As such, the parameter <paramref name="heap"/> should not cause
+    /// substantial allocation such that collecting mid-way is required.
+    /// </para></remarks>
+    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
+    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
+    /// <returns>The number of bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.</returns>
+    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
+    public static long CountAllocation([InstantHandle, RequireStaticDelegate] Action heap, bool willWarmup = true)
+    {
+        if (willWarmup)
+            heap.Swallow();
+#if !(NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER)
+        var mode = GCSettings.LatencyMode;
 #endif
-        =>
-            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
-                ? span.Slice(offset, length)
-                : default;
+        try
+        {
+#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            GC.TryStartNoGCRegion(ushort.MaxValue, ushort.MaxValue);
+#else
+            GCSettings.LatencyMode = GCLatencyMode.LowLatency;
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+            var before = GC.GetTotalAllocatedBytes(true);
+#else
+            var before = GC.GetTotalMemory(true);
+#endif
+            heap.Swallow();
+#if NETCOREAPP3_0_OR_GREATER
+            var after = GC.GetTotalAllocatedBytes(true);
+#else
+            var after = GC.GetTotalMemory(false); // Prevents last-second garbage collection.
+#endif
 
-    /// <summary>Gets the specific slice from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Nth<T>(this Span<T> span, Range range)
-#if UNMANAGED_SPAN
-        where T : unmanaged
+            return after - before;
+        }
+        finally
+        {
+#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            if (GCSettings.LatencyMode is GCLatencyMode.NoGCRegion)
+                GC.EndNoGCRegion();
+#else
+            GCSettings.LatencyMode = mode;
 #endif
-        =>
-            range.TryGetOffsetAndLength(span.Length, out var offset, out var length)
-                ? span.Slice(offset, length)
-                : default;
+        }
+    }
 
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            index >= 0 && index < span.Length ? span[index] : default;
+    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
+    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
+    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
+    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
+    /// <returns>
+    /// An <see cref="Array"/> where each entry is a separate test of the number of
+    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// </returns>
+    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
+    public static long[] CountAllocations(
+        [InstantHandle, RequireStaticDelegate] Action heap,
+        [NonNegativeValue] int times = 256,
+        bool willWarmup = true
+    )
+    {
+        if (willWarmup)
+            heap.Swallow();
 
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
-                ? span[offset]
-                : default;
+        var all = new long[times];
 
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            index > 0 && index <= span.Length ? span[span.Length - index] : default;
+        for (var i = 0; i < times; i++)
+            all[i] += CountAllocation(heap, false);
 
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            index >= 0 && index < span.Length ? span[index] : default;
+        return all;
+    }
 
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, Index index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            (index.IsFromEnd ? span.Length - index.Value : index.Value) is >= 0 and var offset && offset < span.Length
-                ? span[offset]
-                : default;
+    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
+    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
+    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
+    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
+    /// <returns>
+    /// An <see cref="Array"/> where each entry is a separate test of the number of
+    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// </returns>
+    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
+    public static bool HasAllocations(
+        [InstantHandle, RequireStaticDelegate] Action heap,
+        [NonNegativeValue] int times = 256,
+        bool willWarmup = true
+    )
+    {
+        if (willWarmup)
+            heap.Swallow();
 
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            index > 0 && index <= span.Length ? span[span.Length - index] : default;
+        for (var i = 0; i < times; i++)
+            if (CountAllocation(heap, false) is not 0)
+                return true;
+
+        return false;
+    }
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace EmptyNamespace
-
-
-/// <summary>Efficient LINQ-like methods for <see cref="ReadOnlySpan{T}"/> and siblings.</summary>
-// ReSharper disable NullableWarningSuppressionIsUsed
-#pragma warning disable MA0048
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> Where<T>(
-        this IMemoryOwner<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        source.Memory[..^Filter(source.Memory.Span, predicate)];
-
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> Where<T>(
-        this Memory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    ) =>
-        source[..^Filter(source.Span, predicate)];
+#pragma warning disable CS8632, MA0048, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 #endif
 
-    /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Where<T>(
-        this Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
+// ReSharper disable once CheckNamespace
+
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#endif
+
+/// <summary>Provides methods for exiting the program.</summary>
+
+    /// <remarks><para>This method represents the exit code 0, indicating success.</para></remarks>
+    /// <inheritdoc cref="With"/>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+    public static Exception Success(string? message = null) => throw With(0, message);
+
+    /// <remarks><para>This method represents the exit code 1, indicating failure.</para></remarks>
+    /// <inheritdoc cref="With"/>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+    public static Exception Failure(string? message = null) => throw With(1, message);
+
+    /// <remarks><para>This method represents the exit code 2, indicating invalid parameters.</para></remarks>
+    /// <inheritdoc cref="With"/>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+    public static Exception Usage(string? message = null) => throw With(2, message);
+
+    /// <typeparam name="T">Only used for type coercion.</typeparam>
+    /// <inheritdoc cref="Success"/>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+    public static T Success<T>(string? message = null) => throw With(0, message);
+
+    /// <typeparam name="T">Only used for type coercion.</typeparam>
+    /// <inheritdoc cref="Failure"/>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+    public static T Failure<T>(string? message = null) => throw With(1, message);
+
+    /// <typeparam name="T">Only used for type coercion.</typeparam>
+    /// <inheritdoc cref="Usage"/>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+    public static T Usage<T>(string? message = null) => throw With(2, message);
+
+    /// <summary>Terminates this process and returns the exit code to the operating system.</summary>
+    /// <param name="message">The message to print into the standard output/error, if specified.</param>
+    /// <exception cref="SecurityException">
+    /// The caller does not have sufficient security permission to perform this function.
+    /// </exception>
+    /// <returns>This method does not return. Specified to allow <see keyword="throw"/> expressions.</returns>
+    [ContractAnnotation("=> halt"),
+     DoesNotReturn,
+     SecuritySafeCritical,
+#if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+     SecurityPermission(Demand, Flags = UnmanagedCode),
+#endif
+    ]
+#pragma warning disable CS1573
+    static Exception With(byte exitCode, string? message)
+#pragma warning restore CS1573
+    {
+        if (message is not null)
+            (exitCode is 0 ? Console.Out : Console.Error).WriteLine(message);
+
+        Environment.Exit(exitCode);
+        throw Unreachable;
+    }
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#pragma warning disable GlobalUsingsAnalyzer
+
+
+
+// ReSharper disable once CheckNamespace RedundantUsingDirective.Global
+
+
+/// <summary>Provides a reference for an <c>UnreachableException</c>.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>
+    public static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");
+
+    /// <summary>Gets the <see cref="Exception"/> that represents unfinished logic.</summary>
+    public static NotImplementedException Todo { get; } = new();
+
+    /// <summary>Gets the <see cref="Exception"/> that represents an unreachable state.</summary>
+    public static UnreachableException Unreachable { get; } = new();
+
+// SPDX-License-Identifier: MPL-2.0
+#pragma warning disable CS8632, RCS1196
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Provides methods to use callbacks within a statement.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
+    // ReSharper disable RedundantCast
+    // ReSharper disable once EventNeverSubscribedTo.Global
+    public static event Action<string> OnWrite =
+#if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
+        Shout;
+#else
+        (Action<string>)Shout +
+#if KTANE
+        (Action<string>)UnityEngine.Debug.Log +
+#endif
+        (Action<string>)Console.WriteLine;
+#endif
+#if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <summary>Gets all of the types currently loaded.</summary>
+    [Pure]
+    public static IEnumerable<Type> AllTypes =>
+        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+#endif
+#pragma warning disable CS1574
+    /// <summary>
+    /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// This method exists to be able to hook both conditional methods in <see cref="OnWrite"/>,
+    /// and to allow the consumer to be able to remove this method to the same <see cref="OnWrite"/>.
+    /// </para></remarks>
+    /// <param name="message">The value to send a message.</param>
+#pragma warning restore CS1574
+    public static void Shout(string message)
+    {
+        // ReSharper disable once InvocationIsSkipped
+        System.Diagnostics.Debug.WriteLine(message);
+#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
+        Trace.WriteLine(message);
+#endif
+    }
+
+    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
+    /// <param name="message">The value to send a message.</param>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
+    /// every callback has been manually removed as it is always valid by default.
+    /// </exception>
+    public static void Write(this string message) => (OnWrite ?? throw new InvalidOperationException(message))(message);
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="value">The value to stringify.</param>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
+    /// every callback has been manually removed as it is always valid by default.
+    /// </exception>
+    // ReSharper disable once InvokeAsExtensionMethod
+    public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
+
+    /// <summary>Quick and dirty debugging function.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="value">The value to stringify and return.</param>
+    /// <param name="shouldPrettify">Determines whether to prettify the resulting <see cref="string"/>.</param>
+    /// <param name="shouldLogExpression">Determines whether <paramref name="expression"/> is logged.</param>
+    /// <param name="map">The map callback.</param>
+    /// <param name="filter">The filter callback.</param>
+    /// <param name="logger">The logging callback.</param>
+    /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="value"/>.</param>
+    /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
+    /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
+    /// <param name="member">Automatically filled by compilers; the member's name where this method was called.</param>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
+    /// every callback has been manually removed as it is always valid by default.
+    /// </exception>
+    /// <returns>The parameter <paramref name="value"/>.</returns>
+    [return: NotNullIfNotNull(nameof(value))]
+    public static T Debug<T>(
+        this T value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = true,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [InstantHandle] Predicate<T>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+    {
+        const string
+            Indent = "\n        ",
+            Of = $"{Indent}of ";
+
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+        {
+            var trimmed = next.Trim();
+
+            fixed (char* ptr = &trimmed[0])
+                accumulator.Append(ptr, trimmed.Length).Append(' ');
+
+            return accumulator;
+        }
+#pragma warning restore 8500
+#endif
+
+        if (!(filter ?? (_ => true))(value))
+            return value;
+
+        logger ??= Write;
+
+        // ReSharper disable ExplicitCallerInfoArgument InvokeAsExtensionMethod RedundantNameQualifier
+        var stringified = (map ?? (x => x))(value) switch
+        {
+            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
+            string x => x,
+            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
+            var x => Stringifier.Stringify(x),
+        };
+
+        var location = shouldLogExpression
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Of), Accumulator)
+#else
+            ? expression
+              ?.Collapse()
+               .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+               .Select(x => x.Trim())
+               .Prepend(Of)
+               .Conjoin("")
+#endif
+            : default;
+
+        var log = $"{stringified}{location}{Indent}at {member} in {Path.GetFileName(path)}:line {line}";
+        logger(log);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
+    [return: NotNullIfNotNull(nameof(value))]
+    public static T Debug<T, TAs>(
+        this T value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = true,
+        [InstantHandle] Converter<T, TAs?>? map = null,
+        [InstantHandle] Predicate<T>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+    {
+        if (!(filter ?? (_ => true))(value))
+            return value;
+
+        var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
+        {
+            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x as object,
+            string x => x,
+            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
+            var x => Stringifier.Stringify(x),
+        };
+
+        Debug(
+            stringified,
+            false,
+            shouldLogExpression,
+            logger: logger,
+            expression: expression,
+            path: path,
+            line: line,
+            member: member
+        );
+
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
+    public static Span<T> Debug<T>(
+        this Span<T> value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        =>
-            source[..^Filter(source, predicate)];
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
-    // Surprisingly, direct indexing is more efficient than .CopyTo despite latter guaranteeing SIMD.
-    // Benchmarked with various sizes and on function "static x => BitOperations.PopCount(x) % 2 is 0".
-    // This function was chosen as the baseline due to it being cheap to compute, evenly distributed,
-    // and ensuring all patterns of [[false, false], [false, true], [true, false], [true, true]] would appear.
-    // ReSharper disable CommentTypo
-    // https://sharplab.io/#v2:D4AQTAjAsAULIQGwAICWA7ALsg6gCwFMAnAgSXXWIB4AVAPgApZkXkBlABwEN1a7kAzgHsArkQDGBADTNWABRIATVOK6YCfZByUq1BWAEpYAb1ksAZkKLIGANy7XUyALzIADAG40yKoNESCADoAGQJ0AHNMPC9UAGpYoxhWZFMk5NZUcxttAmVVdQZhMUkAbVQAXQNE9JrkcSEsDBECD1gzdPtrAUwHbFdUVrg0msUhdtq0LIZ4pzpXIoCQsMi8aonakAB2QR6iTEGJgHc8VAAbAhsAQhy8vUL/UoqqwfHWTuRlAQ5TrkkAWzCfW8AFodr0DrUFo9AoFyoEAMJCDgATxoQnuxQIJW6vRhlQhNShF3mDyxMIAep9vr8CACsOUCeknMDXFSfv9AYyAL5tYbILZ+TFLCJRQZcoA
-    // https://cdn.discordapp.com/attachments/445375602648940544/1129045669148098610/image.png
-    // ReSharper restore CommentTypo
-
-    [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
+    public static PooledSmallList<T> Debug<T>(
+        this PooledSmallList<T> value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        var end = 0;
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value
+           .View
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
-        for (var i = 0; i < source.Length; i++)
-        {
-            if (IsPass(ref source, predicate, i, end))
-                continue;
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+#endif
 
-            var start = i;
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
+    public static SplitSpan<T> Debug<T>(
+        this SplitSpan<T> value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<List<T[]>, object?>? map = null,
+        [InstantHandle] Predicate<List<T[]>>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value
+           .ToList()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
-            if (!FindNextPass(source, predicate, ref i))
-                return end + i - start;
-
-            end += i - start;
-            source[i - end] = source[i];
-        }
-
-        return end;
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool IsPass<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
+    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
+    public static ReadOnlySpan<T> Debug<T>(
+        this ReadOnlySpan<T> value,
+        bool shouldPrettify = true,
+        bool shouldLogExpression = false,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [InstantHandle] Predicate<T[]>? filter = null,
+        [InstantHandle] Action<string>? logger = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerLineNumber] int line = default,
+        [CallerMemberName] string? member = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
     {
-        if (!predicate(source[i]))
+        // ReSharper disable ExplicitCallerInfoArgument
+        _ = value
+           .ToArray()
+           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
+
+        // ReSharper restore ExplicitCallerInfoArgument
+        return value;
+    }
+#endif
+
+    /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
+    /// <typeparam name="T">The type of value and action parameter.</typeparam>
+    /// <param name="value">The value to pass into the callback.</param>
+    /// <param name="action">The callback to perform.</param>
+    /// <returns>The parameter <paramref name="value"/>.</returns>
+    public static T Peek<T>(this T value, [InstantHandle] Action<T> action)
+    {
+        action(value);
+        return value;
+    }
+#if !NETFRAMEWORK
+    /// <summary>Executes a <see langword="delegate"/> pointer, and returns the argument.</summary>
+    /// <typeparam name="T">The type of value and delegate pointer parameter.</typeparam>
+    /// <param name="value">The value to pass into the callback.</param>
+    /// <param name="call">The callback to perform.</param>
+    /// <exception cref="ArgumentNullException">
+    /// The value <paramref name="call"/> points to <see langword="null"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="value"/>.</returns>
+    public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void> call)
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (call is not null)
+            call(value);
+
+        return value;
+    }
+#endif
+
+    /// <summary>Executes the function, and returns the result.</summary>
+    /// <typeparam name="T">The type of value and input parameter.</typeparam>
+    /// <typeparam name="TResult">The type of output and return value.</typeparam>
+    /// <param name="value">The value to pass into the callback.</param>
+    /// <param name="converter">The callback to perform.</param>
+    /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
+    public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
+        converter(value);
+
+// SPDX-License-Identifier: MPL-2.0
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+// ReSharper disable once CheckNamespace
+
+
+// ReSharper disable once RedundantUsingDirective
+
+
+
+/// <summary>An extremely bad logger.</summary>
+public sealed partial class BadLogger : IDisposable
+{
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="Clear"/>
+#endif
+    static readonly byte[] s_clear = { 0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a };
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Gets the buffer that clears the console when printed. Only on certain Linux terminals though.</summary>
+    /// <remarks><para>
+    /// Buffer is based on the following command:
+    /// </para><code>
+    /// ~$ clear | xxd
+    /// 00000000: 1b5b 481b 5b32 4a1b 5b33 4a.[H.[2J.[3J
+    /// </code></remarks>
+    [Pure]
+    public static ReadOnlySpan<byte> Clear => s_clear;
+#endif
+
+    /// <summary>Gets the default interval when one is left unspecified.</summary>
+    [Pure]
+    public static TimeSpan DefaultInterval { get; } = TimeSpan.FromMilliseconds(100);
+
+    readonly Stopwatch _stopwatch = new();
+
+    readonly FileStream _stream;
+
+    readonly TimeSpan _interval;
+
+    TimeSpan _last;
+
+    /// <summary>Initializes a new instance of the <see cref="BadLogger"/> class.</summary>
+    /// <param name="path">The path to the file to write.</param>
+    /// <param name="interval">The rate of flushing the stream.</param>
+    public BadLogger(string path = "/tmp/morsels.log", TimeSpan? interval = null)
+    {
+        _interval = interval ?? DefaultInterval;
+        (_stream = File.OpenWrite(path)).SetLength(0);
+        _stream.Write(s_clear, 0, s_clear.Length);
+        OnWrite += Log;
+        "..".Debug();
+        _stopwatch.Start();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _stopwatch.Stop();
+        "(◕_◕)🎉".Debug();
+        _stopwatch.ElapsedMilliseconds.ToString("0ms").Debug();
+        OnWrite -= Log;
+        _stream.Dispose();
+    }
+
+    /// <summary>Logs the message.</summary>
+    /// <param name="entry">The entry to log.</param>
+    public void Log(string entry)
+    {
+        var log = $"[{DateTime.Now:HH:mm:ss.fff}]: {entry}\n";
+#if NETCOREAPP3_0_OR_GREATER
+        const int MaxBytesInUtf16 = 3;
+        Allocate(log.Length * MaxBytesInUtf16, (this, log), Write());
+#else
+        var bytes = Encoding.UTF8.GetBytes(log);
+        _stream.Write(bytes, 0, bytes.Length);
+#endif
+        TryFlush();
+    }
+
+    /// <summary>Attempts to flush if enough time has elapsed.</summary>
+    /// <returns>Whether it flushed.</returns>
+    public bool TryFlush()
+    {
+        if (_stopwatch.Elapsed is var elapsed && elapsed - _last <= _interval)
             return false;
 
-        if (end > 0)
-            source[i - end] = source[i];
-
+        _last = elapsed;
+        _stream.Flush();
         return true;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool FindNextPass<T>(in ReadOnlySpan<T> source, Predicate<T> predicate, ref int i)
+    /// <summary>Produces the side effect specified by the passed in <see cref="Action"/>.</summary>
+    /// <param name="action">The <see cref="Action"/>.</param>
+    /// <returns>Itself.</returns>
+    public BadLogger Try([InstantHandle] Action action)
     {
-        do
-            if (++i >= source.Length)
-                return false;
-        while (!predicate(source[i]));
-
-        return true;
+        try
+        {
+            action();
+            return this;
+        }
+        catch (Exception ex)
+        {
+            $"{ex}".Debug();
+            throw;
+        }
     }
+
+    /// <summary>Produces the side effect specified by the passed in <see cref="Action"/>.</summary>
+    /// <typeparam name="T">The type of <paramref name="context"/>.</typeparam>
+    /// <param name="action">The <see cref="Action"/>.</param>
+    /// <param name="context">The context value.</param>
+    /// <returns>Itself.</returns>
+    public BadLogger Try<T>([InstantHandle] Action<T> action, T context)
+    {
+        try
+        {
+            action(context);
+            return this;
+        }
+        catch (Exception ex)
+        {
+            $"{ex}".Debug();
+            throw;
+        }
+    }
+#if NETCOREAPP3_0_OR_GREATER
+    static SpanAction<byte, (BadLogger, string)> Write() =>
+        static (span, tuple) =>
+        {
+            var (that, log) = tuple;
+            Utf8.FromUtf16(log, span, out _, out var wrote);
+            that._stream.Write(span[..wrote]);
+        };
+#endif
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if ROSLYN
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Generates the attribute needed to use this analyzer.</summary>
+/// <param name="hintName">The file name of the source.</param>
+/// <param name="contents">The contents of the source.</param>
+public abstract class FixedGenerator(
+    [StringSyntax(StringSyntaxAttribute.Uri), UriString] string hintName,
+    [StringSyntax("C#")] string contents
+) : ISourceGenerator
+{
+    /// <inheritdoc />
+    void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
+        context.AddSource($"{hintName}.g.cs", contents.Nth(^1) is null or '\n' or '\r' ? contents : contents + '\n');
+
+    /// <inheritdoc />
+    void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if ROSLYN
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>
+/// <see cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
+/// with a wrapped callback which filters out ignored contexts.
+/// </summary>
+
+    /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <param name="name">The name to get.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// has the attribute <paramref name="name"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
+        symbol is not null &&
+        (name is null
+            ? !symbol.GetAttributes().IsEmpty
+            : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
+            (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
+            symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
+
+    /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
+    /// <param name="accessibility">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="accessibility"/> is accessible externally.
+    /// </returns>
+    [Pure]
+    public static bool IsAccessible(this Accessibility accessibility) =>
+        accessibility is Accessibility.Protected or Accessibility.ProtectedOrInternal or Accessibility.Public;
+
+    /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> is accessible externally.
+    /// </returns>
+    [Pure]
+    public static bool IsAccessible([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol?.DeclaredAccessibility.IsAccessible() is true;
+
+    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is { BaseType: null, SpecialType: not SpecialType.System_Object };
+
+    /// <summary>
+    /// Determines whether the symbol and all subsequent parent types
+    /// are declared with the <see langword="partial"/> keyword.
+    /// </summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> and all its subsequent
+    /// parent types are <see langword="partial"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsCompletelyPartial([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol?.FindPathToNull(x => x.ContainingType).All(IsPartial) is true;
+
+    /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is obsolete, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsObsolete([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol.HasAttribute(nameof(ObsoleteAttribute));
+
+    /// <summary>Determines whether the symbol is declared with the <see langword="partial"/> keyword.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is <see langword="partial"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsPartial([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol
+          ?.DeclaringSyntaxReferences
+           .Select(x => x.GetSyntax())
+           .OfType<TypeDeclarationSyntax>()
+           .Any(x => x.Modifiers.Any(x => x.ValueText is "partial")) is true;
+
+    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is
+            not null and
+            not IDynamicTypeSymbol and
+            not IPointerTypeSymbol and
+            not { IsRefLikeType: true } and
+            not { SpecialType: SpecialType.System_Void };
+
+    /// <summary>Determines whether the symbol has a default implementation.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
+    [Pure]
+    public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
+
+    /// <summary>Determines whether the symbol has a parameterless constructor.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// has a parameterless constructor, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters.IsEmpty);
+
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
+    /// <param name="symbol">The symbol to get its keyword.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string Keyword(this ITypeSymbol symbol) =>
+        symbol switch
+        {
+            { IsValueType: true, IsRecord: true } => "record struct",
+            { IsRecord: true } => "record",
+            { IsValueType: true } => "struct",
+            { IsReferenceType: true } => "class",
+            _ => throw Unreachable,
+        };
+
+    /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
+    [Pure]
+    public static string? MemberName(this ExpressionSyntax syntax)
+    {
+        syntax.TryGetMemberName(out var result);
+        return result;
+    }
+
+    /// <inheritdoc cref="AttributeArgumentSyntaxExt.TryGetStringValue(AttributeArgumentSyntax, SemanticModel, CancellationToken, out string)"/>
+    [Pure]
+    public static string? StringValue(this SyntaxNodeAnalysisContext context, AttributeArgumentSyntax syntax)
+    {
+        syntax.TryGetStringValue(context.SemanticModel, context.CancellationToken, out var result);
+        return result;
+    }
+
+    /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
+    public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
+        this AnalysisContext context,
+        Action<SyntaxNodeAnalysisContext, TSyntaxNode> action,
+        params SyntaxKind[] syntaxKinds
+    )
+        where TSyntaxNode : SyntaxNode =>
+        context.RegisterSyntaxNodeAction(action, ImmutableArray.Create(syntaxKinds));
+
+    /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, ImmutableArray{TLanguageKindEnum})"/>
+    public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
+        this AnalysisContext context,
+        Action<SyntaxNodeAnalysisContext, TSyntaxNode> action,
+        ImmutableArray<SyntaxKind> syntaxKinds
+    )
+        where TSyntaxNode : SyntaxNode
+    {
+        context.RegisterSyntaxNodeAction(Filter(action), syntaxKinds);
+        return context;
+    }
+
+    /// <summary>Adds information to a diagnostic.</summary>
+    /// <typeparam name="T">The type of <paramref name="message"/>.</typeparam>
+    /// <param name="diagnostic">The diagnostic to append.</param>
+    /// <param name="message">The string to append.</param>
+    /// <returns>The diagnostic with added information.</returns>
+    [MustUseReturnValue]
+    public static Diagnostic And<T>(this Diagnostic diagnostic, T message) =>
+        Diagnostic.Create(
+            new(
+                diagnostic.Descriptor.Id,
+                diagnostic.Descriptor.Title,
+                $"{diagnostic.Descriptor.MessageFormat} {message.Stringify()}",
+                diagnostic.Descriptor.Category,
+                diagnostic.Descriptor.DefaultSeverity,
+                diagnostic.Descriptor.IsEnabledByDefault,
+                $"{diagnostic.Descriptor.Description} {message.Stringify()}",
+                diagnostic.Descriptor.HelpLinkUri,
+                diagnostic.Descriptor.CustomTags.ToArrayLazily()
+            ),
+            diagnostic.Location,
+            diagnostic.Severity,
+            diagnostic.AdditionalLocations,
+            diagnostic.Properties
+        );
+
+    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
+    /// <param name="symbol">The symbol to get all of the members of.</param>
+    /// <returns>
+    /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
+    /// interfaces and base types, and any subsequent interfaces and base types from those.
+    /// </returns>
+    [Pure]
+    public static IEnumerable<ISymbol> GetAllMembers(this INamedTypeSymbol symbol) =>
+        symbol
+           .BaseType
+           .FindPathToNull(x => x.BaseType)
+           .SelectMany(GetAllMembers)
+           .Concat(symbol.GetMembers());
+
+    /// <summary>Gets the symbol from a lookup.</summary>
+    /// <param name="context">The context to use.</param>
+    /// <param name="syntax">The syntax to lookup.</param>
+    /// <returns>The symbols that likely define it.</returns>
+    [Pure]
+    public static IEnumerable<ISymbol> Symbols(this SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
+        (syntax.MemberName() ?? $"{syntax}") is var name && syntax is PredefinedTypeSyntax
+            ? context.Compilation.GetSymbolsWithName(
+                x => x.Contains(name),
+                cancellationToken: context.CancellationToken
+            )
+            : context.SemanticModel.LookupSymbols(syntax.SpanStart, name: name);
+
+    /// <summary>Gets the containing <see cref="INamespaceOrTypeSymbol"/>.</summary>
+    /// <param name="syntax">The syntax to lookup.</param>
+    /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
+    [Pure]
+    public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
+        syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
+
+    /// <summary>Gets the containing symbol so long as it isn't the global namespace.</summary>
+    /// <param name="symbol">The symbol to use.</param>
+    /// <returns>The containing symbol, or <see langword="null"/> if it is the global namespace.</returns>
+    [Pure]
+    public static ISymbol? ContainingWithoutGlobal(this ISymbol? symbol) =>
+        symbol?.ContainingSymbol is var x && x is INamespaceSymbol { IsGlobalNamespace: true } ? null : x;
+
+    /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
+    [Pure]
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this Compilation symbol) =>
+        symbol.GlobalNamespace.GetAllMembers();
+
+    /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
+    [Pure]
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
+        symbol.GlobalNamespace.GetAllMembers();
+
+    /// <summary>Gets all of the types declared by this symbol.</summary>
+    /// <param name="symbol">The symbol to get all of the type symbols of.</param>
+    /// <returns>
+    /// The <see cref="IEnumerable{T}"/> of all types defined in the parameter <paramref name="symbol"/>.
+    /// </returns>
+    [Pure]
+    public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
+        symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
+
+    /// <summary>Gets the underlying type symbol of another symbol.</summary>
+    /// <param name="symbol">The symbol to get the underlying type from.</param>
+    /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
+    [Pure]
+    public static ITypeSymbol? ToUnderlying(this ISymbol? symbol) =>
+        symbol switch
+        {
+            IEventSymbol x => x.Type,
+            IFieldSymbol x => x.Type,
+            ILocalSymbol x => x.Type,
+            IDiscardSymbol x => x.Type,
+            IPropertySymbol x => x.Type,
+            IParameterSymbol x => x.Type,
+            IMethodSymbol x => x.ReturnType,
+            IArrayTypeSymbol x => x.ElementType,
+            IPointerTypeSymbol x => x.PointedAtType,
+            IFunctionPointerTypeSymbol x => x.Signature.ReturnType,
+            _ => null,
+        };
+
+    /// <summary>Gets the underlying symbol if the provided parameter is the nullable type.</summary>
+    /// <param name="symbol">The symbol to get the underlying type from.</param>
+    /// <returns>The underlying type of <paramref name="symbol"/>, if it exists.</returns>
+    [Pure]
+    public static ITypeSymbol? UnderlyingNullable(this ISymbol? symbol) =>
+        symbol is INamedTypeSymbol
+        {
+            ContainingNamespace: { ContainingNamespace.IsGlobalNamespace: true, Name: nameof(System) },
+            Name: nameof(Nullable),
+            IsValueType: true,
+            TypeArguments:
+            [
+                { } underlying and not { Name: nameof(Nullable) },
+            ],
+        }
+            ? underlying
+            : null;
+
+    [Pure]
+    static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
+        where TSyntaxNode : SyntaxNode =>
+        context =>
+        {
+            if (!context.IsExcludedFromAnalysis() && context.Node is TSyntaxNode node)
+                action(context, node);
+        };
+
+    [Pure]
+    static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
+        ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -11146,6 +11149,80 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
     /// <inheritdoc />
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
+
+#pragma warning disable IDE0250, IDE0251, MA0102, SA1137
+
+/// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Yes{T}"/> instance that can be yielded forever.</returns>
+    [Pure]
+    public static Yes<T> Forever<T>(this T source) => source;
+
+/// <summary>A factory for creating iterator types that yield the same item forever.</summary>
+/// <param name="value">The item to use.</param>
+/// <typeparam name="T">The type of the item to yield.</typeparam>
+[StructLayout(LayoutKind.Auto)]
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+{
+    static readonly object s_fallback = new();
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), ProvidesContext, Pure]
+    public T Current => value;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    object IEnumerator.Current => value ?? s_fallback;
+
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(Read), Pure]
+    public static implicit operator Yes<T>([ProvidesContext] T value) => new(value);
+
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(Read), Pure]
+    public static implicit operator T(Yes<T> value) => value.Current;
+
+    /// <summary>Returns itself.</summary>
+    /// <remarks><para>Used to allow <see langword="foreach"/> to be used on <see cref="Yes{T}"/>.</para></remarks>
+    /// <returns>Itself.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public Yes<T> GetEnumerator() => this;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    void IDisposable.Dispose() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    void IEnumerator.Reset() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    bool IEnumerator.MoveNext() => true;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -11410,78 +11487,270 @@ readonly
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
+#if !NET20 && !NET30
+// ReSharper disable once CheckNamespace
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
 
-#pragma warning disable IDE0250, IDE0251, MA0102, SA1137
-
-/// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
+/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
 #pragma warning disable MA0048
 
-    /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The <see cref="Yes{T}"/> instance that can be yielded forever.</returns>
+    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
+    /// <param name="countPerList">The length per count.</param>
+    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
     [Pure]
-    public static Yes<T> Forever<T>(this T source) => source;
-
-/// <summary>A factory for creating iterator types that yield the same item forever.</summary>
-/// <param name="value">The item to use.</param>
-/// <typeparam name="T">The type of the item to yield.</typeparam>
-[StructLayout(LayoutKind.Auto)]
-#if !NO_READONLY_STRUCTS
-readonly
+    [return: NotNullIfNotNull(nameof(iterator))]
+    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
+        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
 #endif
-public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+
+    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
+    /// <param name="countPerList">The length per count.</param>
+    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterator))]
+    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+#if WAWA
+        iterator is null ? null : new(iterator.ToList(), countPerList);
+#else
+        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+#endif
+
+/// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
+/// <typeparam name="T">The type of item within the list.</typeparam>
+public sealed partial class Matrix<T> : IList<IList<T>>
 {
-    static readonly object s_fallback = new();
+    /// <summary>Represents a slice of a matrix.</summary>
+    /// <param name="matrix">The matrix to reference.</param>
+    /// <param name="ordinal">The first index of the matrix.</param>
+#pragma warning disable IDE0044
+    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
+#pragma warning restore IDE0044
+    {
+        /// <inheritdoc />
+        public T this[[NonNegativeValue] int index]
+        {
+            [Pure] get => matrix.List[Count * ordinal + index];
+            set => matrix.List[Count * ordinal + index] = value;
+        }
+
+        /// <inheritdoc />
+        public bool IsReadOnly
+        {
+            [Pure] get => matrix.List.IsReadOnly;
+        }
+
+        /// <inheritdoc />
+        public int Count
+        {
+            [Pure] get => matrix.CountPerList;
+        }
+
+        /// <inheritdoc />
+        public void Add(T item) => matrix.List.Add(item);
+
+        /// <inheritdoc />
+        public void Clear()
+        {
+            for (var i = 0; i < Count; i++)
+                matrix.List.RemoveAt(Count * ordinal);
+        }
+
+        /// <inheritdoc />
+        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+        {
+            for (var i = 0; i < Count; i++)
+                array[arrayIndex + i] = this[i];
+        }
+
+        /// <inheritdoc />
+        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
+
+        /// <inheritdoc />
+        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
+
+        /// <inheritdoc />
+        [Pure]
+        public bool Contains(T item) =>
+            Enumerable
+               .Range(0, Count)
+               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
+
+        /// <inheritdoc />
+        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
+
+        /// <inheritdoc />
+        [Pure, ValueRange(-1, int.MaxValue)]
+        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
+
+        /// <inheritdoc />
+        [Pure]
+        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
+
+        /// <inheritdoc />
+        [Pure]
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    readonly int _countPerListEager;
+
+    readonly Func<int>? _countPerListLazy;
+
+    readonly IList<T>? _listEager;
+
+    readonly Func<IList<T>>? _listLazy;
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
+    {
+        // Explicitly check, in case someone ignores the warning, or uses a variable.
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        _countPerListEager = countPerList > 0
+            ? countPerList
+            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
+
+        _listEager = list;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(IList<T> list, Func<int> countPerList)
+    {
+        _countPerListLazy = countPerList;
+        _listEager = list;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
+    {
+        // Explicitly check, in case someone ignores the warning, or uses a variable.
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        _countPerListEager = countPerList > 0
+            ? countPerList
+            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
+
+        _listLazy = list;
+    }
+
+    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
+    /// <param name="list">The list to encapsulate.</param>
+    /// <param name="countPerList">The length per count.</param>
+    public Matrix(Func<IList<T>> list, Func<int> countPerList)
+    {
+        _countPerListLazy = countPerList;
+        _listLazy = list;
+    }
+#if !WAWA
+    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
+    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
+    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
+    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
+    {
+        [Pure] get => List[Count * x + y];
+        set => List[Count * x + y] = value;
+    }
+#endif
 
     /// <inheritdoc />
-    [CollectionAccess(Read), ProvidesContext, Pure]
-    public T Current => value;
+    public IList<T> this[[NonNegativeValue] int index]
+    {
+        [Pure] get => new Slice(this, index);
+        set => Add(value);
+    }
+
+    /// <summary>Gets the amount of items per list.</summary>
+    public int CountPerList
+    {
+        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
+    }
+
+    /// <summary>Gets the encapsulated list.</summary>
+    [ProvidesContext]
+#pragma warning disable CS8603 // Unreachable.
+    public IList<T> List
+    {
+        [Pure] // ReSharper disable once AssignNullToNotNullAttribute
+        get => _listLazy?.Invoke() ?? _listEager;
+    }
+#pragma warning restore CS8603
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => value ?? s_fallback;
+    public bool IsReadOnly
+    {
+        [Pure] get => List.IsReadOnly;
+    }
 
-    /// <summary>Implicitly calls the constructor.</summary>
-    /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
-    [CollectionAccess(Read), Pure]
-    public static implicit operator Yes<T>([ProvidesContext] T value) => new(value);
-
-    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-    /// <param name="value">The value to call <see cref="Current"/>.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [CollectionAccess(Read), Pure]
-    public static implicit operator T(Yes<T> value) => value.Current;
-
-    /// <summary>Returns itself.</summary>
-    /// <remarks><para>Used to allow <see langword="foreach"/> to be used on <see cref="Yes{T}"/>.</para></remarks>
-    /// <returns>Itself.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public Yes<T> GetEnumerator() => this;
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [NonNegativeValue]
+    public int Count
+    {
+        [Pure] get => List.Count / CountPerList;
+    }
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void IDisposable.Dispose() { }
+    public void Add(IList<T>? item) =>
+        item?.ToList()
+#pragma warning disable SA1110
+#if NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+           .For
+#else
+           .ForEach
+#endif
+                (List.Add);
+#pragma warning restore SA1110
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void IEnumerator.Reset() { }
+    public void Clear() => List.Clear();
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    bool IEnumerator.MoveNext() => true;
+    [Pure]
+    public bool Contains(IList<T>? item) => item?.All(List.Contains) ?? false;
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
+    {
+        for (var i = 0; i < Count; i++)
+            array[arrayIndex + i] = this[i];
+    }
+
+    /// <inheritdoc />
+    public void Insert([NonNegativeValue] int index, IList<T>? item)
+    {
+        if (item is not null)
+            this[index] = item;
+    }
+
+    /// <inheritdoc />
+    public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
+
+    /// <inheritdoc />
+    public bool Remove(IList<T>? item) => item?.Select(List.Remove).Any() ?? false;
+
+    /// <inheritdoc />
+    [Pure, ValueRange(-1, int.MaxValue)]
+    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
+
+    /// <inheritdoc />
+    [Pure]
+    public IEnumerator<IList<T>> GetEnumerator() => Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+
+    /// <inheritdoc />
+    [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 }
+
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -11790,269 +12059,361 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
+// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
+/// <summary>Provides the deconstruction to extract the head and tail of a collection.</summary>
+
+    /// <summary>Separates the head from the tail of an <see cref="ICollection{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="collection">The enumerable to split.</param>
+    /// <param name="head">The first element of the parameter <paramref name="collection"/>.</param>
+    /// <param name="tail">The rest of the parameter <paramref name="collection"/>.</param>
+    public static void Deconstruct<T>(
+        this IList<T>? collection,
+        out T? head,
+        [NotNullIfNotNull(nameof(collection))] out IList<T>? tail
+    )
+    {
+        head = collection is null ? default : collection.FirstOrDefault();
+        tail = collection.Tail();
+    }
+
+    /// <summary>Gets the tail of the <see cref="ICollection{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="collection">The collection to extract the tail from.</param>
+    /// <returns>
+    /// The encapsulation of the parameter <paramref name="collection"/> that prevents the head from being accessed.
+    /// </returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(collection))]
+    public static HeadlessList<T>? Tail<T>(this IList<T>? collection) => collection is null ? null : new(collection);
+
+/// <summary>Represents a list with no head.</summary>
+/// <typeparam name="T">The type of list to encapsulate.</typeparam>
 #pragma warning disable MA0048
-
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
-#if WAWA
-        iterator is null ? null : new(iterator.ToList(), countPerList);
-#else
-        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
-#endif
-
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
-#if WAWA
-        iterator is null ? null : new(iterator.ToList(), countPerList);
-#else
-        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
-#endif
-
-/// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
-/// <typeparam name="T">The type of item within the list.</typeparam>
-public sealed partial class Matrix<T> : IList<IList<T>>
+public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
+#pragma warning restore MA0048
 {
-    /// <summary>Represents a slice of a matrix.</summary>
-    /// <param name="matrix">The matrix to reference.</param>
-    /// <param name="ordinal">The first index of the matrix.</param>
-#pragma warning disable IDE0044
-    sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
-#pragma warning restore IDE0044
+    /// <inheritdoc cref="IList{T}.this" />
+    public T this[int index]
     {
-        /// <inheritdoc />
-        public T this[[NonNegativeValue] int index]
-        {
-            [Pure] get => matrix.List[Count * ordinal + index];
-            set => matrix.List[Count * ordinal + index] = value;
-        }
-
-        /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            [Pure] get => matrix.List.IsReadOnly;
-        }
-
-        /// <inheritdoc />
-        public int Count
-        {
-            [Pure] get => matrix.CountPerList;
-        }
-
-        /// <inheritdoc />
-        public void Add(T item) => matrix.List.Add(item);
-
-        /// <inheritdoc />
-        public void Clear()
-        {
-            for (var i = 0; i < Count; i++)
-                matrix.List.RemoveAt(Count * ordinal);
-        }
-
-        /// <inheritdoc />
-        public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-        {
-            for (var i = 0; i < Count; i++)
-                array[arrayIndex + i] = this[i];
-        }
-
-        /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
-
-        /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
-
-        /// <inheritdoc />
-        [Pure]
-        public bool Contains(T item) =>
-            Enumerable
-               .Range(0, Count)
-               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
-
-        /// <inheritdoc />
-        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
-
-        /// <inheritdoc />
-        [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
-
-        /// <inheritdoc />
-        [Pure]
-        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
-
-        /// <inheritdoc />
-        [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
+        set => list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
     }
-
-    readonly int _countPerListEager;
-
-    readonly Func<int>? _countPerListLazy;
-
-    readonly IList<T>? _listEager;
-
-    readonly Func<IList<T>>? _listLazy;
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
-    {
-        // Explicitly check, in case someone ignores the warning, or uses a variable.
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        _countPerListEager = countPerList > 0
-            ? countPerList
-            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
-
-        _listEager = list;
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(IList<T> list, Func<int> countPerList)
-    {
-        _countPerListLazy = countPerList;
-        _listEager = list;
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
-    {
-        // Explicitly check, in case someone ignores the warning, or uses a variable.
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        _countPerListEager = countPerList > 0
-            ? countPerList
-            : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Value must be at least 1.");
-
-        _listLazy = list;
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-    /// <param name="list">The list to encapsulate.</param>
-    /// <param name="countPerList">The length per count.</param>
-    public Matrix(Func<IList<T>> list, Func<int> countPerList)
-    {
-        _countPerListLazy = countPerList;
-        _listLazy = list;
-    }
-#if !WAWA
-    /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
-    /// <param name="x">The <c>x</c> position, which is the list to take.</param>
-    /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
-    public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
-    {
-        [Pure] get => List[Count * x + y];
-        set => List[Count * x + y] = value;
-    }
-#endif
 
     /// <inheritdoc />
-    public IList<T> this[[NonNegativeValue] int index]
-    {
-        [Pure] get => new Slice(this, index);
-        set => Add(value);
-    }
-
-    /// <summary>Gets the amount of items per list.</summary>
-    public int CountPerList
-    {
-        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
-    }
-
-    /// <summary>Gets the encapsulated list.</summary>
-    [ProvidesContext]
-#pragma warning disable CS8603 // Unreachable.
-    public IList<T> List
-    {
-        [Pure] // ReSharper disable once AssignNullToNotNullAttribute
-        get => _listLazy?.Invoke() ?? _listEager;
-    }
-#pragma warning restore CS8603
-
-    /// <inheritdoc />
-    public bool IsReadOnly
-    {
-        [Pure] get => List.IsReadOnly;
-    }
+    public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count" />
-    [NonNegativeValue]
-    public int Count
+    public int Count => list.Count - 1;
+
+    /// <inheritdoc />
+    public void Add(T item) => list.Add(item);
+
+    /// <inheritdoc />
+    public void Clear() => list.Clear();
+
+    /// <inheritdoc />
+    public void CopyTo(T[] array, int arrayIndex)
     {
-        [Pure] get => List.Count / CountPerList;
-    }
-
-    /// <inheritdoc />
-    public void Add(IList<T>? item) =>
-        item?.ToList()
-#pragma warning disable SA1110
-#if NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-           .For
-#else
-           .ForEach
-#endif
-                (List.Add);
-#pragma warning restore SA1110
-
-    /// <inheritdoc />
-    public void Clear() => List.Clear();
-
-    /// <inheritdoc />
-    [Pure]
-    public bool Contains(IList<T>? item) => item?.All(List.Contains) ?? false;
-
-    /// <inheritdoc />
-    public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
-    {
-        for (var i = 0; i < Count; i++)
+        for (var i = 0; i < Count && arrayIndex + i < array.Length; i++)
             array[arrayIndex + i] = this[i];
     }
 
     /// <inheritdoc />
-    public void Insert([NonNegativeValue] int index, IList<T>? item)
+    public void Insert(int index, T item)
     {
-        if (item is not null)
-            this[index] = item;
+        if (index is -1)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        list.Insert(index + 1, item);
     }
 
     /// <inheritdoc />
-    public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
+    public void RemoveAt(int index)
+    {
+        if (index is not -1)
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        list.RemoveAt(index + 1);
+    }
 
     /// <inheritdoc />
-    public bool Remove(IList<T>? item) => item?.Select(List.Remove).Any() ?? false;
+    public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
-    [Pure, ValueRange(-1, int.MaxValue)]
-    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
+    public bool Remove(T item) => list.Remove(item);
+
+    /// <inheritdoc />
+    public int IndexOf(T item) => list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
+
+    /// <inheritdoc />
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        var ret = ((IEnumerable)list).GetEnumerator();
+        ret.MoveNext();
+        return ret;
+    }
+
+    /// <inheritdoc />
+    public IEnumerator<T> GetEnumerator()
+    {
+        var ret = list.GetEnumerator();
+        ret.MoveNext();
+        return ret;
+    }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable RedundantExtendsListEntry
+// ReSharper disable once CheckNamespace
+
+#if !NET20 && !NET30
+/// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
+#pragma warning disable MA0048
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="count">The number of elements in the first half.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half is as long as the parameter <paramref name="count"/> or shorter.
+    /// </returns>
+    [Pure]
+    public static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, [NonNegativeValue] int count) =>
+        new(source.Take(count), source.Skip(count));
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
+    /// <see langword="true"/> and <see langword="false"/>.
+    /// </returns>
+    [MustUseReturnValue]
+    public static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
+    {
+        List<T> t = new(), f = new();
+
+        foreach (var item in source)
+#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
+            (predicate(item) ? t : f).Add(item);
+#pragma warning restore RCS1235
+
+        return new(t, f);
+    }
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// </returns>
+    [Pure]
+    public static Split<IEnumerable<T>> SplitWhen<T>(
+        this ICollection<T> source,
+        [InstantHandle] Func<T, bool> predicate
+    )
+    {
+        var index = source.TakeWhile(Not1(predicate)).Count();
+        return source.SplitAt(index);
+    }
+#endif
+
+/// <summary>Represents a fixed collection of 2 items.</summary>
+/// <param name="truthy">The value representing a <see langword="true"/> value.</param>
+/// <param name="falsy">The value representing a <see langword="false"/> value.</param>
+/// <typeparam name="T">The type of item in the collection.</typeparam>
+public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
+    IDictionary<bool, T>,
+    IReadOnlyCollection<T>,
+    IReadOnlyDictionary<bool, T>
+{
+    [ProvidesContext]
+    static readonly bool[] s_booleans = { true, false };
+
+#pragma warning disable SA1642
+    /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
+    /// <param name="value">The value representing both values.</param>
+#pragma warning restore SA1642
+    public Split(T value)
+        : this(value, value) { }
+
+    /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
+    [Pure]
+    public T Falsy
+    {
+        get => falsy;
+        set => falsy = value;
+    }
+
+    /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
+    [Pure]
+    public T Truthy
+    {
+        get => truthy;
+        set => truthy = value;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
+    [Pure]
+    bool ICollection<T>.IsReadOnly => false;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int ICollection<T>.Count => 2;
 
     /// <inheritdoc />
     [Pure]
-    public IEnumerator<IList<T>> GetEnumerator() => Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+    public ICollection<T> Values => this;
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
+    [Pure]
+    bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int ICollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
+    [Pure]
+    public T this[bool key]
+    {
+        get => key ? truthy : falsy;
+        set => _ = key ? truthy = value : falsy = value;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<T>.Count => 2;
+
+    /// <inheritdoc cref="ICollection{T}.Count" />
+    [Pure, ValueRange(2)]
+    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
+
+    /// <inheritdoc />
+    public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
+    {
+        array[arrayIndex] = truthy;
+        array[arrayIndex + 1] = falsy;
+    }
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Contains(T item) =>
+        EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
+
+    /// <inheritdoc />
+    [Pure]
+    public IEnumerator<T> GetEnumerator()
+    {
+        yield return truthy;
+        yield return falsy;
+    }
+
+    /// <inheritdoc />
+    void ICollection<T>.Add(T item) { }
+
+    /// <inheritdoc cref="ICollection{T}.Clear" />
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [Pure]
+    bool ICollection<T>.Remove(T item) => false;
 
     /// <inheritdoc />
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
 
-#endif
+    /// <inheritdoc />
+    public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
+
+    /// <inheritdoc />
+    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
+    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
+
+    /// <inheritdoc />
+    public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
+    {
+        array[arrayIndex] = new(true, truthy);
+        array[arrayIndex + 1] = new(false, falsy);
+    }
+
+    /// <inheritdoc />
+    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
+    public bool Contains(KeyValuePair<bool, T> item) =>
+        item.Key
+            ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
+            : EqualityComparer<T>.Default.Equals(falsy, item.Value);
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
+    [Pure]
+    public bool TryGetValue(bool key, out T value)
+    {
+        value = key ? truthy : falsy;
+        return true;
+    }
+
+    /// <inheritdoc cref="ICollection{T}.Clear" />
+    void ICollection<KeyValuePair<bool, T>>.Clear() { }
+
+    /// <inheritdoc />
+    [Pure]
+    bool ICollection<KeyValuePair<bool, T>>.Remove(KeyValuePair<bool, T> item) => false;
+
+    /// <inheritdoc />
+    [Pure]
+    bool IDictionary<bool, T>.Remove(bool key) => false;
+
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.ContainsKey" />
+    [Pure]
+    bool IDictionary<bool, T>.ContainsKey(bool key) => true;
+
+    /// <inheritdoc />
+    [Pure]
+    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
+    {
+        yield return new(true, truthy);
+        yield return new(false, falsy);
+    }
+
+    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
+    [Pure]
+    bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
+
+    /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
+    /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
+    /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
+    public void Deconstruct(out T t, out T f)
+    {
+        t = truthy;
+        f = falsy;
+    }
+
+    /// <inheritdoc />
+    [Pure]
+    public override string ToString() => $"Split({truthy}, {falsy})";
+}
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -13162,114 +13523,97 @@ public partial struct SmallList<T> :
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable RedundantExtendsListEntry
+
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>Provides the deconstruction to extract the head and tail of a collection.</summary>
-
-    /// <summary>Separates the head from the tail of an <see cref="ICollection{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="collection">The enumerable to split.</param>
-    /// <param name="head">The first element of the parameter <paramref name="collection"/>.</param>
-    /// <param name="tail">The rest of the parameter <paramref name="collection"/>.</param>
-    public static void Deconstruct<T>(
-        this IList<T>? collection,
-        out T? head,
-        [NotNullIfNotNull(nameof(collection))] out IList<T>? tail
-    )
-    {
-        head = collection is null ? default : collection.FirstOrDefault();
-        tail = collection.Tail();
-    }
-
-    /// <summary>Gets the tail of the <see cref="ICollection{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="collection">The collection to extract the tail from.</param>
-    /// <returns>
-    /// The encapsulation of the parameter <paramref name="collection"/> that prevents the head from being accessed.
-    /// </returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(collection))]
-    public static HeadlessList<T>? Tail<T>(this IList<T>? collection) => collection is null ? null : new(collection);
-
-/// <summary>Represents a list with no head.</summary>
-/// <typeparam name="T">The type of list to encapsulate.</typeparam>
+/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
-public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
-#pragma warning restore MA0048
-{
-    /// <inheritdoc cref="IList{T}.this" />
-    public T this[int index]
-    {
-        get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
-        set => list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
-    }
 
-    /// <inheritdoc />
-    public bool IsReadOnly => list.IsReadOnly;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    public int Count => list.Count - 1;
-
-    /// <inheritdoc />
-    public void Add(T item) => list.Add(item);
-
-    /// <inheritdoc />
-    public void Clear() => list.Clear();
-
-    /// <inheritdoc />
-    public void CopyTo(T[] array, int arrayIndex)
-    {
-        for (var i = 0; i < Count && arrayIndex + i < array.Length; i++)
-            array[arrayIndex + i] = this[i];
-    }
-
-    /// <inheritdoc />
-    public void Insert(int index, T item)
-    {
-        if (index is -1)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        list.Insert(index + 1, item);
-    }
-
-    /// <inheritdoc />
-    public void RemoveAt(int index)
-    {
-        if (index is not -1)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        list.RemoveAt(index + 1);
-    }
-
-    /// <inheritdoc />
-    public bool Contains(T item) => list.Contains(item);
-
-    /// <inheritdoc />
-    public bool Remove(T item) => list.Remove(item);
-
-    /// <inheritdoc />
-    public int IndexOf(T item) => list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
-
-    /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        var ret = ((IEnumerable)list).GetEnumerator();
-        ret.MoveNext();
-        return ret;
-    }
-
-    /// <inheritdoc />
-    public IEnumerator<T> GetEnumerator()
-    {
-        var ret = list.GetEnumerator();
-        ret.MoveNext();
-        return ret;
-    }
-}
+#if NETCOREAPP3_1_OR_GREATER
+    /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
+        where T : IEquatable<T>? =>
+        span.View.Contains(item);
 #endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
+    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
+    /// <returns>
+    /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
+    /// parameter <paramref name="span"/>, and substantially removed it from the collection.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Remove<T>(this scoped PooledSmallList<T> span, T item)
+        where T : IEquatable<T>?
+    {
+        var i = span.IndexOf(item);
+
+        if (i is -1)
+            return false;
+
+        span.RemoveAt(i);
+        return true;
+    }
+
+    /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
+        where T : IEquatable<T>? =>
+        span.View.IndexOf(item);
+
+    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="capacity">
+    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
+    /// </param>
+    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
+#endif
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsSmallList<T>(this T value) => value;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
+        where T1 : T2 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
+        where T1 : T3
+        where T2 : T3 =>
+        tuple;
+
+    /// <inheritdoc cref="SmallList{T}.Uninit"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
+
+    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
+
+    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
+    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => new(iterable);
+
+    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
+    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
+    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
+    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
@@ -13804,347 +14148,6 @@ public ref
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#pragma warning disable MA0048
-
-#if NETCOREAPP3_1_OR_GREATER
-    /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
-        where T : IEquatable<T>? =>
-        span.View.Contains(item);
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
-    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
-    /// <returns>
-    /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
-    /// parameter <paramref name="span"/>, and substantially removed it from the collection.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this scoped PooledSmallList<T> span, T item)
-        where T : IEquatable<T>?
-    {
-        var i = span.IndexOf(item);
-
-        if (i is -1)
-            return false;
-
-        span.RemoveAt(i);
-        return true;
-    }
-
-    /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
-        where T : IEquatable<T>? =>
-        span.View.IndexOf(item);
-
-    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="capacity">
-    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
-    /// </param>
-    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
-#endif
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsSmallList<T>(this T value) => value;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
-        where T1 : T2 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
-        where T1 : T3
-        where T2 : T3 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
-
-    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
-
-    /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => new(iterable);
-
-    /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
-    /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable RedundantExtendsListEntry
-// ReSharper disable once CheckNamespace
-
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
-#pragma warning disable MA0048
-
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="count">The number of elements in the first half.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half is as long as the parameter <paramref name="count"/> or shorter.
-    /// </returns>
-    [Pure]
-    public static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, [NonNegativeValue] int count) =>
-        new(source.Take(count), source.Skip(count));
-
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
-    /// <see langword="true"/> and <see langword="false"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    public static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
-    {
-        List<T> t = new(), f = new();
-
-        foreach (var item in source)
-#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
-            (predicate(item) ? t : f).Add(item);
-#pragma warning restore RCS1235
-
-        return new(t, f);
-    }
-
-    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="source">The collection to split.</param>
-    /// <param name="predicate">The method that decides where the item ends up.</param>
-    /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
-    /// </returns>
-    [Pure]
-    public static Split<IEnumerable<T>> SplitWhen<T>(
-        this ICollection<T> source,
-        [InstantHandle] Func<T, bool> predicate
-    )
-    {
-        var index = source.TakeWhile(Not1(predicate)).Count();
-        return source.SplitAt(index);
-    }
-#endif
-
-/// <summary>Represents a fixed collection of 2 items.</summary>
-/// <param name="truthy">The value representing a <see langword="true"/> value.</param>
-/// <param name="falsy">The value representing a <see langword="false"/> value.</param>
-/// <typeparam name="T">The type of item in the collection.</typeparam>
-public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
-    IDictionary<bool, T>,
-    IReadOnlyCollection<T>,
-    IReadOnlyDictionary<bool, T>
-{
-    [ProvidesContext]
-    static readonly bool[] s_booleans = { true, false };
-
-#pragma warning disable SA1642
-    /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
-    /// <param name="value">The value representing both values.</param>
-#pragma warning restore SA1642
-    public Split(T value)
-        : this(value, value) { }
-
-    /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
-    [Pure]
-    public T Falsy
-    {
-        get => falsy;
-        set => falsy = value;
-    }
-
-    /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
-    [Pure]
-    public T Truthy
-    {
-        get => truthy;
-        set => truthy = value;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-    [Pure]
-    bool ICollection<T>.IsReadOnly => false;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int ICollection<T>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    public ICollection<T> Values => this;
-
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
-    [Pure]
-    bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int ICollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
-    [Pure]
-    public T this[bool key]
-    {
-        get => key ? truthy : falsy;
-        set => _ = key ? truthy = value : falsy = value;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<T>.Count => 2;
-
-    /// <inheritdoc cref="ICollection{T}.Count" />
-    [Pure, ValueRange(2)]
-    int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
-
-    /// <inheritdoc />
-    public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-    {
-        array[arrayIndex] = truthy;
-        array[arrayIndex + 1] = falsy;
-    }
-
-    /// <inheritdoc />
-    [Pure]
-    public bool Contains(T item) =>
-        EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
-
-    /// <inheritdoc />
-    [Pure]
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return truthy;
-        yield return falsy;
-    }
-
-    /// <inheritdoc />
-    void ICollection<T>.Add(T item) { }
-
-    /// <inheritdoc cref="ICollection{T}.Clear" />
-    void ICollection<T>.Clear() { }
-
-    /// <inheritdoc />
-    [Pure]
-    bool ICollection<T>.Remove(T item) => false;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc />
-    public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
-
-    /// <inheritdoc />
-    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
-    public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
-
-    /// <inheritdoc />
-    public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
-    {
-        array[arrayIndex] = new(true, truthy);
-        array[arrayIndex + 1] = new(false, falsy);
-    }
-
-    /// <inheritdoc />
-    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
-    public bool Contains(KeyValuePair<bool, T> item) =>
-        item.Key
-            ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
-            : EqualityComparer<T>.Default.Equals(falsy, item.Value);
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
-    [Pure]
-    public bool TryGetValue(bool key, out T value)
-    {
-        value = key ? truthy : falsy;
-        return true;
-    }
-
-    /// <inheritdoc cref="ICollection{T}.Clear" />
-    void ICollection<KeyValuePair<bool, T>>.Clear() { }
-
-    /// <inheritdoc />
-    [Pure]
-    bool ICollection<KeyValuePair<bool, T>>.Remove(KeyValuePair<bool, T> item) => false;
-
-    /// <inheritdoc />
-    [Pure]
-    bool IDictionary<bool, T>.Remove(bool key) => false;
-
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.ContainsKey" />
-    [Pure]
-    bool IDictionary<bool, T>.ContainsKey(bool key) => true;
-
-    /// <inheritdoc />
-    [Pure]
-    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
-    {
-        yield return new(true, truthy);
-        yield return new(false, falsy);
-    }
-
-    /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
-    [Pure]
-    bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
-
-    /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
-    /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
-    /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
-    public void Deconstruct(out T t, out T f)
-    {
-        t = truthy;
-        f = falsy;
-    }
-
-    /// <inheritdoc />
-    [Pure]
-    public override string ToString() => $"Split({truthy}, {falsy})";
-}
-
-// SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
@@ -14334,148 +14337,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 #pragma warning restore 9091
     }
 #endif
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>
-/// Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.
-/// </summary>
-#pragma warning disable MA0048
-
-    /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
-    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>
-    /// <returns>The collected result of all assertions.</returns>
-    [Pure]
-    public static IList<Assert.Result> RunAll(this IEnumerator<Assert.Result> enumerator)
-    {
-        SmallList<Assert.Result> collected = default;
-
-        while (enumerator.MoveNext())
-            collected.Add(enumerator.Current.Run());
-
-        return collected;
-    }
-
-    /// <summary>Eagerly executes all asserts of the passed in enumerable.</summary>
-    /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to execute.</param>
-    /// <returns>The collected result of all assertions.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
-    public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
-        enumerable.Select(x => x.Run()).ToListLazily();
-
-/// <inheritdoc cref="Assert"/>
-abstract partial class Assert
-{
-    /// <summary>Represents the result of running an assertion.</summary>
-    public readonly partial struct Result
-    {
-        /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
-        /// <param name="setup">The setup to store.</param>
-        public Result(Type? setup = null) => Setup = setup;
-
-        /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
-        /// <param name="assertion">The assertion to store.</param>
-        /// <param name="setup">The setup to store.</param>
-        public Result(Assert? assertion, Type? setup = null)
-        {
-            Assertion = assertion;
-            Setup = setup ?? assertion?.GetType();
-        }
-
-        /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
-        /// <param name="error">The error to store.</param>
-        /// <param name="setup">The setup to store.</param>
-        public Result(Exception? error, Type? setup)
-        {
-            Error = error;
-            Setup = setup;
-        }
-
-        /// <summary>Gets a value indicating whether <see cref="Assertion"/> has failed.</summary>
-        [MemberNotNullWhen(false, nameof(Assertion)), Pure]
-        public bool Failed => !Succeeded;
-
-        /// <summary>Gets a value indicating whether <see cref="Error"/> is set.</summary>
-        [MemberNotNullWhen(true, nameof(Error)), Pure]
-        public bool HasError => Error is not null;
-
-        /// <summary>Gets a value indicating whether this <see cref="Result"/> has executed.</summary>
-        [Pure]
-        public bool HasExecuted => !IsDefault;
-
-        /// <summary>Gets a value indicating whether <see cref="Assertion"/> was successfully instantiated.</summary>
-        [MemberNotNullWhen(true, nameof(Assertion)), Pure]
-        public bool Instantiated => Assertion is not null;
-
-        /// <summary>Gets a value indicating whether this <see cref="Result"/> is the default instance.</summary>
-        [Pure]
-        public bool IsDefault => Assertion is null && Error is null && Setup is null;
-
-        /// <summary>Gets a value indicating whether <see cref="Assertion"/> has succeeded.</summary>
-        [MemberNotNullWhen(true, nameof(Assertion)), Pure]
-        public bool Succeeded => Instantiated && Assertion.Message is null;
-
-        /// <summary>Gets the message of the assertion.</summary>
-        [Pure]
-        public string? Message => Instantiated ? Assertion.Message : null;
-
-        /// <summary>Gets the name of the assertion type.</summary>
-        [Pure]
-        public string Name => Setup.UnfoldedFullName();
-
-        /// <summary>Gets the assertion that ran.</summary>
-        [Pure]
-        public Assert? Assertion { get; }
-
-        /// <summary>Gets the error that was thrown while instantiating <see cref="Assertion"/>.</summary>
-        [Pure]
-        public Exception? Error { get; }
-
-        /// <summary>Gets the default instance.</summary>
-        [Pure]
-        public Result Default => default;
-
-        /// <summary>Gets the type that was attempted to be instantiated.</summary>
-        [Pure]
-        public Type? Setup { get; }
-
-        /// <summary>Gets the fail message.</summary>
-        /// <returns>The fail message.</returns>
-        [Pure]
-        string Fail => Setup is null ? "Assertion failed! " : $"Assertion {Setup.Name} failed! ";
-
-        /// <inheritdoc />
-        [Pure]
-        public override string ToString() =>
-            IsDefault ? "N/A" :
-            Instantiated ? Succeeded ? "OK" : $"{Fail}{Assertion.Message}" :
-            HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" : "Not determined";
-
-        /// <summary>Executes the assertion and returns the new <see cref="Result"/>.</summary>
-        /// <returns>The new instance of <see cref="Result"/> that contains the assertion results.</returns>
-        [MustUseReturnValue]
-        public Result Run()
-        {
-            if (Setup is null)
-                return default;
-
-            try
-            {
-                return new(Activator.CreateInstance(Setup, true) as Assert, Setup);
-            }
-#pragma warning disable CA1031
-            catch (Exception ex)
-#pragma warning restore CA1031
-            {
-                return new(ex, Setup);
-            }
-        }
-    }
-}
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -14805,83 +14666,304 @@ abstract partial class Assert(
 // ReSharper disable once CheckNamespace
 
 
-/// <inheritdoc cref="Assert{T}"/>
-abstract partial class Assert<T>
+/// <summary>
+/// Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.
+/// </summary>
+#pragma warning disable MA0048
+
+    /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
+    /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>
+    /// <returns>The collected result of all assertions.</returns>
+    [Pure]
+    public static IList<Assert.Result> RunAll(this IEnumerator<Assert.Result> enumerator)
+    {
+        SmallList<Assert.Result> collected = default;
+
+        while (enumerator.MoveNext())
+            collected.Add(enumerator.Current.Run());
+
+        return collected;
+    }
+
+    /// <summary>Eagerly executes all asserts of the passed in enumerable.</summary>
+    /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to execute.</param>
+    /// <returns>The collected result of all assertions.</returns>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
+        enumerable.Select(x => x.Run()).ToListLazily();
+
+/// <inheritdoc cref="Assert"/>
+abstract partial class Assert
+{
+    /// <summary>Represents the result of running an assertion.</summary>
+    public readonly partial struct Result
+    {
+        /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
+        /// <param name="setup">The setup to store.</param>
+        public Result(Type? setup = null) => Setup = setup;
+
+        /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
+        /// <param name="assertion">The assertion to store.</param>
+        /// <param name="setup">The setup to store.</param>
+        public Result(Assert? assertion, Type? setup = null)
+        {
+            Assertion = assertion;
+            Setup = setup ?? assertion?.GetType();
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
+        /// <param name="error">The error to store.</param>
+        /// <param name="setup">The setup to store.</param>
+        public Result(Exception? error, Type? setup)
+        {
+            Error = error;
+            Setup = setup;
+        }
+
+        /// <summary>Gets a value indicating whether <see cref="Assertion"/> has failed.</summary>
+        [MemberNotNullWhen(false, nameof(Assertion)), Pure]
+        public bool Failed => !Succeeded;
+
+        /// <summary>Gets a value indicating whether <see cref="Error"/> is set.</summary>
+        [MemberNotNullWhen(true, nameof(Error)), Pure]
+        public bool HasError => Error is not null;
+
+        /// <summary>Gets a value indicating whether this <see cref="Result"/> has executed.</summary>
+        [Pure]
+        public bool HasExecuted => !IsDefault;
+
+        /// <summary>Gets a value indicating whether <see cref="Assertion"/> was successfully instantiated.</summary>
+        [MemberNotNullWhen(true, nameof(Assertion)), Pure]
+        public bool Instantiated => Assertion is not null;
+
+        /// <summary>Gets a value indicating whether this <see cref="Result"/> is the default instance.</summary>
+        [Pure]
+        public bool IsDefault => Assertion is null && Error is null && Setup is null;
+
+        /// <summary>Gets a value indicating whether <see cref="Assertion"/> has succeeded.</summary>
+        [MemberNotNullWhen(true, nameof(Assertion)), Pure]
+        public bool Succeeded => Instantiated && Assertion.Message is null;
+
+        /// <summary>Gets the message of the assertion.</summary>
+        [Pure]
+        public string? Message => Instantiated ? Assertion.Message : null;
+
+        /// <summary>Gets the name of the assertion type.</summary>
+        [Pure]
+        public string Name => Setup.UnfoldedFullName();
+
+        /// <summary>Gets the assertion that ran.</summary>
+        [Pure]
+        public Assert? Assertion { get; }
+
+        /// <summary>Gets the error that was thrown while instantiating <see cref="Assertion"/>.</summary>
+        [Pure]
+        public Exception? Error { get; }
+
+        /// <summary>Gets the default instance.</summary>
+        [Pure]
+        public Result Default => default;
+
+        /// <summary>Gets the type that was attempted to be instantiated.</summary>
+        [Pure]
+        public Type? Setup { get; }
+
+        /// <summary>Gets the fail message.</summary>
+        /// <returns>The fail message.</returns>
+        [Pure]
+        string Fail => Setup is null ? "Assertion failed! " : $"Assertion {Setup.Name} failed! ";
+
+        /// <inheritdoc />
+        [Pure]
+        public override string ToString() =>
+            IsDefault ? "N/A" :
+            Instantiated ? Succeeded ? "OK" : $"{Fail}{Assertion.Message}" :
+            HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" : "Not determined";
+
+        /// <summary>Executes the assertion and returns the new <see cref="Result"/>.</summary>
+        /// <returns>The new instance of <see cref="Result"/> that contains the assertion results.</returns>
+        [MustUseReturnValue]
+        public Result Run()
+        {
+            if (Setup is null)
+                return default;
+
+            try
+            {
+                return new(Activator.CreateInstance(Setup, true) as Assert, Setup);
+            }
+#pragma warning disable CA1031
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                return new(ex, Setup);
+            }
+        }
+    }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+
+#pragma warning disable 1591, MA0048, SA1600 // Temporary because I don't feel like documenting yet.
+
+/// <summary>Defines the base class for an assertion, where a value is expected to return true.</summary>
+/// <typeparam name="T">The type of value to assert with.</typeparam>
+abstract partial class Assert<T> : Assert
+{
+    /// <inheritdoc cref="Assert.EqualTo{T}"/>
+    [Format("Expected @x to be equal to @y, received #x and #y.")]
+    public static bool EqualTo(T x, T y) => EqualTo<T>(x, y);
+
+    /// <inheritdoc cref="Assert.GreaterThan{T}"/>
+    [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y.")]
+    public static bool GreaterThan(T x, T y) => GreaterThan<T>(x, y);
+
+    /// <inheritdoc cref="Assert.GreaterThanOrEqualTo{T}"/>
+    [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y.")]
+    public static bool GreaterThanOrEqualTo(T x, T y) => GreaterThanOrEqualTo<T>(x, y);
+
+    /// <inheritdoc cref="Assert.LessThan{T}"/>
+    [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y.")]
+    public static bool LessThan(T x, T y) => LessThan<T>(x, y);
+
+    /// <inheritdoc cref="Assert.LessThanOrEqualTo{T}"/>
+    [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y.")]
+    public static bool LessThanOrEqualTo(T x, T y) => LessThanOrEqualTo<T>(x, y);
+
+    /// <inheritdoc cref="Assert.NotNull{T}"/>
+    [Format("Expected @x to be not null, received null.")]
+    public static bool NotNull(T x) => NotNull<T>(x);
+
+    /// <inheritdoc cref="Assert.Null{T}"/>
+    [Format("Expected @x to be null, received #x.")]
+    public static bool Null(T x) => Null<T>(x);
+
+    /// <inheritdoc cref="Assert.SequenceEqualTo{T}"/>
+    [Format("Expected @x to have the same items as @y, received #x and #y.")]
+    public static bool SequenceEqualTo([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
+        SequenceEqualTo<T>(x, y);
+
+    /// <inheritdoc cref="Assert.UnequalTo{T}"/>
+    [Format("Expected @x to not be equal to @y, received #x.")]
+    public static bool UnequalTo(T x, T y) => UnequalTo<T>(x, y);
+
+    /// <inheritdoc cref="Assert.Compare{T}"/>
+    [Pure]
+    public static int Compare(T x, T y) => Compare<T>(x, y);
+
+    /// <inheritdoc cref="Assert.InRangeOf{T}(T, T)"/>
+    [Pure]
+    public static Predicate<T> InRangeOf(T low, T high) => InRangeOf<T>(low, high);
+
+    /// <inheritdoc cref="Assert.Structured{T}"/>
+    [Pure]
+    public static Predicate<IEnumerable<T>> Structured(params T[] expected) => Structured<T>(expected);
+
+    /// <inheritdoc cref="Assert.Params{T}"/>
+    [Pure]
+    public static T[] Params(params T[] items) => Params<T>(items);
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+
+
+/// <inheritdoc cref="Assert"/>
+abstract partial class Assert
+{
+    /// <summary>Represents the way an assertion be formatted.</summary>
+    /// <param name="template">The template that is formatted and shown when the declaring member fails.</param>
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed partial class FormatAttribute(string template) : Attribute
+    {
+        /// <summary>The value that is substituted for the function body of the assertion.</summary>
+        public const string Assertion = "!!";
+
+        /// <summary>The value that is substituted for the function body of the first parameter's factory.</summary>
+        public const string XFactory = "@x";
+
+        /// <summary>The value that is substituted for first parameter.</summary>
+        public const string XValue = "#x";
+
+        /// <summary>The value that is substituted for the function body of the second parameter's factory.</summary>
+        public const string YFactory = "@y";
+
+        /// <summary>The value that is substituted for second parameter.</summary>
+        public const string YValue = "#y";
+
+        /// <summary>Gets the default formatter.</summary>
+        [Pure]
+        public static FormatAttribute Default { get; } = new($"Expected {Assertion} to be true.");
+
+        /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameter.</summary>
+        /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
+        [Pure]
+        public string this[string assertion] => Template.Replace(Assertion, assertion.Collapse());
+
+        /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
+        /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
+        /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
+        /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
+        [Pure]
+        public string this[string assertion, string xFactory, object? xValue] =>
+            xFactory.Collapse() is var factory && xValue.Stringify() is var value
+                ? this[assertion, factory, value, factory, value]
+                : throw Unreachable;
+
+        /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
+        /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
+        /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
+        /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
+        /// <param name="yFactory">The value to replace <see cref="YFactory"/> with.</param>
+        /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
+        [Pure]
+        public string this[string assertion, string xFactory, object? xValue, string yFactory, object? yValue] =>
+            new StringBuilder(Template)
+               .Replace(Assertion, assertion.Collapse())
+               .Replace(XFactory, xFactory.Collapse())
+               .Replace(XValue, xValue.Stringify())
+               .Replace(YFactory, yFactory.Collapse())
+               .Replace(YValue, yValue.Stringify())
+               .ToString();
+
+        /// <summary>Gets the template, before any substitution occurs.</summary>
+        [Pure]
+        public string Template => template;
+    }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+
+
+/// <inheritdoc cref="Assert"/>
+abstract partial class Assert
 {
     /// <summary>Defines the base class for an assertion, where the type must throw.</summary>
-    protected new abstract partial class Throws : Throws<Exception>
+    protected abstract partial class Throws : Throws<Exception>
     {
         /// <inheritdoc />
         protected Throws(
-            [InstantHandle] Action<T> that,
-            T x,
+            [InstantHandle] Action that,
             string? message = null,
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
-            : base(that, x, message, thatEx) { }
+            : base(that, message, thatEx) { }
 
         /// <inheritdoc />
         protected Throws(
-            [InstantHandle] Converter<T, object> that,
-            T x,
+            [InstantHandle] Func<object> that,
             string? message = null,
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
-            : base(that, x, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            T x,
-            [InstantHandle] Action<T> that,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(x, that, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            T x,
-            [InstantHandle] Converter<T, object> that,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(x, that, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            [InstantHandle] Action<T> that,
-            [InstantHandle] Func<T> x,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(that, x, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            [InstantHandle] Converter<T, object> that,
-            [InstantHandle] Func<T> x,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(that, x, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            [InstantHandle] Func<T> x,
-            [InstantHandle] Action<T> that,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(x, that, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            [InstantHandle] Func<T> x,
-            [InstantHandle] Converter<T, object> that,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(x, that, message, thatEx) { }
+            : base(that, message, thatEx) { }
     }
 }
 #endif
@@ -14975,106 +15057,6 @@ abstract partial class Assert
 // ReSharper disable once CheckNamespace
 
 
-/// <inheritdoc cref="Assert"/>
-abstract partial class Assert
-{
-    /// <summary>Defines the base class for an assertion, where the type must throw.</summary>
-    protected abstract partial class Throws : Throws<Exception>
-    {
-        /// <inheritdoc />
-        protected Throws(
-            [InstantHandle] Action that,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(that, message, thatEx) { }
-
-        /// <inheritdoc />
-        protected Throws(
-            [InstantHandle] Func<object> that,
-            string? message = null,
-            [CallerArgumentExpression(nameof(that))] string thatEx = ""
-        )
-            : base(that, message, thatEx) { }
-    }
-}
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
-
-
-/// <inheritdoc cref="Assert"/>
-abstract partial class Assert
-{
-    /// <summary>Represents the way an assertion be formatted.</summary>
-    /// <param name="template">The template that is formatted and shown when the declaring member fails.</param>
-    [AttributeUsage(AttributeTargets.Method)]
-    public sealed partial class FormatAttribute(string template) : Attribute
-    {
-        /// <summary>The value that is substituted for the function body of the assertion.</summary>
-        public const string Assertion = "!!";
-
-        /// <summary>The value that is substituted for the function body of the first parameter's factory.</summary>
-        public const string XFactory = "@x";
-
-        /// <summary>The value that is substituted for first parameter.</summary>
-        public const string XValue = "#x";
-
-        /// <summary>The value that is substituted for the function body of the second parameter's factory.</summary>
-        public const string YFactory = "@y";
-
-        /// <summary>The value that is substituted for second parameter.</summary>
-        public const string YValue = "#y";
-
-        /// <summary>Gets the default formatter.</summary>
-        [Pure]
-        public static FormatAttribute Default { get; } = new($"Expected {Assertion} to be true.");
-
-        /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameter.</summary>
-        /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
-        [Pure]
-        public string this[string assertion] => Template.Replace(Assertion, assertion.Collapse());
-
-        /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
-        /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
-        /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
-        /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
-        [Pure]
-        public string this[string assertion, string xFactory, object? xValue] =>
-            xFactory.Collapse() is var factory && xValue.Stringify() is var value
-                ? this[assertion, factory, value, factory, value]
-                : throw Unreachable;
-
-        /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
-        /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
-        /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
-        /// <param name="xValue">The value to replace <see cref="XValue"/> with.</param>
-        /// <param name="yFactory">The value to replace <see cref="YFactory"/> with.</param>
-        /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
-        [Pure]
-        public string this[string assertion, string xFactory, object? xValue, string yFactory, object? yValue] =>
-            new StringBuilder(Template)
-               .Replace(Assertion, assertion.Collapse())
-               .Replace(XFactory, xFactory.Collapse())
-               .Replace(XValue, xValue.Stringify())
-               .Replace(YFactory, yFactory.Collapse())
-               .Replace(YValue, yValue.Stringify())
-               .ToString();
-
-        /// <summary>Gets the template, before any substitution occurs.</summary>
-        [Pure]
-        public string Template => template;
-    }
-}
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
@@ -15153,6 +15135,92 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x()), message, thatEx) { }
+    }
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+
+
+/// <inheritdoc cref="Assert{T}"/>
+abstract partial class Assert<T>
+{
+    /// <summary>Defines the base class for an assertion, where the type must throw.</summary>
+    protected new abstract partial class Throws : Throws<Exception>
+    {
+        /// <inheritdoc />
+        protected Throws(
+            [InstantHandle] Action<T> that,
+            T x,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(that, x, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            [InstantHandle] Converter<T, object> that,
+            T x,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(that, x, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            T x,
+            [InstantHandle] Action<T> that,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(x, that, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            T x,
+            [InstantHandle] Converter<T, object> that,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(x, that, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            [InstantHandle] Action<T> that,
+            [InstantHandle] Func<T> x,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(that, x, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            [InstantHandle] Converter<T, object> that,
+            [InstantHandle] Func<T> x,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(that, x, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            [InstantHandle] Func<T> x,
+            [InstantHandle] Action<T> that,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(x, that, message, thatEx) { }
+
+        /// <inheritdoc />
+        protected Throws(
+            [InstantHandle] Func<T> x,
+            [InstantHandle] Converter<T, object> that,
+            string? message = null,
+            [CallerArgumentExpression(nameof(that))] string thatEx = ""
+        )
+            : base(x, that, message, thatEx) { }
     }
 }
 #endif
@@ -15360,71 +15428,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x, y(), that, message, xEx, yEx, thatEx) { }
-}
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
-
-#pragma warning disable 1591, MA0048, SA1600 // Temporary because I don't feel like documenting yet.
-
-/// <summary>Defines the base class for an assertion, where a value is expected to return true.</summary>
-/// <typeparam name="T">The type of value to assert with.</typeparam>
-abstract partial class Assert<T> : Assert
-{
-    /// <inheritdoc cref="Assert.EqualTo{T}"/>
-    [Format("Expected @x to be equal to @y, received #x and #y.")]
-    public static bool EqualTo(T x, T y) => EqualTo<T>(x, y);
-
-    /// <inheritdoc cref="Assert.GreaterThan{T}"/>
-    [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y.")]
-    public static bool GreaterThan(T x, T y) => GreaterThan<T>(x, y);
-
-    /// <inheritdoc cref="Assert.GreaterThanOrEqualTo{T}"/>
-    [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y.")]
-    public static bool GreaterThanOrEqualTo(T x, T y) => GreaterThanOrEqualTo<T>(x, y);
-
-    /// <inheritdoc cref="Assert.LessThan{T}"/>
-    [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y.")]
-    public static bool LessThan(T x, T y) => LessThan<T>(x, y);
-
-    /// <inheritdoc cref="Assert.LessThanOrEqualTo{T}"/>
-    [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y.")]
-    public static bool LessThanOrEqualTo(T x, T y) => LessThanOrEqualTo<T>(x, y);
-
-    /// <inheritdoc cref="Assert.NotNull{T}"/>
-    [Format("Expected @x to be not null, received null.")]
-    public static bool NotNull(T x) => NotNull<T>(x);
-
-    /// <inheritdoc cref="Assert.Null{T}"/>
-    [Format("Expected @x to be null, received #x.")]
-    public static bool Null(T x) => Null<T>(x);
-
-    /// <inheritdoc cref="Assert.SequenceEqualTo{T}"/>
-    [Format("Expected @x to have the same items as @y, received #x and #y.")]
-    public static bool SequenceEqualTo([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
-        SequenceEqualTo<T>(x, y);
-
-    /// <inheritdoc cref="Assert.UnequalTo{T}"/>
-    [Format("Expected @x to not be equal to @y, received #x.")]
-    public static bool UnequalTo(T x, T y) => UnequalTo<T>(x, y);
-
-    /// <inheritdoc cref="Assert.Compare{T}"/>
-    [Pure]
-    public static int Compare(T x, T y) => Compare<T>(x, y);
-
-    /// <inheritdoc cref="Assert.InRangeOf{T}(T, T)"/>
-    [Pure]
-    public static Predicate<T> InRangeOf(T low, T high) => InRangeOf<T>(low, high);
-
-    /// <inheritdoc cref="Assert.Structured{T}"/>
-    [Pure]
-    public static Predicate<IEnumerable<T>> Structured(params T[] expected) => Structured<T>(expected);
-
-    /// <inheritdoc cref="Assert.Params{T}"/>
-    [Pure]
-    public static T[] Params(params T[] items) => Params<T>(items);
 }
 #endif
 

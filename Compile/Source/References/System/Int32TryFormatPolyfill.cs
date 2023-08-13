@@ -67,7 +67,7 @@ static partial class Int32TryFormatPolyfill
 
         charsWritten = bufferLength;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        fixed (char* buffer = destination.Pointer)
+        var buffer = (char*)destination.Pointer;
 #else
         fixed (char* buffer = destination)
 #endif
@@ -104,7 +104,7 @@ static partial class Int32TryFormatPolyfill
         charsWritten = bufferLength;
 
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        fixed (char* buffer = destination.Pointer)
+        var buffer = (char*)destination.Pointer;
 #else
         fixed (char* buffer = destination)
 #endif

@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-// ReSharper disable once CheckNamespace
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-namespace Emik.Morsels;
+// ReSharper disable RedundantUsingDirective
+// ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+#pragma warning disable GlobalUsingsAnalyzer
+using Expression = System.Linq.Expressions.Expression;
 
+namespace Emik.Morsels;
+#pragma warning restore GlobalUsingsAnalyzer
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 static partial class OperatorCaching
 {
