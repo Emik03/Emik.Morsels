@@ -6484,11 +6484,16 @@ public
             return;
         }
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        del(span);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
+        try
+        {
+            del(new((void*)ptr, value));
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -6527,11 +6532,16 @@ public
             return;
         }
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        del(span, param);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
+        try
+        {
+            del(new((void*)ptr, value), param);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -6577,11 +6587,16 @@ public
             return;
         }
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        del(span, param);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
+        try
+        {
+            del(new((void*)ptr, value), param);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -6627,11 +6642,16 @@ public
             return;
         }
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        del(span, param);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
+        try
+        {
+            del(new((void*)ptr, value), param);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
@@ -6946,13 +6966,16 @@ public
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value]);
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        var result = del(span);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
-
-        return result;
+        try
+        {
+            return del(new((void*)ptr, value));
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -6993,13 +7016,16 @@ public
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value], param);
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        var result = del(span, param);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
-
-        return result;
+        try
+        {
+            return del(new((void*)ptr, value), param);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -7047,13 +7073,16 @@ public
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value], param);
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        var result = del(span, param);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
-
-        return result;
+        try
+        {
+            return del(new((void*)ptr, value), param);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -7101,13 +7130,16 @@ public
         if (IsStack<TSpan>(length))
             return del(stackalloc TSpan[value], param);
 
-        var array = Marshal.AllocHGlobal(value);
-        Span<TSpan> span = new((void*)array, value);
-        var result = del(span, param);
+        var ptr = Marshal.AllocHGlobal(value);
 
-        Marshal.FreeHGlobal(array);
-
-        return result;
+        try
+        {
+            return del(new((void*)ptr, value), param);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
+        }
     }
 
 // SPDX-License-Identifier: MPL-2.0
