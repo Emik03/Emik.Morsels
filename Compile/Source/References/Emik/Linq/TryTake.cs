@@ -204,7 +204,25 @@ static partial class TryTake
         };
     }
 #endif
-
+#if NET5_0_OR_GREATER
+    /// <summary>Tries to extract a span from the source.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
+    /// <param name="source">The source to extract the span from.</param>
+    /// <param name="span">The resulting span.</param>
+    /// <returns>Whether the span can be extracted from the parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // fast type checks that don't add a lot of overhead
+    public static bool TryGetSpan<T>(
+        [NoEnumeration, NotNullWhen(true)] this IEnumerable<T>? source,
+        out ReadOnlySpan<T> span
+    )
+        where T : struct =>
+        source?.GetType() switch
+        {
+            var x when x == typeof(T[]) || x == typeof(ImmutableArray<T>) => (span = Unsafe.As<T[]>(source)) is var _,
+            var x when x == typeof(List<T>) => (span = CollectionsMarshal.AsSpan(Unsafe.As<List<T>>(source))) is var _,
+            _ => !((span = default) is var _),
+        };
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
     {
