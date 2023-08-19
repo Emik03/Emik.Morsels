@@ -227,7 +227,7 @@ static partial class EnumMath
     /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the sum of.</param>
     /// <returns>The sum of the values in the sequence.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe T Sum<T>(this IEnumerable<T> source)
+    public static T Sum<T>(this IEnumerable<T> source)
         where T :
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         unmanaged,
@@ -235,12 +235,7 @@ static partial class EnumMath
         Enum
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         =>
-            sizeof(T) switch
-            {
-                sizeof(int) => Unsafe.As<IEnumerable<int>>(source).Sum().As<T>(),
-                sizeof(long) => (T)(object)Unsafe.As<IEnumerable<long>>(source).Sum(),
-                _ => source.TryGetSpan(out var span) ? span.Sum() : source.Aggregate(Add),
-            };
+            source.TryGetSpan(out var span) ? span.Sum() : source.Aggregate(Add);
 #else
         =>
             source.Aggregate(Add);
