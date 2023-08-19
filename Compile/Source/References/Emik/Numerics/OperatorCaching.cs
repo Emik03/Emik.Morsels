@@ -17,7 +17,7 @@ static partial class OperatorCaching
     /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
-        typeof(T) switch
+        Underlying<T>() switch
         {
             var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
             var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
@@ -50,19 +50,19 @@ static partial class OperatorCaching
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
-        typeof(T) switch
+        Underlying<T>() switch
         {
-            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + (byte)(object)r!),
+            var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! + (byte)(object)r!),
             var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
             var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
             var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
             var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
             var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + (sbyte)(object)r!),
-            var x when x == typeof(short) => (T)(object)((short)(object)l! + (short)(object)r!),
+            var x when x == typeof(sbyte) => (T)(object)(sbyte)((sbyte)(object)l! + (sbyte)(object)r!),
+            var x when x == typeof(short) => (T)(object)(short)((short)(object)l! + (short)(object)r!),
             var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
             var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + (ushort)(object)r!),
+            var x when x == typeof(ushort) => (T)(object)(ushort)((ushort)(object)l! + (ushort)(object)r!),
             _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Adder(l, r),
             _ => Fail<T>(),
         };
@@ -75,19 +75,19 @@ static partial class OperatorCaching
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
-        typeof(T) switch
+        Underlying<T>() switch
         {
-            var x when x == typeof(byte) => (T)(object)((byte)(object)l! + r),
-            var x when x == typeof(double) => (T)(object)((double)(object)l! + r),
-            var x when x == typeof(float) => (T)(object)((float)(object)l! + r),
-            var x when x == typeof(int) => (T)(object)((int)(object)l! + r),
-            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + r),
-            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)r),
-            var x when x == typeof(sbyte) => (T)(object)((sbyte)(object)l! + r),
-            var x when x == typeof(short) => (T)(object)((short)(object)l! + r),
-            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + r),
-            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)r),
-            var x when x == typeof(ushort) => (T)(object)((ushort)(object)l! + r),
+            var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! / r),
+            var x when x == typeof(double) => (T)(object)((double)(object)l! / r),
+            var x when x == typeof(float) => (T)(object)((float)(object)l! / r),
+            var x when x == typeof(int) => (T)(object)((int)(object)l! / r),
+            var x when x == typeof(nint) => (T)(object)((nint)(object)l! / r),
+            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! / (nuint)r),
+            var x when x == typeof(sbyte) => (T)(object)(sbyte)((sbyte)(object)l! / r),
+            var x when x == typeof(short) => (T)(object)(short)((short)(object)l! / r),
+            var x when x == typeof(uint) => (T)(object)((uint)(object)l! / r),
+            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! / (ulong)r),
+            var x when x == typeof(ushort) => (T)(object)(ushort)((ushort)(object)l! / r),
             _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Divider(l, r),
             _ => Fail<T>(),
         };
@@ -105,7 +105,7 @@ static partial class OperatorCaching
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T MinValue<T>() =>
-        typeof(T) switch
+        Underlying<T>() switch
         {
             var x when x == typeof(byte) => (T)(object)byte.MinValue,
             var x when x == typeof(double) => (T)(object)double.MinValue,
@@ -122,6 +122,9 @@ static partial class OperatorCaching
             var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
             _ => DirectOperators<T>.MinValue,
         };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static Type Underlying<T>() => typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T);
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
