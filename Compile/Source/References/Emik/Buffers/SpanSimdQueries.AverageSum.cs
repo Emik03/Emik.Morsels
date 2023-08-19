@@ -334,7 +334,6 @@ static partial class SpanSimdQueries
     {
         ref var ptr = ref MemoryMarshal.GetReference(span);
         var length = (nuint)span.Length;
-
         var accumulator = Vector<T>.Zero;
 
         Vector<T> overflowTestVector = new(MinValue<T>());
