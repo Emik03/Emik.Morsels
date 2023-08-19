@@ -81,6 +81,9 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
     {
+        if (typeof(T).IsEnum)
+            return span.UnderlyingSum();
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (IsNumericPrimitive<T>() &&
             Vector<T>.IsSupported &&
@@ -322,7 +325,42 @@ static partial class SpanSimdQueries
         return Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref source));
     }
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
+    {
+        // ReSharper disable RedundantNameQualifier
+        System.Diagnostics.Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
+        System.Diagnostics.Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
+
+        System.Diagnostics.Debug.Assert(
+            Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>(),
+            "Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>()"
+        ); // ReSharper restore RedundantNameQualifier
+
+        return MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.As<TFrom, TTo>(ref MemoryMarshal.GetReference(span)),
+            span.Length
+        );
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static T UnderlyingSum<T>(this in ReadOnlySpan<T> span) =>
+        typeof(T).GetEnumUnderlyingType() switch
+        {
+            var x when x == typeof(sbyte) => (T)(object)span.Underlying<T, sbyte>().Sum(),
+            var x when x == typeof(byte) => (T)(object)span.Underlying<T, byte>().Sum(),
+            var x when x == typeof(short) => (T)(object)span.Underlying<T, short>().Sum(),
+            var x when x == typeof(ushort) => (T)(object)span.Underlying<T, ushort>().Sum(),
+            var x when x == typeof(int) => (T)(object)span.Underlying<T, int>().Sum(),
+            var x when x == typeof(uint) => (T)(object)span.Underlying<T, uint>().Sum(),
+            var x when x == typeof(long) => (T)(object)span.Underlying<T, long>().Sum(),
+            var x when x == typeof(ulong) => (T)(object)span.Underlying<T, ulong>().Sum(),
+            var x when x == typeof(nint) => (T)(object)span.Underlying<T, nint>().Sum(),
+            var x when x == typeof(nuint) => (T)(object)span.Underlying<T, nuint>().Sum(),
+            _ => throw Unreachable,
+        };
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
 #pragma warning restore MA0051
