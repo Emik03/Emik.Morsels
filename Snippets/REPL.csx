@@ -2743,10 +2743,11 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         out ReadOnlySpan<T> span
     )
         where T : struct =>
-        source?.GetType() switch
+        source switch
         {
-            var x when x == typeof(T[]) || x == typeof(ImmutableArray<T>) => (span = Unsafe.As<T[]>(source)) is var _,
-            var x when x == typeof(List<T>) => (span = CollectionsMarshal.AsSpan(Unsafe.As<List<T>>(source))) is var _,
+            T[] provider => (span = provider) is var _,
+            ImmutableArray<T> provider => (span = provider.AsSpan()) is var _,
+            List<T> provider => (span = CollectionsMarshal.AsSpan(provider)) is var _,
             _ => !((span = default) is var _),
         };
 #endif
