@@ -390,7 +390,7 @@ static partial class Stringifier
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
             Enum x => $"{x.GetType().Name}({(
-                x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
+                x.IsFlagsDefined() ? $"0x{x.AsInt():x}" : x.AsInt()
             )}) = {x.EnumStringifier()}",
             Type x => UnfoldedName(x),
             Version x => x.ToShortString(),
@@ -532,9 +532,9 @@ static partial class Stringifier
 
     [Pure]
     static bool IsOneBitSet(this Enum value, Enum next) =>
-        System.Convert.ToInt32(next) is not 0 and var filter &&
+        next.AsInt() is not 0 and var filter &&
         (filter & filter - 1) is 0 &&
-        System.Convert.ToInt32(value) is var bits &&
+        value.AsInt() is var bits &&
         (bits & filter) is not 0;
 
     [Pure]
@@ -585,7 +585,7 @@ static partial class Stringifier
            .GetValues(value.GetType())
            .Cast<Enum>()
            .Where(value.IsOneBitSet)
-           .OrderBy(System.Convert.ToInt32)
+           .OrderBy(EnumMath.AsInt)
 #if WAWA
            .ToList();
 #else
@@ -594,15 +594,15 @@ static partial class Stringifier
 
         string BitStringifier(int x) =>
 #if WAWA
-            values.Find(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+            values.Find(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
 #else
-            values.FirstOrDefault(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+            values.FirstOrDefault(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
 #endif
             x is -1 ? "0" : $"1 << {x}";
 
-        return !value.IsFlagsDefined() || System.Convert.ToInt32(value) is var i && i is 0
+        return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
             ? $"{value}"
-            : Conjoin(System.Convert.ToInt32(i).Bits().Select(BitStringifier), " | ");
+            : Conjoin(i.AsInt().Bits().Select(BitStringifier), " | ");
     }
 
     static IEnumerable<int> Bits(this int number)

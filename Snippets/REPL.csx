@@ -5395,6 +5395,155 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
+
+    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
+    public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
+
+    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
+    public const string NonBreaking =
+        "\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
+
+    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
+    public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
+
+    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
+    public const string Unicode = $"{Breaking}{NonBreaking}";
+
+    /// <summary>All unicode characters that appear to be whitespace.</summary>
+    public const string Combined = $"{Unicode}{Related}";
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable CheckNamespace RedundantNameQualifier
+
+
+
+
+/// <summary>Provides extension methods for <see cref="char"/>.</summary>
+
+    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, int index, out char popped)
+    {
+        if (index >= 0 && index < str.Length)
+        {
+            popped = str[index];
+            return str.Remove(index, 1);
+        }
+
+        popped = default;
+        return str;
+    }
+
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static string Pop(this string str, Index index, out char popped) =>
+        str.Pop(index.GetOffset(str.Length), out popped);
+
+    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, Range range, out string popped)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        popped = str[range];
+        return str.Remove(startIndex, length);
+    }
+
+    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Remove(this string str, Range range)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        return str.Remove(startIndex, length);
+    }
+
+    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
+    {
+        if (index >= 0 && index < builder.Length)
+        {
+            popped = builder[index];
+            return builder.Remove(index, 1);
+        }
+
+        popped = default;
+        return builder;
+    }
+
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
+        builder.Pop(index.GetOffset(builder.Length), out popped);
+
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
+    {
+        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        popped = string.Create(
+            length,
+            (builder, startIndex),
+            static (span, tuple) =>
+            {
+                var (builder, startIndex) = tuple;
+
+                for (var i = 0; i < span.Length; i++)
+                    span[i] = builder[i + startIndex];
+            }
+        );
+#else
+        StringBuilder poppedBuilder = new(length);
+
+        for (var i = 0; i < length; i++)
+            poppedBuilder[i] = builder[startIndex + i];
+
+        popped = $"{poppedBuilder}";
+#endif
+        return builder.Remove(startIndex, length);
+    }
+
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Remove(this StringBuilder builder, Range range)
+    {
+        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+        return builder.Remove(startIndex, length);
+    }
+
+// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
@@ -5783,7 +5932,7 @@ public
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
             Enum x => $"{x.GetType().Name}({(
-                x.IsFlagsDefined() ? $"0x{System.Convert.ToInt32(x):x}" : System.Convert.ToInt32(x)
+                x.IsFlagsDefined() ? $"0x{x.AsInt():x}" : x.AsInt()
             )}) = {x.EnumStringifier()}",
             Type x => UnfoldedName(x),
             Version x => x.ToShortString(),
@@ -5925,9 +6074,9 @@ public
 
     [Pure]
     static bool IsOneBitSet(this Enum value, Enum next) =>
-        System.Convert.ToInt32(next) is not 0 and var filter &&
+        next.AsInt() is not 0 and var filter &&
         (filter & filter - 1) is 0 &&
-        System.Convert.ToInt32(value) is var bits &&
+        value.AsInt() is var bits &&
         (bits & filter) is not 0;
 
     [Pure]
@@ -5978,7 +6127,7 @@ public
            .GetValues(value.GetType())
            .Cast<Enum>()
            .Where(value.IsOneBitSet)
-           .OrderBy(System.Convert.ToInt32)
+           .OrderBy(EnumMath.AsInt)
 #if WAWA
            .ToList();
 #else
@@ -5987,15 +6136,15 @@ public
 
         string BitStringifier(int x) =>
 #if WAWA
-            values.Find(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+            values.Find(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
 #else
-            values.FirstOrDefault(y => System.Convert.ToInt32(y) == 1L << x) is { } member ? $"{member}" :
+            values.FirstOrDefault(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
 #endif
             x is -1 ? "0" : $"1 << {x}";
 
-        return !value.IsFlagsDefined() || System.Convert.ToInt32(value) is var i && i is 0
+        return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
             ? $"{value}"
-            : Conjoin(System.Convert.ToInt32(i).Bits().Select(BitStringifier), " | ");
+            : Conjoin(i.AsInt().Bits().Select(BitStringifier), " | ");
     }
 
     static IEnumerable<int> Bits(this int number)
@@ -6325,155 +6474,6 @@ public
     }
 #endif
 #endif
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
-    public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
-    public const string NonBreaking =
-        "\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
-
-    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
-    public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
-    public const string Unicode = $"{Breaking}{NonBreaking}";
-
-    /// <summary>All unicode characters that appear to be whitespace.</summary>
-    public const string Combined = $"{Unicode}{Related}";
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace RedundantNameQualifier
-
-
-
-
-/// <summary>Provides extension methods for <see cref="char"/>.</summary>
-
-    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, int index, out char popped)
-    {
-        if (index >= 0 && index < str.Length)
-        {
-            popped = str[index];
-            return str.Remove(index, 1);
-        }
-
-        popped = default;
-        return str;
-    }
-
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static string Pop(this string str, Index index, out char popped) =>
-        str.Pop(index.GetOffset(str.Length), out popped);
-
-    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, Range range, out string popped)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        popped = str[range];
-        return str.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Remove(this string str, Range range)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        return str.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
-    {
-        if (index >= 0 && index < builder.Length)
-        {
-            popped = builder[index];
-            return builder.Remove(index, 1);
-        }
-
-        popped = default;
-        return builder;
-    }
-
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
-        builder.Pop(index.GetOffset(builder.Length), out popped);
-
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        popped = string.Create(
-            length,
-            (builder, startIndex),
-            static (span, tuple) =>
-            {
-                var (builder, startIndex) = tuple;
-
-                for (var i = 0; i < span.Length; i++)
-                    span[i] = builder[i + startIndex];
-            }
-        );
-#else
-        StringBuilder poppedBuilder = new(length);
-
-        for (var i = 0; i < length; i++)
-            poppedBuilder[i] = builder[startIndex + i];
-
-        popped = $"{poppedBuilder}";
-#endif
-        return builder.Remove(startIndex, length);
-    }
-
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Remove(this StringBuilder builder, Range range)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-        return builder.Remove(startIndex, length);
-    }
 
 // SPDX-License-Identifier: MPL-2.0
 
