@@ -57,6 +57,7 @@
         <Celeste Condition="$(Celeste) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Celeste\')">C:\Program Files (x86)\Steam\steamapps\common\Celeste\</Celeste>
         <Unity Condition="$(Unity) == '' and Exists('C:\Program Files\Unity\Hub\Editor\')">$([System.IO.Directory]::GetDirectories('C:\Program Files\Unity\Hub\Editor\')[0])</Unity>
         <Celeste Condition="$(Celeste) == '' and Exists('~/Library/Application Support/Steam/steamapps/common/Celeste/')">~/Library/Application Support/Steam/steamapps/common/Celeste/</Celeste>
+        <Unity Condition="$(Unity) == '' and $([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*').Length) != 0">$([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*')[0])</Unity>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
@@ -111,9 +112,9 @@
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24.0" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.7.4" PrivateAssets="all"/>
+        <PackageReference Include="UnitGenerator" Version="1.5.0" PrivateAssets="all"/>
         <PackageReference Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all"/>
-        <PackageReference Include="UnitGenerator" Version="1.4.10" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1.0" PrivateAssets="all"/>
         <PackageReference Include="Substitute.Fody" Version="1.6.0" PrivateAssets="all"/>
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
@@ -177,7 +178,7 @@
     <!-- Nullable Reference Types and Record support for Low .NET Framework versions. -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <PackageReference Include="Divorce.Fody" Version="1.0.5" PrivateAssets="all"/>
-        <Reference Include="mscorlib" Aliases="global, ms" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
+        <Reference Include="mscorlib" HintPath="$(Morsels)/References/mscorlib.dll" Private="false"/>
     </ItemGroup>
     <!-- F# expects a System.Numerics file which doesn't exist normally. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">

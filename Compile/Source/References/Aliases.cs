@@ -5,12 +5,14 @@
 #if NETFRAMEWORK
 extern alias ms;
 #endif
-global using Attribute = System.Attribute;
 #if KTANE
 extern alias unity;
 
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
+#endif
+global using Attribute = System.Attribute;
+#if KTANE
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
 global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations.CannotApplyEqualityOperatorAttribute;

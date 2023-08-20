@@ -264,8 +264,9 @@
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false"/>
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
-        <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false" Aliases="global, unity"/>
+        <Reference Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references that F# hates for some reason. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $(IsKtane) == 'true'">
@@ -341,6 +342,12 @@
         <ItemGroup>
             <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
                 <Aliases>global, ms</Aliases>
+            </ReferencePath>
+            <ReferencePath Condition="'%(FileName)' == 'UnityEngine'">
+                <Aliases>global, unity</Aliases>
+            </ReferencePath>
+            <ReferencePath Condition="'%(FileName)' == 'UnityEngine.CoreModule'">
+                <Aliases>core</Aliases>
             </ReferencePath>
         </ItemGroup>
     </Target>
