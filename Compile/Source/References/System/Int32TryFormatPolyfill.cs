@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
-// ReSharper disable CheckNamespace RedundantAssignment
+// ReSharper disable CheckNamespace InvocationIsSkipped RedundantAssignment
 namespace System;
 #pragma warning disable RCS1163
 /// <summary>Provides the polyfill to <c>int.TryFormat</c>.</summary>
@@ -127,7 +127,8 @@ static partial class Int32TryFormatPolyfill
         do
         {
             var quotient = value / 10;
-            (value, var remainder) = (quotient, value - quotient * 10);
+            value = quotient;
+            var remainder = value - quotient * 10;
             *--bufferEnd = (char)(remainder + '0');
         } while (value != 0);
 
