@@ -199,6 +199,7 @@ using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
 using Enum = System.Enum;
+using static EnumMath;
 using static System.Linq.Expressions.Expression;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
@@ -5649,7 +5650,7 @@ public
     public static int FieldCount(
 #if !WAWA
         this
-#endif
+#endif // ReSharper disable once BadPreprocessorIndent
             Version? version
     ) =>
         version switch
@@ -5825,7 +5826,6 @@ public
         Format(span, version);
         return span.ToString();
     }
-
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if !WAWA
     /// <summary>Gets the full type name, with its generics extended.</summary>
@@ -5935,7 +5935,7 @@ public
                 x.IsFlagsDefined() ? $"0x{x.AsInt():x}" : x.AsInt()
             )}) = {x.EnumStringifier()}",
             Type x => UnfoldedName(x),
-            Version x => x.ToShortString(),
+            Version x => ToShortString(x),
 #if KTANE
             Object x => x.name,
 #endif
@@ -6008,15 +6008,15 @@ public
     static void Push(char c, scoped ref Span<char> span)
     {
         span[0] = c;
-        span = span[1..];
+        span = span.Slice(1);
     }
 
-    // ReSharper disable RedundantAssignment
+    // ReSharper disable InvocationIsSkipped RedundantAssignment
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);
         System.Diagnostics.Debug.Assert(it, "TryFormat");
-        span = span[slice..];
+        span = span.Slice(slice);
     }
 
     // ReSharper disable RedundantAssignment
@@ -6144,7 +6144,7 @@ public
 
         return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
             ? $"{value}"
-            : Conjoin(i.AsInt().Bits().Select(BitStringifier), " | ");
+            : Conjoin(i.Bits().Select(BitStringifier), " | ");
     }
 
     static IEnumerable<int> Bits(this int number)
