@@ -744,7 +744,7 @@ sealed class SpanDebugView<T>
     public SpanDebugView(ReadOnlySpan<T> span) => Items = span.ToArray();
 
     /// <summary>Gets the items of this span.</summary>
-    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden), Pure]
-    public T[] Items { get; }
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    public T[] Items { [Pure] get; }
 }
 #endif
