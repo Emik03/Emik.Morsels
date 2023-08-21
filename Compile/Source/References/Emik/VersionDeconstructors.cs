@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable MissingIndent UsePositionalDeconstructionPattern
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable CS1574, CS1580
@@ -17,8 +18,18 @@ static partial class VersionDeconstructors
         this Version? version,
         [NonNegativeValue] out int major,
         [NonNegativeValue] out int minor
-    ) =>
-        (major, minor) = version is null ? default : (version.Major, version.Minor);
+    )
+    {
+        if (version is { Major: var maj, Minor: var min })
+        {
+            major = maj;
+            minor = min;
+            return;
+        }
+
+        major = default;
+        minor = default;
+    }
 
     /// <summary>Deconstructs this instance into the major, minor, and build versions.</summary>
     /// <remarks><para>
@@ -33,8 +44,20 @@ static partial class VersionDeconstructors
         [NonNegativeValue] out int major,
         [NonNegativeValue] out int minor,
         [NonNegativeValue] out int build
-    ) =>
-        (major, minor, build) = version is null ? default : (version.Major, version.Minor, version.Build);
+    )
+    {
+        if (version is { Major: var maj, Minor: var min, Build: var bui })
+        {
+            major = maj;
+            minor = min;
+            build = bui;
+            return;
+        }
+
+        major = default;
+        minor = default;
+        build = default;
+    }
 
     /// <summary>Deconstructs this instance into the major, minor, build, and revision versions.</summary>
     /// <remarks><para>
@@ -51,9 +74,22 @@ static partial class VersionDeconstructors
         [NonNegativeValue] out int minor,
         [NonNegativeValue] out int build,
         [NonNegativeValue] out int revision
-    ) =>
-        (major, minor, build, revision) =
-        version is null ? default : (version.Major, version.Minor, version.Build, version.Revision);
+    )
+    {
+        if (version is { Major: var maj, Minor: var min, Build: var bui, Revision: var rev })
+        {
+            major = maj;
+            minor = min;
+            build = bui;
+            revision = rev;
+            return;
+        }
+
+        major = default;
+        minor = default;
+        build = default;
+        revision = default;
+    }
 
     /// <summary>
     /// Deconstructs this instance into the major, minor, build, major revision, and minor revision versions.
@@ -74,8 +110,25 @@ static partial class VersionDeconstructors
         [NonNegativeValue] out int build,
         [NonNegativeValue] out int majorRevision,
         [NonNegativeValue] out int minorRevision
-    ) =>
-        (major, minor, build, majorRevision, minorRevision) = version is null
-            ? default
-            : (version.Major, version.Minor, version.Build, version.MajorRevision, version.MinorRevision);
+    )
+    {
+        if (version is
+        {
+            Major: var maj, Minor: var min, Build: var bui, MajorRevision: var majRev, MinorRevision: var minRev,
+        })
+        {
+            major = maj;
+            minor = min;
+            build = bui;
+            majorRevision = majRev;
+            minorRevision = minRev;
+            return;
+        }
+
+        major = default;
+        minor = default;
+        build = default;
+        majorRevision = default;
+        minorRevision = default;
+    }
 }
