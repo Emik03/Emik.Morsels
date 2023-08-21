@@ -9657,6 +9657,7 @@ readonly
         return Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref source));
     }
 #endif
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
@@ -9691,7 +9692,7 @@ readonly
             var x when x == typeof(nuint) => (T)(object)span.Underlying<T, nuint>().Sum(),
             _ => throw Unreachable,
         };
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
