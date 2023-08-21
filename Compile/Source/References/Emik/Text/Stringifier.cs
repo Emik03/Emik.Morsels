@@ -9,7 +9,6 @@ namespace Emik.Morsels;
 #endif
 
 using Enum = System.Enum;
-using static EnumMath;
 
 #if !(NET20 || NET30)
 using static System.Linq.Expressions.Expression;
@@ -585,7 +584,11 @@ static partial class Stringifier
            .GetValues(value.GetType())
            .Cast<Enum>()
            .Where(value.IsOneBitSet)
+#if CSHARPREPL
+           .OrderBy(AsInt)
+#else
            .OrderBy(EnumMath.AsInt)
+#endif
 #if WAWA
            .ToList();
 #else

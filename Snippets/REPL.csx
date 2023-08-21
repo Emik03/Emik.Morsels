@@ -199,7 +199,6 @@ using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
 using Enum = System.Enum;
-using static EnumMath;
 using static System.Linq.Expressions.Expression;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
@@ -6127,7 +6126,11 @@ public
            .GetValues(value.GetType())
            .Cast<Enum>()
            .Where(value.IsOneBitSet)
+#if CSHARPREPL
+           .OrderBy(AsInt)
+#else
            .OrderBy(EnumMath.AsInt)
+#endif
 #if WAWA
            .ToList();
 #else

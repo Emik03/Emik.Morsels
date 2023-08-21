@@ -141,7 +141,8 @@ static partial class Int32TryFormatPolyfill
         while (--digits >= 0 || value != 0)
         {
             var quotient = value / 10;
-            (value, var remainder) = (quotient, value - quotient * 10);
+            var remainder = value - quotient * 10;
+            value = quotient;
             *--bufferEnd = (char)(remainder + '0');
         }
 
