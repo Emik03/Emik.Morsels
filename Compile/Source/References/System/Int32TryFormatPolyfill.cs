@@ -127,8 +127,8 @@ static partial class Int32TryFormatPolyfill
         do
         {
             var quotient = value / 10;
-            value = quotient;
             var remainder = value - quotient * 10;
+            value = quotient;
             *--bufferEnd = (char)(remainder + '0');
         } while (value != 0);
 
