@@ -340,7 +340,7 @@
             </ReferencePath>
         </ItemGroup>
     </Target>
-    <!-- Allows mscorlib to have a distinct alias. -->
+    <!-- Allows specific libraries to have a distinct alias. -->
     <Target Name="ChangeAliasesOfStrongNameAssemblies" BeforeTargets="FindReferenceAssembliesForReferences;ResolveReferences">
         <ItemGroup>
             <ReferencePath Condition="'%(FileName)' == 'mscorlib'">
