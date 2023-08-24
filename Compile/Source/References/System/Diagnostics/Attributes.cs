@@ -91,15 +91,16 @@ namespace System.Diagnostics.CodeAnalysis
     [AttributeUsage(AttributeTargets.Parameter)]
     sealed partial class NotNullWhenAttribute : Attribute
     {
+#pragma warning disable SA1642 // Using cref can cause ambiguity on which reference is used.
         /// <summary>
-        /// Initializes a new instance of the <see cref="global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute"/>
+        /// Initializes a new instance of the <c>NotNullWhenAttribute</c>
         /// class with the specified return value condition.
         /// </summary>
         /// <param name="returnValue">
         /// The return value condition. If the method returns this value, the associated parameter will not be null.
         /// </param>
         public NotNullWhenAttribute(bool returnValue) => ReturnValue = returnValue;
-
+#pragma warning restore SA1642
         /// <summary>
         /// Gets a value indicating whether the return value condition is <see langword="true"/> or <see langword="false"/>.
         /// </summary>
