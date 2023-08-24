@@ -92,8 +92,8 @@ namespace System.Diagnostics.CodeAnalysis
     sealed partial class NotNullWhenAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NotNullWhenAttribute"/> class
-        /// with the specified return value condition.
+        /// Initializes a new instance of the <see cref="global::System.Diagnostics.CodeAnalysis.NotNullWhenAttribute"/>
+        /// class with the specified return value condition.
         /// </summary>
         /// <param name="returnValue">
         /// The return value condition. If the method returns this value, the associated parameter will not be null.
