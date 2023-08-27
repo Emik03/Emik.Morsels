@@ -18,7 +18,8 @@ static partial class GuardedFactory
     /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) => iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
+    public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
 }
 #endif
 
@@ -43,15 +44,21 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
     public bool IsReadOnly => list.IsReadOnly;
+
+    /// <inheritdoc />
+    bool ICollection<T?>.IsReadOnly => IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(None), NonNegativeValue, Pure]
     public int Count => list.Count;
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    int ICollection<T?>.Count => Count;
+
+    /// <inheritdoc cref="ICollection{T}.Add"/>
     [CollectionAccess(UpdatedContent)]
     public void Add(T? item)
     {
@@ -59,11 +66,11 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
             list.Add(item);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ICollection{T}.Clear"/>
     [CollectionAccess(ModifyExistingContent)]
     public void Clear() => list.Clear();
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ICollection{T}.CopyTo"/>
     [CollectionAccess(Read)]
     public void CopyTo(T?[] array, int arrayIndex)
     {
@@ -87,15 +94,30 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
             list.RemoveAt(index);
     }
 
+    /// <inheritdoc />
+    void ICollection<T?>.Add(T? item) => Add(item);
+
+    /// <inheritdoc />
+    void ICollection<T?>.Clear() => Clear();
+
+    /// <inheritdoc />
+    void ICollection<T?>.CopyTo(T?[] array, int arrayIndex) => CopyTo(array, arrayIndex);
+
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
     public bool Contains(T? item) => item is not null && list.Contains(item);
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="ICollection{T}.Remove"/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
     public bool Remove(T? item) => item is not null && list.Remove(item);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    bool ICollection<T?>.Contains(T? item) => Contains(item);
+
+    /// <inheritdoc />
+    bool ICollection<T?>.Remove(T? item) => Remove(item);
+
+    /// <inheritdoc cref="IList{T}.IndexOf"/>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
 
