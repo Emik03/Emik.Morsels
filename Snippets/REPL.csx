@@ -12196,6 +12196,7 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
 /// </summary>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+[NoStructuralTyping]
 public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
     /// <inheritdoc cref="IList{T}.this"/>
@@ -15689,6 +15690,10 @@ static partial class ManyQueries
     [MustUseReturnValue]
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
+
+/// <summary>Signifies to ignore this when determining potential interfaces that can be implemented.</summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Struct)]
+sealed partial class NoStructuralTypingAttribute : Attribute;
 
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
