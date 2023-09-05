@@ -226,13 +226,6 @@ abstract partial class Assert(
     public static Func<decimal, decimal, bool> RoughlyEqualTo(decimal margin) =>
         [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
             Math.Abs(x - y) <= Math.Abs(margin);
-#if NET5_0_OR_GREATER
-    /// <inheritdoc cref="RoughlyEqualTo(float)"/>
-    [Pure]
-    public static Func<NFloat, NFloat, bool> RoughlyEqualTo(NFloat margin) =>
-        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
-            Math.Abs(x - y) <= Math.Abs(margin);
-#endif
 #endif
 
     /// <summary>Executes every assertion and gets all of the assertions that failed.</summary>
