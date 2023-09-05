@@ -262,6 +262,10 @@ static partial class ManyQueries
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
 
+/// <summary>Signifies to ignore this when determining potential interfaces that can be implemented.</summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Struct)]
+sealed partial class NoStructuralTypingAttribute : Attribute;
+
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
 sealed partial class InlineAttribute : Attribute
