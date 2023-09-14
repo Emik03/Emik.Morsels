@@ -461,10 +461,10 @@ static partial class Stringifier
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-
+#pragma warning disable IDE0057
     static void Push(char c, scoped ref Span<char> span)
     {
-        span[0] = c;
+        span[0] = c; // ReSharper disable once ReplaceSliceWithRangeIndexer
         span = span.Slice(1);
     }
 
@@ -472,10 +472,10 @@ static partial class Stringifier
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);
-        System.Diagnostics.Debug.Assert(it, "TryFormat");
+        System.Diagnostics.Debug.Assert(it, "TryFormat"); // ReSharper disable once ReplaceSliceWithRangeIndexer
         span = span.Slice(slice);
     }
-
+#pragma warning restore IDE0057
     // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {

@@ -6056,10 +6056,10 @@ public
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-
+#pragma warning disable IDE0057
     static void Push(char c, scoped ref Span<char> span)
     {
-        span[0] = c;
+        span[0] = c; // ReSharper disable once ReplaceSliceWithRangeIndexer
         span = span.Slice(1);
     }
 
@@ -6067,10 +6067,10 @@ public
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);
-        System.Diagnostics.Debug.Assert(it, "TryFormat");
+        System.Diagnostics.Debug.Assert(it, "TryFormat"); // ReSharper disable once ReplaceSliceWithRangeIndexer
         span = span.Slice(slice);
     }
-
+#pragma warning restore IDE0057
     // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {
@@ -9989,7 +9989,7 @@ public partial struct Two<T>(T first, T second) :
     [Pure]
     public static implicit operator Two<T>((T First, T Second) tuple) => (tuple.First, tuple.Second);
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object)"/>
     [Pure]
     public override bool Equals(object? obj) => obj is Two<T> two && Equals(two);
 
@@ -11894,7 +11894,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     }
 #endif
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IList{T}.this"/>
     public IList<T> this[[NonNegativeValue] int index]
     {
         [Pure] get => new Slice(this, index);
@@ -13336,7 +13336,7 @@ public partial struct SmallList<T> :
                 Rest!.Contains(item, comparer),
         };
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object)"/>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is SmallList<T> other && Equals(other);
 
