@@ -665,7 +665,7 @@ partial struct SmallList<T> :
                 Rest!.Contains(item, comparer),
         };
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object)"/>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is SmallList<T> other && Equals(other);
 

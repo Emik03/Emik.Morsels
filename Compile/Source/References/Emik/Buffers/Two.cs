@@ -210,7 +210,7 @@ partial struct Two<T>(T first, T second) :
     [Pure]
     public static implicit operator Two<T>((T First, T Second) tuple) => (tuple.First, tuple.Second);
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object)"/>
     [Pure]
     public override bool Equals(object? obj) => obj is Two<T> two && Equals(two);
 
