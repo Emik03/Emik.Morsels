@@ -114,6 +114,10 @@ static partial class Two
 readonly
 #endif
 partial struct Two<T>(T first, T second) :
+#if NET7_0_OR_GREATER
+    IComparisonOperators<Two<T>, Two<T>, bool>,
+    IEqualityOperators<Two<T>, Two<T>, bool>,
+#endif
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     ITuple,
 #endif
