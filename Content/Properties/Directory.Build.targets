@@ -166,7 +166,7 @@
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
         <IsKtane>true</IsKtane>
         <NoTests>true</NoTests>
-        <FileVersion>4.3.1</FileVersion>
+        <FileVersion>4.3</FileVersion>
         <Nullable>annotations</Nullable>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
