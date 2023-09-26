@@ -10,6 +10,12 @@ namespace Emik.Morsels;
 /// <summary>Methods to create methods.</summary>
 static partial class MethodGroupings
 {
+    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
+    {
+        /// <inheritdoc />
+        public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
+    }
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
@@ -86,10 +92,4 @@ static partial class MethodGroupings
 
     /// <inheritdoc cref="Invoke"/>
     public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
-
-    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
-    {
-        /// <inheritdoc />
-        public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
-    }
 }
