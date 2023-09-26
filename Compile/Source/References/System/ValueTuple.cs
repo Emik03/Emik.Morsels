@@ -601,6 +601,7 @@ namespace System
     /// </summary>
     /// <typeparam name="T1">The type of the tuple's first component.</typeparam>
     /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -793,6 +794,7 @@ namespace System
     /// <typeparam name="T1">The type of the tuple's first component.</typeparam>
     /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
     /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1005,6 +1007,7 @@ namespace System
     /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
     /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
     /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1240,6 +1243,7 @@ namespace System
     /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
     /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
     /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1497,6 +1501,7 @@ namespace System
     /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
     /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
     /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1778,6 +1783,7 @@ namespace System
     /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
     /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
     /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -2089,6 +2095,7 @@ namespace System
     /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
     /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
     /// <typeparam name="TRest">The type of the tuple's eighth component.</typeparam>
+    [NoImplicitOperator, NoStructuralTyping]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
