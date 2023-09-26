@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
@@ -947,3 +947,4 @@ static partial class Similarity
         public int Length => length;
     }
 }
+#endif
