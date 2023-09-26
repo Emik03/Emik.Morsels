@@ -35,6 +35,7 @@ static partial class Headless
 
 /// <summary>Represents a list with no head.</summary>
 /// <typeparam name="T">The type of list to encapsulate.</typeparam>
+[NoStructuralTyping]
 #pragma warning disable MA0048
 sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048

@@ -39,6 +39,9 @@ static partial class MatrixFactory
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
 /// <typeparam name="T">The type of item within the list.</typeparam>
+#if !WAWA
+[NoStructuralTyping]
+#endif
 sealed partial class Matrix<T> : IList<IList<T>>
 {
     /// <summary>Represents a slice of a matrix.</summary>
@@ -258,7 +261,8 @@ sealed partial class Matrix<T> : IList<IList<T>>
 
     /// <inheritdoc />
     [Pure]
-    public IEnumerator<IList<T>> GetEnumerator() => Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+    public IEnumerator<IList<T>> GetEnumerator() =>
+        Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
 
     /// <inheritdoc />
     [Pure]

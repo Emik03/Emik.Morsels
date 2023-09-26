@@ -9,7 +9,7 @@ using static Span;
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
-[StructLayout(LayoutKind.Sequential)]
+[NoStructuralTyping, StructLayout(LayoutKind.Sequential)]
 partial struct SmallList<T> :
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     IConvertible,

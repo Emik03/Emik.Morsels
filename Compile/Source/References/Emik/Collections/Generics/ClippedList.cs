@@ -28,6 +28,7 @@ static partial class ClippedFactory
 /// </summary>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+[NoStructuralTyping]
 sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc cref="IList{T}.this"/>
