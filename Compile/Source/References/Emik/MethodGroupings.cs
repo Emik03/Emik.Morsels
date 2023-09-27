@@ -20,6 +20,14 @@ static partial class MethodGroupings
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
 
+    /// <summary>Performs nothing.</summary>
+    public static void Noop() { }
+
+    /// <summary>Performs nothing.</summary>
+    /// <typeparam name="T">The type of discard.</typeparam>
+    /// <param name="_">The discard.</param>
+    public static void Noop<T>(T _) { }
+
     /// <summary>Create a delegate.</summary>
     /// <param name="del">The method group.</param>
     /// <returns>An invokable method.</returns>

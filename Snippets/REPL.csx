@@ -796,9 +796,23 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 /// <summary>Methods to create methods.</summary>
 
+    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
+    {
+        /// <inheritdoc />
+        public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
+    }
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
+
+    /// <summary>Performs nothing.</summary>
+    public static void Noop() { }
+
+    /// <summary>Performs nothing.</summary>
+    /// <typeparam name="T">The type of discard.</typeparam>
+    /// <param name="_">The discard.</param>
+    public static void Noop<T>(T _) { }
 
     /// <summary>Create a delegate.</summary>
     /// <param name="del">The method group.</param>
@@ -872,12 +886,6 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     /// <inheritdoc cref="Invoke"/>
     public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
-
-    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
-    {
-        /// <inheritdoc />
-        public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
-    }
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -3496,7 +3504,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #pragma warning restore CS8619
 
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
@@ -4442,6 +4450,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         /// <summary>Gets the length.</summary>
         public int Length => length;
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -6615,7 +6624,7 @@ public
     /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
     /// </para></remarks>
     public const int StackallocSize = 1 << 10;
-
+#if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <param name="length">The length of the buffer.</param>
@@ -6815,6 +6824,7 @@ public
             Marshal.FreeHGlobal(ptr);
         }
     }
+#endif
 
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
@@ -7095,7 +7105,7 @@ public
     public static ReadOnlySpan<T> In<T>(in T reference) =>
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
 #endif
-
+#if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="TResult">The return type.</typeparam>
@@ -7303,6 +7313,7 @@ public
             Marshal.FreeHGlobal(ptr);
         }
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -11324,6 +11335,7 @@ public abstract class FixedGenerator(
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
 /// <param name="list">The list to encapsulate.</param>
 /// <typeparam name="T">The type of element in the list.</typeparam>
+[NoStructuralTyping]
 public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc />
@@ -11760,6 +11772,9 @@ readonly
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
 /// <typeparam name="T">The type of item within the list.</typeparam>
+#if !WAWA
+[NoStructuralTyping]
+#endif
 public sealed partial class Matrix<T> : IList<IList<T>>
 {
     /// <summary>Represents a slice of a matrix.</summary>
@@ -11979,7 +11994,8 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 
     /// <inheritdoc />
     [Pure]
-    public IEnumerator<IList<T>> GetEnumerator() => Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+    public IEnumerator<IList<T>> GetEnumerator() =>
+        Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
 
     /// <inheritdoc />
     [Pure]
@@ -12015,6 +12031,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 /// </summary>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+[NoStructuralTyping]
 public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc cref="IList{T}.this"/>
@@ -12107,6 +12124,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 /// </summary>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+[NoStructuralTyping]
 public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc cref="IList{T}.this"/>
@@ -12351,6 +12369,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
 
 /// <summary>Represents a list with no head.</summary>
 /// <typeparam name="T">The type of list to encapsulate.</typeparam>
+[NoStructuralTyping]
 #pragma warning disable MA0048
 public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
@@ -12684,7 +12703,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
-[StructLayout(LayoutKind.Sequential)]
+[NoStructuralTyping, StructLayout(LayoutKind.Sequential)]
 public partial struct SmallList<T> :
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     IConvertible,
