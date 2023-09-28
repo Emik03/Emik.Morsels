@@ -12062,17 +12062,14 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 8) / (nuint.Size * 4) > 0)
         {
-            (*ptr).Debug();
-            (*(nuint*)(value + 1) - 4).Debug();
-
             for (; ptr <= (nuint*)value - 4; ptr += 4)
-                sum += BitOperations.PopCount(*ptr).Debug() +
-                    BitOperations.PopCount(ptr[1]).Debug() +
-                    BitOperations.PopCount(ptr[2]).Debug() +
-                    BitOperations.PopCount(ptr[3]).Debug();
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]);
 
             if (sizeof(T) % nuint.Size * 4 is 0)
-                return sum.Debug();
+                return sum;
         }
 
         if (sizeof(T) % (nuint.Size * 4) / (nuint.Size * 2) > 0)
