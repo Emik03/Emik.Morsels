@@ -63,9 +63,9 @@ static partial class SplitFactory
 #endif
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
+/// <typeparam name="T">The type of item in the collection.</typeparam>
 /// <param name="truthy">The value representing a <see langword="true"/> value.</param>
 /// <param name="falsy">The value representing a <see langword="false"/> value.</param>
-/// <typeparam name="T">The type of item in the collection.</typeparam>
 sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IDictionary<bool, T>,
     IReadOnlyCollection<T>,

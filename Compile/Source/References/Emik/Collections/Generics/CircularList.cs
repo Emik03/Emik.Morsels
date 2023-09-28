@@ -27,8 +27,8 @@ static partial class CircularFactory
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.
 /// </summary>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 [NoStructuralTyping]
 sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {

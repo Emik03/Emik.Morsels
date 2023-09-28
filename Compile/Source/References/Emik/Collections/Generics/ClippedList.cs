@@ -26,8 +26,8 @@ static partial class ClippedFactory
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 [NoStructuralTyping]
 sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {

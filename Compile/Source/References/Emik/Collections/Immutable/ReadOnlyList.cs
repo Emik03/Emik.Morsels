@@ -26,8 +26,8 @@ static partial class ReadOnlyFactory
 #endif
 
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
-/// <param name="list">The list to encapsulate.</param>
 /// <typeparam name="T">The type of element in the list.</typeparam>
+/// <param name="list">The list to encapsulate.</param>
 [NoStructuralTyping]
 sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
