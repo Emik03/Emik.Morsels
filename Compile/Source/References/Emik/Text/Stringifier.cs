@@ -605,10 +605,10 @@ static partial class Stringifier
 
         return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
             ? $"{value}"
-            : Conjoin(i.Bits().Select(BitStringifier), " | ");
+            : Conjoin(i.ToBits().Select(BitStringifier), " | ");
     }
 
-    static IEnumerable<int> Bits(this int number)
+    static IEnumerable<int> ToBits(this int number)
     {
         const int BitsInByte = 8;
 
