@@ -13,6 +13,21 @@ readonly
     partial struct Bits<T>
 {
     /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
+    /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe bool Eq(in T left, in T right)
+    {
+        fixed (T* l = &left)
+        fixed (T* r = &right)
+            return Eq(l, r);
+    }
+
+    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -78,6 +93,17 @@ readonly
                 return false;
 
         return true;
+    }
+
+    /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
+    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
+    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Or(in T read, ref T write)
+    {
+        fixed (T* r = &read)
+        fixed (T* w = &write)
+            Or(r, w);
     }
 
     /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
