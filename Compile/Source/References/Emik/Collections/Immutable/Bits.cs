@@ -13,10 +13,26 @@ static partial class BitsFactory
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
         where T : unmanaged =>
         source;
+
+    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseOr<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.Or(next, ref t);
+
+        return t;
+    }
 }
 
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>

@@ -11748,10 +11748,26 @@ readonly
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
         where T : unmanaged =>
         source;
+
+    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseOr<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.Or(next, ref t);
+
+        return t;
+    }
 
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
@@ -12200,6 +12216,17 @@ readonly
 #endif
     partial struct Bits<T>
 {
+    /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
+    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
+    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Or(scoped in T read, scoped ref T write)
+    {
+        fixed (T* l = &read)
+        fixed (T* r = &write)
+            Or(l, r);
+    }
+
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe bool Contains(T item)

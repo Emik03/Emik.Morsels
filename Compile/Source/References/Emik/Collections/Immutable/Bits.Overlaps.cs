@@ -12,6 +12,17 @@ readonly
 #endif
     partial struct Bits<T>
 {
+    /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
+    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
+    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void Or(scoped in T read, scoped ref T write)
+    {
+        fixed (T* l = &read)
+        fixed (T* r = &write)
+            Or(l, r);
+    }
+
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe bool Contains(T item)
