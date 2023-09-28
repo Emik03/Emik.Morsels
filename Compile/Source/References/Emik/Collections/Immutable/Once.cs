@@ -53,8 +53,8 @@ static partial class OnceFactory
 }
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
-/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
+/// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
 #if CSHARPREPL
 public
