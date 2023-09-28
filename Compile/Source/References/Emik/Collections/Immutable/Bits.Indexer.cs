@@ -35,21 +35,21 @@ readonly
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static unsafe T Nth(T* p, int x)
+    static unsafe T Nth(T* p, int index)
 #pragma warning restore MA0051
     {
-        var index = x;
+        var x = index;
         var ptr = (nuint*)p;
 
-        for (; ptr < p + 1 && index > 0; ptr++)
-            if (BitOperations.PopCount(*ptr) is var i && i <= index)
-                index -= i;
+        for (; ptr < p + 1 && x > 0; ptr++)
+            if (BitOperations.PopCount(*ptr) is var i && i <= x)
+                x -= i;
             else
                 break;
 
-        for (; ptr < (byte*)p + sizeof(T) && index > 0; ptr = (nuint*)((byte*)ptr + 1))
-            if (BitOperations.PopCount(*(byte*)ptr) is var i && i <= index)
-                index -= i;
+        for (; ptr < (byte*)p + sizeof(T) && x > 0; ptr = (nuint*)((byte*)ptr + 1))
+            if (BitOperations.PopCount(*(byte*)ptr) is var i && i <= x)
+                x -= i;
             else
                 break;
 
@@ -57,15 +57,15 @@ readonly
 
         for (var i = 0; i < 8; i++)
             if ((last & 1 << i) is not 0)
-                if (index is 0)
+                if (x is 0)
                 {
                     T t = default;
                     ((byte*)&t)[(byte*)ptr - (byte*)p] = (byte)(1 << i);
                     return t;
                 }
                 else
-                    index--;
+                    x--;
 
-        throw new ArgumentOutOfRangeException(nameof(index), x, null);
+        throw new ArgumentOutOfRangeException(nameof(index), index, null);
     }
 }

@@ -29,12 +29,12 @@ readonly
     static unsafe int PopCount(T* value)
 #pragma warning restore MA0051
     {
-        var ptr = (nuint*)value;
+        var ptr = (nuint*)value++;
         var sum = 0;
 
         if (sizeof(T) / (nuint.Size * 16) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 16; ptr += 16)
+            for (; ptr <= (nuint*)value - 16; ptr += 16)
                 sum += BitOperations.PopCount(*ptr) +
                     BitOperations.PopCount(ptr[1]) +
                     BitOperations.PopCount(ptr[2]) +
@@ -58,7 +58,7 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 16) / (nuint.Size * 8) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 8; ptr += 8)
+            for (; ptr <= (nuint*)value - 8; ptr += 8)
                 sum += BitOperations.PopCount(*ptr) +
                     BitOperations.PopCount(ptr[1]) +
                     BitOperations.PopCount(ptr[2]) +
@@ -74,7 +74,7 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 8) / (nuint.Size * 4) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 4; ptr += 4)
+            for (; ptr <= (nuint*)value - 4; ptr += 4)
                 sum += BitOperations.PopCount(*ptr) +
                     BitOperations.PopCount(ptr[1]) +
                     BitOperations.PopCount(ptr[2]) +
@@ -86,7 +86,7 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 4) / (nuint.Size * 2) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 2; ptr += 2)
+            for (; ptr <= (nuint*)value - 2; ptr += 2)
                 sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
 
             if (sizeof(T) % nuint.Size * 2 is 0)
@@ -95,7 +95,7 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 2) / nuint.Size > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1); ptr++)
+            for (; ptr <= (nuint*)value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
 
             if (sizeof(T) % nuint.Size is 0)

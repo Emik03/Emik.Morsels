@@ -11903,6 +11903,7 @@ readonly
     {
         readonly T _value = value;
 
+        /// <summary>Gets the current mask.</summary>
         [Pure]
         public byte Mask
         {
@@ -11910,6 +11911,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
 
+        /// <summary>Gets the current offset.</summary>
         [Pure]
         public int Offset
         {
@@ -12015,12 +12017,12 @@ readonly
     static unsafe int PopCount(T* value)
 #pragma warning restore MA0051
     {
-        var ptr = (nuint*)value;
+        var ptr = (nuint*)value++;
         var sum = 0;
 
         if (sizeof(T) / (nuint.Size * 16) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 16; ptr += 16)
+            for (; ptr <= (nuint*)value - 16; ptr += 16)
                 sum += BitOperations.PopCount(*ptr) +
                     BitOperations.PopCount(ptr[1]) +
                     BitOperations.PopCount(ptr[2]) +
@@ -12044,7 +12046,7 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 16) / (nuint.Size * 8) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 8; ptr += 8)
+            for (; ptr <= (nuint*)value - 8; ptr += 8)
                 sum += BitOperations.PopCount(*ptr) +
                     BitOperations.PopCount(ptr[1]) +
                     BitOperations.PopCount(ptr[2]) +
@@ -12060,19 +12062,22 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 8) / (nuint.Size * 4) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 4; ptr += 4)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]);
+            (*ptr).Debug();
+            (*(nuint*)(value + 1) - 4).Debug();
+
+            for (; ptr <= (nuint*)value - 4; ptr += 4)
+                sum += BitOperations.PopCount(*ptr).Debug() +
+                    BitOperations.PopCount(ptr[1]).Debug() +
+                    BitOperations.PopCount(ptr[2]).Debug() +
+                    BitOperations.PopCount(ptr[3]).Debug();
 
             if (sizeof(T) % nuint.Size * 4 is 0)
-                return sum;
+                return sum.Debug();
         }
 
         if (sizeof(T) % (nuint.Size * 4) / (nuint.Size * 2) > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1) - 2; ptr += 2)
+            for (; ptr <= (nuint*)value - 2; ptr += 2)
                 sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
 
             if (sizeof(T) % nuint.Size * 2 is 0)
@@ -12081,7 +12086,7 @@ readonly
 
         if (sizeof(T) % (nuint.Size * 2) / nuint.Size > 0)
         {
-            for (; ptr <= (nuint*)(&value + 1); ptr++)
+            for (; ptr <= (nuint*)value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
 
             if (sizeof(T) % nuint.Size is 0)
@@ -12149,21 +12154,21 @@ readonly
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static unsafe T Nth(T* p, int x)
+    static unsafe T Nth(T* p, int index)
 #pragma warning restore MA0051
     {
-        var index = x;
+        var x = index;
         var ptr = (nuint*)p;
 
-        for (; ptr < p + 1 && index > 0; ptr++)
-            if (BitOperations.PopCount(*ptr) is var i && i <= index)
-                index -= i;
+        for (; ptr < p + 1 && x > 0; ptr++)
+            if (BitOperations.PopCount(*ptr) is var i && i <= x)
+                x -= i;
             else
                 break;
 
-        for (; ptr < (byte*)p + sizeof(T) && index > 0; ptr = (nuint*)((byte*)ptr + 1))
-            if (BitOperations.PopCount(*(byte*)ptr) is var i && i <= index)
-                index -= i;
+        for (; ptr < (byte*)p + sizeof(T) && x > 0; ptr = (nuint*)((byte*)ptr + 1))
+            if (BitOperations.PopCount(*(byte*)ptr) is var i && i <= x)
+                x -= i;
             else
                 break;
 
@@ -12171,16 +12176,16 @@ readonly
 
         for (var i = 0; i < 8; i++)
             if ((last & 1 << i) is not 0)
-                if (index is 0)
+                if (x is 0)
                 {
                     T t = default;
                     ((byte*)&t)[(byte*)ptr - (byte*)p] = (byte)(1 << i);
                     return t;
                 }
                 else
-                    index--;
+                    x--;
 
-        throw new ArgumentOutOfRangeException(nameof(index), x, null);
+        throw new ArgumentOutOfRangeException(nameof(index), index, null);
     }
 }
 

@@ -169,6 +169,7 @@ readonly
     {
         readonly T _value = value;
 
+        /// <summary>Gets the current mask.</summary>
         [Pure]
         public byte Mask
         {
@@ -176,6 +177,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
 
+        /// <summary>Gets the current offset.</summary>
         [Pure]
         public int Offset
         {
