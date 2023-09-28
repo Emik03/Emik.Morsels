@@ -93,10 +93,8 @@ readonly
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CopyTo(T[] array, int arrayIndex)
     {
-        using var that = GetEnumerator();
-
-        while (that.MoveNext())
-            array[arrayIndex++] = that.Current;
+        foreach (var next in this)
+            array[arrayIndex++] = next;
     }
 
     /// <inheritdoc />
