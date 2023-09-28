@@ -12016,6 +12016,27 @@ readonly
 #endif
     partial struct Bits<T>
 {
+    /// <inheritdoc cref="IList{T}.this[int]"/>
+    [CollectionAccess(CollectionAccessType.Read), Pure]
+    public unsafe T this[int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            fixed (T* ptr = &_value)
+                return Nth(ptr, index);
+        }
+    }
+
+    /// <inheritdoc cref="IList{T}.this"/>
+    [Pure]
+    T IList<T>.this[int index]
+    {
+        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => this[index];
+        [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
+    }
+
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(CollectionAccessType.Read), Pure]
     public unsafe int Count
@@ -12128,42 +12149,6 @@ readonly
                 _ => throw Unreachable,
             }
         );
-}
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
-
-
-/// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
-{
-    /// <inheritdoc cref="IList{T}.this[int]"/>
-    [CollectionAccess(CollectionAccessType.Read), Pure]
-    public unsafe T this[int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            fixed (T* ptr = &_value)
-                return Nth(ptr, index);
-        }
-    }
-
-    /// <inheritdoc cref="IList{T}.this"/>
-    [Pure]
-    T IList<T>.this[int index]
-    {
-        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => this[index];
-        [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
