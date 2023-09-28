@@ -23,13 +23,13 @@ static partial class BitsFactory
     /// <param name="source">The item.</param>
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseOr<T>(this IEnumerable<T> source)
+    public static unsafe T BitwiseOr<T>(this IEnumerable<T> source)
         where T : unmanaged
     {
         T t = default;
 
         foreach (var next in source)
-            Bits<T>.Or(next, ref t);
+            Bits<T>.Or(&next, &t);
 
         return t;
     }

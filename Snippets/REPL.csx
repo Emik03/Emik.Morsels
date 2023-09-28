@@ -11758,13 +11758,13 @@ readonly
     /// <param name="source">The item.</param>
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseOr<T>(this IEnumerable<T> source)
+    public static unsafe T BitwiseOr<T>(this IEnumerable<T> source)
         where T : unmanaged
     {
         T t = default;
 
         foreach (var next in source)
-            Bits<T>.Or(next, ref t);
+            Bits<T>.Or(&next, &t);
 
         return t;
     }
@@ -12216,15 +12216,128 @@ readonly
 #endif
     partial struct Bits<T>
 {
+    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
+    /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    public static unsafe bool Eq(T* left, T* right)
+    {
+        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            for (; l <= upper - 64; l += 64, r += 64)
+                if (!Vector512.EqualsAll(Vector512.Load(l), Vector512.Load(r)))
+                    return false;
+
+            if (sizeof(T) % 64 is 0)
+                return true;
+        }
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            for (; l <= upper - 32; l += 32, r += 32)
+                if (!Vector256.EqualsAll(Vector256.Load(l), Vector256.Load(r)))
+                    return false;
+
+            if (sizeof(T) % 32 is 0)
+                return true;
+        }
+
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            for (; l <= upper - 16; l += 16, r += 16)
+                if (!Vector128.EqualsAll(Vector128.Load(l), Vector128.Load(r)))
+                    return false;
+
+            if (sizeof(T) % 16 is 0)
+                return true;
+        }
+
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            for (; l <= upper - 8; l += 8, r += 8)
+                if (!Vector64.EqualsAll(Vector64.Load(l), Vector64.Load(r)))
+                    return false;
+
+            if (sizeof(T) % 8 is 0)
+                return true;
+        }
+#endif
+        for (; l <= upper - nint.Size; l += nint.Size, r += nint.Size)
+            if (*(nuint*)l != *(nuint*)r)
+                return false;
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return true;
+
+        for (; l < upper; l++, r++)
+            if (*l != *r)
+                return false;
+
+        return true;
+    }
+
     /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
+    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Or(scoped in T read, scoped ref T write)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    public static unsafe void Or(T* read, T* write)
     {
-        fixed (T* l = &read)
-        fixed (T* r = &write)
-            Or(l, r);
+        byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            for (; l <= upper - 64; l += 64, r += 64)
+                Vector512.BitwiseOr(Vector512.Load(l), Vector512.Load(r)).StoreAligned(r);
+
+            if (sizeof(T) % 64 is 0)
+                return;
+        }
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            for (; l <= upper - 32; l += 32, r += 32)
+                Vector256.BitwiseOr(Vector256.Load(l), Vector256.Load(r)).StoreAligned(r);
+
+            if (sizeof(T) % 32 is 0)
+                return;
+        }
+
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            for (; l <= upper - 16; l += 16, r += 16)
+                Vector128.BitwiseOr(Vector128.Load(l), Vector128.Load(r)).StoreAligned(r);
+
+            if (sizeof(T) % 16 is 0)
+                return;
+        }
+
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            for (; l <= upper - 8; l += 8, r += 8)
+                Vector64.BitwiseOr(Vector64.Load(l), Vector64.Load(r)).StoreAligned(r);
+
+            if (sizeof(T) % 8 is 0)
+                return;
+        }
+#endif
+        for (; l <= upper - nuint.Size; l += nuint.Size, r += nuint.Size)
+            *(nuint*)r = *(nuint*)l | *(nuint*)r;
+
+        if (sizeof(T) % nuint.Size is 0)
+            return;
+
+        for (; l < upper; l++, r++)
+            *r = (byte)(*l | *r);
     }
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
@@ -12319,84 +12432,6 @@ readonly
 
         fixed (T* ptr = &_value)
             return Eq(ptr, &t);
-    }
-
-    // ReSharper disable once CognitiveComplexity
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe void Or(T* left, T* right)
-    {
-        var i = 0;
-        var l = (byte*)left;
-        var r = (byte*)right;
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(Vector512<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector512<nuint>); i += sizeof(Vector512<nuint>))
-                Vector512.BitwiseOr(Vector512.Load(l + i), Vector512.Load(r + i)).StoreAligned(r + i);
-#endif
-#if NETCOREAPP3_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(Vector256<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector256<nuint>); i += sizeof(Vector256<nuint>))
-                Vector256.BitwiseOr(Vector256.Load(l + i), Vector256.Load(r + i)).StoreAligned(r + i);
-
-        if (Vector128.IsHardwareAccelerated && sizeof(Vector128<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector128<nuint>); i += sizeof(Vector128<nuint>))
-                Vector128.BitwiseOr(Vector128.Load(l + i), Vector128.Load(r + i)).StoreAligned(r + i);
-
-        if (Vector64.IsHardwareAccelerated && sizeof(Vector64<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector64<nuint>); i += sizeof(Vector64<nuint>))
-                Vector64.BitwiseOr(Vector64.Load(l + i), Vector64.Load(r + i)).StoreAligned(r + i);
-#endif
-        for (; i <= sizeof(T) - sizeof(nuint); i++)
-            *(nuint*)r = *(nuint*)(l + i) | *(nuint*)(r + i);
-
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-
-        for (; i < sizeof(T); i++)
-            r[i] = (byte)(l[i] | r[i]);
-    }
-
-    // ReSharper disable once CognitiveComplexity
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe bool Eq(T* left, T* right)
-    {
-        var i = 0;
-        var l = (byte*)left;
-        var r = (byte*)right;
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(Vector512<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector512<nuint>); i += sizeof(Vector512<nuint>))
-                if (!Vector512.EqualsAll(Vector512.Load(l + i), Vector512.Load(r + i)))
-                    return false;
-#endif
-#if NETCOREAPP3_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(Vector256<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector256<nuint>); i += sizeof(Vector256<nuint>))
-                if (!Vector256.EqualsAll(Vector256.Load(l + i), Vector256.Load(r + i)))
-                    return false;
-
-        if (Vector128.IsHardwareAccelerated && sizeof(Vector128<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector128<nuint>); i += sizeof(Vector128<nuint>))
-                if (!Vector128.EqualsAll(Vector128.Load(l + i), Vector128.Load(r + i)))
-                    return false;
-
-        if (Vector64.IsHardwareAccelerated && sizeof(Vector64<nuint>) <= sizeof(T))
-            for (; i <= sizeof(T) - sizeof(Vector64<nuint>); i += sizeof(Vector64<nuint>))
-                if (!Vector64.EqualsAll(Vector64.Load(l + i), Vector64.Load(r + i)))
-                    return false;
-#endif
-        for (; i <= sizeof(T) - sizeof(nuint); i += sizeof(nuint))
-            if (*((nuint*)l + i) != *((nuint*)r + i))
-                return false;
-
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return true;
-
-        for (; i < sizeof(T); i++)
-            if (l[i] != r[i])
-                return false;
-
-        return true;
     }
 }
 
