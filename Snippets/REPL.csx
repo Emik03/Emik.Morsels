@@ -11937,7 +11937,7 @@ readonly
         [CollectionAccess(Read), Pure]
         readonly object IEnumerator.Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Current;
         }
 
         /// <summary>Implicitly calls the constructor.</summary>
