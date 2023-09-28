@@ -66,11 +66,11 @@ readonly
                 return true;
         }
 #endif
-        for (; l <= upper - nint.Size; l += nint.Size, r += nint.Size)
+        for (; l <= upper - nuint.Size; l += nuint.Size, r += nuint.Size)
             if (*(nuint*)l != *(nuint*)r)
                 return false;
 
-        if (sizeof(T) % sizeof(nuint) is 0)
+        if (sizeof(T) % nuint.Size is 0)
             return true;
 
         for (; l < upper; l++, r++)
