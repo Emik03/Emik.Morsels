@@ -44,11 +44,10 @@ global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif
-
-#if KTANE
 #if !WAWA
 global using Range = System.Range;
 #endif
+#if KTANE
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
