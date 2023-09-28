@@ -210,6 +210,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
+using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable MissingIndent UsePositionalDeconstructionPattern
@@ -6209,10 +6210,10 @@ public
 
         return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
             ? $"{value}"
-            : Conjoin(i.Bits().Select(BitStringifier), " | ");
+            : Conjoin(i.ToBits().Select(BitStringifier), " | ");
     }
 
-    static IEnumerable<int> Bits(this int number)
+    static IEnumerable<int> ToBits(this int number)
     {
         const int BitsInByte = 8;
 
@@ -11333,8 +11334,8 @@ public abstract class FixedGenerator(
 #endif
 
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
-/// <param name="list">The list to encapsulate.</param>
 /// <typeparam name="T">The type of element in the list.</typeparam>
+/// <param name="list">The list to encapsulate.</param>
 [NoStructuralTyping]
 public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
@@ -11416,8 +11417,8 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
     public static Yes<T> Forever<T>(this T source) => source;
 
 /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
-/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
+/// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
 readonly
@@ -11525,8 +11526,8 @@ public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnume
         source.HasValue ? new(source.Value) : default;
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
-/// <param name="value">The item to use.</param>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
+/// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
 #if CSHARPREPL
 public
@@ -11733,6 +11734,642 @@ readonly
     }
 }
 #endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
+
+
+
+/// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
+
+    /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
+    [Pure]
+    public static Bits<T> AsBits<T>(this T source)
+        where T : unmanaged =>
+        source;
+
+/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
+/// <typeparam name="T">The type of the item to yield.</typeparam>
+/// <param name="value">The item to use.</param>
+[StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    where T : unmanaged
+{
+    [ProvidesContext]
+    readonly T _value = value;
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    bool ICollection<T>.IsReadOnly
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => true;
+    }
+
+    /// <summary>Gets the item to use.</summary>
+    [CollectionAccess(Read), ProvidesContext, Pure]
+    public T Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value;
+    }
+
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
+
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
+
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Enumerator([ProvidesContext] Bits<T> value) => value.Current;
+
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator T(Bits<T> value) => value.Current;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        using var that = GetEnumerator();
+
+        while (that.MoveNext())
+            array[arrayIndex++] = that.Current;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Add(T item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IList<T>.Insert(int index, T item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IList<T>.RemoveAt(int index) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool ICollection<T>.Remove(T item) => false;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool ISet<T>.Add(T item) => false;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public int IndexOf(T item)
+    {
+        using var e = new Enumerator(item);
+
+        if (!e.MoveNext())
+            return -1;
+
+        var offset = e.Offset;
+        var mask = e.Mask;
+
+        if (e.MoveNext())
+            return -1;
+
+        using var that = GetEnumerator();
+
+        for (var i = 0; that.MoveNext(); i++)
+            if (that.Offset == offset && that.Mask == mask)
+                return i;
+
+        return -1;
+    }
+
+    /// <summary>
+    /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
+    /// </summary>
+    /// <returns>Itself.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public Enumerator GetEnumerator() => value;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
+    /// <param name="value">The item to use.</param>
+    [StructLayout(LayoutKind.Auto)]
+    public partial struct Enumerator(T value) : IEnumerator<T>
+    {
+        readonly T _value = value;
+
+        [Pure]
+        public byte Mask
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        }
+
+        [Pure]
+        public int Offset
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(Read), Pure]
+        public readonly unsafe T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                T t = default;
+
+                if (Offset < sizeof(T))
+                    *((byte*)&t + Offset) = Mask;
+
+                return t;
+            }
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(Read), Pure]
+        readonly object IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => value;
+        }
+
+        /// <summary>Implicitly calls the constructor.</summary>
+        /// <param name="value">The value to pass into the constructor.</param>
+        /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator Enumerator(T value) => new(value);
+
+        /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+        /// <param name="value">The value to call <see cref="Current"/>.</param>
+        /// <returns>The value that was passed in to this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator T(Enumerator value) => value.Current;
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void IDisposable.Dispose() { }
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe bool MoveNext()
+        {
+            if (Offset is 0 && Mask is 0)
+                Mask = 1;
+            else
+                Mask <<= 1;
+
+            fixed (T* val = &_value)
+                for (; Offset < sizeof(T); Offset++, Mask = 1)
+                    for (; Mask is not 0; Mask <<= 1)
+                        if ((((byte*)val)[Offset] & Mask) is not 0)
+                            return true;
+
+            return false;
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            Mask = 0;
+            Offset = 0;
+        }
+    }
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+
+
+/// <inheritdoc cref="Bits{T}"/>
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>
+{
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(CollectionAccessType.Read), Pure]
+    public unsafe int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            fixed (T* ptr = &_value)
+                return PopCount(ptr);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
+    static unsafe int PopCount(T* value)
+#pragma warning restore MA0051
+    {
+        var ptr = (nuint*)value;
+        var sum = 0;
+
+        if (sizeof(T) / (nuint.Size * 16) > 0)
+        {
+            for (; ptr <= (nuint*)(&value + 1) - 16; ptr += 16)
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]) +
+                    BitOperations.PopCount(ptr[4]) +
+                    BitOperations.PopCount(ptr[5]) +
+                    BitOperations.PopCount(ptr[6]) +
+                    BitOperations.PopCount(ptr[7]) +
+                    BitOperations.PopCount(ptr[8]) +
+                    BitOperations.PopCount(ptr[9]) +
+                    BitOperations.PopCount(ptr[10]) +
+                    BitOperations.PopCount(ptr[11]) +
+                    BitOperations.PopCount(ptr[12]) +
+                    BitOperations.PopCount(ptr[13]) +
+                    BitOperations.PopCount(ptr[14]) +
+                    BitOperations.PopCount(ptr[15]);
+
+            if (sizeof(T) % nuint.Size * 16 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (nuint.Size * 16) / (nuint.Size * 8) > 0)
+        {
+            for (; ptr <= (nuint*)(&value + 1) - 8; ptr += 8)
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]) +
+                    BitOperations.PopCount(ptr[4]) +
+                    BitOperations.PopCount(ptr[5]) +
+                    BitOperations.PopCount(ptr[6]) +
+                    BitOperations.PopCount(ptr[7]);
+
+            if (sizeof(T) % nuint.Size * 8 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (nuint.Size * 8) / (nuint.Size * 4) > 0)
+        {
+            for (; ptr <= (nuint*)(&value + 1) - 4; ptr += 4)
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]);
+
+            if (sizeof(T) % nuint.Size * 4 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (nuint.Size * 4) / (nuint.Size * 2) > 0)
+        {
+            for (; ptr <= (nuint*)(&value + 1) - 2; ptr += 2)
+                sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
+
+            if (sizeof(T) % nuint.Size * 2 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (nuint.Size * 2) / nuint.Size > 0)
+        {
+            for (; ptr <= (nuint*)(&value + 1); ptr++)
+                sum += BitOperations.PopCount(*ptr);
+
+            if (sizeof(T) % nuint.Size is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % nuint.Size is 0)
+            return sum;
+
+        return sum + PopCountRemainder((byte*)ptr);
+    }
+
+    // ReSharper disable UnusedParameter.Local
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static unsafe int PopCountRemainder(byte* remainder) =>
+        BitOperations.PopCount(
+            (sizeof(T) % nuint.Size) switch
+            {
+                1 => *remainder,
+                2 => *(ushort*)remainder,
+                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
+                4 => *(uint*)remainder,
+                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
+                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
+                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
+                _ => throw Unreachable,
+            }
+        );
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+
+
+/// <inheritdoc cref="Bits{T}"/>
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>
+{
+    /// <inheritdoc cref="IList{T}.this[int]"/>
+    [CollectionAccess(CollectionAccessType.Read), Pure]
+    public unsafe T this[int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            fixed (T* ptr = &_value)
+                return Nth(ptr, index);
+        }
+    }
+
+    /// <inheritdoc cref="IList{T}.this"/>
+    [Pure]
+    T IList<T>.this[int index]
+    {
+        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => this[index];
+        [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
+    static unsafe T Nth(T* p, int x)
+#pragma warning restore MA0051
+    {
+        var index = x;
+        var ptr = (nuint*)p;
+
+        for (; ptr < p + 1 && index > 0; ptr++)
+            if (BitOperations.PopCount(*ptr) is var i && i <= index)
+                index -= i;
+            else
+                break;
+
+        for (; ptr < (byte*)p + sizeof(T) && index > 0; ptr = (nuint*)((byte*)ptr + 1))
+            if (BitOperations.PopCount(*(byte*)ptr) is var i && i <= index)
+                index -= i;
+            else
+                break;
+
+        var last = *(byte*)ptr;
+
+        for (var i = 0; i < 8; i++)
+            if ((last & 1 << i) is not 0)
+                if (index is 0)
+                {
+                    T t = default;
+                    ((byte*)&t)[(byte*)ptr - (byte*)p] = (byte)(1 << i);
+                    return t;
+                }
+                else
+                    index--;
+
+        throw new ArgumentOutOfRangeException(nameof(index), x, null);
+    }
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+
+
+/// <inheritdoc cref="Bits{T}"/>
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>
+{
+    /// <inheritdoc cref="ICollection{T}.Contains"/>
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe bool Contains(T item)
+    {
+        using var that = GetEnumerator();
+
+        while (that.MoveNext())
+        {
+            var current = that.Current;
+
+            if (Eq(&current, &item))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
+    {
+        T t = default;
+        using var e = GetEnumerator();
+        var collection = other.ToCollectionLazily();
+
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var next in this)
+            if (!collection.Contains(e.Current))
+                return false;
+            else
+                Or(&next, &t);
+
+        return true;
+    }
+
+    /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
+    {
+        T t = default;
+
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (var next in other)
+            if (!Contains(next))
+                return true;
+            else
+                Or(&next, &t);
+
+        fixed (T* ptr = &_value)
+            return !Eq(ptr, &t);
+    }
+
+    /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
+    {
+        var collection = other.ToCollectionLazily();
+
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var next in this)
+            if (!collection.Contains(next))
+                return false;
+
+        return true;
+    }
+
+    /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) => other.All(Contains);
+
+    /// <inheritdoc cref="ISet{T}.Overlaps" />
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Any(Contains);
+
+    /// <inheritdoc cref="ISet{T}.SetEquals" />
+    [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe bool SetEquals([InstantHandle] IEnumerable<T> other)
+    {
+        T t = default;
+
+        foreach (var next in other)
+        {
+            using Enumerator e = next;
+
+            if (!e.MoveNext() || e.MoveNext())
+                return false;
+
+            Or(&next, &t);
+        }
+
+        fixed (T* ptr = &_value)
+            return Eq(ptr, &t);
+    }
+
+    // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static unsafe void Or(T* left, T* right)
+    {
+        var i = 0;
+        var l = (byte*)left;
+        var r = (byte*)right;
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(Vector512<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector512<nuint>); i += sizeof(Vector512<nuint>))
+                Vector512.BitwiseOr(Vector512.Load(l + i), Vector512.Load(r + i)).StoreAligned(r + i);
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(Vector256<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector256<nuint>); i += sizeof(Vector256<nuint>))
+                Vector256.BitwiseOr(Vector256.Load(l + i), Vector256.Load(r + i)).StoreAligned(r + i);
+
+        if (Vector128.IsHardwareAccelerated && sizeof(Vector128<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector128<nuint>); i += sizeof(Vector128<nuint>))
+                Vector128.BitwiseOr(Vector128.Load(l + i), Vector128.Load(r + i)).StoreAligned(r + i);
+
+        if (Vector64.IsHardwareAccelerated && sizeof(Vector64<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector64<nuint>); i += sizeof(Vector64<nuint>))
+                Vector64.BitwiseOr(Vector64.Load(l + i), Vector64.Load(r + i)).StoreAligned(r + i);
+#endif
+        for (; i <= sizeof(T) - sizeof(nuint); i++)
+            *(nuint*)r = *(nuint*)(l + i) | *(nuint*)(r + i);
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return;
+
+        for (; i < sizeof(T); i++)
+            r[i] = (byte)(l[i] | r[i]);
+    }
+
+    // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static unsafe bool Eq(T* left, T* right)
+    {
+        var i = 0;
+        var l = (byte*)left;
+        var r = (byte*)right;
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(Vector512<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector512<nuint>); i += sizeof(Vector512<nuint>))
+                if (!Vector512.EqualsAll(Vector512.Load(l + i), Vector512.Load(r + i)))
+                    return false;
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(Vector256<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector256<nuint>); i += sizeof(Vector256<nuint>))
+                if (!Vector256.EqualsAll(Vector256.Load(l + i), Vector256.Load(r + i)))
+                    return false;
+
+        if (Vector128.IsHardwareAccelerated && sizeof(Vector128<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector128<nuint>); i += sizeof(Vector128<nuint>))
+                if (!Vector128.EqualsAll(Vector128.Load(l + i), Vector128.Load(r + i)))
+                    return false;
+
+        if (Vector64.IsHardwareAccelerated && sizeof(Vector64<nuint>) <= sizeof(T))
+            for (; i <= sizeof(T) - sizeof(Vector64<nuint>); i += sizeof(Vector64<nuint>))
+                if (!Vector64.EqualsAll(Vector64.Load(l + i), Vector64.Load(r + i)))
+                    return false;
+#endif
+        for (; i <= sizeof(T) - sizeof(nuint); i += sizeof(nuint))
+            if (*((nuint*)l + i) != *((nuint*)r + i))
+                return false;
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return true;
+
+        for (; i < sizeof(T); i++)
+            if (l[i] != r[i])
+                return false;
+
+        return true;
+    }
+}
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
@@ -12029,8 +12666,8 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.
 /// </summary>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 [NoStructuralTyping]
 public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
@@ -12122,8 +12759,8 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 [NoStructuralTyping]
 public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
@@ -12216,8 +12853,8 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
 /// an out of range value will always give the <see langword="default"/> value.
 /// </summary>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
+/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
 [NoStructuralTyping]
 public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
@@ -12507,9 +13144,9 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 #endif
 
 /// <summary>Represents a fixed collection of 2 items.</summary>
+/// <typeparam name="T">The type of item in the collection.</typeparam>
 /// <param name="truthy">The value representing a <see langword="true"/> value.</param>
 /// <param name="falsy">The value representing a <see langword="false"/> value.</param>
-/// <typeparam name="T">The type of item in the collection.</typeparam>
 public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IDictionary<bool, T>,
     IReadOnlyCollection<T>,
