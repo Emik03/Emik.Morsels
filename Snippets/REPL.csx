@@ -12220,17 +12220,21 @@ readonly
     public unsafe bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-        using var e = GetEnumerator();
         var collection = other.ToCollectionLazily();
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
-            if (!collection.Contains(e.Current))
-                return false;
-            else
+            if (collection.Contains(next))
                 Or(&next, &t);
+            else
+                return false;
 
-        return true;
+        // ReSharper disable once LoopCanBeConvertedToQuery
+        foreach (var next in collection)
+            if (!Contains(next))
+                return true;
+
+        return false;
     }
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
@@ -12241,10 +12245,10 @@ readonly
 
         // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var next in other)
-            if (!Contains(next))
-                return true;
-            else
+            if (Contains(next))
                 Or(&next, &t);
+            else
+                return false;
 
         fixed (T* ptr = &_value)
             return !Eq(ptr, &t);
@@ -12279,14 +12283,10 @@ readonly
         T t = default;
 
         foreach (var next in other)
-        {
-            using Enumerator e = next;
-
-            if (!e.MoveNext() || e.MoveNext())
+            if (new Enumerator(next) is var e && !e.MoveNext() || e.MoveNext())
                 return false;
-
-            Or(&next, &t);
-        }
+            else
+                Or(&next, &t);
 
         fixed (T* ptr = &_value)
             return Eq(ptr, &t);
