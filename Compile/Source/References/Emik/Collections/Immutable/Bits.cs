@@ -147,7 +147,6 @@ readonly
             return -1;
 
         var offset = e.Offset;
-        var mask = e.Mask;
 
         if (e.MoveNext())
             return -1;
@@ -155,8 +154,10 @@ readonly
         using var that = GetEnumerator();
 
         for (var i = 0; that.MoveNext(); i++)
-            if (that.Offset == offset && that.Mask == mask)
+            if (that.Offset == offset)
                 return i;
+            else if (that.Offset > offset)
+                return -1;
 
         return -1;
     }
@@ -181,26 +182,32 @@ readonly
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
+        const int ByteBits = sizeof(byte) * 8, Start = -1;
+
         readonly T _value = value;
 
-        /// <summary>Gets the current mask.</summary>
-        [Pure]
-        public byte Mask
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
-        }
-
         /// <summary>Gets the current offset.</summary>
-        [Pure]
+        [CollectionAccess(None), Pure]
         public int Offset
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        } = Start;
+
+        [CollectionAccess(None), Pure]
+        readonly int Bits
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Offset % ByteBits;
+        }
+
+        [CollectionAccess(None), Pure]
+        readonly int Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Offset / ByteBits;
         }
 
         /// <inheritdoc />
-        [CollectionAccess(Read), Pure]
+        [CollectionAccess(None), Pure]
         public readonly unsafe T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -208,15 +215,15 @@ readonly
             {
                 T t = default;
 
-                if (Offset < sizeof(T))
-                    *((byte*)&t + Offset) = Mask;
+                if (Offset >= 0 && Offset < sizeof(T) * ByteBits)
+                    *((byte*)&t + Index) |= (byte)(1 << Bits);
 
-                return t;
+                return *&t;
             }
         }
 
         /// <inheritdoc />
-        [CollectionAccess(Read), Pure]
+        [CollectionAccess(None), Pure]
         readonly object IEnumerator.Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Current;
@@ -239,29 +246,108 @@ readonly
         readonly void IDisposable.Dispose() { }
 
         /// <inheritdoc />
-        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
         public unsafe bool MoveNext()
+#pragma warning restore MA0051
         {
-            if (Offset is 0 && Mask is 0)
-                Mask = 1;
-            else
-                Mask <<= 1;
+            if (Offset >= sizeof(T) * ByteBits)
+                return false;
+
+            Offset++;
 
             fixed (T* val = &_value)
-                for (; Offset < sizeof(T); Offset++, Mask = 1)
-                    for (; Mask is not 0; Mask <<= 1)
-                        if ((((byte*)val)[Offset] & Mask) is not 0)
-                            return true;
+            {
+                if (Bits is 0)
+                    goto AlignedUInt64;
+
+                if (EnsureCapacity<ulong>())
+                    if (FindNext<ulong, ushort>(val))
+                        return true;
+                    else
+                        goto AlignedUInt64;
+
+                if (EnsureCapacity<uint>())
+                    if (FindNext<uint, ushort>(val))
+                        return true;
+                    else
+                        goto AlignedUInt32;
+
+                if (EnsureCapacity<ushort>())
+                    if (FindNext<ushort, ushort>(val))
+                        return true;
+                    else
+                        goto AlignedUInt16; // ReSharper disable once InvertIf
+
+                if (EnsureCapacity<byte>())
+                    if (FindNext<byte, ushort>(val))
+                        return true;
+                    else
+                        goto AlignedByte;
+
+                return false;
+
+            AlignedUInt64:
+
+                while (EnsureCapacity<ulong>())
+                    if (FindNext<ulong, byte>(val))
+                        return true;
+
+            AlignedUInt32:
+
+                while (EnsureCapacity<uint>())
+                    if (FindNext<uint, byte>(val))
+                        return true;
+
+            AlignedUInt16:
+
+                while (EnsureCapacity<ushort>())
+                    if (FindNext<ushort, byte>(val))
+                        return true;
+
+            AlignedByte:
+
+                while (EnsureCapacity<byte>())
+                    if (FindNext<byte, byte>(val))
+                        return true;
+            }
 
             return false;
         }
 
+        [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool EnsureCapacity<TTake>()
+            where TTake : unmanaged =>
+            sizeof(T) >= sizeof(TTake) && Index + sizeof(TTake) <= sizeof(T);
+
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindNext<TTake, TCarry>(T* val)
+            where TTake : unmanaged
+            where TCarry : unmanaged
+        {
+            var ptr = (byte*)val + Index;
+
+            var read = sizeof(TTake) switch
+            {
+                1 => *ptr,
+                2 => *(ushort*)ptr,
+                4 => *(uint*)ptr,
+                8 => *(ulong*)ptr,
+                _ => throw Unreachable,
+            };
+
+            var shifted = read >> Bits * (sizeof(TCarry) - 1);
+            var foundNext = shifted is not 0;
+
+            Offset += foundNext
+                ? BitOperations.TrailingZeroCount(shifted)
+                : sizeof(T) * ByteBits - Offset % sizeof(T) * ByteBits * (sizeof(TCarry) - 1);
+
+            return foundNext;
+        }
+
         /// <inheritdoc />
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset()
-        {
-            Mask = 0;
-            Offset = 0;
-        }
+        public void Reset() => Offset = Start;
     }
 }

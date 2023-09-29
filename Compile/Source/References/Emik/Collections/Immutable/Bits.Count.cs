@@ -28,8 +28,7 @@ readonly
     [Pure]
     T IList<T>.this[int index]
     {
-        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => this[index];
+        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)] get => this[index];
         [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
     }
 
