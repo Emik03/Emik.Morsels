@@ -11880,7 +11880,7 @@ readonly
         if (!e.MoveNext())
             return -1;
 
-        var offset = e.Offset;
+        var (mask, index) = (e.Mask, e.Index);
 
         if (e.MoveNext())
             return -1;
@@ -11888,9 +11888,9 @@ readonly
         using var that = GetEnumerator();
 
         for (var i = 0; that.MoveNext(); i++)
-            if (that.Offset == offset)
+            if (that.Mask == mask && that.Index == index)
                 return i;
-            else if (that.Offset > offset)
+            else if (that.Mask > mask || that.Index > index)
                 return -1;
 
         return -1;
@@ -11916,28 +11916,24 @@ readonly
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
-        const int ByteBits = sizeof(byte) * 8, Start = -1;
+        const int BitsPerByte = 8, Start = -1;
 
         readonly T _value = value;
 
-        /// <summary>Gets the current offset.</summary>
+        /// <summary>Gets the current mask.</summary>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-        public int Offset
+        public int Mask
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
 
+        /// <summary>Gets the current index.</summary>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-        readonly int Bits
+        public nuint Index
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Offset % ByteBits;
-        }
-
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-        readonly int Index
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Offset / ByteBits;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
 
         /// <inheritdoc />
@@ -11948,11 +11944,8 @@ readonly
             get
             {
                 T t = default;
-
-                if (Offset >= 0 && Offset < sizeof(T) * ByteBits)
-                    *((byte*)&t + Index) |= (byte)(1 << Bits);
-
-                return *&t;
+                *((nuint*)&t + Index) ^= (nuint)1 << Mask;
+                return t;
             }
         }
 
@@ -11985,104 +11978,44 @@ readonly
         public unsafe bool MoveNext()
 #pragma warning restore MA0051
         {
-            if (Offset >= sizeof(T) * ByteBits)
-                return false;
+            Mask++;
 
-            Offset++;
+            fixed (T* ptr = &_value)
+                if (sizeof(T) / nuint.Size is not 0 && FindNativelySized(ptr) ||
+                    sizeof(T) % nuint.Size is not 0 && FindRest(ptr))
+                    return true;
 
-            fixed (T* val = &_value)
-            {
-                if (Bits is 0)
-                    goto AlignedUInt64;
+            Mask--; // Required to ensure Current can remain branchless without writing out-of-bounds.
+            return false;
+        }
 
-                if (EnsureCapacity<ulong>())
-                    if (FindNext<ulong, ushort>(val))
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindNativelySized(T* ptr)
+        {
+            for (; Index < (nuint)(sizeof(T) / nuint.Size); Index++, Mask = 0)
+                for (; Mask < nuint.Size * BitsPerByte; Mask++)
+                    if (IsNonZero(ptr))
                         return true;
-                    else
-                        goto AlignedUInt64;
-
-                if (EnsureCapacity<uint>())
-                    if (FindNext<uint, ushort>(val))
-                        return true;
-                    else
-                        goto AlignedUInt32;
-
-                if (EnsureCapacity<ushort>())
-                    if (FindNext<ushort, ushort>(val))
-                        return true;
-                    else
-                        goto AlignedUInt16; // ReSharper disable once InvertIf
-
-                if (EnsureCapacity<byte>())
-                    if (FindNext<byte, ushort>(val))
-                        return true;
-                    else
-                        goto AlignedByte;
-
-                return false;
-
-            AlignedUInt64:
-
-                while (EnsureCapacity<ulong>())
-                    if (FindNext<ulong, byte>(val))
-                        return true;
-
-            AlignedUInt32:
-
-                while (EnsureCapacity<uint>())
-                    if (FindNext<uint, byte>(val))
-                        return true;
-
-            AlignedUInt16:
-
-                while (EnsureCapacity<ushort>())
-                    if (FindNext<ushort, byte>(val))
-                        return true;
-
-            AlignedByte:
-
-                while (EnsureCapacity<byte>())
-                    if (FindNext<byte, byte>(val))
-                        return true;
-            }
 
             return false;
         }
 
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool EnsureCapacity<TTake>()
-            where TTake : unmanaged =>
-            sizeof(T) >= sizeof(TTake) && Index + sizeof(TTake) <= sizeof(T);
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindRest(T* ptr)
+        {
+            for (; Mask < sizeof(T) % nuint.Size * BitsPerByte; Mask++)
+                if (IsNonZero(ptr))
+                    return true;
+
+            return false;
+        }
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindNext<TTake, TCarry>(T* val)
-            where TTake : unmanaged
-            where TCarry : unmanaged
-        {
-            var ptr = (byte*)val + Index;
-
-            var read = sizeof(TTake) switch
-            {
-                1 => *ptr,
-                2 => *(ushort*)ptr,
-                4 => *(uint*)ptr,
-                8 => *(ulong*)ptr,
-                _ => throw Unreachable,
-            };
-
-            var shifted = read >> Bits * (sizeof(TCarry) - 1);
-            var foundNext = shifted is not 0;
-
-            Offset += foundNext
-                ? BitOperations.TrailingZeroCount(shifted)
-                : sizeof(T) * ByteBits - Offset % sizeof(T) * ByteBits * (sizeof(TCarry) - 1);
-
-            return foundNext;
-        }
+        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & (nuint)1 << Mask) is not 0;
 
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => Offset = Start;
+        public void Reset() => (Index, Mask) = (0, Start);
     }
 }
 
