@@ -11922,19 +11922,19 @@ readonly
 
         /// <summary>Gets the current mask.</summary>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-        public int Mask
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
-        } = Start;
-
-        /// <summary>Gets the current index.</summary>
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-        public nuint Index
+        public nuint Mask
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
+
+        /// <summary>Gets the current index.</summary>
+        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+        public nint Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        } = Start;
 
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -11944,7 +11944,7 @@ readonly
             get
             {
                 T t = default;
-                *((nuint*)&t + Index) ^= (nuint)1 << Mask;
+                *((nuint*)&t + Index) ^= Mask;
                 return t;
             }
         }
@@ -11973,27 +11973,44 @@ readonly
         readonly void IDisposable.Dispose() { }
 
         /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset() => (Index, Mask) = (Start, 0);
+
+        /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
         public unsafe bool MoveNext()
 #pragma warning restore MA0051
         {
-            Mask++;
+            Mask <<= 1;
+
+            if (Mask is 0)
+            {
+                Index++;
+                Mask++;
+            }
 
             fixed (T* ptr = &_value)
                 if (sizeof(T) / nuint.Size is not 0 && FindNativelySized(ptr) ||
                     sizeof(T) % nuint.Size is not 0 && FindRest(ptr))
                     return true;
 
-            Mask--; // Required to ensure Current can remain branchless without writing out-of-bounds.
+            Index = sizeof(T) / nuint.Size;
+            Mask = FalsyMask();
             return false;
         }
+
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static nuint FalsyMask() => (nuint)1 << nuint.Size * BitsPerByte - 2;
+
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T)) - 1;
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindNativelySized(T* ptr)
         {
-            for (; Index < (nuint)(sizeof(T) / nuint.Size); Index++, Mask = 0)
-                for (; Mask < nuint.Size * BitsPerByte; Mask++)
+            for (; Index < sizeof(T) / nuint.Size; Index++, Mask = 1)
+                for (; Mask is not 0; Mask <<= 1)
                     if (IsNonZero(ptr))
                         return true;
 
@@ -12003,7 +12020,7 @@ readonly
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindRest(T* ptr)
         {
-            for (; Mask < sizeof(T) % nuint.Size * BitsPerByte; Mask++)
+            for (; (Mask & LastRest()) is not 0; Mask <<= 1)
                 if (IsNonZero(ptr))
                     return true;
 
@@ -12011,11 +12028,7 @@ readonly
         }
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & (nuint)1 << Mask) is not 0;
-
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => (Index, Mask) = (0, Start);
+        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
     }
 }
 
@@ -12240,7 +12253,7 @@ readonly
     /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
     public static unsafe bool Eq(T* left, T* right)
     {
         byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
@@ -12369,7 +12382,7 @@ readonly
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool Contains(T item)
+    public bool Contains(T item)
     {
         using var that = GetEnumerator();
 
@@ -12377,7 +12390,7 @@ readonly
         {
             var current = that.Current;
 
-            if (Eq(&current, &item))
+            if (Eq(current, item))
                 return true;
         }
 
@@ -12386,7 +12399,7 @@ readonly
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
+    public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
         var collection = other.ToCollectionLazily();
@@ -12394,7 +12407,7 @@ readonly
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
             if (collection.Contains(next))
-                Or(&next, &t);
+                Or(next, ref t);
             else
                 return false;
 
@@ -12408,19 +12421,18 @@ readonly
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
+    public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
 
         // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var next in other)
             if (Contains(next))
-                Or(&next, &t);
+                Or(next, ref t);
             else
                 return false;
 
-        fixed (T* ptr = &_value)
-            return !Eq(ptr, &t);
+        return !Eq(_value, t);
     }
 
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
@@ -12447,7 +12459,7 @@ readonly
 
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool SetEquals([InstantHandle] IEnumerable<T> other)
+    public bool SetEquals([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
 
@@ -12455,10 +12467,9 @@ readonly
             if (new Enumerator(next) is var e && !e.MoveNext() || e.MoveNext())
                 return false;
             else
-                Or(&next, &t);
+                Or(next, ref t);
 
-        fixed (T* ptr = &_value)
-            return Eq(ptr, &t);
+        return Eq(_value, t);
     }
 }
 
