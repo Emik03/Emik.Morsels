@@ -35,7 +35,7 @@ readonly
     /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
     public static unsafe bool Eq(T* left, T* right)
     {
         byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
@@ -164,7 +164,7 @@ readonly
 
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool Contains(T item)
+    public bool Contains(T item)
     {
         using var that = GetEnumerator();
 
@@ -172,7 +172,7 @@ readonly
         {
             var current = that.Current;
 
-            if (Eq(&current, &item))
+            if (Eq(current, item))
                 return true;
         }
 
@@ -181,7 +181,7 @@ readonly
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
+    public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
         var collection = other.ToCollectionLazily();
@@ -189,7 +189,7 @@ readonly
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
             if (collection.Contains(next))
-                Or(&next, &t);
+                Or(next, ref t);
             else
                 return false;
 
@@ -203,19 +203,18 @@ readonly
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
+    public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
 
         // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var next in other)
             if (Contains(next))
-                Or(&next, &t);
+                Or(next, ref t);
             else
                 return false;
 
-        fixed (T* ptr = &_value)
-            return !Eq(ptr, &t);
+        return !Eq(_value, t);
     }
 
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
@@ -242,7 +241,7 @@ readonly
 
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe bool SetEquals([InstantHandle] IEnumerable<T> other)
+    public bool SetEquals([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
 
@@ -250,9 +249,8 @@ readonly
             if (new Enumerator(next) is var e && !e.MoveNext() || e.MoveNext())
                 return false;
             else
-                Or(&next, &t);
+                Or(next, ref t);
 
-        fixed (T* ptr = &_value)
-            return Eq(ptr, &t);
+        return Eq(_value, t);
     }
 }
