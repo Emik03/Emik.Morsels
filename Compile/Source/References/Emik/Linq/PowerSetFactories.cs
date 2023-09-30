@@ -35,8 +35,9 @@ static partial class PowerSetFactories
     public static IEnumerable<IEnumerable<T>> PowerSet<T>(this T[] collection) =>
         ((ICollection<T>)collection).PowerSet();
 
+    // ReSharper disable ConditionIsAlwaysTrueOrFalse
     [LinqTunnel, Pure]
-    static IEnumerable<IEnumerable<T>> PowerSetInner<T>(this IEnumerable<T> iterable, int count) =>
+    static IEnumerable<IEnumerable<T>> PowerSetInner<T>(this IEnumerable<T> iterable, [ValueRange(0, 31)] int count) =>
         count < 32
             ? Enumerable.Range(0, 1 << count).Select(mask => iterable.Where((_, j) => (1 << j & mask) is not 0))
             : throw new ArgumentOutOfRangeException(nameof(count), count, $"Cannot exceed bits in {nameof(Int32)}.");
