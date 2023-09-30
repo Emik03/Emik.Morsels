@@ -66,6 +66,10 @@
     <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
         <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../$(Morsels)'))</Morsels>
     </PropertyGroup>
+    <!-- Changing the build folder path messes with benchmarks. -->
+    <ItemGroup Condition="(!$(AssemblyName.Contains(&quot;Benchmark&quot;))">
+        <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
+    </ItemGroup>
     <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props') and !Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
     <!-- F# exclusive properties. -->
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">

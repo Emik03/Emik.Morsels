@@ -229,10 +229,6 @@
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
         <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
-    <!-- Changing the build folder path messes with benchmarks. -->
-    <PropertyGroup Condition="$(IsBenchmark) != 'true'">
-        <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
-    </PropertyGroup>
     <!-- Certain constructs are disallowed in the .NET Framework version of Celeste: https://github.com/EverestAPI/Resources/wiki/Recommended-Practices-and-Pitfalls#readonly-struct -->
     <PropertyGroup Condition="$(IsCeleste) == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">
         <DefineConstants>$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
