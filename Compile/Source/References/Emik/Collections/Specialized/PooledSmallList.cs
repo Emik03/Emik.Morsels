@@ -84,10 +84,8 @@ ref
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            {
-                _length = 0;
-                return this;
-            }
+            _length = 0;
+            return this;
         }
     }
 
