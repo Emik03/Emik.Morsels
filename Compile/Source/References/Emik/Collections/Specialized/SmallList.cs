@@ -9,6 +9,27 @@ using static Span;
 /// <summary>Factory methods for creating inlined <see cref="SmallList{T}"/> instances.</summary>
 static partial class SmallList
 {
+    /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
+    /// <remarks><para>
+    /// And Saint Attila raised the <see cref="SmallList{T}"/> up on high, saying, "O Lord, bless this Thy
+    /// <see cref="SmallList{T}"/> that, with it, Thou mayest blow Thine allocation costs to tiny bits in Thy mercy.".
+    /// </para><para>
+    /// And the Lord did grin, and the people did feast upon the lambs and sloths and carp and anchovies and orangutans
+    /// and breakfast cereals and fruit bats and large chu...
+    /// </para><para>
+    /// And the Lord spake, saying, "First shalt thou recreate the <c>smallvec</c> (https://crates.io/crates/smallvec)
+    /// crate. Then, shalt thou keep three inline. No more. No less. Three shalt be the number thou shalt keep inline,
+    /// and the number to keep inline shalt be three. Four shalt thou not keep inline, nor either keep inline thou two,
+    /// excepting that thou then proceed to three. Five is right out. Once the number three,  being the third number,
+    /// be reached, then, lobbest thou thy <see cref="SmallList{T}"/> towards thy heap, who, being slow and
+    /// cache-naughty in My sight, shall snuff it.".
+    /// </para><para>
+    /// (Source: https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373).
+    /// </para></remarks>
+#pragma warning disable RCS1158
+    public const int InlinedLength = 3;
+#pragma warning restore RCS1158
+
     /// <summary>Allocates an inlined list of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="PooledSmallList{T}"/> will point to uninitialized memory.
