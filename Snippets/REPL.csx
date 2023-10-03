@@ -10996,14 +10996,11 @@ public sealed partial class BadLogger : IDisposable
 public abstract class FixedGenerator(
     [StringSyntax(StringSyntaxAttribute.Uri), UriString] string hintName,
     [StringSyntax("C#")] string contents
-) : ISourceGenerator
+) : IIncrementalGenerator
 {
     /// <inheritdoc />
-    void ISourceGenerator.Execute(GeneratorExecutionContext context) =>
-        context.AddSource($"{hintName}.g.cs", contents.Nth(^1) is null or '\n' or '\r' ? contents : contents + '\n');
-
-    /// <inheritdoc />
-    void ISourceGenerator.Initialize(GeneratorInitializationContext context) { }
+    void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
+        context.RegisterPostInitializationOutput(x => x.AddSource(hintName, contents));
 }
 #endif
 
