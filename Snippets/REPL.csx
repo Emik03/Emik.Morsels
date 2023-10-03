@@ -12094,7 +12094,7 @@ readonly
         var ptr = (nuint*)value++;
         var sum = 0;
 
-        if (sizeof(T) / (nuint.Size * 16) > 0)
+        if (sizeof(T) / (sizeof(nuint) * 16) > 0)
         {
             for (; ptr <= (nuint*)value - 16; ptr += 16)
                 sum += BitOperations.PopCount(*ptr) +
@@ -12114,11 +12114,11 @@ readonly
                     BitOperations.PopCount(ptr[14]) +
                     BitOperations.PopCount(ptr[15]);
 
-            if (sizeof(T) % nuint.Size * 16 is 0)
+            if (sizeof(T) % sizeof(nuint) * 16 is 0)
                 return sum;
         }
 
-        if (sizeof(T) % (nuint.Size * 16) / (nuint.Size * 8) > 0)
+        if (sizeof(T) % (sizeof(nuint) * 16) / (sizeof(nuint) * 8) > 0)
         {
             for (; ptr <= (nuint*)value - 8; ptr += 8)
                 sum += BitOperations.PopCount(*ptr) +
@@ -12130,11 +12130,11 @@ readonly
                     BitOperations.PopCount(ptr[6]) +
                     BitOperations.PopCount(ptr[7]);
 
-            if (sizeof(T) % nuint.Size * 8 is 0)
+            if (sizeof(T) % sizeof(nuint) * 8 is 0)
                 return sum;
         }
 
-        if (sizeof(T) % (nuint.Size * 8) / (nuint.Size * 4) > 0)
+        if (sizeof(T) % (sizeof(nuint) * 8) / (sizeof(nuint) * 4) > 0)
         {
             for (; ptr <= (nuint*)value - 4; ptr += 4)
                 sum += BitOperations.PopCount(*ptr) +
@@ -12142,29 +12142,29 @@ readonly
                     BitOperations.PopCount(ptr[2]) +
                     BitOperations.PopCount(ptr[3]);
 
-            if (sizeof(T) % nuint.Size * 4 is 0)
+            if (sizeof(T) % sizeof(nuint) * 4 is 0)
                 return sum;
         }
 
-        if (sizeof(T) % (nuint.Size * 4) / (nuint.Size * 2) > 0)
+        if (sizeof(T) % (sizeof(nuint) * 4) / (sizeof(nuint) * 2) > 0)
         {
             for (; ptr <= (nuint*)value - 2; ptr += 2)
                 sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
 
-            if (sizeof(T) % nuint.Size * 2 is 0)
+            if (sizeof(T) % sizeof(nuint) * 2 is 0)
                 return sum;
         }
 
-        if (sizeof(T) % (nuint.Size * 2) / nuint.Size > 0)
+        if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
         {
-            for (; ptr <= (nuint*)value; ptr++)
+            for (; ptr < (nuint*)value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
 
-            if (sizeof(T) % nuint.Size is 0)
+            if (sizeof(T) % sizeof(nuint) is 0)
                 return sum;
         }
 
-        if (sizeof(T) % nuint.Size is 0)
+        if (sizeof(T) % sizeof(nuint) is 0)
             return sum;
 
         return sum + PopCountRemainder((byte*)ptr);
@@ -12174,7 +12174,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static unsafe int PopCountRemainder(byte* remainder) =>
         BitOperations.PopCount(
-            (sizeof(T) % nuint.Size) switch
+            (sizeof(T) % sizeof(nuint)) switch
             {
                 1 => *remainder,
                 2 => *(ushort*)remainder,
@@ -12307,11 +12307,11 @@ readonly
                 return true;
         }
 #endif
-        for (; l <= upper - nuint.Size; l += nuint.Size, r += nuint.Size)
+        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             if (*(nuint*)l != *(nuint*)r)
                 return false;
 
-        if (sizeof(T) % nuint.Size is 0)
+        if (sizeof(T) % sizeof(nuint) is 0)
             return true;
 
         for (; l < upper; l++, r++)
@@ -12378,10 +12378,10 @@ readonly
                 return;
         }
 #endif
-        for (; l <= upper - nuint.Size; l += nuint.Size, r += nuint.Size)
+        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             *(nuint*)r = *(nuint*)l | *(nuint*)r;
 
-        if (sizeof(T) % nuint.Size is 0)
+        if (sizeof(T) % sizeof(nuint) is 0)
             return;
 
         for (; l < upper; l++, r++)

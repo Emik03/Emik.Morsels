@@ -115,7 +115,7 @@ readonly
 
         if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
         {
-            for (; ptr <= (nuint*)value; ptr++)
+            for (; ptr < (nuint*)value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
 
             if (sizeof(T) % sizeof(nuint) is 0)
