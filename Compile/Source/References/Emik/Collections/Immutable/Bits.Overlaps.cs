@@ -81,11 +81,11 @@ readonly
                 return true;
         }
 #endif
-        for (; l <= upper - nuint.Size; l += nuint.Size, r += nuint.Size)
+        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             if (*(nuint*)l != *(nuint*)r)
                 return false;
 
-        if (sizeof(T) % nuint.Size is 0)
+        if (sizeof(T) % sizeof(nuint) is 0)
             return true;
 
         for (; l < upper; l++, r++)
@@ -152,10 +152,10 @@ readonly
                 return;
         }
 #endif
-        for (; l <= upper - nuint.Size; l += nuint.Size, r += nuint.Size)
+        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             *(nuint*)r = *(nuint*)l | *(nuint*)r;
 
-        if (sizeof(T) % nuint.Size is 0)
+        if (sizeof(T) % sizeof(nuint) is 0)
             return;
 
         for (; l < upper; l++, r++)

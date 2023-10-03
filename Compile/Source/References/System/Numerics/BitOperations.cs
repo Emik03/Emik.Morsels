@@ -44,7 +44,7 @@ static partial class BitOperations
     /// <returns>The population count of the mask.</returns>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int PopCount(nuint value) =>
-        sizeof(nint) is 8 ? PopCount((ulong)value) : PopCount((uint)value);
+        sizeof(nuint) is 8 ? PopCount((ulong)value) : PopCount((uint)value);
 
     /// <summary>Returns the population count (number of bits set) of an unsigned 32-integer mask.</summary>
     /// <remarks><para>Similar in behavior to the x86 instruction POPCNT.</para></remarks>

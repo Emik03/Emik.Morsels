@@ -11780,7 +11780,7 @@ readonly
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="value">The item to use.</param>
-[StructLayout(LayoutKind.Auto)]
+[StructLayout(LayoutKind.Auto), NoStructuralTyping]
 #if CSHARPREPL
 public
 #endif
@@ -11999,17 +11999,17 @@ readonly
             }
 
             fixed (T* ptr = &_value)
-                if (sizeof(T) / nuint.Size is not 0 && FindNativelySized(ptr) ||
-                    sizeof(T) % nuint.Size is not 0 && FindRest(ptr))
+                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
+                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
                     return true;
 
-            Index = sizeof(T) / nuint.Size;
+            Index = sizeof(T) / sizeof(nuint);
             Mask = FalsyMask();
             return false;
         }
 
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static nuint FalsyMask() => (nuint)1 << nuint.Size * BitsPerByte - 2;
+        static unsafe nuint FalsyMask() => (nuint)1 << sizeof(nuint) * BitsPerByte - 2;
 
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static unsafe nuint LastRest() => ((nuint)1 << sizeof(T)) - 1;
@@ -12017,7 +12017,7 @@ readonly
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindNativelySized(T* ptr)
         {
-            for (; Index < sizeof(T) / nuint.Size; Index++, Mask = 1)
+            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
                 for (; Mask is not 0; Mask <<= 1)
                     if (IsNonZero(ptr))
                         return true;
