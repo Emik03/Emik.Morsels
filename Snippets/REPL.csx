@@ -195,7 +195,6 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
-global using static IncludedSyntaxNodeRegistrant;
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
@@ -10956,9 +10955,9 @@ public sealed partial class BadLogger : IDisposable
         }
     }
 
-    /// <summary>Produces the side effect specified by the passed in <see cref="Action"/>.</summary>
+    /// <summary>Produces the side effect specified by the passed in <see cref="Action{T}"/>.</summary>
+    /// <param name="action">The <see cref="Action{T}"/>.</param>
     /// <typeparam name="T">The type of <paramref name="context"/>.</typeparam>
-    /// <param name="action">The <see cref="Action"/>.</param>
     /// <param name="context">The context value.</param>
     /// <returns>Itself.</returns>
     public BadLogger Try<T>([InstantHandle] Action<T> action, T context)
@@ -10966,6 +10965,27 @@ public sealed partial class BadLogger : IDisposable
         try
         {
             action(context);
+            return this;
+        }
+        catch (Exception ex)
+        {
+            $"{ex}".Debug();
+            throw;
+        }
+    }
+
+    /// <summary>Produces the side effect specified by the passed in <see cref="Action{T1, T2}"/>.</summary>
+    /// <param name="action">The <see cref="Action{T1, T2}"/>.</param>
+    /// <typeparam name="T1">The type of <paramref name="firstContext"/>.</typeparam>
+    /// <typeparam name="T2">The type of <paramref name="secondContext"/>.</typeparam>
+    /// <param name="firstContext">The first context value.</param>
+    /// <param name="secondContext">The second context value.</param>
+    /// <returns>Itself.</returns>
+    public BadLogger Try<T1, T2>([InstantHandle] Action<T1, T2> action, T1 firstContext, T2 secondContext)
+    {
+        try
+        {
+            action(firstContext, secondContext);
             return this;
         }
         catch (Exception ex)
@@ -11009,14 +11029,12 @@ public abstract class FixedGenerator(
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer
 
+
 #pragma warning restore GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
 
 
-/// <summary>
-/// <see cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
-/// with a wrapped callback which filters out ignored contexts.
-/// </summary>
+/// <summary>Contains syntactic operations and registrations.</summary>
 
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>

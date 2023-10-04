@@ -7,10 +7,7 @@ global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-/// <summary>
-/// <see cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
-/// with a wrapped callback which filters out ignored contexts.
-/// </summary>
+/// <summary>Contains syntactic operations and registrations.</summary>
 static partial class IncludedSyntaxNodeRegistrant
 {
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>

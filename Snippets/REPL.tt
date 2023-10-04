@@ -218,6 +218,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static Enum;" => "using static System.Enum;",
         "using static Math;" => "using static System.Math;",
         "using FieldInfo = System.Reflection.FieldInfo;" => "",
+        "global using static IncludedSyntaxNodeRegistrant;" => "",
         "using Expression = System.Linq.Expressions.Expression;" => "",
         "    public static string[] Split(" => "    public static string[] Chop(",
         "using static Expression;" => "using static System.Linq.Expressions.Expression;",
