@@ -220,7 +220,6 @@
         <NoTests>true</NoTests>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <NoWarn>$(NoWarn);AsyncifyInvocation;CS0419;CS1574;CS1580;CS3001;CS3002;CS3003;CS3009;CS3024;CS8601;CS8604;CS8669;CS8767;CS9124</NoWarn>
