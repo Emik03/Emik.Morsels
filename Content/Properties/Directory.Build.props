@@ -123,7 +123,7 @@
         <PackageReference Include="Roslynator.Analyzers" Version="4.5.0" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.10" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
-        <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.1" PrivateAssets="all"/>
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.5" PrivateAssets="all"/>
