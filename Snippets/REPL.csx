@@ -572,9 +572,9 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
-#pragma warning disable CS8619
+#pragma warning disable 8619
         iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
-#pragma warning restore CS8619
+#pragma warning restore 8619
 
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
@@ -583,9 +583,9 @@ using static JetBrains.Annotations.CollectionAccessType;
     [LinqTunnel, Pure]
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
         where T : struct =>
-#pragma warning disable CS8629
+#pragma warning disable 8629
         iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();
-#pragma warning restore CS8629
+#pragma warning restore 8629
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -11018,17 +11018,26 @@ public abstract class FixedGenerator(
 /// with a wrapped callback which filters out ignored contexts.
 /// </summary>
 
-    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
-    /// <param name="node">The passed in node to test.</param>
-    /// <param name="_">The discarded token, existing purely for convenience.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is
-    /// an instance of <typeparamref name="T"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    public static bool Is<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
-        where T : SyntaxNode =>
-        node is T;
+    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
+    /// <typeparam name="T">The type of value to filter.</typeparam>
+    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
+    [Pure]
+    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider) =>
+#pragma warning disable 8619
+        provider.Where(x => x is not null);
+#pragma warning restore 8619
+
+    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
+    /// <typeparam name="T">The type of value to filter.</typeparam>
+    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
+    [Pure]
+    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider)
+        where T : struct =>
+#pragma warning disable 8629
+        provider.Where(x => x.HasValue).Select((x, _) => x.Value);
+#pragma warning restore 8629
 
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
@@ -11045,6 +11054,19 @@ public abstract class FixedGenerator(
             : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
             (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
             symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
+
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="_">The discarded token, existing purely for convenience.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is
+    /// an instance of <typeparamref name="T"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool Is<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
+        where T : SyntaxNode =>
+        node is T;
 
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
