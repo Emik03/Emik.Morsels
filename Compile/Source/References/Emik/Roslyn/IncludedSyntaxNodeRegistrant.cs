@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
+#pragma warning disable GlobalUsingsAnalyzer
+global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
+
+#pragma warning restore GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -24,6 +28,19 @@ static partial class IncludedSyntaxNodeRegistrant
             : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
             (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
             symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
+
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="_">The discarded token, existing purely for convenience.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is
+    /// an instance of <typeparamref name="T"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool Is<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
+        where T : SyntaxNode =>
+        node is T;
 
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
