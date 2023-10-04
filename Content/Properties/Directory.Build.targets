@@ -244,7 +244,7 @@
         <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
         <Compile Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
-        <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !($(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.5.5"/>
+        <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.5.5"/>
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="$(IsCeleste) == 'true'">
