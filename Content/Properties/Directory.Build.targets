@@ -317,7 +317,7 @@
         <Compile Include="$(Morsels)/Compile/Source/References/System/Diagnostics/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
     </ItemGroup>
     <!-- Use System.Memory for frameworks that can import it, but not implicitly. -->
-    <ItemGroup Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))">
+    <ItemGroup Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !($(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))">
         <PackageReference Include="System.Memory" Version="4.5.5"/>
     </ItemGroup>
     <!-- Remove the template if all necessary item groups are filled. -->
