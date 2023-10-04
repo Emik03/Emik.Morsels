@@ -188,10 +188,6 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Defines the constant for Keep Talking and Nobody Explodes projects. -->
-    <PropertyGroup Condition="'$(IsKtane)' == 'true'">
-        <DefineConstants>$(DefineConstants);KTANE</DefineConstants>
-    </PropertyGroup>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
         <Title>$(AssemblyName)</Title>
@@ -200,8 +196,10 @@
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <MarkdownIndexFilePath>$(ProjectDir)Documentation/index.md</MarkdownIndexFilePath>
+        <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE</DefineConstants>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
+        <DefineConstants Condition="$(IsCeleste) == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
     <!-- The file 'index.md' may not necessarily exist. In which case the assembly name is probably used. -->
     <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
@@ -230,10 +228,6 @@
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
         <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
-    <!-- Certain constructs are disallowed in the .NET Framework version of Celeste: https://github.com/EverestAPI/Resources/wiki/Recommended-Practices-and-Pitfalls#readonly-struct -->
-    <PropertyGroup Condition="$(IsCeleste) == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">
-        <DefineConstants>$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
-    </PropertyGroup>
     <!-- Use separate copy of Celeste if one is specified. -->
     <PropertyGroup Condition="$(CelesteLegacy) != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">
         <Celeste>$(CelesteLegacy)</Celeste>
@@ -245,14 +239,12 @@
         <None Remove="$(AssemblyName).Generated.Tests/**"/>
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
-    </ItemGroup>
-    <!-- Allow the project to opt-out of this reference. -->
-    <ItemGroup Condition="$(DisableDefaultDocumentation) != 'true'">
-        <PackageReference Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
-    </ItemGroup>
-    <!-- Benchmark reference. -->
-    <ItemGroup Condition="$(IsBenchmark) == 'true'">
-        <PackageReference Include="BenchmarkDotNet" Version="0.13.8" PrivateAssets="all"/>
+        <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.7.0"/>
+        <PackageReference Condition="$(IsBenchmark) == 'true'" Include="BenchmarkDotNet" Version="0.13.8" PrivateAssets="all"/>
+        <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
+        <Compile Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
+        <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
+        <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !($(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.5.5"/>
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="$(IsCeleste) == 'true'">
@@ -263,6 +255,7 @@
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.exe')" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
+        <Reference Condition="$(UseUnityCoreModule) == 'true'" Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="$(IsKtane) == 'true'">
@@ -271,33 +264,18 @@
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
         <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false"/>
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
-    </ItemGroup>
-    <!-- Keep Talking and Nobody Explodes references that F# hates for some reason. -->
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $(IsKtane) == 'true'">
-        <Reference Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
-    </ItemGroup>
-    <!-- Whether to reference core module. -->
-    <ItemGroup Condition="$(UseUnityCoreModule) == 'true'">
-        <Reference Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
-    </ItemGroup>
-    <!-- Remove Roslyn folder if not a Roslyn-based project. -->
-    <ItemGroup Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <Compile Remove="$(Morsels)/Compile/**/Roslyn/**"/>
+        <Reference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
-        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.0" PrivateAssets="all"/>
+        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.1" PrivateAssets="all"/>
         <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
         <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
-    </ItemGroup>
-    <!-- Fody projects should reference FodyHelpers, and also not themselves. -->
-    <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))">
-        <PackageReference Include="FodyHelpers" Version="6.7.0"/>
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
@@ -316,18 +294,10 @@
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/NullGuardAttribute.cs" Link="Source/References/Fody/NullGuardAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/System/Diagnostics/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
     </ItemGroup>
-    <!-- Use System.Memory for frameworks that can import it, but not implicitly. -->
-    <ItemGroup Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !($(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))">
-        <PackageReference Include="System.Memory" Version="4.5.5"/>
-    </ItemGroup>
     <!-- Remove the template if all necessary item groups are filled. -->
     <ItemGroup Condition="'$(Morsels)' != '' and ('$(IsCeleste)' != 'true' or '$(Celeste)') != '' and ('$(IsKtane)' != 'true' or '$(Unity)' != '')">
         <Content Remove="$(Morsels)/Content/Properties/Directory.Build.local.props.template"/>
         <AdditionalFiles Remove="$(Morsels)/Content/Properties/Directory.Build.local.props.template"/>
-    </ItemGroup>
-    <!-- Only Unit Tests should include additional global imports to make writing doctests barable. -->
-    <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <Compile Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
     </ItemGroup>
     <!-- Hides any file that contains ".g.", which implies that it is auto-generated. -->
     <Target Name="HideAutoGeneratedFiles" BeforeTargets="Compile">
