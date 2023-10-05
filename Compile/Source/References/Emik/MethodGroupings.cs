@@ -28,6 +28,13 @@ static partial class MethodGroupings
     /// <param name="_">The discard.</param>
     public static void Noop<T>(T _) { }
 
+    /// <summary>Performs nothing.</summary>
+    /// <typeparam name="T1">The first type of discard.</typeparam>
+    /// <typeparam name="T2">The second type of discard.</typeparam>
+    /// <param name="_">The first discard.</param>
+    /// <param name="__">The second discard.</param>
+    public static void Noop<T1, T2>(T1 _, T2 __) { }
+
     /// <summary>Create a delegate.</summary>
     /// <param name="del">The method group.</param>
     /// <returns>An invokable method.</returns>
