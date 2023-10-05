@@ -11096,6 +11096,19 @@ public abstract class FixedGenerator(
         where T : SyntaxNode =>
         node is T;
 
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="_">The discarded token, existing purely for convenience.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is
+    /// an instance of <typeparamref name="T"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool AnnotatedAndIs<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
+        where T : MemberDeclarationSyntax =>
+        node is T { AttributeLists.Count: >= 1 };
+
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
