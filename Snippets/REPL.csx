@@ -11065,13 +11065,26 @@ public abstract class FixedGenerator(
     /// has the attribute <paramref name="name"/>, otherwise; <see langword="false"/>.
     /// </returns>
     [Pure]
-    public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name) =>
-        symbol is not null &&
-        (name is null
-            ? !symbol.GetAttributes().IsEmpty
-            : (name.EndsWith(nameof(Attribute)) ? name : $"{name}{nameof(Attribute)}") is var first &&
-            (name.EndsWith(nameof(Attribute)) ? name[..^nameof(Attribute).Length] : name) is var second &&
-            symbol.GetAttributes().Any(x => x.AttributeClass?.Name is { } name && (name == first || name == second)));
+    public static bool HasAttribute([NotNullWhen(true)] this ISymbol? symbol, string? name)
+    {
+        [Pure]
+        static ReadOnlySpan<char> WithoutAttributeSuffix(string name) =>
+            name.AsSpan() is var span && span is [.. var x, 'A', 't', 't', 'r', 'i', 'b', 'u', 't', 'e'] ? x : span;
+
+        if (symbol is null)
+            return false;
+
+        if (name is null)
+            return !symbol.GetAttributes().IsEmpty;
+
+        var against = WithoutAttributeSuffix(name);
+
+        foreach (var attribute in symbol.GetAttributes())
+            if (attribute.AttributeClass?.Name is { } match && WithoutAttributeSuffix(match).SequenceEqual(against))
+                return true;
+
+        return false;
+    }
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
