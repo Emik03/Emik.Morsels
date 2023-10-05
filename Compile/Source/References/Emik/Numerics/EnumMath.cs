@@ -12,6 +12,8 @@ using Expression = System.Linq.Expressions.Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
+    enum UnknownEnum;
+
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
@@ -56,7 +58,7 @@ static partial class EnumMath
             _ => throw Unreachable,
         };
 #else
-        MathCaching<T>.From(value);
+        typeof(T) == typeof(Enum) ? (int)(object)value : MathCaching<T>.From(value);
 #endif
 
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
@@ -67,7 +69,13 @@ static partial class EnumMath
         where T : Enum =>
         s_dictionary.TryGetValue(typeof(T), out var list)
             ? (IList<T>)list
-            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
+            : (T[])(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+                ? new T[0]
+#else
+                ? Array.Empty<T>()
+#endif
+                : Enum.GetValues(typeof(T)));
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -93,7 +101,9 @@ static partial class EnumMath
             _ => throw Unreachable,
         };
 #else
-        MathCaching<T>.To(value);
+        typeof(T) == typeof(Enum)
+            ? (T)(Enum)MathCaching<UnknownEnum>.To(value)
+            : MathCaching<T>.To(value);
 #endif
 
     /// <summary>Performs a negation operation.</summary>

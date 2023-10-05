@@ -43,7 +43,7 @@ static partial class EnumStrings
     [Pure]
     public static string AsString<T>(this T value)
         where T : Enum =>
-        StringCaching<T>.From(value);
+        typeof(T) == typeof(Enum) ? value.ToString() : StringCaching<T>.From(value);
 
     /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
     /// <remarks><para>
@@ -56,7 +56,7 @@ static partial class EnumStrings
     [Pure]
     public static T As<T>(this string value)
         where T : Enum =>
-        StringCaching<T>.To(value);
+        typeof(T) == typeof(Enum) ? (T)Enum.Parse(typeof(T), value) : StringCaching<T>.To(value);
 
     static class StringCaching<T>
         where T : Enum

@@ -4673,6 +4673,8 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 
+    enum UnknownEnum;
+
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
@@ -4717,7 +4719,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
             _ => throw Unreachable,
         };
 #else
-        MathCaching<T>.From(value);
+        typeof(T) == typeof(Enum) ? (int)(object)value : MathCaching<T>.From(value);
 #endif
 
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
@@ -4728,7 +4730,13 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         where T : Enum =>
         s_dictionary.TryGetValue(typeof(T), out var list)
             ? (IList<T>)list
-            : (T[])(s_dictionary[typeof(T)] = Enum.GetValues(typeof(T)));
+            : (T[])(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+                ? new T[0]
+#else
+                ? Array.Empty<T>()
+#endif
+                : Enum.GetValues(typeof(T)));
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -4754,7 +4762,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
             _ => throw Unreachable,
         };
 #else
-        MathCaching<T>.To(value);
+        typeof(T) == typeof(Enum)
+            ? (T)(Enum)MathCaching<UnknownEnum>.To(value)
+            : MathCaching<T>.To(value);
 #endif
 
     /// <summary>Performs a negation operation.</summary>
@@ -5401,7 +5411,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     public static string AsString<T>(this T value)
         where T : Enum =>
-        StringCaching<T>.From(value);
+        typeof(T) == typeof(Enum) ? value.ToString() : StringCaching<T>.From(value);
 
     /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
     /// <remarks><para>
@@ -5414,7 +5424,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     public static T As<T>(this string value)
         where T : Enum =>
-        StringCaching<T>.To(value);
+        typeof(T) == typeof(Enum) ? (T)Enum.Parse(typeof(T), value) : StringCaching<T>.To(value);
 
     static class StringCaching<T>
         where T : Enum
