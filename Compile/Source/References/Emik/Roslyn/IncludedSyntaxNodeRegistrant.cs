@@ -163,6 +163,32 @@ static partial class IncludedSyntaxNodeRegistrant
     public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters.IsEmpty);
 
+    /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
+    /// <param name="symbol">The symbol to use.</param>
+    /// <param name="prefix">If specified, the prefix to contain within the hint name.</param>
+    /// <returns>The hint name of the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(symbol))]
+    public static string? HintName(this INamedTypeSymbol? symbol, string? prefix = nameof(Emik))
+    {
+        if (symbol is null)
+            return null;
+
+        StringBuilder sb = new(symbol.Name);
+        ISymbol? containing = symbol;
+
+        while ((containing = containing.ContainingWithoutGlobal()) is not null)
+            sb.Insert(0, '.').Insert(0, containing.Name);
+
+        if (prefix is not null)
+            sb.Insert(0, '.').Insert(0, prefix);
+
+        if (symbol.TypeParameters.Length is not 0 and var i)
+            sb.Append('`').Append(i);
+
+        return sb.Append(".g.cs").ToString();
+    }
+
     /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to get its keyword.</param>
     /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
