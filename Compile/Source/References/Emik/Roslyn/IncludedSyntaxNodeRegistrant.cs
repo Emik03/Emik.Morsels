@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer
+// ReSharper disable once RedundantUsingDirective.Global
 global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 
 #pragma warning restore GlobalUsingsAnalyzer
@@ -10,27 +11,6 @@ namespace Emik.Morsels;
 /// <summary>Contains syntactic operations and registrations.</summary>
 static partial class IncludedSyntaxNodeRegistrant
 {
-    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
-    /// <typeparam name="T">The type of value to filter.</typeparam>
-    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
-    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
-    [Pure]
-    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider) =>
-#pragma warning disable 8619
-        provider.Where(x => x is not null);
-#pragma warning restore 8619
-
-    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
-    /// <typeparam name="T">The type of value to filter.</typeparam>
-    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
-    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
-    [Pure]
-    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider)
-        where T : struct =>
-#pragma warning disable 8629
-        provider.Where(x => x.HasValue).Select((x, _) => x.Value);
-#pragma warning restore 8629
-
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <param name="name">The name to get.</param>

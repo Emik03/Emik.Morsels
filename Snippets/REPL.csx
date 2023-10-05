@@ -11035,6 +11035,7 @@ public abstract class FixedGenerator(
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer
+// ReSharper disable once RedundantUsingDirective.Global
 
 
 #pragma warning restore GlobalUsingsAnalyzer
@@ -11042,27 +11043,6 @@ public abstract class FixedGenerator(
 
 
 /// <summary>Contains syntactic operations and registrations.</summary>
-
-    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
-    /// <typeparam name="T">The type of value to filter.</typeparam>
-    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
-    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
-    [Pure]
-    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider) =>
-#pragma warning disable 8619
-        provider.Where(x => x is not null);
-#pragma warning restore 8619
-
-    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
-    /// <typeparam name="T">The type of value to filter.</typeparam>
-    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
-    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
-    [Pure]
-    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider)
-        where T : struct =>
-#pragma warning disable 8629
-        provider.Where(x => x.HasValue).Select((x, _) => x.Value);
-#pragma warning restore 8629
 
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
@@ -11389,6 +11369,450 @@ public abstract class FixedGenerator(
     [Pure]
     static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
         ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if ROSLYN
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Contains syntactic operations and registrations.</summary>
+
+    /// <summary>A simple record to wrap a value that might be missing.</summary>
+    /// <typeparam name="T">The type of values to wrap.</typeparam>
+    /// <param name="Value">The wrapped value, if it exists.</param>
+    sealed record Option<T>(T? Value);
+
+    /// <summary>Gets the fully qualified name for a given symbol.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
+    /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
+    public static string GetFullyQualifiedName(this ISymbol symbol) =>
+        symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+
+    /// <summary>Gets the fully qualified name for a given symbol, including nullability annotations.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
+    /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
+    public static string GetFullyQualifiedNameWithNullabilityAnnotations(this ISymbol symbol) =>
+        symbol.ToDisplayString(
+            SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
+                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
+            )
+        );
+
+    /// <summary>Checks whether or not a given type symbol has a specified full name.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
+    /// <param name="name">The full name to check.</param>
+    /// <returns>Whether <paramref name="symbol"/> has a full name equals to <paramref name="name"/>.</returns>
+    public static bool HasFullyQualifiedName(this ISymbol symbol, string name) =>
+        symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == name;
+
+    /// <summary>
+    /// Checks whether or not a given symbol has an attribute with the specified fully qualified metadata name.
+    /// </summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
+    /// <param name="name">The attribute name to look for.</param>
+    /// <returns>Whether or not <paramref name="symbol"/> has an attribute with the specified name.</returns>
+    public static bool HasAttributeWithFullyQualifiedMetadataName(this ISymbol symbol, string name)
+    {
+        foreach (var attribute in symbol.GetAttributes())
+            if (attribute.AttributeClass is { } named && named.HasFullyQualifiedMetadataName(name))
+                return true;
+
+        return false;
+    }
+
+    /// <summary>Checks whether or not a given symbol has an attribute with the specified type.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
+    /// <param name="typeSymbol">The <see cref="ITypeSymbol"/> instance for the attribute type to look for.</param>
+    /// <returns>Whether or not <paramref name="symbol"/> has an attribute with the specified type.</returns>
+    public static bool HasAttributeWithType(this ISymbol symbol, ITypeSymbol typeSymbol) =>
+        TryGetAttributeWithType(symbol, typeSymbol, out _);
+
+    /// <summary>Tries to get an attribute with the specified type.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
+    /// <param name="typeSymbol">The <see cref="ITypeSymbol"/> instance for the attribute type to look for.</param>
+    /// <param name="attributeData">The resulting attribute, if it was found.</param>
+    /// <returns>Whether or not <paramref name="symbol"/> has an attribute with the specified type.</returns>
+    [Pure]
+    public static bool TryGetAttributeWithType(
+        this ISymbol symbol,
+        ITypeSymbol typeSymbol,
+        [NotNullWhen(true)] out AttributeData? attributeData
+    )
+    {
+        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var attribute in symbol.GetAttributes())
+            if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, typeSymbol))
+            {
+                attributeData = attribute;
+                return true;
+            }
+
+        attributeData = null;
+        return false;
+    }
+
+    /// <summary>Checks whether or not a given type symbol has a specified fully qualified metadata name.</summary>
+    /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance to check.</param>
+    /// <param name="name">The full name to check.</param>
+    /// <returns>Whether <paramref name="symbol"/> has a full name equals to <paramref name="name"/>.</returns>
+    public static bool HasFullyQualifiedMetadataName(this ITypeSymbol symbol, string name)
+    {
+        var builder = ImmutableArrayBuilder<char>.Rent();
+
+        try
+        {
+            symbol.AppendFullyQualifiedMetadataName(ref builder);
+            return builder.WrittenSpan.SequenceEqual(name.AsSpan());
+        }
+        finally
+        {
+            builder.Dispose();
+        }
+    }
+
+    /// <summary>Gets the fully qualified metadata name for a given <see cref="ITypeSymbol"/> instance.</summary>
+    /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance.</param>
+    /// <returns>The fully qualified metadata name for <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string GetFullyQualifiedMetadataName(this ITypeSymbol symbol)
+    {
+        var builder = ImmutableArrayBuilder<char>.Rent();
+
+        try
+        {
+            symbol.AppendFullyQualifiedMetadataName(ref builder);
+            return builder.ToString();
+        }
+        finally
+        {
+            builder.Dispose();
+        }
+    }
+
+    /// <summary>Tries to get an attribute with the specified fully qualified metadata name.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
+    /// <param name="name">The attribute name to look for.</param>
+    /// <param name="attributeData">The resulting attribute, if it was found.</param>
+    /// <returns>Whether or not <paramref name="symbol"/> has an attribute with the specified name.</returns>
+    [Pure]
+    public static bool TryGetAttributeWithFullyQualifiedMetadataName(
+        this ISymbol symbol,
+        string name,
+        [NotNullWhen(true)] out AttributeData? attributeData
+    )
+    {
+        foreach (var attribute in symbol.GetAttributes())
+            if (attribute.AttributeClass is { } named && named.HasFullyQualifiedMetadataName(name))
+            {
+                attributeData = attribute;
+                return true;
+            }
+
+        attributeData = null;
+        return false;
+    }
+
+    /// <summary>Calculates the effective accessibility for a given symbol.</summary>
+    /// <param name="symbol">The <see cref="ISymbol"/> instance to check.</param>
+    /// <returns>The effective accessibility for <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static Accessibility GetEffectiveAccessibility(this ISymbol symbol)
+    {
+        // Start by assuming it's visible
+        var visibility = Accessibility.Public;
+
+        // Handle special cases
+        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+        switch (symbol.Kind)
+        {
+            case SymbolKind.Alias: return Accessibility.Private; // ReSharper disable once TailRecursiveCall
+            case SymbolKind.Parameter: return GetEffectiveAccessibility(symbol.ContainingSymbol);
+            case SymbolKind.TypeParameter: return Accessibility.Private;
+        }
+
+        // Traverse the symbol hierarchy to determine the effective accessibility
+        while (symbol is not null && symbol.Kind != SymbolKind.Namespace)
+        {
+            switch (symbol.DeclaredAccessibility)
+            {
+                case Accessibility.NotApplicable or Accessibility.Private: return Accessibility.Private;
+                case Accessibility.Internal or Accessibility.ProtectedAndInternal:
+                    visibility = Accessibility.Internal;
+                    break;
+            }
+
+            symbol = symbol.ContainingSymbol;
+        }
+
+        return visibility;
+    }
+
+    /// <summary>Checks whether or not a given symbol can be accessed from a specified assembly.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
+    /// <param name="assembly">The assembly to check the accessibility of <paramref name="symbol"/> for.</param>
+    /// <returns>Whether <paramref name="assembly"/> can access <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static bool CanBeAccessedFrom(this ISymbol symbol, IAssemblySymbol assembly) =>
+        symbol.GetEffectiveAccessibility() is var accessibility &&
+        accessibility == Accessibility.Public ||
+        accessibility == Accessibility.Internal && symbol.ContainingAssembly.GivesAccessTo(assembly);
+
+    /// <summary>Negated <see cref="SyntaxValueProvider.ForAttributeWithMetadataName"/>.</summary>
+    /// <inheritdoc cref="SyntaxValueProvider.ForAttributeWithMetadataName"/>
+    [Pure]
+    public static IncrementalValuesProvider<T> AgainstAttributeWithMetadataName<T>(
+        this SyntaxValueProvider syntaxValueProvider,
+        string fullyQualifiedMetadataName,
+        [InstantHandle] Func<SyntaxNode, CancellationToken, bool> predicate,
+        [InstantHandle] Func<SyntaxNode, ISymbol, SemanticModel, CancellationToken, T> transform
+    )
+    {
+        Option<T>? Option(GeneratorSyntaxContext context, CancellationToken token) =>
+            context.SemanticModel.GetDeclaredSymbol(context.Node, token) is { } symbol &&
+            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _)
+                ? new Option<T>(transform(context.Node, symbol, context.SemanticModel, token))
+                : null;
+
+        return syntaxValueProvider
+           .CreateSyntaxProvider(predicate, Option)
+           .Where(static item => item is not null) // ReSharper disable NullableWarningSuppressionIsUsed
+           .Select(static (item, _) => item!.Value)!; // ReSharper restore NullableWarningSuppressionIsUsed
+    }
+
+    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
+    /// <typeparam name="T">The type of value to filter.</typeparam>
+    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
+    [Pure]
+    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider) =>
+#pragma warning disable 8619
+        provider.Where(x => x is not null);
+#pragma warning restore 8619
+
+    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
+    /// <typeparam name="T">The type of value to filter.</typeparam>
+    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with strictly non-null values.</returns>
+    [Pure]
+    public static IncrementalValuesProvider<T> Filter<T>(this IncrementalValuesProvider<T?> provider)
+        where T : struct =>
+#pragma warning disable 8629
+        provider.Where(x => x.HasValue).Select((x, _) => x.Value);
+#pragma warning restore 8629
+
+    /// <summary>Appends the fully qualified metadata name for a given symbol to a target builder.</summary>
+    /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance.</param>
+    /// <param name="builder">The target <see cref="ImmutableArrayBuilder{T}"/> instance.</param>
+    static void AppendFullyQualifiedMetadataName(this ISymbol symbol, ref ImmutableArrayBuilder<char> builder)
+    {
+        static void BuildFrom(ISymbol? symbol, ref ImmutableArrayBuilder<char> builder)
+        {
+            switch (symbol)
+            {
+                // Namespaces that are nested also append a leading '.'
+                case INamespaceSymbol { ContainingNamespace.IsGlobalNamespace: false }:
+                    BuildFrom(symbol.ContainingNamespace, ref builder);
+                    builder.Add('.');
+                    builder.AddRange(symbol.MetadataName.AsSpan());
+                    break;
+
+                // Other namespaces (ie. the one right before global) skip the leading '.'
+                case INamespaceSymbol { IsGlobalNamespace: false }:
+                    builder.AddRange(symbol.MetadataName.AsSpan());
+                    break;
+
+                // Types with no namespace just have their metadata name directly written
+                case ITypeSymbol { ContainingSymbol: INamespaceSymbol { IsGlobalNamespace: true } }:
+                    builder.AddRange(symbol.MetadataName.AsSpan());
+                    break;
+
+                // Types with a containing non-global namespace also append a leading '.'
+                case ITypeSymbol { ContainingSymbol: INamespaceSymbol namespaceSymbol }:
+                    BuildFrom(namespaceSymbol, ref builder);
+                    builder.Add('.');
+                    builder.AddRange(symbol.MetadataName.AsSpan());
+                    break;
+
+                // Nested types append a leading '+'
+                case ITypeSymbol { ContainingSymbol: ITypeSymbol typeSymbol }:
+                    BuildFrom(typeSymbol, ref builder);
+                    builder.Add('+');
+                    builder.AddRange(symbol.MetadataName.AsSpan());
+                    break;
+            }
+        }
+
+        BuildFrom(symbol, ref builder);
+    }
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if ROSLYN
+// ReSharper disable NullableWarningSuppressionIsUsed
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>A helper type to build sequences of values with pooled buffers.</summary>
+/// <typeparam name="T">The type of items to create sequences for.</typeparam>
+[StructLayout(LayoutKind.Auto)]
+public ref partial struct ImmutableArrayBuilder<T>
+{
+    /// <summary>The rented <see cref="Writer"/> instance to use.</summary>
+    Writer? _writer;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImmutableArrayBuilder{T}"/> struct with the specified parameters.
+    /// </summary>
+    /// <param name="writer">The target data writer to use.</param>
+    ImmutableArrayBuilder(Writer writer) => _writer = writer;
+
+    /// <inheritdoc cref="ImmutableArray{T}.Builder.Count"/>
+    public readonly int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _writer!.Count;
+    }
+
+    /// <summary>Gets the data written to the underlying buffer so far, as a <see cref="ReadOnlySpan{T}"/>.</summary>
+    [UnscopedRef]
+    public readonly ReadOnlySpan<T> WrittenSpan
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _writer!.WrittenSpan;
+    }
+
+    /// <summary>Creates a <see cref="ImmutableArrayBuilder{T}"/> value with a pooled underlying data writer.</summary>
+    /// <returns>A <see cref="ImmutableArrayBuilder{T}"/> instance to write data to.</returns>
+    public static ImmutableArrayBuilder<T> Rent() => new(new());
+
+    /// <inheritdoc cref="ImmutableArray{T}.Builder.Add(T)"/>
+    public readonly void Add(T item) => _writer!.Add(item);
+
+    /// <summary>Adds the specified items to the end of the array.</summary>
+    /// <param name="items">The items to add at the end of the array.</param>
+    public readonly void AddRange(scoped ReadOnlySpan<T> items) => _writer!.AddRange(items);
+
+    /// <inheritdoc cref="ImmutableArray{T}.Builder.ToImmutable"/>
+    public readonly ImmutableArray<T> ToImmutable() => ImmutableCollectionsMarshal.AsImmutableArray(ToArray());
+
+    /// <inheritdoc cref="ImmutableArray{T}.Builder.ToArray"/>
+    public readonly T[] ToArray() => WrittenSpan.ToArray();
+
+    /// <summary>Gets an <see cref="IEnumerable{T}"/> instance for the current builder.</summary>
+    /// <remarks><para>The builder should not be mutated while an enumerator is in use.</para></remarks>
+    /// <returns>An <see cref="IEnumerable{T}"/> instance for the current builder.</returns>
+    public readonly IEnumerable<T> AsEnumerable() => _writer!;
+
+    /// <inheritdoc/>
+    public readonly override string ToString() => WrittenSpan.ToString();
+
+    /// <inheritdoc cref="IDisposable.Dispose"/>
+    public void Dispose()
+    {
+        var writer = _writer;
+        _writer = null;
+        writer?.Dispose();
+    }
+
+    /// <summary>A class handling the actual buffer writing.</summary>
+    sealed class Writer : ICollection<T>, IDisposable
+    {
+        /// <summary>The starting offset within <see cref="_array"/>.</summary>
+        int _index;
+
+        /// <summary>The underlying <typeparamref name="T"/> array.</summary>
+        T?[]? _array = ArrayPool<T?>.Shared.Rent(typeof(T) == typeof(char) ? 1024 : 8);
+
+        /// <inheritdoc/>
+        bool ICollection<T>.IsReadOnly => true;
+
+        /// <inheritdoc cref="ImmutableArrayBuilder{T}.Count"/>
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _index;
+        }
+
+        /// <inheritdoc cref="ImmutableArrayBuilder{T}.WrittenSpan"/>
+        public ReadOnlySpan<T> WrittenSpan
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new(_array!, 0, _index);
+        }
+
+        /// <inheritdoc cref="ImmutableArrayBuilder{T}.Add"/>
+        public void Add(T value)
+        {
+            EnsureCapacity(1);
+            _array![_index++] = value;
+        }
+
+        /// <inheritdoc cref="ImmutableArrayBuilder{T}.AddRange"/>
+        public void AddRange(ReadOnlySpan<T> items)
+        {
+            EnsureCapacity(items.Length);
+            items.CopyTo(_array.AsSpan(_index)!);
+            _index += items.Length;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            var array = _array;
+            _array = null;
+
+            if (array is not null)
+                ArrayPool<T?>.Shared.Return(array, typeof(T) != typeof(char));
+        }
+
+        /// <inheritdoc/>
+        void ICollection<T>.Clear() => throw new NotSupportedException();
+
+        /// <inheritdoc/>
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex) => Array.Copy(_array!, 0, array, arrayIndex, _index);
+
+        /// <summary>
+        /// Ensures that <see cref="_array"/> has enough free space to contain a given number of new items.
+        /// </summary>
+        /// <param name="requestedSize">The minimum number of items to ensure space for in <see cref="_array"/>.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void EnsureCapacity(int requestedSize)
+        {
+            if (requestedSize > _array!.Length - _index)
+                ResizeBuffer(requestedSize);
+        }
+
+        /// <summary>Resizes <see cref="_array"/> to ensure it can fit the specified number of new items.</summary>
+        /// <param name="sizeHint">The minimum number of items to ensure space for in <see cref="_array"/>.</param>
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        void ResizeBuffer(int sizeHint)
+        {
+            var minimumSize = _index + sizeHint;
+            var oldArray = _array!;
+            var newArray = ArrayPool<T?>.Shared.Rent(minimumSize);
+
+            Array.Copy(oldArray, newArray, _index);
+            _array = newArray;
+            ArrayPool<T?>.Shared.Return(oldArray, typeof(T) != typeof(char));
+        }
+
+        /// <inheritdoc/>
+        bool ICollection<T>.Contains(T item) => throw new NotSupportedException();
+
+        /// <inheritdoc/>
+        bool ICollection<T>.Remove(T item) => throw new NotSupportedException();
+
+        /// <inheritdoc/>
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
+
+        /// <inheritdoc/>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            var array = _array!;
+            var length = _index;
+
+            for (var i = 0; i < length; i++)
+                yield return array[i]!;
+        }
+    }
+}
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
