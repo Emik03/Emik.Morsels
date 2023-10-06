@@ -11,6 +11,19 @@ namespace Emik.Morsels;
 /// <summary>Contains syntactic operations and registrations.</summary>
 static partial class IncludedSyntaxNodeRegistrant
 {
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="_">The discarded token, existing purely for convenience.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is
+    /// an instance of <typeparamref name="T"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool AnnotatedAndIs<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
+        where T : MemberDeclarationSyntax =>
+        node is T { AttributeLists.Count: >= 1 };
+
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <param name="name">The name to get.</param>
@@ -52,19 +65,6 @@ static partial class IncludedSyntaxNodeRegistrant
     public static bool Is<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
         where T : SyntaxNode =>
         node is T;
-
-    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
-    /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
-    /// <param name="node">The passed in node to test.</param>
-    /// <param name="_">The discarded token, existing purely for convenience.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is
-    /// an instance of <typeparamref name="T"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool AnnotatedAndIs<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
-        where T : MemberDeclarationSyntax =>
-        node is T { AttributeLists.Count: >= 1 };
 
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
