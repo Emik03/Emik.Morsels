@@ -12336,6 +12336,8 @@ readonly
     partial struct Bits<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     where T : unmanaged
 {
+    const int BitsPerByte = 8;
+
     [ProvidesContext]
     readonly T _value = value;
 
@@ -12470,7 +12472,7 @@ readonly
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
-        const int BitsPerByte = 8, Start = -1;
+        const int Start = -1;
 
         readonly T _value = value;
 
@@ -12755,7 +12757,7 @@ readonly
 
         var last = *(byte*)ptr;
 
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < BitsPerByte; i++)
             if ((last & 1 << i) is not 0)
                 if (x is 0)
                 {
@@ -13764,11 +13766,32 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     /// <param name="source">The collection to split.</param>
     /// <param name="predicate">The method that decides where the item ends up.</param>
     /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// </returns>
+    [Pure]
+    public static Split<IEnumerable<T>> SplitWhen<T>(
+        [InstantHandle] this ICollection<T> source,
+        [InstantHandle] Func<T, bool> predicate
+    )
+    {
+        var index = source.TakeWhile(Not1(predicate)).Count();
+        return source.SplitAt(index);
+    }
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
     /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
     /// <see langword="true"/> and <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
-    public static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
+    public static Split<List<T>> SplitBy<T>(
+        [InstantHandle] this IEnumerable<T> source,
+        [InstantHandle] Predicate<T> predicate
+    )
     {
         List<T> t = new(), f = new();
 
@@ -13785,17 +13808,21 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     /// <param name="source">The collection to split.</param>
     /// <param name="predicate">The method that decides where the item ends up.</param>
     /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
+    /// <see langword="true"/> and <see langword="false"/>.
     /// </returns>
-    [Pure]
-    public static Split<IEnumerable<T>> SplitWhen<T>(
-        this ICollection<T> source,
-        [InstantHandle] Func<T, bool> predicate
+    [MustUseReturnValue]
+    public static Split<SmallList<T>> SmallSplitBy<T>(
+        [InstantHandle] this IEnumerable<T> source,
+        [InstantHandle] Predicate<T> predicate
     )
     {
-        var index = source.TakeWhile(Not1(predicate)).Count();
-        return source.SplitAt(index);
+        SmallList<T> t = default, f = default;
+
+        foreach (var item in source)
+            (predicate(item) ? t : f).Add(item);
+
+        return new(t, f);
     }
 #endif
 

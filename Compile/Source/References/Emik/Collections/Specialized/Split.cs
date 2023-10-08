@@ -26,11 +26,32 @@ static partial class SplitFactory
     /// <param name="source">The collection to split.</param>
     /// <param name="predicate">The method that decides where the item ends up.</param>
     /// <returns>
+    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
+    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// </returns>
+    [Pure]
+    public static Split<IEnumerable<T>> SplitWhen<T>(
+        [InstantHandle] this ICollection<T> source,
+        [InstantHandle] Func<T, bool> predicate
+    )
+    {
+        var index = source.TakeWhile(Not1(predicate)).Count();
+        return source.SplitAt(index);
+    }
+
+    /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="source">The collection to split.</param>
+    /// <param name="predicate">The method that decides where the item ends up.</param>
+    /// <returns>
     /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
     /// <see langword="true"/> and <see langword="false"/>.
     /// </returns>
     [MustUseReturnValue]
-    public static Split<List<T>> SplitBy<T>(this IEnumerable<T> source, [InstantHandle] Predicate<T> predicate)
+    public static Split<List<T>> SplitBy<T>(
+        [InstantHandle] this IEnumerable<T> source,
+        [InstantHandle] Predicate<T> predicate
+    )
     {
         List<T> t = new(), f = new();
 
@@ -47,17 +68,21 @@ static partial class SplitFactory
     /// <param name="source">The collection to split.</param>
     /// <param name="predicate">The method that decides where the item ends up.</param>
     /// <returns>
-    /// A <see cref="Split{T}"/> instance that contains 2 enumerables containing the two halves of the underlying
-    /// collection. The first half lasts until the first element that returned <see langword="true"/>.
+    /// A <see cref="Split{T}"/> instance that contains 2 lists containing the elements that returned
+    /// <see langword="true"/> and <see langword="false"/>.
     /// </returns>
-    [Pure]
-    public static Split<IEnumerable<T>> SplitWhen<T>(
-        this ICollection<T> source,
-        [InstantHandle] Func<T, bool> predicate
+    [MustUseReturnValue]
+    public static Split<SmallList<T>> SmallSplitBy<T>(
+        [InstantHandle] this IEnumerable<T> source,
+        [InstantHandle] Predicate<T> predicate
     )
     {
-        var index = source.TakeWhile(Not1(predicate)).Count();
-        return source.SplitAt(index);
+        SmallList<T> t = default, f = default;
+
+        foreach (var item in source)
+            (predicate(item) ? t : f).Add(item);
+
+        return new(t, f);
     }
 }
 #endif
