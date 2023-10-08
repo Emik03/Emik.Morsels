@@ -48,6 +48,8 @@ readonly
     partial struct Bits<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     where T : unmanaged
 {
+    const int BitsPerByte = 8;
+
     [ProvidesContext]
     readonly T _value = value;
 
@@ -182,7 +184,7 @@ readonly
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
-        const int BitsPerByte = 8, Start = -1;
+        const int Start = -1;
 
         readonly T _value = value;
 

@@ -167,7 +167,7 @@ readonly
 
         var last = *(byte*)ptr;
 
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < BitsPerByte; i++)
             if ((last & 1 << i) is not 0)
                 if (x is 0)
                 {
