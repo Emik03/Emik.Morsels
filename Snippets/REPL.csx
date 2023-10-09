@@ -5245,17 +5245,17 @@ public sealed class Primes : IEnumerable<ulong>
 
                     while (i >= length)
                     {
-                        var bf = (ushort[])s_masterCopy.Clone();
+                        var buffer = (ushort[])s_masterCopy.Clone();
 
                         if (length is 0)
                             for (uint bi = 0, wi = 0, w = 0, msk = 0x8000, v = 0;
-                                w < bf.Length;
+                                w < buffer.Length;
                                 bi += s_patterns[wi++], wi = wi >= s_length ? 0 : wi)
                             {
                                 if (msk >= 0x8000)
                                 {
                                     msk = 1;
-                                    v = bf[w++];
+                                    v = buffer[w++];
                                 }
                                 else msk <<= 1;
 
@@ -5271,10 +5271,10 @@ public sealed class Primes : IEnumerable<ulong>
                                 var kn = s_lookup[k - kd * s_circumference];
 
                                 for (uint wrd = kd * s_candidates + (uint)(kn >> 4), ndx = wi * s_length + kn;
-                                    wrd < bf.Length;)
+                                    wrd < buffer.Length;)
                                 {
                                     var st = s_wheelStates[ndx];
-                                    bf[wrd] |= st._mask;
+                                    buffer[wrd] |= st._mask;
                                     wrd += st._multiply * pd + st._extra;
                                     ndx = st._next;
                                 }
@@ -5282,10 +5282,10 @@ public sealed class Primes : IEnumerable<ulong>
                         else
                         {
                             _lwi += s_pageRange;
-                            CullBuffer(_lwi, bf);
+                            CullBuffer(_lwi, buffer);
                         }
 
-                        var c = Count(s_pageRange, bf);
+                        var c = Count(s_pageRange, buffer);
                         var newArray = new byte[length + c];
                         _saved.CopyTo(newArray, 0);
 
@@ -5296,7 +5296,7 @@ public sealed class Primes : IEnumerable<ulong>
                             if (mask >= 0x8000)
                             {
                                 mask = 1;
-                                current = bf[w++];
+                                current = buffer[w++];
                             }
                             else mask <<= 1;
 
@@ -5627,9 +5627,9 @@ public sealed class Primes : IEnumerable<ulong>
 
         return Fstbp + (ndx + cycl * s_circumference + s_positions[bit] << 1);
 
-        bool Find(ulong lwi, ushort[] bfr)
+        bool Find(ulong lwi, ushort[] buffer)
         {
-            var c = Count(s_bufferRange, bfr);
+            var c = Count(s_bufferRange, buffer);
 
             if ((cnt += c) < index)
                 return false;
@@ -5640,13 +5640,13 @@ public sealed class Primes : IEnumerable<ulong>
             do
             {
                 var w = cycl++ * s_candidates;
-                c = s_counting[bfr[w++]] + s_counting[bfr[w++]] + s_counting[bfr[w]];
+                c = s_counting[buffer[w++]] + s_counting[buffer[w++]] + s_counting[buffer[w]];
                 cnt += c;
             } while (cnt < index);
 
             cnt -= c;
             var y = --cycl * s_candidates;
-            var v = ((ulong)bfr[y + 2] << 32) + ((ulong)bfr[y + 1] << 16) + bfr[y];
+            var v = ((ulong)buffer[y + 2] << 32) + ((ulong)buffer[y + 1] << 16) + buffer[y];
 
             do
                 if ((v & 1UL << (int)bit++) == 0)
@@ -5664,7 +5664,7 @@ public sealed class Primes : IEnumerable<ulong>
     [Pure]
     public static ulong SumTo(uint topNumber)
     {
-        static long Sumbf(ulong lowi, uint bitlim, ushort[] buf)
+        static long SumBuffer(ulong lowi, uint bitlim, ushort[] buf)
         {
             var acc = 0L;
 
@@ -5691,7 +5691,7 @@ public sealed class Primes : IEnumerable<ulong>
             return s_primes.TakeWhile(p => p <= topNumber).Aggregate(0u, (acc, p) => acc + p);
 
         var sum = (long)s_primes.Aggregate(0u, (acc, p) => acc + p);
-        IterateTo(topNumber, (pos, lim, b) => Interlocked.Add(ref sum, Sumbf(pos, lim, b)));
+        IterateTo(topNumber, (pos, lim, b) => Interlocked.Add(ref sum, SumBuffer(pos, lim, b)));
         return (ulong)sum;
     }
 
@@ -5703,7 +5703,7 @@ public sealed class Primes : IEnumerable<ulong>
     /// <summary>Gets the enumerator for the primes.</summary>
     /// <returns>The enumerator of the primes.</returns>
     [Pure]
-    IEnumerator IEnumerable.GetEnumerator() => new Enumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>Fast buffer segment culling method using a Wheel State Look Up Table.</summary>
     /// <param name="lwi">The limit.</param>
@@ -5743,11 +5743,11 @@ public sealed class Primes : IEnumerable<ulong>
             var kd = k / s_circumference;
             var kn = s_lookup[k - kd * s_circumference];
 
-            for (uint wrd = (uint)kd * s_candidates + (uint)(kn >> 4), ndx = wi * s_length + kn; wrd < b.Length;)
+            for (uint word = (uint)kd * s_candidates + (uint)(kn >> 4), ndx = wi * s_length + kn; word < b.Length;)
             {
                 var st = s_wheelStates[ndx];
-                b[wrd] |= st._mask;
-                wrd += st._multiply * pd + st._extra;
+                b[word] |= st._mask;
+                word += st._multiply * pd + st._extra;
                 ndx = st._next;
             }
         }
@@ -5762,10 +5762,10 @@ public sealed class Primes : IEnumerable<ulong>
     /// <param name="action">The action to invoke.</param>
     static void IterateTo(ulong topNumber, Action<ulong, uint, ushort[]> action)
     {
-        var ps = new Processor[s_procs];
+        var processors = new Processor[s_procs];
 
         for (var s = 0u; s < s_procs; s++)
-            ps[s] = new()
+            processors[s] = new()
             {
                 _buffer = new ushort[s_bufferSize],
                 _task = Task.Factory.StartNew(Noop),
@@ -5775,27 +5775,27 @@ public sealed class Primes : IEnumerable<ulong>
 
         for (ulong index = 0; index <= topIndex;)
         {
-            ps[0]._task.Wait();
-            var buf = ps[0]._buffer;
+            processors[0]._task.Wait();
+            var buffer = processors[0]._buffer;
 
             for (var s = 0u; s < s_procs - 1; s++)
-                ps[s] = ps[s + 1];
+                processors[s] = processors[s + 1];
 
             var lowi = index;
             var nxtndx = index + s_bufferRange;
             var lim = topIndex < nxtndx ? (uint)(topIndex - index + 1) : s_bufferRange;
 
-            ps[s_procs - 1] = new()
+            processors[s_procs - 1] = new()
             {
-                _buffer = buf,
-                _task = CullBufferAsync(index, buf, b => action(lowi, lim, b)),
+                _buffer = buffer,
+                _task = CullBufferAsync(index, buffer, b => action(lowi, lim, b)),
             };
 
             index = nxtndx;
         }
 
         for (var s = 0u; s < s_procs; s++)
-            ps[s]._task.Wait();
+            processors[s]._task.Wait();
     }
 
     /// <summary>
@@ -5806,34 +5806,34 @@ public sealed class Primes : IEnumerable<ulong>
     /// <param name="predicate">The predicate to iterate over.</param>
     static void IterateUntil([InstantHandle] Func<ulong, ushort[], bool> predicate)
     {
-        var ps = new Processor[s_procs];
+        var processors = new Processor[s_procs];
 
         for (var s = 0u; s < s_procs; s++)
         {
-            var buf = new ushort[s_bufferSize];
+            var buffer = new ushort[s_bufferSize];
 
-            ps[s] = new()
+            processors[s] = new()
             {
-                _buffer = buf,
-                _task = CullBufferAsync(s * s_bufferRange, buf, Noop),
+                _buffer = buffer,
+                _task = CullBufferAsync(s * s_bufferRange, buffer, Noop),
             };
         }
 
         for (var ndx = 0ul;; ndx += s_bufferRange)
         {
-            ps[0]._task.Wait();
-            var buf = ps[0]._buffer;
+            processors[0]._task.Wait();
+            var buffer = processors[0]._buffer;
 
-            if (predicate(ndx, buf))
+            if (predicate(ndx, buffer))
                 break;
 
             for (var s = 0u; s < s_procs - 1; s++)
-                ps[s] = ps[s + 1];
+                processors[s] = processors[s + 1];
 
-            ps[s_procs - 1] = new()
+            processors[s_procs - 1] = new()
             {
-                _buffer = buf,
-                _task = CullBufferAsync(ndx + s_procs * s_bufferRange, buf, Noop),
+                _buffer = buffer,
+                _task = CullBufferAsync(ndx + s_procs * s_bufferRange, buffer, Noop),
             };
         }
     }
@@ -5847,20 +5847,20 @@ public sealed class Primes : IEnumerable<ulong>
     {
         if (bitlim < s_bufferRange)
         {
-            var addr = (bitlim - 1) / s_circumference;
-            var bit = s_lookup[bitlim - addr * s_circumference] - 1;
-            addr *= s_candidates;
+            var adder = (bitlim - 1) / s_circumference;
+            var bit = s_lookup[bitlim - adder * s_circumference] - 1;
+            adder *= s_candidates;
 
             for (var i = 0; i < 3; i++)
-                buf[addr++] |= (ushort)(unchecked((ulong)-2) << bit >> (i << 4));
+                buf[adder++] |= (ushort)(unchecked((ulong)-2) << bit >> (i << 4));
         }
 
-        var acc = 0;
+        var accumulator = 0;
 
         for (uint i = 0, w = 0; i < bitlim; i += s_circumference)
-            acc += s_counting[buf[w++]] + s_counting[buf[w++]] + s_counting[buf[w++]];
+            accumulator += s_counting[buf[w++]] + s_counting[buf[w++]] + s_counting[buf[w++]];
 
-        return acc;
+        return accumulator;
     }
 
     /// <summary>Forms a task of the cull buffer operaion.</summary>
