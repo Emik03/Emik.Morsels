@@ -21,11 +21,13 @@ static partial class MethodGroupings
     public static void Invoke([InstantHandle] Action del) => del();
 
     /// <summary>Performs nothing.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop() { }
 
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T">The type of discard.</typeparam>
     /// <param name="_">The discard.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T>(T _) { }
 
     /// <summary>Performs nothing.</summary>
@@ -33,6 +35,7 @@ static partial class MethodGroupings
     /// <typeparam name="T2">The second type of discard.</typeparam>
     /// <param name="_">The first discard.</param>
     /// <param name="__">The second discard.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T1, T2>(T1 _, T2 __) { }
 
     /// <summary>Create a delegate.</summary>
