@@ -11773,7 +11773,7 @@ public abstract class FixedGenerator(
     /// <typeparam name="T">The kind of <see cref="FixedGenerator"/> to get the <see cref="Name"/> from.</typeparam>
     /// <returns>The <see cref="Name"/> of the <see cref="FixedGenerator"/> <typeparamref name="T"/>.</returns>
     [Pure]
-    public static string NameOf<T>()
+    public static string Of<T>()
         where T : FixedGenerator, new() =>
         new T().Name;
 
