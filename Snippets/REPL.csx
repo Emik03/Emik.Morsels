@@ -11797,6 +11797,12 @@ public abstract class FixedGenerator(
 
 /// <summary>Contains syntactic operations and registrations.</summary>
 
+    /// <summary>Adds the deconstruction of the tuples onto the <see cref="SourceProductionContext"/>.</summary>
+    /// <param name="context">The context to use for source generation.</param>
+    /// <param name="tuple">The tuple containing the hint name and source.</param>
+    public static void AddSource(SourceProductionContext context, (string HintName, string Source) tuple) =>
+        context.AddSource(tuple.HintName, tuple.Source);
+
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
     /// <param name="node">The passed in node to test.</param>
