@@ -215,6 +215,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static OperatorCaching;" => "",
         "global using static Unforgiving;" => "",
         "global using static TupleExtracts;" => "",
+        "global using static FixedGenerator;" => "",
         "global using static MethodGroupings;" => "",
         "using static Enum;" => "using static System.Enum;",
         "using static Math;" => "using static System.Math;",
