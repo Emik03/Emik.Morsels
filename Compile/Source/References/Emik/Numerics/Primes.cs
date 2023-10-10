@@ -35,18 +35,19 @@ sealed class Primes : IEnumerable<ulong>
                         var buffer = (ushort[])s_masterCopy.Clone();
 
                         if (length is 0)
-                            for (uint bi = 0, wi = 0, w = 0, msk = 0x8000, v = 0;
+                            for (uint bi = 0, wi = 0, w = 0, mask = 0x8000, v = 0;
                                 w < buffer.Length;
                                 bi += s_patterns[wi++], wi = wi >= s_length ? 0 : wi)
                             {
-                                if (msk >= 0x8000)
+                                if (mask >= 0x8000)
                                 {
-                                    msk = 1;
+                                    mask = 1;
                                     v = buffer[w++];
                                 }
-                                else msk <<= 1;
+                                else
+                                    mask <<= 1;
 
-                                if ((v & msk) != 0)
+                                if ((v & mask) is not 0)
                                     continue;
 
                                 var p = Fstbp + bi + bi;
@@ -85,9 +86,10 @@ sealed class Primes : IEnumerable<ulong>
                                 mask = 1;
                                 current = buffer[w++];
                             }
-                            else mask <<= 1;
+                            else
+                                mask <<= 1;
 
-                            if ((current & mask) != 0)
+                            if ((current & mask) is not 0)
                                 continue;
 
                             var pd = p / s_circumference;
@@ -104,7 +106,7 @@ sealed class Primes : IEnumerable<ulong>
         }
     }
 
-    /// <summary>This class implements the enumeration (<see cref="IEnumerator"/>).</summary>
+    /// <summary>This class implements the enumeration (<see cref="IEnumerator{T}"/>).</summary>
     /// <remarks><para>
     /// It works by farming out tasks culling pages, which it then processes in order by enumerating
     /// the found primes as recognized by the remaining non-composite bits in the cull page buffers.
@@ -132,7 +134,7 @@ sealed class Primes : IEnumerable<ulong>
                 };
 
             for (var s = 1u; s < s_procs; s++)
-                _processors[s]._task = CullBufferAsync((s - 1u) * s_bufferRange, _processors[s]._buffer, Noop);
+                _processors[s]._task = CullBufferAsync((s - 1u) * s_bufferRange, _processors[s]._buffer);
 
             _buffer = _processors[0]._buffer;
         }
@@ -163,7 +165,7 @@ sealed class Primes : IEnumerable<ulong>
                 if (_wheelUpperBound >= s_length)
                     _wheelUpperBound = 0;
 
-                if ((_mask <<= 1) != 0)
+                if ((_mask <<= 1) is not 0)
                     continue;
 
                 if (++_big >= s_bufferSize)
@@ -174,7 +176,7 @@ sealed class Primes : IEnumerable<ulong>
                         _processors[prc] = _processors[prc + 1];
 
                     _processors[s_procs - 1u]._buffer = _buffer;
-                    _processors[s_procs - 1u]._task = CullBufferAsync(_index + (s_procs - 1u) * s_bufferRange, _buffer, Noop);
+                    _processors[s_procs - 1u]._task = CullBufferAsync(_index + (s_procs - 1u) * s_bufferRange, _buffer);
                     _processors[0]._task.Wait();
                     _buffer = _processors[0]._buffer;
                 }
@@ -192,14 +194,6 @@ sealed class Primes : IEnumerable<ulong>
         void IDisposable.Dispose() { }
     }
 
-    [StructLayout(LayoutKind.Auto)]
-    struct WheelState
-    {
-        internal byte _extra, _multiply;
-
-        internal ushort _mask, _next;
-    }
-
     /// <summary>Used for multi-threading buffer array processing.</summary>
     [StructLayout(LayoutKind.Auto)]
     struct Processor
@@ -207,6 +201,14 @@ sealed class Primes : IEnumerable<ulong>
         internal ushort[] _buffer;
 
         internal Task _task;
+    }
+
+    [StructLayout(LayoutKind.Auto)]
+    struct WheelState
+    {
+        internal byte _extra, _multiply;
+
+        internal ushort _mask, _next;
     }
 
     /// <summary>
@@ -359,9 +361,15 @@ sealed class Primes : IEnumerable<ulong>
 
         s_masterCopy = new ushort[s_pageSize];
 
-        foreach (var lp in s_primes.SkipWhile(p => p < Fstcp))
+        var start = 0;
+
+        for (; start < s_primes.Length; start++)
+            if (s_primes[start] >= Fstcp)
+                break;
+
+        for (; start < s_primes.Length; start++)
         {
-            var p = (uint)lp;
+            var p = (uint)s_primes[start];
             var k = p * p - Fstbp >> 1;
             var pd = p / s_circumference;
             var kd = k / s_circumference;
@@ -383,22 +391,32 @@ sealed class Primes : IEnumerable<ulong>
     public static Primes Shared { get; } = new();
 
     /// <summary>Gets the count of primes up the number, inclusively.</summary>
-    /// <param name="topNumber">The ulong top number to check for prime.</param>
+    /// <param name="topNumber">The <see cref="ulong"/> top number to check for prime.</param>
     /// <returns>The long number of primes found.</returns>
     [Pure]
     public static long CountTo(ulong topNumber)
     {
         if (topNumber < Fstbp)
-            return s_primes.TakeWhile(p => p <= topNumber).Count();
+            return PrimesLength(topNumber);
 
         var cnt = (long)s_primes.Length;
         IterateTo(topNumber, (_, lim, b) => Interlocked.Add(ref cnt, Count(lim, b)));
         return cnt;
     }
 
-    /// <summary>Gets the prime number at the zero based index number given.</summary>
-    /// <param name="index">The long zero-based index number for the prime.</param>
-    /// <returns>The ulong prime found at the given index.</returns>
+    [Pure]
+    static long PrimesLength(ulong topNumber)
+    {
+        for (var i = 0; i < s_primes.Length; i++)
+            if (s_primes[i] > topNumber)
+                return i;
+
+        return s_primes.Length;
+    }
+
+    /// <summary>Gets the prime number based on the index.</summary>
+    /// <param name="index">The <see cref="long"/> zero-based index for the prime.</param>
+    /// <returns>The <see cref="ulong"/> prime found at the given <paramref name="index"/>.</returns>
     [Pure]
     public static ulong ElementAt(long index)
     {
@@ -409,10 +427,6 @@ sealed class Primes : IEnumerable<ulong>
         var ndx = 0UL;
         var cycl = 0u;
         var bit = 0u;
-
-        IterateUntil(Find);
-
-        return Fstbp + (ndx + cycl * s_circumference + s_positions[bit] << 1);
 
         bool Find(ulong lwi, ushort[] buffer)
         {
@@ -436,18 +450,22 @@ sealed class Primes : IEnumerable<ulong>
             var v = ((ulong)buffer[y + 2] << 32) + ((ulong)buffer[y + 1] << 16) + buffer[y];
 
             do
-                if ((v & 1UL << (int)bit++) == 0)
+                if ((v & 1UL << (int)bit++) is 0)
                     ++cnt;
             while (cnt <= index);
 
             --bit;
             return true;
         }
+
+        IterateUntil(Find);
+
+        return Fstbp + (ndx + cycl * s_circumference + s_positions[bit] << 1);
     }
 
-    /// <summary>Gets the sum of the primes up the number, inclusively.</summary>
-    /// <param name="topNumber">The uint top number to check for prime.</param>
-    /// <returns>The ulong sum of all the primes found.</returns>
+    /// <summary>Gets the sum of the primes up to the number, inclusively.</summary>
+    /// <param name="topNumber">The <see cref="uint"/> number to reach.</param>
+    /// <returns>The <see cref="ulong"/> sum of all primes up to <see cref="topNumber"/>.</returns>
     [Pure]
     public static ulong SumTo(uint topNumber)
     {
@@ -467,7 +485,7 @@ sealed class Primes : IEnumerable<ulong>
                 else
                     msk <<= 1;
 
-                if ((v & msk) == 0)
+                if ((v & msk) is 0)
                     acc += (long)(Fstbp + (lowi + i << 1));
             }
 
@@ -475,9 +493,21 @@ sealed class Primes : IEnumerable<ulong>
         }
 
         if (topNumber < Fstbp)
-            return s_primes.TakeWhile(p => p <= topNumber).Aggregate(0u, (acc, p) => acc + p);
+        {
+            var s = 0u;
 
-        var sum = (long)s_primes.Aggregate(0u, (acc, p) => acc + p);
+            for (var i = PrimesLength(topNumber); i < s_primes.Length; i++)
+                s += s_primes[i];
+
+            return s;
+        }
+
+        var su = 0u; // ReSharper disable once LoopCanBeConvertedToQuery
+
+        foreach (var next in s_primes)
+            su += next;
+
+        var sum = (long)su;
         IterateTo(topNumber, (pos, lim, b) => Interlocked.Add(ref sum, SumBuffer(pos, lim, b)));
         return (ulong)sum;
     }
@@ -602,7 +632,7 @@ sealed class Primes : IEnumerable<ulong>
             processors[s] = new()
             {
                 _buffer = buffer,
-                _task = CullBufferAsync(s * s_bufferRange, buffer, Noop),
+                _task = CullBufferAsync(s * s_bufferRange, buffer),
             };
         }
 
@@ -620,7 +650,7 @@ sealed class Primes : IEnumerable<ulong>
             processors[s_procs - 1] = new()
             {
                 _buffer = buffer,
-                _task = CullBufferAsync(ndx + s_procs * s_bufferRange, buffer, Noop),
+                _task = CullBufferAsync(ndx + s_procs * s_bufferRange, buffer),
             };
         }
     }
@@ -656,15 +686,17 @@ sealed class Primes : IEnumerable<ulong>
     /// <param name="f">The callback.</param>
     /// <returns>The awaitable <see cref="Task"/>.</returns>
     [MustUseReturnValue]
-    static Task CullBufferAsync(ulong lwi, ushort[] b, Action<ushort[]> f)
+    static Task CullBufferAsync(ulong lwi, ushort[] b, Action<ushort[]>? f = null)
     {
-        void Wrapper()
+        void WrapperUnspecified() => CullBuffer(lwi, b);
+
+        void WrapperSpecified()
         {
             CullBuffer(lwi, b);
             f(b);
         }
 
-        return Task.Factory.StartNew(Wrapper);
+        return Task.Factory.StartNew(f is null ? WrapperUnspecified : WrapperSpecified);
     }
 }
 #endif
