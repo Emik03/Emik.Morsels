@@ -48,6 +48,6 @@ public abstract class FixedGenerator(
 
     /// <inheritdoc />
     void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
-        context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}"));
+        context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}\n"));
 }
 #endif

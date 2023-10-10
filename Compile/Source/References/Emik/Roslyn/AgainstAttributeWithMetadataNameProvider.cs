@@ -6,11 +6,6 @@ namespace Emik.Morsels;
 /// <summary>Contains syntactic operations and registrations.</summary>
 static partial class AgainstAttributeWithMetadataNameProvider
 {
-    /// <summary>A simple record to wrap a value that might be missing.</summary>
-    /// <typeparam name="T">The type of values to wrap.</typeparam>
-    /// <param name="Value">The wrapped value, if it exists.</param>
-    sealed record Option<T>(T? Value);
-
     /// <summary>Gets the fully qualified name for a given symbol.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
     /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
@@ -196,16 +191,17 @@ static partial class AgainstAttributeWithMetadataNameProvider
         [InstantHandle] Func<SyntaxNode, ISymbol, SemanticModel, CancellationToken, T> transform
     )
     {
-        Option<T>? Option(GeneratorSyntaxContext context, CancellationToken token) =>
+        (T? Value, bool Succeeded) Extract(GeneratorSyntaxContext context, CancellationToken token) =>
             context.SemanticModel.GetDeclaredSymbol(context.Node, token) is { } symbol &&
-            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _)
-                ? new Option<T>(transform(context.Node, symbol, context.SemanticModel, token))
-                : null;
+            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _) &&
+            transform(context.Node, symbol, context.SemanticModel, token) is { } value
+                ? (value, true)
+                : (default, false);
 
         return syntaxValueProvider
-           .CreateSyntaxProvider(predicate, Option)
-           .Filter() // ReSharper disable once NullableWarningSuppressionIsUsed
-           .Select(static (item, _) => item.Value)!;
+           .CreateSyntaxProvider(predicate, Extract)
+           .Where(static x => x.Succeeded) // ReSharper disable once NullableWarningSuppressionIsUsed
+           .Select(static (item, _) => item.Value!);
     }
 
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
