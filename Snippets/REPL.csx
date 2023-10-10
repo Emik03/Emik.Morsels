@@ -12419,6 +12419,16 @@ public abstract class FixedGenerator(
         provider.Where(x => x.HasValue).Select((x, _) => x.Value);
 #pragma warning restore 8629
 
+    /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to the specified destination type.</summary>
+    /// <typeparam name="TFrom">The initial type.</typeparam>
+    /// <typeparam name="TTo">The target type.</typeparam>
+    /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
+    /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with <typeparamref name="TTo"/> values.</returns>
+    [Pure]
+    public static IncrementalValuesProvider<TTo> OfType<TFrom, TTo>(this IncrementalValuesProvider<TFrom?> provider)
+        where TTo : TFrom => // ReSharper disable once NullableWarningSuppressionIsUsed
+        provider.Where(static x => x is TTo).Select(static (x, _) => (TTo)x!);
+
     /// <summary>Appends the fully qualified metadata name for a given symbol to a target builder.</summary>
     /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance.</param>
     /// <param name="builder">The target <see cref="ImmutableArrayBuilder{T}"/> instance.</param>
