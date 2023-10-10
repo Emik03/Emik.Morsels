@@ -12400,8 +12400,8 @@ public abstract class FixedGenerator(
 
         return syntaxValueProvider
            .CreateSyntaxProvider(predicate, Option)
-           .Where(static item => item is not null) // ReSharper disable NullableWarningSuppressionIsUsed
-           .Select(static (item, _) => item!.Value)!; // ReSharper restore NullableWarningSuppressionIsUsed
+           .Filter() // ReSharper disable once NullableWarningSuppressionIsUsed
+           .Select(static (item, _) => item.Value)!;
     }
 
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
