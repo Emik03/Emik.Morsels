@@ -210,6 +210,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static EnumMath;" => "",
         "using static SmallList;" => "",
         "using static SpanQueries;" => "",
+        "using static SpecialType;" => "",
         "using Range = System.Range;" => "",
         "using static OperatorCaching;" => "",
         "global using static Unforgiving;" => "",

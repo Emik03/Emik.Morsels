@@ -8,6 +8,8 @@ global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+using static SpecialType;
+
 /// <summary>Contains syntactic operations and registrations.</summary>
 static partial class IncludedSyntaxNodeRegistrant
 {
@@ -92,7 +94,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// </returns>
     [Pure]
     public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is { BaseType: null, SpecialType: not SpecialType.System_Object };
+        symbol is { BaseType: null, SpecialType: not System_Object };
 
     /// <summary>
     /// Determines whether the symbol and all subsequent parent types
@@ -131,6 +133,32 @@ static partial class IncludedSyntaxNodeRegistrant
            .OfType<TypeDeclarationSyntax>()
            .Any(x => x.Modifiers.Any(x => x.ValueText is "partial")) is true;
 
+    /// <summary>Determines whether the symbol is an <see langword="unmanaged"/> primitive type.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/> is
+    /// an <see langword="unmanaged"/> primitive, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsUnmanagedPrimitive([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is // ReSharper disable once MissingIndent
+        {
+            SpecialType: System_Char or
+            System_SByte or
+            System_Byte or
+            System_Int16 or
+            System_UInt16 or
+            System_Int32 or
+            System_UInt32 or
+            System_Int64 or
+            System_UInt64 or
+            System_Decimal or
+            System_Single or
+            System_Double or
+            System_IntPtr or
+            System_UIntPtr,
+        };
+
     /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -144,7 +172,7 @@ static partial class IncludedSyntaxNodeRegistrant
             not IDynamicTypeSymbol and
             not IPointerTypeSymbol and
             not { IsRefLikeType: true } and
-            not { SpecialType: SpecialType.System_Void };
+            not { SpecialType: System_Void };
 
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>
