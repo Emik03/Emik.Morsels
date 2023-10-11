@@ -43,20 +43,22 @@ static partial class EnumMath
     public static int AsInt<T>(this T value)
         where T : Enum =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        typeof(T).GetEnumUnderlyingType() switch
-        {
-            var x when x == typeof(byte) => (byte)(object)value,
-            var x when x == typeof(sbyte) => (sbyte)(object)value,
-            var x when x == typeof(short) => (short)(object)value,
-            var x when x == typeof(ushort) => (ushort)(object)value,
-            var x when x == typeof(int) => (int)(object)value,
-            var x when x == typeof(uint) => (int)(uint)(object)value,
-            var x when x == typeof(long) => (int)(long)(object)value,
-            var x when x == typeof(ulong) => (int)(ulong)(object)value,
-            var x when x == typeof(nint) => (int)(nint)(object)value,
-            var x when x == typeof(nuint) => (int)(nuint)(object)value,
-            _ => throw Unreachable,
-        };
+        typeof(T) == typeof(Enum)
+            ? (int)(object)value
+            : typeof(T).GetEnumUnderlyingType() switch
+            {
+                var x when x == typeof(byte) => (byte)(object)value,
+                var x when x == typeof(sbyte) => (sbyte)(object)value,
+                var x when x == typeof(short) => (short)(object)value,
+                var x when x == typeof(ushort) => (ushort)(object)value,
+                var x when x == typeof(int) => (int)(object)value,
+                var x when x == typeof(uint) => (int)(uint)(object)value,
+                var x when x == typeof(long) => (int)(long)(object)value,
+                var x when x == typeof(ulong) => (int)(ulong)(object)value,
+                var x when x == typeof(nint) => (int)(nint)(object)value,
+                var x when x == typeof(nuint) => (int)(nuint)(object)value,
+                _ => throw Unreachable,
+            };
 #else
         typeof(T) == typeof(Enum) ? (int)(object)value : MathCaching<T>.From(value);
 #endif
