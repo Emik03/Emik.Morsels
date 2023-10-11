@@ -31,6 +31,7 @@ static partial class Stringifier
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
+        BitFlagSeparator = " | ",
         Else = "th",
         EqualityContract = nameof(EqualityContract),
         False = "false",
@@ -378,8 +379,11 @@ static partial class Stringifier
         int depth,
         bool useQuotes = false
 #pragma warning restore SA1114 RCS1163
-    ) =>
-        source switch
+    )
+    {
+        Console.WriteLine(typeof(T));
+
+        return source switch
         {
             null => Null,
             true => True,
@@ -388,9 +392,10 @@ static partial class Stringifier
             nuint x => $"{x}",
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}({(
-                x.IsFlagsDefined() ? $"0x{x.AsInt():x}" : x.AsInt()
-            )}) = {x.EnumStringifier()}",
+            Enum x when x.AsInt() is var i && x.GetType().IsDefined(typeof(FlagsAttribute), false) is var b =>
+                $"{x.GetType().Name}({(b ? $"0x{i:x}" : i)}) = {(b
+                    ? i.AsBits().Select(x.GetType().Into).Conjoin(BitFlagSeparator)
+                    : x)}",
             Type x => UnfoldedName(x),
             Version x => ToShortString(x),
 #if KTANE
@@ -431,6 +436,7 @@ static partial class Stringifier
             _ => source.StringifyObject(depth - 1),
 #endif
         };
+    }
 
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
@@ -526,16 +532,6 @@ static partial class Stringifier
         x.PropertyType == typeof(Type) &&
         x.GetIndexParameters().Length is 0;
 
-    [Pure] // ReSharper disable once SuggestBaseTypeForParameter
-    static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
-
-    [Pure]
-    static bool IsOneBitSet(this Enum value, Enum next) =>
-        next.AsInt() is not 0 and var filter &&
-        (filter & filter - 1) is 0 &&
-        value.AsInt() is var bits &&
-        (bits & filter) is not 0;
-
     [Pure]
     static bool IsRecord<T>() =>
         typeof(T)
@@ -578,53 +574,6 @@ static partial class Stringifier
         };
 
     [Pure]
-    static string EnumStringifier(this Enum value)
-    {
-        var values = Enum
-           .GetValues(value.GetType())
-           .Cast<Enum>()
-           .Where(value.IsOneBitSet)
-#if CSHARPREPL
-           .OrderBy(AsInt)
-#else
-           .OrderBy(EnumMath.AsInt)
-#endif
-#if WAWA
-           .ToList();
-#else
-           .ToCollectionLazily();
-#endif
-
-        string BitStringifier(int x) =>
-#if WAWA
-            values.Find(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
-#else
-            values.FirstOrDefault(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
-#endif
-            x is -1 ? "0" : $"1 << {x}";
-
-        return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
-            ? $"{value}"
-            : Conjoin(i.ToBits().Select(BitStringifier), " | ");
-    }
-
-    static IEnumerable<int> ToBits(this int number)
-    {
-        const int BitsInByte = 8;
-
-        if (number is 0)
-        {
-            yield return -1;
-
-            yield break;
-        }
-
-        for (var i = 0; i < sizeof(int) * BitsInByte; i++)
-            if ((number >> i & 1) is not 0)
-                yield return i;
-    }
-
-    [Pure]
     static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
 
     [Pure]
@@ -636,6 +585,14 @@ static partial class Stringifier
             3 => ThirdOrd,
             _ => Else,
         }}";
+
+    [Pure]
+    static object Into(this Type type, int i) =>
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+        Enum.ToObject(type, i);
+#else
+        Enum.Parse($"{i}");
+#endif
 
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
