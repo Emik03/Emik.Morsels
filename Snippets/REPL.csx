@@ -4707,20 +4707,22 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static int AsInt<T>(this T value)
         where T : Enum =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        typeof(T).GetEnumUnderlyingType() switch
-        {
-            var x when x == typeof(byte) => (byte)(object)value,
-            var x when x == typeof(sbyte) => (sbyte)(object)value,
-            var x when x == typeof(short) => (short)(object)value,
-            var x when x == typeof(ushort) => (ushort)(object)value,
-            var x when x == typeof(int) => (int)(object)value,
-            var x when x == typeof(uint) => (int)(uint)(object)value,
-            var x when x == typeof(long) => (int)(long)(object)value,
-            var x when x == typeof(ulong) => (int)(ulong)(object)value,
-            var x when x == typeof(nint) => (int)(nint)(object)value,
-            var x when x == typeof(nuint) => (int)(nuint)(object)value,
-            _ => throw Unreachable,
-        };
+        typeof(T) == typeof(Enum)
+            ? (int)(object)value
+            : typeof(T).GetEnumUnderlyingType() switch
+            {
+                var x when x == typeof(byte) => (byte)(object)value,
+                var x when x == typeof(sbyte) => (sbyte)(object)value,
+                var x when x == typeof(short) => (short)(object)value,
+                var x when x == typeof(ushort) => (ushort)(object)value,
+                var x when x == typeof(int) => (int)(object)value,
+                var x when x == typeof(uint) => (int)(uint)(object)value,
+                var x when x == typeof(long) => (int)(long)(object)value,
+                var x when x == typeof(ulong) => (int)(ulong)(object)value,
+                var x when x == typeof(nint) => (int)(nint)(object)value,
+                var x when x == typeof(nuint) => (int)(nuint)(object)value,
+                _ => throw Unreachable,
+            };
 #else
         typeof(T) == typeof(Enum) ? (int)(object)value : MathCaching<T>.From(value);
 #endif
@@ -6360,6 +6362,7 @@ public
     // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
+        BitFlagSeparator = " | ",
         Else = "th",
         EqualityContract = nameof(EqualityContract),
         False = "false",
@@ -6707,8 +6710,11 @@ public
         int depth,
         bool useQuotes = false
 #pragma warning restore SA1114 RCS1163
-    ) =>
-        source switch
+    )
+    {
+        Console.WriteLine(typeof(T));
+
+        return source switch
         {
             null => Null,
             true => True,
@@ -6717,9 +6723,10 @@ public
             nuint x => $"{x}",
             char x => useQuotes ? Escape(x) : $"{x}",
             string x => useQuotes ? $@"""{x}""" : x,
-            Enum x => $"{x.GetType().Name}({(
-                x.IsFlagsDefined() ? $"0x{x.AsInt():x}" : x.AsInt()
-            )}) = {x.EnumStringifier()}",
+            Enum x when x.AsInt() is var i && x.GetType().IsDefined(typeof(FlagsAttribute), false) is var b =>
+                $"{x.GetType().Name}({(b ? $"0x{i:x}" : i)}) = {(b
+                    ? i.AsBits().Select(x.GetType().Into).Conjoin(BitFlagSeparator)
+                    : x)}",
             Type x => UnfoldedName(x),
             Version x => ToShortString(x),
 #if KTANE
@@ -6760,6 +6767,7 @@ public
             _ => source.StringifyObject(depth - 1),
 #endif
         };
+    }
 
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
@@ -6855,16 +6863,6 @@ public
         x.PropertyType == typeof(Type) &&
         x.GetIndexParameters().Length is 0;
 
-    [Pure] // ReSharper disable once SuggestBaseTypeForParameter
-    static bool IsFlagsDefined(this Enum value) => value.GetType().IsDefined(typeof(FlagsAttribute), false);
-
-    [Pure]
-    static bool IsOneBitSet(this Enum value, Enum next) =>
-        next.AsInt() is not 0 and var filter &&
-        (filter & filter - 1) is 0 &&
-        value.AsInt() is var bits &&
-        (bits & filter) is not 0;
-
     [Pure]
     static bool IsRecord<T>() =>
         typeof(T)
@@ -6907,53 +6905,6 @@ public
         };
 
     [Pure]
-    static string EnumStringifier(this Enum value)
-    {
-        var values = Enum
-           .GetValues(value.GetType())
-           .Cast<Enum>()
-           .Where(value.IsOneBitSet)
-#if CSHARPREPL
-           .OrderBy(AsInt)
-#else
-           .OrderBy(EnumMath.AsInt)
-#endif
-#if WAWA
-           .ToList();
-#else
-           .ToCollectionLazily();
-#endif
-
-        string BitStringifier(int x) =>
-#if WAWA
-            values.Find(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
-#else
-            values.FirstOrDefault(y => y.AsInt() == 1L << x) is { } member ? $"{member}" :
-#endif
-            x is -1 ? "0" : $"1 << {x}";
-
-        return !value.IsFlagsDefined() || value.AsInt() is var i && i is 0
-            ? $"{value}"
-            : Conjoin(i.ToBits().Select(BitStringifier), " | ");
-    }
-
-    static IEnumerable<int> ToBits(this int number)
-    {
-        const int BitsInByte = 8;
-
-        if (number is 0)
-        {
-            yield return -1;
-
-            yield break;
-        }
-
-        for (var i = 0; i < sizeof(int) * BitsInByte; i++)
-            if ((number >> i & 1) is not 0)
-                yield return i;
-    }
-
-    [Pure]
     static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
 
     [Pure]
@@ -6965,6 +6916,14 @@ public
             3 => ThirdOrd,
             _ => Else,
         }}";
+
+    [Pure]
+    static object Into(this Type type, int i) =>
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+        Enum.ToObject(type, i);
+#else
+        Enum.Parse($"{i}");
+#endif
 
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
@@ -9969,7 +9928,7 @@ readonly
             ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector128<T>.Count);
 
             var best = Vector128.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+            current = ref Unsafe.Add(ref current, Vector128<T>.Count)!;
 
             while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
             {
@@ -9980,7 +9939,7 @@ readonly
                     _ => throw Unreachable,
                 };
 
-                current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+                current = ref Unsafe.Add(ref current, Vector128<T>.Count)!;
             }
 
             best = typeof(TMinMax) switch
@@ -10007,7 +9966,7 @@ readonly
             ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector256<T>.Count);
 
             var best = Vector256.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+            current = ref Unsafe.Add(ref current, Vector256<T>.Count)!;
 
             while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
             {
@@ -10018,7 +9977,7 @@ readonly
                     _ => throw Unreachable,
                 };
 
-                current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+                current = ref Unsafe.Add(ref current, Vector256<T>.Count)!;
             }
 
             best = typeof(TMinMax) switch
@@ -11779,7 +11738,7 @@ public abstract class FixedGenerator(
 
     /// <inheritdoc />
     void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
-        context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}"));
+        context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}\n"));
 }
 #endif
 
@@ -12202,11 +12161,6 @@ public abstract class FixedGenerator(
 
 /// <summary>Contains syntactic operations and registrations.</summary>
 
-    /// <summary>A simple record to wrap a value that might be missing.</summary>
-    /// <typeparam name="T">The type of values to wrap.</typeparam>
-    /// <param name="Value">The wrapped value, if it exists.</param>
-    sealed record Option<T>(T? Value);
-
     /// <summary>Gets the fully qualified name for a given symbol.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
     /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
@@ -12392,16 +12346,17 @@ public abstract class FixedGenerator(
         [InstantHandle] Func<SyntaxNode, ISymbol, SemanticModel, CancellationToken, T> transform
     )
     {
-        Option<T>? Option(GeneratorSyntaxContext context, CancellationToken token) =>
+        (T? Value, bool Succeeded) Extract(GeneratorSyntaxContext context, CancellationToken token) =>
             context.SemanticModel.GetDeclaredSymbol(context.Node, token) is { } symbol &&
-            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _)
-                ? new Option<T>(transform(context.Node, symbol, context.SemanticModel, token))
-                : null;
+            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _) &&
+            transform(context.Node, symbol, context.SemanticModel, token) is { } value
+                ? (value, true)
+                : (default, false);
 
         return syntaxValueProvider
-           .CreateSyntaxProvider(predicate, Option)
-           .Filter() // ReSharper disable once NullableWarningSuppressionIsUsed
-           .Select(static (item, _) => item.Value)!;
+           .CreateSyntaxProvider(predicate, Extract)
+           .Where(static x => x.Succeeded) // ReSharper disable once NullableWarningSuppressionIsUsed
+           .Select(static (item, _) => item.Value!);
     }
 
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
