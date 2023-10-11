@@ -12346,15 +12346,15 @@ public abstract class FixedGenerator(
         [InstantHandle] Func<SyntaxNode, ISymbol, SemanticModel, CancellationToken, T> transform
     )
     {
-        (T Value, bool Succeeded) Extract(GeneratorSyntaxContext context, CancellationToken token) =>
+        (bool HasValue, T Value) Extract(GeneratorSyntaxContext context, CancellationToken token) =>
             context.SemanticModel.GetDeclaredSymbol(context.Node, token) is { } symbol &&
             !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _)
-                ? (transform(context.Node, symbol, context.SemanticModel, token), true)
+                ? (true, transform(context.Node, symbol, context.SemanticModel, token))
                 : default;
 
         return syntaxValueProvider
            .CreateSyntaxProvider(predicate, Extract)
-           .Where(static x => x.Succeeded)
+           .Where(static x => x.HasValue)
            .Select(static (item, _) => item.Value);
     }
 
