@@ -12346,17 +12346,16 @@ public abstract class FixedGenerator(
         [InstantHandle] Func<SyntaxNode, ISymbol, SemanticModel, CancellationToken, T> transform
     )
     {
-        (T? Value, bool Succeeded) Extract(GeneratorSyntaxContext context, CancellationToken token) =>
+        (T Value, bool Succeeded) Extract(GeneratorSyntaxContext context, CancellationToken token) =>
             context.SemanticModel.GetDeclaredSymbol(context.Node, token) is { } symbol &&
-            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _) &&
-            transform(context.Node, symbol, context.SemanticModel, token) is { } value
-                ? (value, true)
+            !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _)
+                ? (transform(context.Node, symbol, context.SemanticModel, token), true)
                 : default;
 
         return syntaxValueProvider
            .CreateSyntaxProvider(predicate, Extract)
-           .Where(static x => x.Succeeded) // ReSharper disable once NullableWarningSuppressionIsUsed
-           .Select(static (item, _) => item.Value!);
+           .Where(static x => x.Succeeded)
+           .Select(static (item, _) => item.Value);
     }
 
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
