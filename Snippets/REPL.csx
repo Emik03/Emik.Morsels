@@ -12351,7 +12351,7 @@ public abstract class FixedGenerator(
             !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _) &&
             transform(context.Node, symbol, context.SemanticModel, token) is { } value
                 ? (value, true)
-                : (default, false);
+                : default;
 
         return syntaxValueProvider
            .CreateSyntaxProvider(predicate, Extract)
