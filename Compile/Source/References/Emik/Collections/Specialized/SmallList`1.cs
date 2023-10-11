@@ -5,7 +5,9 @@
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 using static SmallList;
+#endif
 using static Span;
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>

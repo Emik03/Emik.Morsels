@@ -12,8 +12,8 @@ using Enum = System.Enum;
 
 #if !(NET20 || NET30)
 using static System.Linq.Expressions.Expression;
-#endif
 using Expression = System.Linq.Expressions.Expression;
+#endif
 using FieldInfo = System.Reflection.FieldInfo;
 
 /// <summary>Provides stringification methods.</summary>

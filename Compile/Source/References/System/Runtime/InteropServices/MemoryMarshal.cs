@@ -7,7 +7,9 @@ namespace System.Runtime.InteropServices;
 #pragma warning disable 8500
 #endif
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 using static System.Linq.Expressions.Expression;
+#endif
 
 #pragma warning disable 1574 // Reference to System.Memory may not exist.
 /// <summary>

@@ -274,14 +274,14 @@
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
-        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+<!--        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>-->
+<!--        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>-->
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Remove="GlobalUsingsAnalyzer"/>
-        <ProjectReference Include="../*.csproj" PrivateAssets="all"/>
-        <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
+<!--        <ProjectReference Include="../*.csproj" PrivateAssets="all"/>-->
+<!--        <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>-->
         <PackageReference Include="NUnit" Version="4.0.0-beta.1" PrivateAssets="all"/>
         <PackageReference Include="NUnit.Analyzers" Version="3.8.0" PrivateAssets="all"/>
         <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all"/>

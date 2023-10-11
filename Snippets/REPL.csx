@@ -6344,8 +6344,8 @@ namespace Wawa.Modules;
 
 
 #if !(NET20 || NET30)
-#endif
 
+#endif
 
 
 /// <summary>Provides stringification methods.</summary>
@@ -14757,7 +14757,9 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // ReSharper disable once CheckNamespace
 
 
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 
+#endif
 
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
