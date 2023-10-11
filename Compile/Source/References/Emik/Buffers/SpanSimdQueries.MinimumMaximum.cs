@@ -308,7 +308,7 @@ static partial class SpanSimdQueries
             ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector128<T>.Count);
 
             var best = Vector128.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+            current = ref Unsafe.Add(ref current, Vector128<T>.Count)!;
 
             while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
             {
@@ -319,7 +319,7 @@ static partial class SpanSimdQueries
                     _ => throw Unreachable,
                 };
 
-                current = ref Unsafe.Add(ref current, Vector128<T>.Count);
+                current = ref Unsafe.Add(ref current, Vector128<T>.Count)!;
             }
 
             best = typeof(TMinMax) switch
@@ -346,7 +346,7 @@ static partial class SpanSimdQueries
             ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector256<T>.Count);
 
             var best = Vector256.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+            current = ref Unsafe.Add(ref current, Vector256<T>.Count)!;
 
             while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
             {
@@ -357,7 +357,7 @@ static partial class SpanSimdQueries
                     _ => throw Unreachable,
                 };
 
-                current = ref Unsafe.Add(ref current, Vector256<T>.Count);
+                current = ref Unsafe.Add(ref current, Vector256<T>.Count)!;
             }
 
             best = typeof(TMinMax) switch
