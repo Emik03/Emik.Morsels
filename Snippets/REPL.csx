@@ -9911,7 +9911,7 @@ readonly
 
         if (span.IsEmpty)
             return default!;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
 #endif
         {
@@ -9921,7 +9921,7 @@ readonly
                 if (Compare<T, TMinMax>(span[i], value))
                     value = span[i];
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
         {
             ref var current = ref MemoryMarshal.GetReference(span);
@@ -10117,8 +10117,7 @@ readonly
     {
         if (typeof(T).IsEnum)
             return span.UnderlyingSum();
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
             Vector<T>.IsSupported &&
             Vector.IsHardwareAccelerated &&
@@ -10346,7 +10345,7 @@ readonly
         =>
             Sum((ReadOnlySpan<T>)span.Span, converter);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
@@ -10394,7 +10393,7 @@ readonly
             var x when x == typeof(nuint) => (T)(object)span.Underlying<T, nuint>().Sum(),
             _ => throw Unreachable,
         };
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
