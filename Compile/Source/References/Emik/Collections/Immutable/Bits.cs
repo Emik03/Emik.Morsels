@@ -37,7 +37,7 @@ static partial class BitsFactory
 
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
-/// <param name="value">The item to use.</param>
+/// <param name="bits">The item to use.</param>
 [StructLayout(LayoutKind.Auto), NoStructuralTyping]
 #if CSHARPREPL
 public
@@ -45,13 +45,13 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Bits<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Bits<T>([ProvidesContext] T bits) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     where T : unmanaged
 {
     const int BitsPerByte = 8;
 
     [ProvidesContext]
-    readonly T _value = value;
+    readonly T _value = bits;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
@@ -169,7 +169,7 @@ readonly
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => value;
+    public Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

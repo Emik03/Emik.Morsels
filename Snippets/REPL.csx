@@ -5161,7 +5161,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
     // ReSharper disable once ClassNeverInstantiated.Local
-     DirectOperators<T>
+#pragma warning disable S1118
+    sealed partial class DirectOperators<T>
+#pragma warning restore S1118
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
@@ -5698,7 +5700,7 @@ public sealed class Primes : IEnumerable<ulong>
 
     /// <summary>Gets the sum of the primes up to the number, inclusively.</summary>
     /// <param name="topNumber">The <see cref="uint"/> number to reach.</param>
-    /// <returns>The <see cref="ulong"/> sum of all primes up to <see cref="topNumber"/>.</returns>
+    /// <returns>The <see cref="ulong"/> sum of all primes up to <paramref name="topNumber"/>.</returns>
     [Pure]
     public static ulong SumTo(uint topNumber)
     {
@@ -12715,7 +12717,9 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
 
+
 #pragma warning disable IDE0250, IDE0251, MA0102, SA1137
+
 
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
 #pragma warning disable MA0048
@@ -12734,10 +12738,13 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
@@ -12745,7 +12752,7 @@ public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnume
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => value ?? YesFactory.Fallback;
+    object IEnumerator.Current => value ?? Fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -13083,7 +13090,7 @@ readonly
 
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
-/// <param name="value">The item to use.</param>
+/// <param name="bits">The item to use.</param>
 [StructLayout(LayoutKind.Auto), NoStructuralTyping]
 #if CSHARPREPL
 public
@@ -13091,13 +13098,13 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Bits<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Bits<T>([ProvidesContext] T bits) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
     where T : unmanaged
 {
     const int BitsPerByte = 8;
 
     [ProvidesContext]
-    readonly T _value = value;
+    readonly T _value = bits;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -13215,7 +13222,7 @@ readonly
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => value;
+    public Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -13534,7 +13541,7 @@ readonly
 
 // ReSharper disable CheckNamespace StructCanBeMadeReadOnly
 
-
+#pragma warning disable CA1502
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -14504,6 +14511,8 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 // ReSharper disable once CheckNamespace
 
 #if !NET20 && !NET30
+
+
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
 #pragma warning disable MA0048
 
@@ -14641,7 +14650,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => SplitFactory.Booleans;
+    ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
@@ -14661,7 +14670,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => SplitFactory.Booleans;
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => Booleans;
 
     /// <inheritdoc />
     [Pure]

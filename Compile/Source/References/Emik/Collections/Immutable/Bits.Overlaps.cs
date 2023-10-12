@@ -2,7 +2,7 @@
 
 // ReSharper disable CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-
+#pragma warning disable CA1502
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public

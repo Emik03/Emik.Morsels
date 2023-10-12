@@ -4,6 +4,8 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #if !NET20 && !NET30
+using static SplitFactory;
+
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class SplitFactory
@@ -144,7 +146,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => SplitFactory.Booleans;
+    ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
@@ -164,7 +166,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => SplitFactory.Booleans;
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => Booleans;
 
     /// <inheritdoc />
     [Pure]

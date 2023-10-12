@@ -129,7 +129,9 @@ static partial class OperatorCaching
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
     // ReSharper disable once ClassNeverInstantiated.Local
-    static partial class DirectOperators<T>
+#pragma warning disable S1118
+    sealed partial class DirectOperators<T>
+#pragma warning restore S1118
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 

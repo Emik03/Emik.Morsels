@@ -1,9 +1,11 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
+
 namespace Emik.Morsels;
 #pragma warning disable IDE0250, IDE0251, MA0102, SA1137
 using static CollectionAccessType;
+using static YesFactory;
 
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
 #pragma warning disable MA0048
@@ -25,10 +27,13 @@ static partial class YesFactory
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="value">The item to use.</param>
 [StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
@@ -36,7 +41,7 @@ partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => value ?? YesFactory.Fallback;
+    object IEnumerator.Current => value ?? Fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>

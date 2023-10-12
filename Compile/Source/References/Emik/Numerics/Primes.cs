@@ -465,7 +465,7 @@ sealed class Primes : IEnumerable<ulong>
 
     /// <summary>Gets the sum of the primes up to the number, inclusively.</summary>
     /// <param name="topNumber">The <see cref="uint"/> number to reach.</param>
-    /// <returns>The <see cref="ulong"/> sum of all primes up to <see cref="topNumber"/>.</returns>
+    /// <returns>The <see cref="ulong"/> sum of all primes up to <paramref name="topNumber"/>.</returns>
     [Pure]
     public static ulong SumTo(uint topNumber)
     {
