@@ -12081,7 +12081,7 @@ public abstract class FixedGenerator(
     /// <param name="syntax">The syntax to lookup.</param>
     /// <returns>The symbols that likely define it.</returns>
     [Pure]
-    public static IEnumerable<ISymbol> Symbols(this SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
+    public static IEnumerable<ISymbol> Symbols(this in SyntaxNodeAnalysisContext context, ExpressionSyntax syntax) =>
         (syntax.MemberName() ?? $"{syntax}") is var name && syntax is PredefinedTypeSyntax
             ? context.Compilation.GetSymbolsWithName(
                 x => x.Contains(name),
@@ -12159,6 +12159,15 @@ public abstract class FixedGenerator(
         }
             ? underlying
             : null;
+
+    /// <summary>Gets the specified symbol.</summary>
+    /// <typeparam name="T">The type of symbol to get.</typeparam>
+    /// <param name="context">The context.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>The context node as <typeparamref name="T"/>.</returns>
+    public static T? Get<T>(this in GeneratorSyntaxContext context, CancellationToken token = default)
+        where T : ISymbol =>
+        context.SemanticModel.GetDeclaredSymbol(context.Node, token) is T symbol ? symbol : default;
 
     [Pure]
     static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
