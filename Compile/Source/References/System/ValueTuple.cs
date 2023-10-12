@@ -498,7 +498,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1>)
@@ -544,7 +544,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1>)
@@ -674,7 +674,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2>)
@@ -715,7 +715,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2>)
@@ -875,7 +875,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3>)
@@ -922,7 +922,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3>)
@@ -1096,7 +1096,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4>)
@@ -1149,7 +1149,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4>)
@@ -1340,7 +1340,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5>)
@@ -1399,7 +1399,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5>)
@@ -1606,7 +1606,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
@@ -1671,7 +1671,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5, T6>)
@@ -1904,7 +1904,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
@@ -1975,7 +1975,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7>)
@@ -2230,7 +2230,7 @@ namespace System
         [Pure]
         int IComparable.CompareTo(object? other)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> tuple)
@@ -2300,7 +2300,7 @@ namespace System
         [Pure]
         int IStructuralComparable.CompareTo(object? other, IComparer comparer)
         {
-            if (other == null)
+            if (other is null)
                 return 1;
 
             if (other is not ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple)
