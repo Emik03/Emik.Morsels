@@ -10,6 +10,9 @@ using static CollectionAccessType;
 static partial class YesFactory
 #pragma warning restore MA0048
 {
+    /// <summary>Gets the fallback for when an enumeration returns <see langword="null"/>.</summary>
+    public static object Fallback { get; } = new();
+
     /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -27,15 +30,13 @@ readonly
 #endif
 partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
-    static readonly object s_fallback = new();
-
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
     public T Current => value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => value ?? s_fallback;
+    object IEnumerator.Current => value ?? YesFactory.Fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>

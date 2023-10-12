@@ -412,7 +412,7 @@ readonly
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object? other) => false;
+    public override bool Equals(object? obj) => false;
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     // ReSharper disable NullableWarningSuppressionIsUsed

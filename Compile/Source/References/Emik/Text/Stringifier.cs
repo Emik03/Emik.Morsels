@@ -524,7 +524,7 @@ static partial class Stringifier
     static bool CanUse(PropertyInfo p) =>
         p is { CanRead: true, PropertyType.Name: not "SyntaxTree" } &&
         p.GetIndexParameters().Length is 0 &&
-        p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
+        Array.TrueForAll(p.GetCustomAttributes(true), x => x?.GetType() != typeof(ObsoleteAttribute));
 #endif
     [Pure]
     static bool IsEqualityContract(PropertyInfo x) =>
@@ -534,9 +534,10 @@ static partial class Stringifier
 
     [Pure]
     static bool IsRecord<T>() =>
-        typeof(T)
-           .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
-           .Any(IsEqualityContract);
+        Array.Exists(
+            typeof(T).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic),
+            IsEqualityContract
+        );
 
     [Pure]
     static int Length(int major, int revision, int minor, int build) =>

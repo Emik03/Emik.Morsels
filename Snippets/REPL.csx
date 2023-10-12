@@ -809,13 +809,21 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     /// <summary>Performs nothing.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Noop() { }
+    public static void Noop()
+    {
+        // IL_0000: nop
+        // IL_0001: ret
+    }
 
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T">The type of discard.</typeparam>
     /// <param name="_">The discard.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Noop<T>(T _) { }
+    public static void Noop<T>(T _)
+    {
+        // IL_0000: nop
+        // IL_0001: ret
+    }
 
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T1">The first type of discard.</typeparam>
@@ -823,7 +831,11 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="_">The first discard.</param>
     /// <param name="__">The second discard.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Noop<T1, T2>(T1 _, T2 __) { }
+    public static void Noop<T1, T2>(T1 _, T2 __)
+    {
+        // IL_0000: nop
+        // IL_0001: ret
+    }
 
     /// <summary>Create a delegate.</summary>
     /// <param name="del">The method group.</param>
@@ -1609,17 +1621,17 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
             switch (action)
             {
-                case Action<T> action:
-                    action(current);
+                case Action<T> act:
+                    act(current);
                     break;
-                case Action<T, int> action:
-                    action(current, _index);
+                case Action<T, int> act:
+                    act(current, _index);
                     break;
-                case Action<T, TExternal> action:
-                    action(current, external);
+                case Action<T, TExternal> act:
+                    act(current, external);
                     break;
-                case Action<T, int, TExternal> action:
-                    action(current, _index, external);
+                case Action<T, int, TExternal> act:
+                    act(current, _index, external);
                     break;
             }
 
@@ -2234,7 +2246,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static void Enumerate([InstantHandle] this IEnumerable? iterable)
     {
         if (iterable is not null)
-            foreach (var unused in iterable) { }
+            foreach (var unused in iterable)
+            {
+                // Intentionally left empty for enumerables with side effects.
+            }
     }
 
     /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
@@ -2243,7 +2258,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static void Enumerate<T>([InstantHandle] this IEnumerable<T>? iterable)
     {
         if (iterable is not null)
-            foreach (var unused in iterable) { }
+            foreach (var unused in iterable)
+            {
+                // Intentionally left empty for enumerables with side effects.
+            }
     }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -2443,7 +2461,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #if NETFRAMEWORK && NET40_OR_GREATER
                 : new List<T>(iterable));
 #else
-                : iterable.ToList());
+                : iterable.ToListLazily());
 #endif
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
@@ -2468,14 +2486,14 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
 
-    /// <summary>Creates an <see cref="ISet{T}"/>.</summary>
+    /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
     /// <param name="comparer">The comparer to use.</param>
     /// <returns>Itself as <see cref="ISet{T}"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSet<T>(
+    public static HashSet<T>? ToSet<T>(
         [InstantHandle] this IEnumerable<T>? iterable,
         IEqualityComparer<T>? comparer = null
     ) =>
@@ -2934,7 +2952,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
             return Sub(iterable, startRange);
 
-        var arr = iterable.ToList();
+        var arr = iterable.ToListLazily();
         var arrRange = RangeStart(range, arr.Count);
         return Sub(arr, arrRange);
     }
@@ -4676,7 +4694,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 
-    enum UnknownEnum;
+    enum Unknowable;
 
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
@@ -4768,7 +4786,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         };
 #else
         typeof(T) == typeof(Enum)
-            ? (T)(Enum)MathCaching<UnknownEnum>.To(value)
+            ? (T)(Enum)MathCaching<Unknowable>.To(value)
             : MathCaching<T>.To(value);
 #endif
 
@@ -4797,7 +4815,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         (value.AsInt() - 1).As<T>();
 #else
-        value.Op(static x => unchecked(--x));
+        value.Op(static x => unchecked(x - 1));
 #endif
 
     /// <summary>Performs a increment operation.</summary>
@@ -4811,7 +4829,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #if NETCOREAPP
         (value.AsInt() + 1).As<T>();
 #else
-        value.Op(static x => unchecked(++x));
+        value.Op(static x => unchecked(x + 1));
 #endif
 
     /// <summary>Performs an addition operation.</summary>
@@ -5143,13 +5161,13 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
     // ReSharper disable once ClassNeverInstantiated.Local
-    sealed partial class DirectOperators<T>
+     DirectOperators<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
         static readonly Type[]
-            s_binary = new[] { typeof(T), typeof(T) },
-            s_unary = new[] { typeof(T) };
+            s_binary = { typeof(T), typeof(T) },
+            s_unary = { typeof(T) };
 
         static DirectOperators()
         {
@@ -5214,7 +5232,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable AsyncifyInvocation, MA0051, VSTHRD002, VSTHRD105
+#pragma warning disable AsyncifyInvocation, CA1810, CA2008, MA0051, MEN004, S3949, S4462, VSTHRD002, VSTHRD105
 // ReSharper disable CognitiveComplexity CommentTypo IdentifierTypo SuggestBaseTypeForParameter
 // ReSharper disable once CheckNamespace EmptyNamespace
 
@@ -6855,7 +6873,7 @@ public
     static bool CanUse(PropertyInfo p) =>
         p is { CanRead: true, PropertyType.Name: not "SyntaxTree" } &&
         p.GetIndexParameters().Length is 0 &&
-        p.GetCustomAttributes(true).All(x => x?.GetType() != typeof(ObsoleteAttribute));
+        Array.TrueForAll(p.GetCustomAttributes(true), x => x?.GetType() != typeof(ObsoleteAttribute));
 #endif
     [Pure]
     static bool IsEqualityContract(PropertyInfo x) =>
@@ -6865,9 +6883,10 @@ public
 
     [Pure]
     static bool IsRecord<T>() =>
-        typeof(T)
-           .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic)
-           .Any(IsEqualityContract);
+        Array.Exists(
+            typeof(T).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic),
+            IsEqualityContract
+        );
 
     [Pure]
     static int Length(int major, int revision, int minor, int build) =>
@@ -9154,7 +9173,7 @@ readonly
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object? other) => false;
+    public override bool Equals(object? obj) => false;
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     // ReSharper disable NullableWarningSuppressionIsUsed
@@ -9624,7 +9643,7 @@ readonly
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-#pragma warning disable 1574, 1580, 1581, 1584 // ReSharper disable once RedundantUsingDirective
+#pragma warning disable 1574, 1580, 1581, 1584, S1199 // ReSharper disable once RedundantUsingDirective
 
 
 /// <inheritdoc cref="SpanSimdQueries"/>
@@ -12525,10 +12544,10 @@ public ref partial struct ImmutableArrayBuilder<T>
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.Add"/>
-        public void Add(T value)
+        public void Add(T item)
         {
             EnsureCapacity(1);
-            _array![_index++] = value;
+            _array![_index++] = item;
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.AddRange"/>
@@ -12701,6 +12720,9 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
 #pragma warning disable MA0048
 
+    /// <summary>Gets the fallback for when an enumeration returns <see langword="null"/>.</summary>
+    public static object Fallback { get; } = new();
+
     /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -12717,15 +12739,13 @@ readonly
 #endif
 public partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
 {
-    static readonly object s_fallback = new();
-
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
     public T Current => value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    object IEnumerator.Current => value ?? s_fallback;
+    object IEnumerator.Current => value ?? YesFactory.Fallback;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -14487,6 +14507,9 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
 #pragma warning disable MA0048
 
+    /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
+    public static bool[] Booleans { get; } = { true, false };
+
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -14573,9 +14596,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IReadOnlyCollection<T>,
     IReadOnlyDictionary<bool, T>
 {
-    [ProvidesContext]
-    static readonly bool[] s_booleans = { true, false };
-
 #pragma warning disable SA1642
     /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
     /// <param name="value">The value representing both values.</param>
@@ -14621,7 +14641,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
+    ICollection<bool> IDictionary<bool, T>.Keys => SplitFactory.Booleans;
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
@@ -14641,7 +14661,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => SplitFactory.Booleans;
 
     /// <inheritdoc />
     [Pure]
@@ -14756,7 +14776,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
-
+#pragma warning disable MEN010
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 
 #endif
@@ -15433,6 +15453,8 @@ public partial struct SmallList<T> :
     {
         unchecked
         {
+            const int Prime = 397;
+
             var hashCode = 0;
 
             switch (Count)
@@ -15441,13 +15463,13 @@ public partial struct SmallList<T> :
                     hashCode = _rest!.GetHashCode();
                     goto case 3;
                 case 3:
-                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
+                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
                     goto case 2;
                 case 2:
-                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
+                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
                     goto case 1;
                 case 1:
-                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
+                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
                     break;
             }
 
@@ -15661,7 +15683,7 @@ public partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly DateTime IConvertible.ToDateTime(IFormatProvider? provider) => new(Count);
+    readonly DateTime IConvertible.ToDateTime(IFormatProvider? provider) => new(Count, DateTimeKind.Utc);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -16116,7 +16138,7 @@ public ref
         if (!IsInlined)
             ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
     }
-#pragma warning disable 809
+#pragma warning disable 809, S3877
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
@@ -16124,7 +16146,7 @@ public ref
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-#pragma warning restore 809
+#pragma warning restore 809, S3877
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>

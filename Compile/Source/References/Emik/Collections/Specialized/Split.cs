@@ -9,6 +9,9 @@ namespace Emik.Morsels;
 static partial class SplitFactory
 #pragma warning restore MA0048
 {
+    /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
+    public static bool[] Booleans { get; } = { true, false };
+
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -96,9 +99,6 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IReadOnlyCollection<T>,
     IReadOnlyDictionary<bool, T>
 {
-    [ProvidesContext]
-    static readonly bool[] s_booleans = { true, false };
-
 #pragma warning disable SA1642
     /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
     /// <param name="value">The value representing both values.</param>
@@ -144,7 +144,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    ICollection<bool> IDictionary<bool, T>.Keys => s_booleans;
+    ICollection<bool> IDictionary<bool, T>.Keys => SplitFactory.Booleans;
 
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
@@ -164,7 +164,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => s_booleans;
+    IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => SplitFactory.Booleans;
 
     /// <inheritdoc />
     [Pure]

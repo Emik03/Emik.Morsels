@@ -77,7 +77,7 @@ partial struct Index : IEquatable<Index>
 
     /// <inheritdoc cref="object.Equals(object?)" />
     [Pure]
-    public override bool Equals([NotNullWhen(true)] object? value) => value is Index index && _value == index._value;
+    public override bool Equals([NotNullWhen(true)] object? obj) => obj is Index index && _value == index._value;
 
     /// <inheritdoc />
     [Pure]

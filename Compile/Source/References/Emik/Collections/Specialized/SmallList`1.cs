@@ -3,7 +3,7 @@
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable MEN010
 using static CollectionAccessType;
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 using static SmallList;
@@ -681,6 +681,8 @@ partial struct SmallList<T> :
     {
         unchecked
         {
+            const int Prime = 397;
+
             var hashCode = 0;
 
             switch (Count)
@@ -689,13 +691,13 @@ partial struct SmallList<T> :
                     hashCode = _rest!.GetHashCode();
                     goto case 3;
                 case 3:
-                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
+                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_third!);
                     goto case 2;
                 case 2:
-                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
+                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_second!);
                     goto case 1;
                 case 1:
-                    hashCode = hashCode * 397 ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
+                    hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
                     break;
             }
 
@@ -909,7 +911,7 @@ partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly DateTime IConvertible.ToDateTime(IFormatProvider? provider) => new(Count);
+    readonly DateTime IConvertible.ToDateTime(IFormatProvider? provider) => new(Count, DateTimeKind.Utc);
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

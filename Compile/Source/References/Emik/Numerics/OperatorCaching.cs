@@ -129,13 +129,13 @@ static partial class OperatorCaching
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
     // ReSharper disable once ClassNeverInstantiated.Local
-    sealed partial class DirectOperators<T>
+    static partial class DirectOperators<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
         static readonly Type[]
-            s_binary = new[] { typeof(T), typeof(T) },
-            s_unary = new[] { typeof(T) };
+            s_binary = { typeof(T), typeof(T) },
+            s_unary = { typeof(T) };
 
         static DirectOperators()
         {

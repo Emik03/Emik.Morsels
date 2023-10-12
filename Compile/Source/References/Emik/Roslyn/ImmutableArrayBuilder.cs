@@ -89,10 +89,10 @@ ref partial struct ImmutableArrayBuilder<T>
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.Add"/>
-        public void Add(T value)
+        public void Add(T item)
         {
             EnsureCapacity(1);
-            _array![_index++] = value;
+            _array![_index++] = item;
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.AddRange"/>

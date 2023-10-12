@@ -22,13 +22,21 @@ static partial class MethodGroupings
 
     /// <summary>Performs nothing.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Noop() { }
+    public static void Noop()
+    {
+        // IL_0000: nop
+        // IL_0001: ret
+    }
 
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T">The type of discard.</typeparam>
     /// <param name="_">The discard.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Noop<T>(T _) { }
+    public static void Noop<T>(T _)
+    {
+        // IL_0000: nop
+        // IL_0001: ret
+    }
 
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T1">The first type of discard.</typeparam>
@@ -36,7 +44,11 @@ static partial class MethodGroupings
     /// <param name="_">The first discard.</param>
     /// <param name="__">The second discard.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Noop<T1, T2>(T1 _, T2 __) { }
+    public static void Noop<T1, T2>(T1 _, T2 __)
+    {
+        // IL_0000: nop
+        // IL_0001: ret
+    }
 
     /// <summary>Create a delegate.</summary>
     /// <param name="del">The method group.</param>

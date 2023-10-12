@@ -162,17 +162,17 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
             switch (action)
             {
-                case Action<T> action:
-                    action(current);
+                case Action<T> act:
+                    act(current);
                     break;
-                case Action<T, int> action:
-                    action(current, _index);
+                case Action<T, int> act:
+                    act(current, _index);
                     break;
-                case Action<T, TExternal> action:
-                    action(current, external);
+                case Action<T, TExternal> act:
+                    act(current, external);
                     break;
-                case Action<T, int, TExternal> action:
-                    action(current, _index, external);
+                case Action<T, int, TExternal> act:
+                    act(current, _index, external);
                     break;
             }
 

@@ -99,7 +99,7 @@ static partial class Indexers
         if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
             return Sub(iterable, startRange);
 
-        var arr = iterable.ToList();
+        var arr = iterable.ToListLazily();
         var arrRange = RangeStart(range, arr.Count);
         return Sub(arr, arrRange);
     }

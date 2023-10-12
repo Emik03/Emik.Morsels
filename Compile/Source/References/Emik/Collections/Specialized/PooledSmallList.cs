@@ -181,7 +181,7 @@ ref
         if (!IsInlined)
             ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
     }
-#pragma warning disable 809
+#pragma warning disable 809, S3877
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
@@ -189,7 +189,7 @@ ref
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-#pragma warning restore 809
+#pragma warning restore 809, S3877
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>

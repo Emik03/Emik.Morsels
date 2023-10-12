@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-#pragma warning disable 1574, 1580, 1581, 1584 // ReSharper disable once RedundantUsingDirective
+#pragma warning disable 1574, 1580, 1581, 1584, S1199 // ReSharper disable once RedundantUsingDirective
 using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>

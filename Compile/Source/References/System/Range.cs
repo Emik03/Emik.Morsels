@@ -48,8 +48,8 @@ partial struct Range : IEquatable<Range>
 
     /// <inheritdoc cref="object.Equals(object?)"/>
     [Pure]
-    public override bool Equals([NotNullWhen(true)] object? value) =>
-        value is Range r && r.Start.Equals(Start) && r.End.Equals(End);
+    public override bool Equals([NotNullWhen(true)] object? obj) =>
+        obj is Range r && r.Start.Equals(Start) && r.End.Equals(End);
 
     /// <inheritdoc />
     [Pure]

@@ -14,7 +14,10 @@ static partial class Force
     public static void Enumerate([InstantHandle] this IEnumerable? iterable)
     {
         if (iterable is not null)
-            foreach (var unused in iterable) { }
+            foreach (var unused in iterable)
+            {
+                // Intentionally left empty for enumerables with side effects.
+            }
     }
 
     /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
@@ -23,6 +26,9 @@ static partial class Force
     public static void Enumerate<T>([InstantHandle] this IEnumerable<T>? iterable)
     {
         if (iterable is not null)
-            foreach (var unused in iterable) { }
+            foreach (var unused in iterable)
+            {
+                // Intentionally left empty for enumerables with side effects.
+            }
     }
 }

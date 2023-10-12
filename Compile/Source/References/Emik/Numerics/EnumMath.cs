@@ -12,7 +12,7 @@ using Expression = System.Linq.Expressions.Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
-    enum UnknownEnum;
+    enum Unknowable;
 
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
@@ -104,7 +104,7 @@ static partial class EnumMath
         };
 #else
         typeof(T) == typeof(Enum)
-            ? (T)(Enum)MathCaching<UnknownEnum>.To(value)
+            ? (T)(Enum)MathCaching<Unknowable>.To(value)
             : MathCaching<T>.To(value);
 #endif
 
@@ -133,7 +133,7 @@ static partial class EnumMath
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         (value.AsInt() - 1).As<T>();
 #else
-        value.Op(static x => unchecked(--x));
+        value.Op(static x => unchecked(x - 1));
 #endif
 
     /// <summary>Performs a increment operation.</summary>
@@ -147,7 +147,7 @@ static partial class EnumMath
 #if NETCOREAPP
         (value.AsInt() + 1).As<T>();
 #else
-        value.Op(static x => unchecked(++x));
+        value.Op(static x => unchecked(x + 1));
 #endif
 
     /// <summary>Performs an addition operation.</summary>
