@@ -10602,15 +10602,15 @@ readonly
 /// The name of this type may or may not derive from a specific algebralien from a show...
 /// </para></remarks>
 /// <typeparam name="T">The type of item to store.</typeparam>
-/// <param name="first">The first item.</param>
-/// <param name="second">The second item.</param>
+/// <param name="left">The first item.</param>
+/// <param name="right">The second item.</param>
 // ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
 [StructLayout(LayoutKind.Sequential)]
 #pragma warning disable MA0102
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-public partial struct Two<T>(T first, T second) :
+public partial struct Two<T>(T left, T right) :
 #if NET7_0_OR_GREATER
     IComparisonOperators<Two<T>, Two<T>, bool>,
     IEqualityOperators<Two<T>, Two<T>, bool>,
@@ -10622,7 +10622,7 @@ public partial struct Two<T>(T first, T second) :
     IEquatable<Two<T>>
 {
     /// <summary>The stored items.</summary>
-    public readonly T First = first, Second = second;
+    public readonly T First = left, Second = right;
 
     /// <summary>Applies the indexer and returns the instance according to the value.</summary>
     /// <param name="back">Whether or not to return <see cref="Second"/>.</param>
