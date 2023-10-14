@@ -18,7 +18,9 @@ sealed partial class NullGuardAttribute(ValidationFlags flags) : Attribute;
 
 /// <summary>Used by <see cref="NullGuardAttribute"/> to target specific categories of members.</summary>
 [Flags]
+#pragma warning disable S2344
 enum ValidationFlags
+#pragma warning restore S2344
 {
     /// <summary>Does nothing.</summary>
     None = 0,
