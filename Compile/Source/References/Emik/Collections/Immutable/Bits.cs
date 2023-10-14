@@ -45,37 +45,35 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Bits<T>([ProvidesContext] T bits) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Bits<T>([ProvidesContext] T bits) :
+#if !WAWA
+        IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>,
+#endif
+        IList<T>
     where T : unmanaged
 {
     const int BitsPerByte = 8;
 
-    [ProvidesContext]
-    readonly T _value = bits;
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None)]
     bool ICollection<T>.IsReadOnly
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => true;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
     }
 
     /// <summary>Gets the item to use.</summary>
-    [CollectionAccess(Read), ProvidesContext, Pure]
-    public T Current
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value;
-    }
+    [CollectionAccess(Read), ProvidesContext]
+    public T Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = bits;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
 
@@ -114,7 +112,7 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IList<T>.RemoveAt(int index) { }
-
+#if !WAWA
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
@@ -130,14 +128,17 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+#endif
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool ICollection<T>.Remove(T item) => false;
 
+#if !WAWA
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool ISet<T>.Add(T item) => false;
+#endif
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -145,12 +146,7 @@ readonly
     {
         using var e = new Enumerator(item);
 
-        if (!e.MoveNext())
-            return -1;
-
-        var (mask, index) = (e.Mask, e.Index);
-
-        if (e.MoveNext())
+        if (!e.MoveNext() || e.Mask is var mask && e.Index is var index && e.MoveNext())
             return -1;
 
         using var that = GetEnumerator();
@@ -169,7 +165,7 @@ readonly
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => _value;
+    public Enumerator GetEnumerator() => Current;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -179,7 +175,7 @@ readonly
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
+    /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
@@ -189,26 +185,26 @@ readonly
         readonly T _value = value;
 
         /// <summary>Gets the current mask.</summary>
-        [CollectionAccess(None), Pure]
+        [CollectionAccess(None)]
         public nuint Mask
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
 
         /// <summary>Gets the current index.</summary>
-        [CLSCompliant(false), CollectionAccess(None), Pure]
+        [CLSCompliant(false), CollectionAccess(None)]
         public nint Index
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
 
         /// <inheritdoc />
-        [CollectionAccess(None), Pure]
+        [CollectionAccess(None)]
         public readonly unsafe T Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get
             {
                 T t = default;
@@ -218,15 +214,15 @@ readonly
         }
 
         /// <inheritdoc />
-        [CollectionAccess(None), Pure]
+        [CollectionAccess(None)]
         readonly object IEnumerator.Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Current;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
         }
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
-        /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+        /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static implicit operator Enumerator(T value) => new(value);
 
@@ -242,13 +238,15 @@ readonly
 
         /// <inheritdoc />
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => (Index, Mask) = (Start, 0);
+        public void Reset()
+        {
+            Index = Start;
+            Mask = 0;
+        }
 
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
         public unsafe bool MoveNext()
-#pragma warning restore MA0051
         {
             Mask <<= 1;
 
