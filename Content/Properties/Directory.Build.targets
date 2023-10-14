@@ -256,7 +256,6 @@
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.exe')" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
-        <Reference Condition="$(UseUnityCoreModule) == 'true'" Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="$(IsKtane) == 'true'">
@@ -266,6 +265,7 @@
         <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false"/>
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
         <Reference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
+        <Reference Condition="'$(UseUnityCoreModule)' == 'true'" Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
