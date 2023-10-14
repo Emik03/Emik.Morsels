@@ -22,16 +22,13 @@ partial interface IReadOnlyCollection<
 partial interface IReadOnlyDictionary<TKey, TValue> : IReadOnlyCollection<KeyValuePair<TKey, TValue>>
 {
     /// <summary>Gets an enumerable collection that contains the keys in the read-only dictionary.</summary>
-
     IEnumerable<TKey> Keys { [Pure] get; }
 
     /// <summary>Gets an enumerable collection that contains the values in the read-only dictionary.</summary>
-
     IEnumerable<TValue> Values { [Pure] get; }
 
     /// <summary>Gets the element that has the specified key in the read-only dictionary.</summary>
     /// <param name="key">The key to locate.</param>
-
     TValue this[TKey key] { [Pure] get; }
 
     /// <summary>Determines whether the read-only dictionary contains an element that has the specified key.</summary>
