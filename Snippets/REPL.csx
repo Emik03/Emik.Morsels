@@ -13103,37 +13103,36 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Bits<T>([ProvidesContext] T bits) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
     where T : unmanaged
 {
     const int BitsPerByte = 8;
 
-    [ProvidesContext]
     readonly T _value = bits;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     bool ICollection<T>.IsReadOnly
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => true;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
     }
 
     /// <summary>Gets the item to use.</summary>
-    [CollectionAccess(Read), ProvidesContext, Pure]
+    [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
     public T Current
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
     }
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
 
@@ -13203,12 +13202,7 @@ readonly
     {
         using var e = new Enumerator(item);
 
-        if (!e.MoveNext())
-            return -1;
-
-        var (mask, index) = (e.Mask, e.Index);
-
-        if (e.MoveNext())
+        if (!e.MoveNext() || e.Mask is var mask && e.Index is var index && e.MoveNext())
             return -1;
 
         using var that = GetEnumerator();
@@ -13237,7 +13231,7 @@ readonly
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
+    /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
@@ -13247,26 +13241,26 @@ readonly
         readonly T _value = value;
 
         /// <summary>Gets the current mask.</summary>
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public nuint Mask
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
 
         /// <summary>Gets the current index.</summary>
-        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public nint Index
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
 
         /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public readonly unsafe T Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get
             {
                 T t = default;
@@ -13276,15 +13270,15 @@ readonly
         }
 
         /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         readonly object IEnumerator.Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => Current;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
         }
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
-        /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+        /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static implicit operator Enumerator(T value) => new(value);
 
@@ -13300,13 +13294,15 @@ readonly
 
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => (Index, Mask) = (Start, 0);
+        public void Reset()
+        {
+            Index = Start;
+            Mask = 0;
+        }
 
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
         public unsafe bool MoveNext()
-#pragma warning restore MA0051
         {
             Mask <<= 1;
 
@@ -13373,10 +13369,10 @@ readonly
     partial struct Bits<T>
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
-    [CollectionAccess(CollectionAccessType.Read), Pure]
+    [CollectionAccess(CollectionAccessType.Read)]
     public unsafe T this[int index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             fixed (T* ptr = &_value)
@@ -13385,18 +13381,18 @@ readonly
     }
 
     /// <inheritdoc cref="IList{T}.this"/>
-    [Pure]
     T IList<T>.this[int index]
     {
-        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)] get => this[index];
+        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => this[index];
         [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
     }
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(CollectionAccessType.Read), Pure]
+    [CollectionAccess(CollectionAccessType.Read)]
     public unsafe int Count
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             fixed (T* ptr = &_value)
@@ -13475,7 +13471,7 @@ readonly
 
         if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
         {
-            for (; ptr < (nuint*)value; ptr++)
+            for (; ptr < value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
 
             if (sizeof(T) % sizeof(nuint) is 0)
@@ -13483,6 +13479,18 @@ readonly
         }
 
         if (sizeof(T) % sizeof(nuint) is 0)
+            return sum;
+
+        if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
+        {
+            for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
+                sum += BitOperations.PopCount(*ptr);
+
+            if (sizeof(T) % sizeof(nuint) is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % sizeof(ulong) is 0)
             return sum;
 
         return sum + PopCountRemainder((byte*)ptr);
@@ -13501,7 +13509,7 @@ readonly
                 5 => *(uint*)remainder | (ulong)remainder[4] << 32,
                 6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
                 7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
-                _ => throw Unreachable,
+                _ => throw new ArgumentOutOfRangeException(nameof(remainder), (nuint)remainder, null),
             }
         );
 
@@ -13728,7 +13736,13 @@ readonly
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-        var collection = other.ToCollectionLazily();
+
+        var collection = other
+#if WAWA
+           .ToList();
+#else
+           .ToCollectionLazily();
+#endif
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
@@ -13737,7 +13751,7 @@ readonly
             else
                 return false;
 
-        // ReSharper disable once LoopCanBeConvertedToQuery
+        // ReSharper disable once LoopCanBeConvertedToQuery ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in collection)
             if (!Contains(next))
                 return true;
@@ -13765,7 +13779,12 @@ readonly
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
     {
-        var collection = other.ToCollectionLazily();
+        var collection = other
+#if WAWA
+           .ToList();
+#else
+           .ToCollectionLazily();
+#endif
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
