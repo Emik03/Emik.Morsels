@@ -115,7 +115,19 @@ readonly
 
         if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
         {
-            for (; ptr < (nuint*)value; ptr++)
+            for (; ptr < value; ptr++)
+                sum += BitOperations.PopCount(*ptr);
+
+            if (sizeof(T) % sizeof(nuint) is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return sum;
+
+        if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
+        {
+            for (; ptr < value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
 
             if (sizeof(T) % sizeof(nuint) is 0)
@@ -141,7 +153,7 @@ readonly
                 5 => *(uint*)remainder | (ulong)remainder[4] << 32,
                 6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
                 7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
-                _ => throw Unreachable,
+                _ => throw new ArgumentOutOfRangeException(nameof(remainder), (nuint)remainder, null),
             }
         );
 
