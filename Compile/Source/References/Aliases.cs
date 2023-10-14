@@ -11,6 +11,9 @@ extern alias unity;
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 #endif
+#if KTANE
+global using Application = UnityEngine.Application;
+#endif
 global using Attribute = System.Attribute;
 #if KTANE
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
