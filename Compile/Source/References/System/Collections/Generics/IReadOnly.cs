@@ -13,8 +13,7 @@ partial interface IReadOnlyCollection<
     T> : IEnumerable<T>
 {
     /// <summary>Gets the amount of items on the list.</summary>
-    [Pure]
-    int Count { get; }
+    int Count { [Pure] get; }
 }
 
 /// <summary>Represents a generic read-only collection of key/value pairs.</summary>
@@ -23,17 +22,17 @@ partial interface IReadOnlyCollection<
 partial interface IReadOnlyDictionary<TKey, TValue> : IReadOnlyCollection<KeyValuePair<TKey, TValue>>
 {
     /// <summary>Gets an enumerable collection that contains the keys in the read-only dictionary.</summary>
-    [Pure]
-    IEnumerable<TKey> Keys { get; }
+
+    IEnumerable<TKey> Keys { [Pure] get; }
 
     /// <summary>Gets an enumerable collection that contains the values in the read-only dictionary.</summary>
-    [Pure]
-    IEnumerable<TValue> Values { get; }
+
+    IEnumerable<TValue> Values { [Pure] get; }
 
     /// <summary>Gets the element that has the specified key in the read-only dictionary.</summary>
     /// <param name="key">The key to locate.</param>
-    [Pure]
-    TValue this[TKey key] { get; }
+
+    TValue this[TKey key] { [Pure] get; }
 
     /// <summary>Determines whether the read-only dictionary contains an element that has the specified key.</summary>
     /// <param name="key">The key to locate.</param>
@@ -69,8 +68,7 @@ partial interface IReadOnlyList<
 {
     /// <summary>Performs an index operation on the list.</summary>
     /// <param name="index">The item to retrieve.</param>
-    [Pure]
-    T this[int index] { get; }
+    T this[int index] { [Pure] get; }
 }
 #endif
 #if !NET5_0_OR_GREATER
