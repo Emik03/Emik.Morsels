@@ -261,7 +261,7 @@ unsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Span<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
-            ? throw new ArgumentOutOfRangeException()
+            ? throw new ArgumentOutOfRangeException(nameof(start), start, null)
             : new((T*)Pointer + start, length);
 #pragma warning restore CA2208, MA0015
 
@@ -610,7 +610,7 @@ unsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlySpan<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
-            ? throw new ArgumentOutOfRangeException()
+            ? throw new ArgumentOutOfRangeException(nameof(start), start, null)
             : new((T*)Pointer + start, length);
 #pragma warning restore CA2208, MA0015
 
