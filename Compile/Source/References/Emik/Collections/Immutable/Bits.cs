@@ -45,14 +45,12 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Bits<T>([ProvidesContext] T bits) :
-#if !WAWA
-        IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>,
-#endif
-        IList<T>
+    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
     where T : unmanaged
 {
     const int BitsPerByte = 8;
+
+    readonly T _value = bits;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None)]
@@ -62,8 +60,11 @@ readonly
     }
 
     /// <summary>Gets the item to use.</summary>
-    [CollectionAccess(Read), ProvidesContext]
-    public T Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = bits;
+    [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
+    public T Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+    }
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -112,7 +113,7 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IList<T>.RemoveAt(int index) { }
-#if !WAWA
+
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
@@ -128,17 +129,14 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.UnionWith(IEnumerable<T>? other) { }
-#endif
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool ICollection<T>.Remove(T item) => false;
 
-#if !WAWA
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool ISet<T>.Add(T item) => false;
-#endif
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -165,7 +163,7 @@ readonly
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => Current;
+    public Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

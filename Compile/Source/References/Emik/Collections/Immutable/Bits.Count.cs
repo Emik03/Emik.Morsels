@@ -13,10 +13,10 @@ readonly
     partial struct Bits<T>
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
-    [CollectionAccess(CollectionAccessType.Read), Pure]
+    [CollectionAccess(CollectionAccessType.Read)]
     public unsafe T this[int index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             fixed (T* ptr = &_value)
@@ -25,18 +25,18 @@ readonly
     }
 
     /// <inheritdoc cref="IList{T}.this"/>
-    [Pure]
     T IList<T>.this[int index]
     {
-        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining)] get => this[index];
+        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => this[index];
         [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
     }
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(CollectionAccessType.Read), Pure]
+    [CollectionAccess(CollectionAccessType.Read)]
     public unsafe int Count
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             fixed (T* ptr = &_value)
@@ -127,14 +127,14 @@ readonly
 
         if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
         {
-            for (; ptr < value; ptr++)
+            for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
                 sum += BitOperations.PopCount(*ptr);
 
             if (sizeof(T) % sizeof(nuint) is 0)
                 return sum;
         }
 
-        if (sizeof(T) % sizeof(nuint) is 0)
+        if (sizeof(T) % sizeof(ulong) is 0)
             return sum;
 
         return sum + PopCountRemainder((byte*)ptr);

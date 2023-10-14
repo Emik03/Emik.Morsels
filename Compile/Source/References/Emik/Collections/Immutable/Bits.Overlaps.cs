@@ -184,7 +184,13 @@ readonly
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-        var collection = other.ToCollectionLazily();
+
+        var collection = other
+#if WAWA
+           .ToList();
+#else
+           .ToCollectionLazily();
+#endif
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
@@ -193,7 +199,7 @@ readonly
             else
                 return false;
 
-        // ReSharper disable once LoopCanBeConvertedToQuery
+        // ReSharper disable once LoopCanBeConvertedToQuery ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in collection)
             if (!Contains(next))
                 return true;
@@ -221,7 +227,12 @@ readonly
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
     {
-        var collection = other.ToCollectionLazily();
+        var collection = other
+#if WAWA
+           .ToList();
+#else
+           .ToCollectionLazily();
+#endif
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
