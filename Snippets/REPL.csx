@@ -6377,9 +6377,7 @@ public
     const int MaxIteration = 32, MaxRecursion = 3;
 #if !WAWA
     const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
-#endif
-
-    // ReSharper disable UnusedMember.Local
+#endif // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
         BitFlagSeparator = " | ",
@@ -6397,12 +6395,10 @@ public
         Unsupported = $"!<{nameof(NotSupportedException)}>",
         UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
 #pragma warning restore CA1823, IDE0051
-
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, bool> s_hasMethods = new();
 
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
-
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
     {
@@ -6745,7 +6741,7 @@ public
             string x => useQuotes ? $@"""{x}""" : x,
             Enum x when x.AsInt() is var i && x.GetType().IsDefined(typeof(FlagsAttribute), false) is var b =>
                 $"{x.GetType().Name}({(b ? $"0x{i:x}" : i)}) = {(b
-                    ? i.AsBits().Select(x.GetType().Into).Conjoin(BitFlagSeparator)
+                    ? Conjoin(i.AsBits().Select(x.GetType().Into), BitFlagSeparator)
                     : x)}",
             Type x => UnfoldedName(x),
             Version x => ToShortString(x),
