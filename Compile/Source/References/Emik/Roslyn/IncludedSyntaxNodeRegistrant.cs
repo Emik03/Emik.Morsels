@@ -74,6 +74,22 @@ static partial class IncludedSyntaxNodeRegistrant
         where T : SyntaxNode =>
         node is T;
 
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is the first declaration.</summary>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="symbol">The symbol to retrieve the declaring syntax references from.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is the first
+    /// to declare the parameter <paramref name="symbol"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsFirst(
+        this SyntaxNode? node,
+        [NotNullWhen(true)] ISymbol? symbol,
+        CancellationToken token = default
+    ) =>
+        symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
+
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
