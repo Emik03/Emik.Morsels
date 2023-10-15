@@ -50,7 +50,7 @@ static partial class IncludedSyntaxNodeRegistrant
             return false;
 
         if (name is null)
-            return !symbol.GetAttributes().IsEmpty;
+            return symbol.GetAttributes() is not [];
 
         var against = WithoutAttributeSuffix(name);
 
@@ -211,7 +211,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// </returns>
     [Pure]
     public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters.IsEmpty);
+        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters is []);
 
     /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to use.</param>
