@@ -30,6 +30,42 @@ static partial class SmallList
     public const int InlinedLength = 3;
 #pragma warning restore RCS1158
 
+    /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
+    /// <returns>The created <see cref="SmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> Create<T>() => default;
+
+    /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
+    /// <param name="first">The first element.</param>
+    /// <returns>The created <see cref="SmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> Create<T>(T first) => first;
+
+    /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
+    /// <param name="first">The first element.</param>
+    /// <param name="second">The second element.</param>
+    /// <returns>The created <see cref="SmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> Create<T>(T first, T second) => new(first, second);
+
+    /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 3 elements.</summary>
+    /// <param name="first">The first element.</param>
+    /// <param name="second">The second element.</param>
+    /// <param name="third">The third element.</param>
+    /// <returns>The created <see cref="SmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> Create<T>(T first, T second, T third) => new(first, second, third);
+
+    /// <summary>Creates a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
+    /// <param name="first">The first element.</param>
+    /// <param name="second">The second element.</param>
+    /// <param name="third">The third element.</param>
+    /// <param name="rest">The rest of the elements.</param>
+    /// <returns>The created <see cref="SmallList{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SmallList<T> Create<T>(T first, T second, T third, params T[] rest) =>
+        new(first, second, third, rest);
+
     /// <summary>Allocates an inlined list of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="PooledSmallList{T}"/> will point to uninitialized memory.
