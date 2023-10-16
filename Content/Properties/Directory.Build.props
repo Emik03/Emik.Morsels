@@ -37,7 +37,7 @@
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <DefaultDocumentationFileNameFactory>Morsels</DefaultDocumentationFileNameFactory>
-        <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=./</PathMap>
+        <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../'))=./</PathMap>
         <DefaultDocumentationInvalidCharReplacement>-</DefaultDocumentationInvalidCharReplacement>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
         <GenerateDocumentationFile>$('$(MSBuildProjectName.Contains(&quot;Analyzer&quot;))' == 'false')</GenerateDocumentationFile>
