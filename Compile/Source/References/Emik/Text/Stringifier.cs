@@ -375,11 +375,8 @@ static partial class Stringifier
         int depth,
         bool useQuotes = false
 #pragma warning restore SA1114 RCS1163
-    )
-    {
-        Console.WriteLine(typeof(T));
-
-        return source switch
+    ) =>
+        source switch
         {
             null => Null,
             true => True,
@@ -432,7 +429,6 @@ static partial class Stringifier
             _ => source.StringifyObject(depth - 1),
 #endif
         };
-    }
 
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
