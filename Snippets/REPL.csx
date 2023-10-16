@@ -11968,7 +11968,9 @@ public abstract class FixedGenerator(
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
     /// is an explicit interface implementation, otherwise; <see langword="false"/>.
     /// </returns>
-    public static bool IsInterfaceDeclaration(this ISymbol? symbol) => symbol?.Name.Contains('.') ?? false;
+    [Pure]
+    public static bool IsInterfaceDeclaration([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol?.Name.Contains('.') ?? false;
 
     /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
     /// <param name="symbol">The symbol to check.</param>
