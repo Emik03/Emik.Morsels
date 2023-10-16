@@ -32,6 +32,21 @@ static partial class IncludedSyntaxNodeRegistrant
         where T : MemberDeclarationSyntax =>
         node is T { AttributeLists.Count: >= 1 };
 
+    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is
+            not null and
+            not IDynamicTypeSymbol and
+            not IPointerTypeSymbol and
+            not { IsRefLikeType: true } and
+            not { SpecialType: System_Void };
+
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <param name="name">The name to get.</param>
@@ -74,22 +89,6 @@ static partial class IncludedSyntaxNodeRegistrant
         where T : SyntaxNode =>
         node is T;
 
-    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is the first declaration.</summary>
-    /// <param name="node">The passed in node to test.</param>
-    /// <param name="symbol">The symbol to retrieve the declaring syntax references from.</param>
-    /// <param name="token">The cancellation token.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is the first
-    /// to declare the parameter <paramref name="symbol"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsFirst(
-        this SyntaxNode? node,
-        [NotNullWhen(true)] ISymbol? symbol,
-        CancellationToken token = default
-    ) =>
-        symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
-
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
@@ -108,16 +107,6 @@ static partial class IncludedSyntaxNodeRegistrant
     public static bool IsAccessible([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.DeclaredAccessibility.IsAccessible() is true;
 
-    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is { BaseType: null, SpecialType: not System_Object };
-
     /// <summary>
     /// Determines whether the symbol and all subsequent parent types
     /// are declared with the <see langword="partial"/> keyword.
@@ -130,6 +119,40 @@ static partial class IncludedSyntaxNodeRegistrant
     [Pure]
     public static bool IsCompletelyPartial([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.FindPathToNull(x => x.ContainingType).All(IsPartial) is true;
+
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is the first declaration.</summary>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="symbol">The symbol to retrieve the declaring syntax references from.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is the first
+    /// to declare the parameter <paramref name="symbol"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsFirst(
+        this SyntaxNode? node,
+        [NotNullWhen(true)] ISymbol? symbol,
+        CancellationToken token = default
+    ) =>
+        symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
+
+    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is { BaseType: null, SpecialType: not System_Object };
+
+    /// <summary>Returns whether the provided <see cref="ISymbol"/> is an interface implementation.</summary>
+    /// <param name="symbol">The passed in symbol to test.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is an explicit interface implementation, otherwise; <see langword="false"/>.
+    /// </returns>
+    public static bool IsInterfaceDeclaration(this ISymbol? symbol) => symbol?.Name.Contains('.') ?? false;
 
     /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
     /// <param name="symbol">The symbol to check.</param>
@@ -180,21 +203,6 @@ static partial class IncludedSyntaxNodeRegistrant
             System_IntPtr or
             System_UIntPtr,
         };
-
-    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is
-            not null and
-            not IDynamicTypeSymbol and
-            not IPointerTypeSymbol and
-            not { IsRefLikeType: true } and
-            not { SpecialType: System_Void };
 
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>

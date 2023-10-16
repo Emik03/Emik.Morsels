@@ -803,6 +803,18 @@ using static JetBrains.Annotations.CollectionAccessType;
         public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
 
+    sealed class Equatable<T, TResult>(
+        Converter<T?, TResult> converter,
+        IEqualityComparer<TResult> equalityComparer
+    ) : IEqualityComparer<T>
+    {
+        /// <inheritdoc />
+        public bool Equals(T x, T y) => equalityComparer.Equals(converter(x), converter(y));
+
+        /// <inheritdoc />
+        public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj));
+    }
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
@@ -902,6 +914,18 @@ using static JetBrains.Annotations.CollectionAccessType;
         IComparer<TResult>? comparer = null
     ) =>
         new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
+
+    /// <summary>Creates the <see cref="IEqualityComparer{T}"/> from the mapping.</summary>
+    /// <typeparam name="T">The type to compare.</typeparam>
+    /// <typeparam name="TResult">The resulting value from the mapping used for comparison.</typeparam>
+    /// <param name="converter">The converter to use.</param>
+    /// <param name="comparer">If specified, the way the result of the delegate should be sorted.</param>
+    /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="converter"/>.</returns>
+    public static IEqualityComparer<T> Equating<T, TResult>(
+        Converter<T?, TResult> converter,
+        IEqualityComparer<TResult>? comparer = null
+    ) =>
+        new Equatable<T, TResult>(converter, comparer ?? EqualityComparer<TResult>.Default);
 
     /// <inheritdoc cref="MethodGroupings.Not{T}(Predicate{T})"/>
     [Pure]
@@ -11824,6 +11848,21 @@ public abstract class FixedGenerator(
         where T : MemberDeclarationSyntax =>
         node is T { AttributeLists.Count: >= 1 };
 
+    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is
+            not null and
+            not IDynamicTypeSymbol and
+            not IPointerTypeSymbol and
+            not { IsRefLikeType: true } and
+            not { SpecialType: System_Void };
+
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <param name="name">The name to get.</param>
@@ -11866,22 +11905,6 @@ public abstract class FixedGenerator(
         where T : SyntaxNode =>
         node is T;
 
-    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is the first declaration.</summary>
-    /// <param name="node">The passed in node to test.</param>
-    /// <param name="symbol">The symbol to retrieve the declaring syntax references from.</param>
-    /// <param name="token">The cancellation token.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is the first
-    /// to declare the parameter <paramref name="symbol"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsFirst(
-        this SyntaxNode? node,
-        [NotNullWhen(true)] ISymbol? symbol,
-        CancellationToken token = default
-    ) =>
-        symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
-
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
@@ -11900,16 +11923,6 @@ public abstract class FixedGenerator(
     public static bool IsAccessible([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.DeclaredAccessibility.IsAccessible() is true;
 
-    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is { BaseType: null, SpecialType: not System_Object };
-
     /// <summary>
     /// Determines whether the symbol and all subsequent parent types
     /// are declared with the <see langword="partial"/> keyword.
@@ -11922,6 +11935,40 @@ public abstract class FixedGenerator(
     [Pure]
     public static bool IsCompletelyPartial([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.FindPathToNull(x => x.ContainingType).All(IsPartial) is true;
+
+    /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is the first declaration.</summary>
+    /// <param name="node">The passed in node to test.</param>
+    /// <param name="symbol">The symbol to retrieve the declaring syntax references from.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="node"/> is the first
+    /// to declare the parameter <paramref name="symbol"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsFirst(
+        this SyntaxNode? node,
+        [NotNullWhen(true)] ISymbol? symbol,
+        CancellationToken token = default
+    ) =>
+        symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
+
+    /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is an <see langword="interface"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is { BaseType: null, SpecialType: not System_Object };
+
+    /// <summary>Returns whether the provided <see cref="ISymbol"/> is an interface implementation.</summary>
+    /// <param name="symbol">The passed in symbol to test.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is an explicit interface implementation, otherwise; <see langword="false"/>.
+    /// </returns>
+    public static bool IsInterfaceDeclaration(this ISymbol? symbol) => symbol?.Name.Contains('.') ?? false;
 
     /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
     /// <param name="symbol">The symbol to check.</param>
@@ -11972,21 +12019,6 @@ public abstract class FixedGenerator(
             System_IntPtr or
             System_UIntPtr,
         };
-
-    /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// can be placed as a generic parameter, otherwise; <see langword="false"/>.
-    /// </returns>
-    [Pure]
-    public static bool CanBeGeneric([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is
-            not null and
-            not IDynamicTypeSymbol and
-            not IPointerTypeSymbol and
-            not { IsRefLikeType: true } and
-            not { SpecialType: System_Void };
 
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>
