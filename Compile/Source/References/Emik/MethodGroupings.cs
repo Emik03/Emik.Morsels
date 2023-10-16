@@ -16,6 +16,18 @@ static partial class MethodGroupings
         public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
 
+    sealed class Equatable<T, TResult>(
+        Converter<T?, TResult> converter,
+        IEqualityComparer<TResult> equalityComparer
+    ) : IEqualityComparer<T>
+    {
+        /// <inheritdoc />
+        public bool Equals(T x, T y) => equalityComparer.Equals(converter(x), converter(y));
+
+        /// <inheritdoc />
+        public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj));
+    }
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
@@ -115,6 +127,18 @@ static partial class MethodGroupings
         IComparer<TResult>? comparer = null
     ) =>
         new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
+
+    /// <summary>Creates the <see cref="IEqualityComparer{T}"/> from the mapping.</summary>
+    /// <typeparam name="T">The type to compare.</typeparam>
+    /// <typeparam name="TResult">The resulting value from the mapping used for comparison.</typeparam>
+    /// <param name="converter">The converter to use.</param>
+    /// <param name="comparer">If specified, the way the result of the delegate should be sorted.</param>
+    /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="converter"/>.</returns>
+    public static IEqualityComparer<T> Equating<T, TResult>(
+        Converter<T?, TResult> converter,
+        IEqualityComparer<TResult>? comparer = null
+    ) =>
+        new Equatable<T, TResult>(converter, comparer ?? EqualityComparer<TResult>.Default);
 
     /// <inheritdoc cref="MethodGroupings.Not{T}(Predicate{T})"/>
     [Pure]
