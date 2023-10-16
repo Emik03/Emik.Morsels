@@ -31,17 +31,20 @@ static partial class SmallList
 #pragma warning restore RCS1158
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>() => default;
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first) => first;
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
@@ -49,6 +52,7 @@ static partial class SmallList
     public static SmallList<T> Create<T>(T first, T second) => new(first, second);
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 3 elements.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
@@ -57,6 +61,7 @@ static partial class SmallList
     public static SmallList<T> Create<T>(T first, T second, T third) => new(first, second, third);
 
     /// <summary>Creates a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
+    /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     /// <param name="third">The third element.</param>
