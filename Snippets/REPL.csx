@@ -840,7 +840,8 @@ using static JetBrains.Annotations.CollectionAccessType;
         public bool Equals(T? x, T? y) => equalityComparer.Equals(converter(x), converter(y));
 
         /// <inheritdoc />
-        public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj));
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj)!);
     }
 
     /// <summary>Invokes a method.</summary>
