@@ -809,23 +809,23 @@ using static JetBrains.Annotations.CollectionAccessType;
         public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
 
-    sealed class Equated<T>(Func<T?, T?, bool> comparer, Func<T?, int> hashCode) : IEqualityComparer<T>
+    sealed class Equated<T>(Func<T?, T?, bool> comparer, Func<T, int> hashCode) : IEqualityComparer<T>
     {
         /// <summary>Initializes a new instance of the <see cref="Equated{T}"/> class.</summary>
         /// <param name="comparer">The comparer to convert.</param>
         public Equated(IComparer<T> comparer)
             : this(FromIComparer(comparer), Default) { }
 
-        /// <inheritdoc />
-        public bool Equals(T x, T y) => comparer(x, y);
-
-        /// <inheritdoc />
-        public int GetHashCode(T obj) => hashCode(obj);
-
         /// <summary>Returns 0.</summary>
         /// <param name="_">The discard.</param>
         /// <returns>The value 0.</returns>
         public static int Default(T? _) => 0;
+
+        /// <inheritdoc />
+        public bool Equals(T? x, T? y) => comparer(x, y);
+
+        /// <inheritdoc />
+        public int GetHashCode(T obj) => hashCode(obj);
 
         /// <summary>Returns the equality function based on the <see cref="IComparer{T}"/>.</summary>
         /// <param name="comparer">The comparer to evaluate equality.</param>
@@ -837,7 +837,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         : IEqualityComparer<T>
     {
         /// <inheritdoc />
-        public bool Equals(T x, T y) => equalityComparer.Equals(converter(x), converter(y));
+        public bool Equals(T? x, T? y) => equalityComparer.Equals(converter(x), converter(y));
 
         /// <inheritdoc />
         public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj));
@@ -972,7 +972,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="comparer">The comparer to use.</param>
     /// <param name="hashCode">If specified, the hash code algorithm.</param>
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparer"/>.</returns>
-    public static IEqualityComparer<T> Equating<T>(Func<T?, T?, bool> comparer, Func<T?, int>? hashCode = null) =>
+    public static IEqualityComparer<T> Equating<T>(Func<T?, T?, bool> comparer, Func<T, int>? hashCode = null) =>
         new Equated<T>(comparer, hashCode ?? Equated<T>.Default);
 
     /// <inheritdoc cref="MethodGroupings.Not{T}(Predicate{T})"/>
