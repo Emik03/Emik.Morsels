@@ -6543,7 +6543,7 @@ public
     /// <param name="chars">The enumeration of characters.</param>
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
-    public static string Concat(this IEnumerable<char> chars) => string.Concat(chars);
+    public static string Concat([InstantHandle] this IEnumerable<char> chars) => string.Concat(chars);
 #endif
 
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
@@ -6558,26 +6558,14 @@ public
     // ReSharper disable BadPreprocessorIndent
     [Pure]
     public static string Conjoin<T>(
+        [InstantHandle]
 #if !WAWA
         this
 #endif
             IEnumerable<T> values,
         char separator
-    )
-    {
-        StringBuilder builder = new();
-        using var enumerator = values.GetEnumerator();
-
-        if (enumerator.MoveNext())
-            builder.Append(enumerator.Current);
-        else
-            return "";
-
-        while (enumerator.MoveNext())
-            builder.Append(separator).Append(enumerator.Current);
-
-        return $"{builder}";
-    }
+    ) =>
+        $"{new StringBuilder().AppendMany(values, separator)}";
 
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
@@ -6586,29 +6574,14 @@ public
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
     public static string Conjoin<T>(
+        [InstantHandle]
 #if !WAWA
         this
 #endif
             IEnumerable<T> values,
         string separator = Separator
-    )
-    {
-        if (values is string value && separator is "")
-            return value;
-
-        StringBuilder builder = new();
-        using var enumerator = values.GetEnumerator();
-
-        if (enumerator.MoveNext())
-            builder.Append(enumerator.Current);
-        else
-            return "";
-
-        while (enumerator.MoveNext())
-            builder.Append(separator).Append(enumerator.Current);
-
-        return $"{builder}";
-    }
+    ) =>
+        $"{new StringBuilder().AppendMany(values, separator)}";
 
     /// <summary>Gets the short display form of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to convert.</param>
@@ -6806,6 +6779,70 @@ public
         return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
             ? $"{name} {{ {str} }}"
             : name;
+    }
+
+    /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+#if !WAWA
+    public
+#endif
+        static StringBuilder AppendMany<T>(
+            this StringBuilder builder,
+            [InstantHandle] IEnumerable<T> values,
+            char separator
+        )
+    {
+        using var enumerator = values.GetEnumerator();
+
+        if (enumerator.MoveNext())
+            builder.Append(enumerator.Current);
+        else
+            return builder;
+
+        while (enumerator.MoveNext())
+            builder.Append(separator).Append(enumerator.Current);
+
+        return builder;
+    }
+
+    /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+
+#if !WAWA
+    public
+#endif
+        static StringBuilder AppendMany<T>(
+            this StringBuilder builder,
+            [InstantHandle] IEnumerable<T> values,
+            string separator = Separator
+        )
+    {
+        if (separator is "")
+            switch (values)
+            {
+                case char[] x: return builder.Append(x);
+                case string x: return builder.Append(x);
+            }
+
+        using var enumerator = values.GetEnumerator();
+
+        if (enumerator.MoveNext())
+            builder.Append(enumerator.Current);
+        else
+            return builder;
+
+        while (enumerator.MoveNext())
+            builder.Append(separator).Append(enumerator.Current);
+
+        return builder;
     }
 
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
