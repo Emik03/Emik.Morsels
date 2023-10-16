@@ -797,16 +797,44 @@ using static JetBrains.Annotations.CollectionAccessType;
 
 /// <summary>Methods to create methods.</summary>
 
-    sealed class Comparer<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
+    sealed class Compared<T>(Comparison<T?> comparer) : IComparer<T>
+    {
+        /// <inheritdoc />
+        public int Compare(T? x, T? y) => comparer(x, y);
+    }
+
+    sealed class Compared<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
     {
         /// <inheritdoc />
         public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
 
-    sealed class Equatable<T, TResult>(
-        Converter<T?, TResult> converter,
-        IEqualityComparer<TResult> equalityComparer
-    ) : IEqualityComparer<T>
+    sealed class Equated<T>(Func<T?, T?, bool> comparer, Func<T?, int> hashCode) : IEqualityComparer<T>
+    {
+        /// <summary>Initializes a new instance of the <see cref="Equated{T}"/> class.</summary>
+        /// <param name="comparer">The comparer to convert.</param>
+        public Equated(IComparer<T> comparer)
+            : this(FromIComparer(comparer), Default) { }
+
+        /// <inheritdoc />
+        public bool Equals(T x, T y) => comparer(x, y);
+
+        /// <inheritdoc />
+        public int GetHashCode(T obj) => hashCode(obj);
+
+        /// <summary>Returns 0.</summary>
+        /// <param name="_">The discard.</param>
+        /// <returns>The value 0.</returns>
+        public static int Default(T? _) => 0;
+
+        /// <summary>Returns the equality function based on the <see cref="IComparer{T}"/>.</summary>
+        /// <param name="comparer">The comparer to evaluate equality.</param>
+        /// <returns>The equality function that wraps <paramref name="comparer"/>.</returns>
+        static Func<T?, T?, bool> FromIComparer(IComparer<T> comparer) => (x, y) => comparer.Compare(x, y) is 0;
+    }
+
+    sealed class Equated<T, TResult>(Converter<T?, TResult> converter, IEqualityComparer<TResult> equalityComparer)
+        : IEqualityComparer<T>
     {
         /// <inheritdoc />
         public bool Equals(T x, T y) => equalityComparer.Equals(converter(x), converter(y));
@@ -905,6 +933,12 @@ using static JetBrains.Annotations.CollectionAccessType;
 
     /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
+    /// <param name="comparison">The <see cref="Comparison{T}"/> to use.</param>
+    /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparison"/>.</returns>
+    public static IComparer<T> Comparing<T>(Comparison<T?> comparison) => new Compared<T>(comparison);
+
+    /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
+    /// <typeparam name="T">The type to compare.</typeparam>
     /// <typeparam name="TResult">The resulting value from the mapping used for comparison.</typeparam>
     /// <param name="converter">The converter to use.</param>
     /// <param name="comparer">If specified, the way the result of the delegate should be sorted.</param>
@@ -913,7 +947,13 @@ using static JetBrains.Annotations.CollectionAccessType;
         Converter<T?, TResult> converter,
         IComparer<TResult>? comparer = null
     ) =>
-        new Comparer<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
+        new Compared<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
+
+    /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
+    /// <typeparam name="T">The type to compare.</typeparam>
+    /// <param name="comparison">The <see cref="Comparison{T}"/> to use.</param>
+    /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparison"/>.</returns>
+    public static IEqualityComparer<T> AsEquality<T>(this IComparer<T> comparison) => new Equated<T>(comparison);
 
     /// <summary>Creates the <see cref="IEqualityComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
@@ -925,7 +965,15 @@ using static JetBrains.Annotations.CollectionAccessType;
         Converter<T?, TResult> converter,
         IEqualityComparer<TResult>? comparer = null
     ) =>
-        new Equatable<T, TResult>(converter, comparer ?? EqualityComparer<TResult>.Default);
+        new Equated<T, TResult>(converter, comparer ?? EqualityComparer<TResult>.Default);
+
+    /// <summary>Creates the <see cref="IEqualityComparer{T}"/> from the mapping.</summary>
+    /// <typeparam name="T">The type to compare.</typeparam>
+    /// <param name="comparer">The comparer to use.</param>
+    /// <param name="hashCode">If specified, the hash code algorithm.</param>
+    /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparer"/>.</returns>
+    public static IEqualityComparer<T> Equating<T>(Func<T?, T?, bool> comparer, Func<T?, int>? hashCode = null) =>
+        new Equated<T>(comparer, hashCode ?? Equated<T>.Default);
 
     /// <inheritdoc cref="MethodGroupings.Not{T}(Predicate{T})"/>
     [Pure]
