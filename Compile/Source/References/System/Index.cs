@@ -114,6 +114,6 @@ partial struct Index : IEquatable<Index>
 
     /// <inheritdoc />
     [Pure]
-    public override string ToString() => IsFromEnd ? $"^{(uint)Value}" : ((uint)Value).ToString();
+    public override string ToString() => IsFromEnd ? $"^{(uint)Value}" : $"{(uint)Value}";
 }
 #endif

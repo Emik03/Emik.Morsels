@@ -17137,7 +17137,7 @@ abstract partial class Assert(
     /// <summary>Executes every assertion and gets all of the assertions that failed.</summary>
     /// <returns>All assertions that failed.</returns>
     [Pure]
-    public static IEnumerable<string> AllMessages() => Runner.RunAll().Where(x => x.Failed).Select(x => x.ToString());
+    public static IEnumerable<string> AllMessages() => Runner.RunAll().Where(x => x.Failed).Select(x => $"{x}");
 
     /// <summary>Creates the assertion that the value must be within a certain range.</summary>
     /// <param name="range">The range of values to accept. The range is considered to be inclusive on both ends.</param>
