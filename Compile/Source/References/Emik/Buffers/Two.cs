@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective
 namespace Emik.Morsels;
 
 using FieldInfo = System.Reflection.FieldInfo;
