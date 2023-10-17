@@ -128,7 +128,7 @@ static partial class SplitFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static List<string> ToList(this SplitSpan<char> split)
     {
-        List<string> ret = new();
+        List<string> ret = [];
 
         foreach (var next in split)
             ret.Add(next.ToString());
@@ -148,7 +148,7 @@ static partial class SplitFactory
         where T : IEquatable<T>?
 #endif
     {
-        List<T[]> ret = new();
+        List<T[]> ret = [];
 
         foreach (var next in split)
             ret.Add(next.ToArray());
@@ -159,7 +159,7 @@ static partial class SplitFactory
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
+        span.AsSpan().SplitAny([separator]);
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -169,7 +169,7 @@ static partial class SplitFactory
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
+        span.AsSpan().SplitAll([separator]);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -185,8 +185,7 @@ static partial class SplitFactory
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
-        new(span, Whitespaces.Breaking.AsSpan(), true);
+    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) => new(span, [Whitespaces.Breaking], true);
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -202,7 +201,7 @@ static partial class SplitFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
-        new(span, Whitespaces.Unicode.AsSpan(), true);
+        new(span, [Whitespaces.Unicode], true);
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

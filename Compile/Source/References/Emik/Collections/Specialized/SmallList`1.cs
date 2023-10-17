@@ -29,7 +29,7 @@ partial struct SmallList<T> :
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         new T[0];
 #else
-        Array.Empty<T>();
+        [];
 #endif
 
     // DO NOT PLACE _rest BELOW GENERICS;
@@ -95,7 +95,7 @@ partial struct SmallList<T> :
             return;
         }
 
-        List<T> list = new();
+        List<T> list = [];
 
         do
             list.Add(enumerator.Current);
@@ -393,7 +393,7 @@ partial struct SmallList<T> :
         if (count - stackExpand <= 0)
             return;
 
-        var rest = _rest as List<T> ?? Rest!.ToList();
+        var rest = _rest as List<T> ?? [.. Rest!];
         rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToCollectionLazily());
         _rest = rest;
     }
@@ -1027,9 +1027,9 @@ partial struct SmallList<T> :
     {
         var rest = Rest switch
         {
-            { IsReadOnly: true, Count: not 0 } x => x.ToList(),
-            { Count: not 0 } x => x,
-            _ => new List<T>(),
+            { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
+            { Count: not 0 } x => [.. x],
+            _ => (IList<T>)new List<T>(),
         };
 
         _rest = rest;

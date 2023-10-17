@@ -21,7 +21,7 @@ static partial class ReadOnlyFactory
     public static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
-            : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? iterable.ToList());
+            : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
 }
 #endif
 

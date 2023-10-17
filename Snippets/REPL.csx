@@ -563,7 +563,6 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
-
 #if !NET20 && !NET30
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
@@ -3615,9 +3614,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 
-    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
-
     const string E = "Value must be non-negative and less than the length.";
+
+    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -4753,7 +4752,6 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -4767,9 +4765,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 
+    // ReSharper disable once UnusedType.Local
     enum Unknowable;
 
-    static readonly Dictionary<Type, IList> s_dictionary = new();
+    static readonly Dictionary<Type, IList> s_dictionary = [];
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -5241,8 +5240,8 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
         static readonly Type[]
-            s_binary = { typeof(T), typeof(T) },
-            s_unary = { typeof(T) };
+            s_binary = [typeof(T), typeof(T)],
+            s_unary = [typeof(T)];
 
         static DirectOperators()
         {
@@ -7878,7 +7877,9 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>
+               .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
+               .AsSpan(ref Unsafe.AsRef(_));
 #else
     public static unsafe Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7887,9 +7888,9 @@ public
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
 
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(
-            ref Unsafe.AsRef(x)
-        );
+        return PooledSmallList<T>
+           .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
+           .AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 #endif
@@ -8237,13 +8238,13 @@ public
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>)).ToArray();
+        [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>))];
 #endif
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
+        [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -8254,13 +8255,13 @@ public
         where T : IEquatable<T>?
 #endif
         =>
-            MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
+            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
+       [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>))];
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
@@ -8268,7 +8269,7 @@ public
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static byte[] Raw<T>(T value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
+        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>())];
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -8993,7 +8994,7 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static List<string> ToList(this SplitSpan<char> split)
     {
-        List<string> ret = new();
+        List<string> ret = [];
 
         foreach (var next in split)
             ret.Add(next.ToString());
@@ -9013,7 +9014,7 @@ public
         where T : IEquatable<T>?
 #endif
     {
-        List<T[]> ret = new();
+        List<T[]> ret = [];
 
         foreach (var next in split)
             ret.Add(next.ToArray());
@@ -9024,7 +9025,7 @@ public
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
+        span.AsSpan().SplitAny([separator]);
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9034,7 +9035,7 @@ public
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
+        span.AsSpan().SplitAll([separator]);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9050,8 +9051,7 @@ public
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
-        new(span, Breaking.AsSpan(), true);
+    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) => new(span, [Breaking], true);
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9067,7 +9067,7 @@ public
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
-        new(span, Unicode.AsSpan(), true);
+        new(span, [Unicode], true);
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -10604,7 +10604,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective
 
 
 
@@ -11154,7 +11154,7 @@ public partial struct Two<T>(T left, T right) :
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static long[] CountAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
+        [NonNegativeValue] int times = byte.MaxValue,
         bool willWarmup = true
     )
     {
@@ -11180,7 +11180,7 @@ public partial struct Two<T>(T left, T right) :
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static bool HasAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
+        [NonNegativeValue] int times = byte.MaxValue,
         bool willWarmup = true
     )
     {
@@ -11661,12 +11661,13 @@ public partial struct Two<T>(T left, T right) :
 
 
 /// <summary>An extremely bad logger.</summary>
+// ReSharper disable once RedundantExtendsListEntry
 public sealed partial class BadLogger : IDisposable
 {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Clear"/>
 #endif
-    static readonly byte[] s_clear = { 0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a };
+    static readonly byte[] s_clear = [0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a];
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Gets the buffer that clears the console when printed. Only on certain Linux terminals though.</summary>
     /// <remarks><para>
@@ -12779,7 +12780,7 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static IReadOnlyList<T>? ToReadOnly<T>(this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
-            : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? iterable.ToList());
+            : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
 #endif
 
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
@@ -14309,7 +14310,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [NonNegativeValue, Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
 }
 
@@ -14402,7 +14403,7 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [NonNegativeValue, Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }
 
@@ -14545,7 +14546,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }
 
@@ -14627,7 +14628,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     /// <inheritdoc />
     public void RemoveAt(int index)
     {
-        if (index is not -1)
+        if (index is -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
         list.RemoveAt(index + 1);
@@ -14672,7 +14673,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 #pragma warning disable MA0048
 
     /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
-    public static bool[] Booleans { get; } = { true, false };
+    public static bool[] Booleans { get; } = [true, false];
 
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
@@ -14718,7 +14719,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
         [InstantHandle] Predicate<T> predicate
     )
     {
-        List<T> t = new(), f = new();
+        List<T> t = [], f = [];
 
         foreach (var item in source)
 #pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
@@ -14965,7 +14966,7 @@ public partial struct SmallList<T> :
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         new T[0];
 #else
-        Array.Empty<T>();
+        [];
 #endif
 
     // DO NOT PLACE _rest BELOW GENERICS;
@@ -15031,7 +15032,7 @@ public partial struct SmallList<T> :
             return;
         }
 
-        List<T> list = new();
+        List<T> list = [];
 
         do
             list.Add(enumerator.Current);
@@ -15329,7 +15330,7 @@ public partial struct SmallList<T> :
         if (count - stackExpand <= 0)
             return;
 
-        var rest = _rest as List<T> ?? Rest!.ToList();
+        var rest = _rest as List<T> ?? [.. Rest!];
         rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToCollectionLazily());
         _rest = rest;
     }
@@ -15963,9 +15964,9 @@ public partial struct SmallList<T> :
     {
         var rest = Rest switch
         {
-            { IsReadOnly: true, Count: not 0 } x => x.ToList(),
-            { Count: not 0 } x => x,
-            _ => new List<T>(),
+            { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
+            { Count: not 0 } x => [.. x],
+            _ => (IList<T>)new List<T>(),
         };
 
         _rest = rest;

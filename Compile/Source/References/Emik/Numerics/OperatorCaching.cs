@@ -136,8 +136,8 @@ static partial class OperatorCaching
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
         static readonly Type[]
-            s_binary = { typeof(T), typeof(T) },
-            s_unary = { typeof(T) };
+            s_binary = [typeof(T), typeof(T)],
+            s_unary = [typeof(T)];
 
         static DirectOperators()
         {
