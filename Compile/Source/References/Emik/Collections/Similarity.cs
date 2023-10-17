@@ -8,9 +8,9 @@ using static Span;
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity
 {
-    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
-
     const string E = "Value must be non-negative and less than the length.";
+
+    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
