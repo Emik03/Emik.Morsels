@@ -179,7 +179,6 @@ static partial class Conditionals
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
-
 #if !NET20 && !NET30
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>

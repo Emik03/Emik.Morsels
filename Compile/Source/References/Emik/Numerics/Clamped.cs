@@ -57,6 +57,5 @@ static partial class Clamped
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
 #endif
 }
