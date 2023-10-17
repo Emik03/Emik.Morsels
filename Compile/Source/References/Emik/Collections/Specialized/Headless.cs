@@ -78,7 +78,7 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
     /// <inheritdoc />
     public void RemoveAt(int index)
     {
-        if (index is not -1)
+        if (index is -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
         list.RemoveAt(index + 1);
