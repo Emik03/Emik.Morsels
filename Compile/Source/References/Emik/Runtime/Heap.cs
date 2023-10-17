@@ -111,7 +111,7 @@ static partial class Heap
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static long[] CountAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
+        [NonNegativeValue] int times = byte.MaxValue,
         bool willWarmup = true
     )
     {
@@ -137,7 +137,7 @@ static partial class Heap
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static bool HasAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
+        [NonNegativeValue] int times = byte.MaxValue,
         bool willWarmup = true
     )
     {
