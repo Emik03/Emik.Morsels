@@ -6888,7 +6888,6 @@ public
     /// <param name="values">The values to join.</param>
     /// <param name="separator">The separator between each item.</param>
     /// <returns>The parameter <paramref name="builder"/>.</returns>
-
 #if !WAWA
     public
 #endif
