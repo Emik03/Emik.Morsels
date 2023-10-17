@@ -91,6 +91,6 @@ sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>,
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [NonNegativeValue, Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }

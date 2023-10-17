@@ -141,6 +141,6 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }
