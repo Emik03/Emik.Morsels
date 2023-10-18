@@ -65,7 +65,10 @@
         </Entry>
         <Entry DisplayName="Properties">
             <Entry.Match>
-                <Kind Is="Property"/>
+                <Or>
+                    <Kind Is="Autoproperty"/>
+                    <Kind Is="Property"/>
+                </Or>
             </Entry.Match>
             <Entry.SortBy>
                 <ImplementsInterface Immediate="true"/>
