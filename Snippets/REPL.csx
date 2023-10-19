@@ -6425,7 +6425,7 @@ public sealed class Primes : IEnumerable<ulong>
 
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier
+// ReSharper disable CheckNamespace RedundantNameQualifier ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
 #pragma warning disable 1696, SA1137, SA1216
 #if WAWA
 namespace Wawa.Modules;
@@ -8953,29 +8953,7 @@ public
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this ReadOnlySpan<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, In(separator), true);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            ((ReadOnlySpan<T>)span).SplitAny(separator);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this Span<T> span, in T separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -9001,17 +8979,6 @@ public
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this ReadOnlySpan<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, In(separator), false);
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
@@ -9021,16 +8988,27 @@ public
         =>
             ((ReadOnlySpan<T>)span).SplitAll(separator);
 
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this Span<T> span, in T separator)
+    public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            ((ReadOnlySpan<T>)span).SplitAll(separator);
+            new(span, In(separator), true);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitOn<T>(this Span<T> span, in T separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).SplitOn(separator);
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <param name="split">The instance to get the list from.</param>
@@ -9068,10 +9046,6 @@ public
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, in char separator) => span.AsSpan().SplitAny(separator);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitAny(this string span, string separator) =>
         span.AsSpan().SplitAny(separator.AsSpan());
 
@@ -9079,10 +9053,6 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAny(separator);
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, in char separator) => span.AsSpan().SplitAll(separator);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9109,6 +9079,10 @@ public
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitOn(this string span, in char separator) => span.AsSpan().SplitOn(separator);
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9384,6 +9358,12 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlySpan<T> Single() =>
         GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+
+    /// <inheritdoc />
+    public override string ToString() =>
+        typeof(T) == typeof(char)
+            ? ""
+            : $"{nameof(Emik)}.{nameof(Morsels)}.{nameof(SplitSpan<T>)}<{typeof(T).UnfoldedName()}>[{Body.Length}, {Separator.Length}]";
 
     /// <summary>Gets the first element.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
