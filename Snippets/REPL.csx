@@ -12127,24 +12127,9 @@ public abstract class FixedGenerator(
             _ => throw Unreachable,
         };
 
-    /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
-    /// <param name="symbol">The symbol to get its keyword.</param>
-    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
-    [Pure]
-    public static string KeywordByRefReturn(this ISymbol symbol) =>
-        symbol switch
-        {
-            IPropertySymbol { ReturnsByRef: true } or
-                IMethodSymbol { ReturnsByRef: true } or
-                IFieldSymbol { RefKind: RefKind.None } => "ref ",
-            IPropertySymbol { ReturnsByRefReadonly: true } or IMethodSymbol { ReturnsByRefReadonly: true } =>
-                "ref readonly ",
-            _ => "",
-        };
-<
     /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
     /// <param name="kind">The symbol to get its keyword.</param>
-    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
+    /// <returns>The keyword used to declare the parameter <paramref name="kind"/>.</returns>
     [Pure]
     public static string Keyword(this RefKind kind) =>
         kind switch
@@ -12152,6 +12137,22 @@ public abstract class FixedGenerator(
             RefKind.In => "in ",
             RefKind.Out => "out ",
             RefKind.Ref => "ref ",
+            _ => "",
+        };
+
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="ISymbol"/>.</summary>
+    /// <param name="symbol">The symbol to get its keyword.</param>
+    /// <param name="alwaysReadOnly">Determines whether to always treat <see cref="IFieldSymbol"/> immutably.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string KeywordByRefReturn(this ISymbol symbol, bool alwaysReadOnly = false) =>
+        symbol switch
+        {
+            IPropertySymbol { ReturnsByRef: true } or IMethodSymbol { ReturnsByRef: true } => "ref ",
+            IPropertySymbol { ReturnsByRefReadonly: true } or IMethodSymbol { ReturnsByRefReadonly: true }
+                => "ref readonly ",
+            IFieldSymbol { ContainingType.IsReadOnly: var containing, IsReadOnly: var self, RefKind: not RefKind.None }
+                => containing || self || alwaysReadOnly ? "ref readonly " : "ref ",
             _ => "",
         };
 

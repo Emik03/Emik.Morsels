@@ -285,8 +285,8 @@ static partial class IncludedSyntaxNodeRegistrant
         symbol switch
         {
             IPropertySymbol { ReturnsByRef: true } or IMethodSymbol { ReturnsByRef: true } => "ref ",
-            IPropertySymbol { ReturnsByRefReadonly: true } or IMethodSymbol { ReturnsByRefReadonly: true } =>
-                "ref readonly ",
+            IPropertySymbol { ReturnsByRefReadonly: true } or IMethodSymbol { ReturnsByRefReadonly: true }
+                => "ref readonly ",
             IFieldSymbol { ContainingType.IsReadOnly: var containing, IsReadOnly: var self, RefKind: not RefKind.None }
                 => containing || self || alwaysReadOnly ? "ref readonly " : "ref ",
             _ => "",
