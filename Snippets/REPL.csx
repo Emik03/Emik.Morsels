@@ -8871,6 +8871,7 @@ public
 
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
 
+
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 
@@ -8952,7 +8953,29 @@ public
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAny<T>(this ReadOnlySpan<T> span, in T separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            new(span, In(separator), true);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).SplitAny(separator);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAny<T>(this Span<T> span, in T separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -8978,7 +9001,29 @@ public
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAll<T>(this ReadOnlySpan<T> span, in T separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            new(span, In(separator), false);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).SplitAll(separator);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitAll<T>(this Span<T> span, in T separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -12214,7 +12259,7 @@ public abstract class FixedGenerator(
             diagnostic.Properties
         );
 
-    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
+    /// <summary>Gets all the members, including its base type members.</summary>
     /// <param name="symbol">The symbol to get all of the members of.</param>
     /// <returns>
     /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
