@@ -563,7 +563,6 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// </returns>
     [MustUseReturnValue]
     public static T? Then<T>(this bool value, Func<T> ifTrue) => value ? ifTrue() : default;
-
 #if !NET20 && !NET30
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
@@ -3615,9 +3614,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 
-    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
-
     const string E = "Value must be non-negative and less than the length.";
+
+    const StringComparison DefaultCharComparer = StringComparison.Ordinal;
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -4753,7 +4752,6 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -7878,7 +7876,9 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>
+               .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
+               .AsSpan(ref Unsafe.AsRef(_));
 #else
     public static unsafe Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7887,9 +7887,9 @@ public
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
 
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(
-            ref Unsafe.AsRef(x)
-        );
+        return PooledSmallList<T>
+           .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
+           .AsSpan(ref Unsafe.AsRef(x));
     }
 #endif
 #endif
@@ -10604,7 +10604,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective
 
 
 
@@ -11154,7 +11154,7 @@ public partial struct Two<T>(T left, T right) :
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static long[] CountAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
+        [NonNegativeValue] int times = byte.MaxValue,
         bool willWarmup = true
     )
     {
@@ -11180,7 +11180,7 @@ public partial struct Two<T>(T left, T right) :
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static bool HasAllocations(
         [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = 256,
+        [NonNegativeValue] int times = byte.MaxValue,
         bool willWarmup = true
     )
     {
@@ -12125,6 +12125,34 @@ public abstract class FixedGenerator(
             { IsValueType: true } => "struct",
             { IsReferenceType: true } => "class",
             _ => throw Unreachable,
+        };
+
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
+    /// <param name="symbol">The symbol to get its keyword.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string KeywordByRefReturn(this ISymbol symbol) =>
+        symbol switch
+        {
+            IPropertySymbol { ReturnsByRef: true } or
+                IMethodSymbol { ReturnsByRef: true } or
+                IFieldSymbol { RefKind: RefKind.None } => "ref ",
+            IPropertySymbol { ReturnsByRefReadonly: true } or IMethodSymbol { ReturnsByRefReadonly: true } =>
+                "ref readonly ",
+            _ => "",
+        };
+<
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
+    /// <param name="kind">The symbol to get its keyword.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string Keyword(this RefKind kind) =>
+        kind switch
+        {
+            RefKind.In => "in ",
+            RefKind.Out => "out ",
+            RefKind.Ref => "ref ",
+            _ => "",
         };
 
     /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
@@ -14309,7 +14337,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [NonNegativeValue, Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
 }
 
@@ -14402,7 +14430,7 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [NonNegativeValue, Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }
 
@@ -14545,7 +14573,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }
 
@@ -14627,7 +14655,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     /// <inheritdoc />
     public void RemoveAt(int index)
     {
-        if (index is not -1)
+        if (index is -1)
             throw new ArgumentOutOfRangeException(nameof(index));
 
         list.RemoveAt(index + 1);
