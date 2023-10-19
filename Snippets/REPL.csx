@@ -7056,7 +7056,7 @@ public
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, depth));
+            builder.Append(Stringify(iterator.Current, depth, useQuotes));
 
         var i = 0;
 
@@ -9330,7 +9330,10 @@ readonly
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <inheritdoc />
+    public override string ToString() => this.ToList().Stringify(3, true);
+#endif
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9358,12 +9361,6 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlySpan<T> Single() =>
         GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
-
-    /// <inheritdoc />
-    public override string ToString() =>
-        typeof(T) == typeof(char)
-            ? ""
-            : $"{nameof(Emik)}.{nameof(Morsels)}.{nameof(SplitSpan<T>)}<{typeof(T).UnfoldedName()}>[{Body.Length}, {Separator.Length}]";
 
     /// <summary>Gets the first element.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
@@ -18092,5 +18089,9 @@ static class Stringifier
     public static string Stringify<T>(T? source) => source.Stringify();
 }
 
+/// <summary>Polyfill for <c>nameof()</c>.</summary>
+static class Morsels;
+
 /// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>
 static object None => Emik.Results.Result.None;
+
