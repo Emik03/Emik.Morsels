@@ -634,7 +634,7 @@ static partial class Stringifier
         StringBuilder builder = new();
 
         if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, depth));
+            builder.Append(Stringify(iterator.Current, depth, useQuotes));
 
         var i = 0;
 
