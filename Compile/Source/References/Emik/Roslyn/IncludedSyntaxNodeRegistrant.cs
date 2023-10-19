@@ -350,7 +350,7 @@ static partial class IncludedSyntaxNodeRegistrant
             diagnostic.Properties
         );
 
-    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
+    /// <summary>Gets all the members, including its base type members.</summary>
     /// <param name="symbol">The symbol to get all of the members of.</param>
     /// <returns>
     /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its
