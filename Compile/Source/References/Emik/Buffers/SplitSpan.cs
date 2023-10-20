@@ -470,6 +470,7 @@ readonly
     /// <inheritdoc />
     public override string ToString() => this.ToList().Stringify(3, true);
 #endif
+
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
