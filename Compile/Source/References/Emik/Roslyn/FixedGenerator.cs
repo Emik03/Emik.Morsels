@@ -30,9 +30,16 @@ public abstract class FixedGenerator(
 
     /// <summary>Gets the attribute that indicates source generation from this library.</summary>
     [Pure, StringSyntax("C#")]
-    public static string Annotation { get; } = $"[global::System.CodeDom.Compiler.GeneratedCode(\"{
-        typeof(FixedGenerator).Assembly.GetName().Name}\", \"{
-            typeof(FixedGenerator).Assembly.GetName().Version}\")]";
+    public static string Annotation { get; } =
+#if DEBUG
+        $"[global::System.CodeDom.Compiler.GeneratedCode(\"{
+            typeof(FixedGenerator).Assembly.ManifestModule.FullyQualifiedName}\", \"{
+                typeof(FixedGenerator).Assembly.ManifestModule.ModuleVersionId}\")]";
+#else
+        $"[global::System.CodeDom.Compiler.GeneratedCode(\"{
+            typeof(FixedGenerator).Assembly.GetName().Name}\", \"{
+                typeof(FixedGenerator).Assembly.GetName().Version}\")]";
+#endif
 
     /// <summary>Gets the name of the generated attribute.</summary>
     [Pure]
