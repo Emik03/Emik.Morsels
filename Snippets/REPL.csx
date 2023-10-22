@@ -9056,63 +9056,6 @@ public
 
         return ret;
     }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAny(separator);
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
-
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAll(separator);
-
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this string span) => span.AsSpan().SplitLines();
-
-    /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
-        new(span, Breaking.AsSpan(), true);
-
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitOn(this string span, in char separator) => span.AsSpan().SplitOn(separator);
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this string span) => span.AsSpan().SplitWhitespace();
-
-    /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
-        new(span, Unicode.AsSpan(), true);
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
-#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Next<T>(
@@ -9189,6 +9132,63 @@ public
         reader2 = e2.Current;
         return false;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAny(this string span, string separator) =>
+        span.AsSpan().SplitAny(separator.AsSpan());
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitAny(separator);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAll(this string span, string separator) =>
+        span.AsSpan().SplitAll(separator.AsSpan());
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitAll(separator);
+
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this string span) => span.AsSpan().SplitLines();
+
+    /// <summary>Splits a span by line breaks.</summary>
+    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
+        new(span, Breaking.AsSpan(), true);
+
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitOn(this string span, in char separator) => span.AsSpan().SplitOn(separator);
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this string span) => span.AsSpan().SplitWhitespace();
+
+    /// <summary>Splits a span by whitespace.</summary>
+    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
+        new(span, Unicode.AsSpan(), true);
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+#endif
 
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -9209,6 +9209,13 @@ readonly
     where T : IEquatable<T>?
 #endif
 {
+    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="accumulator">The accumulator.</param>
+    /// <param name="next">The next slice from the enumeration.</param>
+    /// <returns>The final accumulator value.</returns>
+    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
+
     readonly bool _isAny;
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
@@ -9284,14 +9291,14 @@ readonly
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both splits are equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(SplitSpan<T> left, SplitSpan<T> right) => left.Equals(right);
+    public static bool operator ==(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => left.Equals(right);
 
     /// <summary>Determines whether both splits are not equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both splits are not equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(SplitSpan<T> left, SplitSpan<T> right) => !left.Equals(right);
+    public static bool operator !=(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => !left.Equals(right);
 
     /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
     /// <param name="head">The first element of this enumeration.</param>
@@ -9308,10 +9315,7 @@ readonly
 
         head = e.Current;
 
-        tail = this with
-        {
-            Body = Body[e.Index..],
-        };
+        tail = this with { Body = Body[e.Index..] };
     }
 
     /// <inheritdoc />
@@ -9343,9 +9347,15 @@ readonly
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+
     /// <inheritdoc />
-    public override string ToString() => this.ToList().Stringify(3, true);
+    public override string ToString() =>
+        typeof(T) == typeof(char)
+            ? Aggregate(new(), StringBuilderAccumulator()).ToString()
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            : this.ToList().Stringify(3, true);
+#else
+            : throw new NotSupportedException();
 #endif
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
@@ -9376,7 +9386,7 @@ readonly
     public ReadOnlySpan<T> Single() =>
         GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
 
-    /// <summary>Gets the first element.</summary>
+    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
     /// <param name="seed">The accumulator.</param>
     /// <param name="func">An accumulator function to be invoked on each element.</param>
@@ -9394,6 +9404,26 @@ readonly
 
         return accumulator;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+    static unsafe Accumulator<StringBuilder> StringBuilderAccumulator() =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        static (builder, span) => builder.Append(
+            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, char>(ref MemoryMarshal.GetReference(span)), span.Length)
+        );
+#else
+        static (builder, span) =>
+        {
+#pragma warning disable 8500
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            var ptr = span.Pointer;
+#else
+            fixed (T* ptr = span)
+#endif
+#pragma warning restore 8500
+                return builder.Append((char*)ptr, span.Length);
+        };
+#endif
 
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
@@ -9538,13 +9568,6 @@ readonly
             return true;
         }
     }
-
-    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="accumulator">The accumulator.</param>
-    /// <param name="next">The next slice from the enumeration.</param>
-    /// <returns>The final accumulator value.</returns>
-    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
 }
 
 // SPDX-License-Identifier: MPL-2.0
