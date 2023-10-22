@@ -48,8 +48,7 @@ readonly
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
     where T : unmanaged
 {
-    const int BitsPerByte = 8;
-
+    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
     readonly T _value = bits;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
@@ -265,10 +264,10 @@ readonly
         }
 
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint FalsyMask() => (nuint)1 << sizeof(nuint) * BitsPerByte - 2;
+        static unsafe nuint FalsyMask() => (nuint)1 << sizeof(nuint) * BitsInByte - 2;
 
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsPerByte) - 1;
+        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindNativelySized(T* ptr)

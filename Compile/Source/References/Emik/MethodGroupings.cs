@@ -57,6 +57,9 @@ static partial class MethodGroupings
         public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj)!);
     }
 
+    /// <summary>The number of bits in a byte.</summary>
+    public const int BitsInByte = 8;
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();

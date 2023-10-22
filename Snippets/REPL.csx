@@ -843,6 +843,9 @@ using static JetBrains.Annotations.CollectionAccessType;
         public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj)!);
     }
 
+    /// <summary>The number of bits in a byte.</summary>
+    public const int BitsInByte = 8;
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
@@ -13310,8 +13313,7 @@ readonly
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
     where T : unmanaged
 {
-    const int BitsPerByte = 8;
-
+    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
     readonly T _value = bits;
 
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
@@ -13527,10 +13529,10 @@ readonly
         }
 
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint FalsyMask() => (nuint)1 << sizeof(nuint) * BitsPerByte - 2;
+        static unsafe nuint FalsyMask() => (nuint)1 << sizeof(nuint) * BitsInByte - 2;
 
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsPerByte) - 1;
+        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindNativelySized(T* ptr)
@@ -13739,7 +13741,7 @@ readonly
 
         var last = *(byte*)ptr;
 
-        for (var i = 0; i < BitsPerByte; i++)
+        for (var i = 0; i < BitsInByte; i++)
             if ((last & 1 << i) is not 0)
                 if (x is 0)
                 {
