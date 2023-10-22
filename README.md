@@ -6,6 +6,7 @@
 
 - [About](#about)
 - [Usage](#usage)
+- [Family](#family)
 - [Tree Shaking](#tree-shaking)
 - [Supported Frameworks](#supported-frameworks)
 - [Modified Standard Library](#modified-standard-library)
@@ -26,6 +27,25 @@ Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project
 4. Modify the [PropertyGroup](https://learn.microsoft.com/en-us/visualstudio/msbuild/propertygroup-element-msbuild?view=vs-2022) of `Directory.Build.local.props`, which contains absolute paths that are system-dependent.
 5. Execute [this command on Windows](https://github.com/Emik03/Emik.Morsels/blob/main/Shell/symlink.bat) or [this command on Mac/Linux](https://github.com/Emik03/Emik.Morsels/blob/main/Shell/symlink.sh) with each [Emik.Morsels](https://github.com/Emik03/Emik.Morsels) project as the working directory to symlink everything together.
     - You can alternatively have a folder for `Emik.Morsels` projects, and all projects simply reside in nested folders. This way, you only need to set up the symlinks a single time on the root folder since [search scope applies to parent folders](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?view=vs-2022#search-scope) as well.
+
+## Family
+
+The following block contains officially maintained projects that implement [Emik.Morsels](https://github.com/Emik03/Emik.Morsels):
+
+[![Absence.Fody](https://img.shields.io/github/last-commit/Emik03/Absence.Fody?style=for-the-badge&logo=GitHub&label=Absence.Fody&color=ffb86c)](https://github.com/Emik03/Absence.Fody)
+[![Divorce.Fody](https://img.shields.io/github/last-commit/Emik03/Divorce.Fody?style=for-the-badge&logo=GitHub&label=Divorce.Fody&color=f1fa8c)](https://github.com/Emik03/Divorce.Fody)
+[![Emik.Analyzers.Matches](https://img.shields.io/github/last-commit/Emik03/Emik.Analyzers.Matches?style=for-the-badge&logo=GitHub&label=Emik.Analyzers.Matches&color=ffb86c)](https://github.com/Emik03/Emik.Analyzers.Matches)
+[![Emik.Kebnekaise.Gramophones](https://img.shields.io/github/last-commit/Emik03/Emik.Kebnekaise.Gramophones?style=for-the-badge&logo=GitHub&label=Emik.Kebnekaise.Gramophones&color=f1fa8c)](https://github.com/Emik03/Emik.Kebnekaise.Gramophones)
+[![Emik.Kebnekaise.Pistons](https://img.shields.io/github/last-commit/Emik03/Emik.Kebnekaise.Pistons?style=for-the-badge&logo=GitHub&label=Emik.Kebnekaise.Pistons&color=ffb86c)](https://github.com/Emik03/wawa)
+[![Emik.Morsels.ProjectTemplates](https://img.shields.io/github/last-commit/Emik03/Emik.Morsels.ProjectTemplates?style=for-the-badge&logo=GitHub&label=Emik.Morsels.ProjectTemplates&color=f1fa8c)](https://github.com/Emik03/Emik.Morsels.ProjectTemplates)
+[![Emik.Numerics.Fractions](https://img.shields.io/github/last-commit/Emik03/Emik.Numerics.Fractions?style=for-the-badge&logo=GitHub&label=Emik.Numerics.Fractions&color=ffb86c)](https://github.com/Emik03/Emik.Numerics.Fractions)
+[![Emik.Results](https://img.shields.io/github/last-commit/Emik03/Emik.Results?style=for-the-badge&logo=GitHub&label=Emik.Results&color=f1fa8c)](https://github.com/Emik03/Emik.Results)
+[![Emik.Rhainterop](https://img.shields.io/github/last-commit/Emik03/Emik.Rhainterop?style=for-the-badge&logo=GitHub&label=Emik.Rhainterop&color=ffb86c)](https://github.com/Emik03/Emik.Rhainterop)
+[![Emik.SourceGenerators.Implicit](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.Implicit?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.Implicit&color=f1fa8c)](https://github.com/Emik03/Emik.SourceGenerators.Implicit)
+[![Emik.SourceGenerators.Tattoo](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.Tattoo?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.Tattoo&color=ffb86c)](https://github.com/Emik03/Emik.SourceGenerators.Tattoo)
+[![Emik.SourceGenerators.TheSquareHole](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.TheSquareHole?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.TheSquareHole&color=f1fa8c)](https://github.com/Emik03/Emik.SourceGenerators.TheSquareHole)
+[![Emik.Unions](https://img.shields.io/github/last-commit/Emik03/Emik.Unions?style=for-the-badge&logo=GitHub&label=Emik.Unions&color=ffb86c)](https://github.com/Emik03/Emik.Unions)
+[![wawa](https://img.shields.io/github/last-commit/Emik03/wawa?style=for-the-badge&logo=GitHub&label=wawa&color=f1fa8c)](https://github.com/Emik03/wawa)
 
 ## Tree Shaking
 
