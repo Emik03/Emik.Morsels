@@ -1,6 +1,6 @@
 # Emik.Morsels
 
-[![License](https://img.shields.io/github/license/Emik03/Emik.Morsels.svg?style=flat)](https://github.com/Emik03/Emik.Morsels/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/Emik03/Emik.Morsels.svg?color=6272a4&style=for-the-badge)](https://github.com/Emik03/Emik.Morsels/blob/main/LICENSE)
 
 ---
 
