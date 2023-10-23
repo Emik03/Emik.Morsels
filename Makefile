@@ -10,7 +10,7 @@ help:
 
 repl: Snippets/REPL.csx
 	command -v csharprepl || dotnet tool install -g csharprepl
-	csharprepl -r "nuget: CommunityToolkit.Common, 8.2.1" "nuget: CommunityToolkit.Diagnostics, 8.2.1" "nuget: CommunityToolkit.HighPerformance, 8.2.1" "nuget: TextCopy, 6.2.1" "nuget: JetBrains.Annotations, 2023.2.0" "nuget: Emik.Results, 2.1.1" "nuget: Emik.Unions, 2.1.1" "$(realpath Snippets/REPL.csx)"
+	csharprepl -r "nuget: CommunityToolkit.Common, 8.2.1" "nuget: CommunityToolkit.Diagnostics, 8.2.1" "nuget: CommunityToolkit.HighPerformance, 8.2.1" "nuget: TextCopy, 6.2.1" "nuget: JetBrains.Annotations, 2023.3.0-eap3" "nuget: Emik.Results, 2.1.1" "$(realpath Snippets/REPL.csx)"
 
 Snippets/REPL.csx: $(shell find Compile/Source/References/Emik -type f -name '*.cs')
 	t4 Snippets/REPL.tt
