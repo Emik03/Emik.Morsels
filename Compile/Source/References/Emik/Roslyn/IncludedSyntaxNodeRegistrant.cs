@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
-#pragma warning disable GlobalUsingsAnalyzer
+#pragma warning disable GlobalUsingsAnalyzer, SA1216
 // ReSharper disable once RedundantUsingDirective.Global
 global using GeneratedSource = (string HintName, string Source);
 global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
