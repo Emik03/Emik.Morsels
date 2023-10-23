@@ -182,10 +182,6 @@ global using CommunityToolkit.HighPerformance.Streams;
 global using Emik;
 global using Emik.Results;
 global using Emik.Results.Extensions;
-global using Emik.Unions;
-global using Emik.Unions.Disjoints;
-global using Emik.Unions.Mappings;
-global using Emik.Unions.Tagged;
 global using JetBrains;
 global using JetBrains.Annotations;
 global using static Emik.Results.Please;
@@ -2966,11 +2962,11 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<int> For(this Range range) =>
-        range.Start.Value is var start &&
-        range.End.Value is var end &&
+        (range.Start.IsFromEnd ? -range.Start.Value : range.Start.Value) is var start &&
+        (range.End.IsFromEnd ? -range.End.Value : range.End.Value) is var end &&
         start == end ? Enumerable.Empty<int>() :
-        Math.Abs(start - end) is var len &&
-        start < end ? Enumerable.Range(start, len) : Enumerable.Repeat(start, len).Select((x, i) => x - i - 1);
+        start < end ? Enumerable.Range(start, end - start) :
+        Enumerable.Repeat(start, start - end).Select((x, i) => x - i - 1);
 
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
     /// <remarks><para>
@@ -2983,14 +2979,18 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
     public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
     {
-        head = default;
-        tail = Enumerable.Empty<T>();
+        using var e = enumerable?.GetEnumerator();
 
-        if (enumerable?.GetEnumerator() is not { } enumerator)
-            return;
-
-        head = enumerator.MoveNext() ? enumerator.Current : default;
-        tail = enumerator.AsEnumerable();
+        if (e is null)
+        {
+            head = default;
+            tail = Enumerable.Empty<T>();
+        }
+        else
+        {
+            head = e.MoveNext() ? e.Current : default;
+            tail = e.AsEnumerable();
+        }
     }
 
     /// <summary>Gets a specific item from a collection.</summary>
@@ -3046,13 +3046,13 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Gets an enumeration of an index.</summary>
     /// <param name="index">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
 
     /// <summary>Gets an enumeration of a range.</summary>
     /// <param name="range">The range to iterate over.</param>
     /// <returns>An enumeration from the range's start to end.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
 
     [Pure]
@@ -7697,7 +7697,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out T x);
-        return Ref(ref Unsafe.AsRef(x));
+        return Ref(ref Unsafe.AsRef(ref x));
     }
 #endif
 #endif
@@ -7718,7 +7718,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<T> x);
-        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref x);
     }
 #endif
 
@@ -7738,7 +7738,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<T>> x);
-        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7758,7 +7758,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<T>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7778,7 +7778,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7798,7 +7798,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7818,7 +7818,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7838,7 +7838,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7858,7 +7858,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7878,7 +7878,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -7900,10 +7900,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-
-        return PooledSmallList<T>
-           .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
-           .AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref x);
     }
 #endif
 #endif
