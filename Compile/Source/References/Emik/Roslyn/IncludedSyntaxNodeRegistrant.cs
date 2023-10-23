@@ -2,6 +2,7 @@
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable once RedundantUsingDirective.Global
+global using GeneratedSource = (string HintName, string Source);
 global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 
 #pragma warning restore GlobalUsingsAnalyzer
@@ -15,9 +16,9 @@ static partial class IncludedSyntaxNodeRegistrant
 {
     /// <summary>Adds the deconstruction of the tuples onto the <see cref="SourceProductionContext"/>.</summary>
     /// <param name="context">The context to use for source generation.</param>
-    /// <param name="tuple">The tuple containing the hint name and source.</param>
-    public static void AddSource(SourceProductionContext context, (string HintName, string Source) tuple) =>
-        context.AddSource(tuple.HintName, tuple.Source);
+    /// <param name="generated">The tuple containing the hint name and source.</param>
+    public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
+        context.AddSource(generated.HintName, generated.Source);
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
