@@ -5335,7 +5335,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable AsyncifyInvocation, CA1810, CA2008, MA0051, MEN004, S3949, S4462, VSTHRD002, VSTHRD105
+#pragma warning disable AsyncifyInvocation, CA1810, CA2008, MA0051, S3949, S4462, VSTHRD002, VSTHRD105
 // ReSharper disable CognitiveComplexity CommentTypo IdentifierTypo SuggestBaseTypeForParameter
 // ReSharper disable once CheckNamespace EmptyNamespace
 
@@ -15077,7 +15077,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
-#pragma warning disable MEN010
+
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 
 #endif
