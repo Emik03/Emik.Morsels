@@ -268,5 +268,4 @@ sealed partial class Matrix<T> : IList<IList<T>>
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
-
 #endif

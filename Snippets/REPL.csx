@@ -208,6 +208,7 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
+using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable MissingIndent UsePositionalDeconstructionPattern
@@ -851,8 +852,13 @@ using static JetBrains.Annotations.CollectionAccessType;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop()
     {
+        // .maxstack 8
+        // #if DEBUG
         // IL_0000: nop
         // IL_0001: ret
+        // #elif RELEASE
+        // IL_0000: ret
+        // #endif
     }
 
     /// <summary>Performs nothing.</summary>
@@ -861,8 +867,13 @@ using static JetBrains.Annotations.CollectionAccessType;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T>(T _)
     {
+        // .maxstack 8
+        // #if DEBUG
         // IL_0000: nop
         // IL_0001: ret
+        // #elif RELEASE
+        // IL_0000: ret
+        // #endif
     }
 
     /// <summary>Performs nothing.</summary>
@@ -873,8 +884,13 @@ using static JetBrains.Annotations.CollectionAccessType;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T1, T2>(T1 _, T2 __)
     {
+        // .maxstack 8
+        // #if DEBUG
         // IL_0000: nop
         // IL_0001: ret
+        // #elif RELEASE
+        // IL_0000: ret
+        // #endif
     }
 
     /// <summary>Create a delegate.</summary>
@@ -2004,14 +2020,12 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<int> For(this int num) =>
-        Math.Abs(num) is var abs && num < 0
-            ? Enumerable.Repeat(abs, abs).Select((x, i) => x - i - 1)
-            : Enumerable.Range(0, num);
+        num >= 0 ? Enumerable.Range(0, num) : Enumerable.Repeat(-num, -num).Select((x, i) => x - i - 1);
 
     /// <summary>Gets an enumeration of a number.</summary>
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
 
     /// <summary>
@@ -2086,7 +2100,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<T> GetEnumerator<T>(this T num)
         where T : IComparisonOperators<T?, T?, bool>,
         ISubtractionOperators<T, T, T>,
@@ -2951,7 +2965,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
+    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? -index.Value : index.Value).For();
 
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -2985,12 +2999,11 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         {
             head = default;
             tail = Enumerable.Empty<T>();
+            return;
         }
-        else
-        {
-            head = e.MoveNext() ? e.Current : default;
-            tail = e.AsEnumerable();
-        }
+
+        head = e.MoveNext() ? e.Current : default;
+        tail = e.AsEnumerable();
     }
 
     /// <summary>Gets a specific item from a collection.</summary>
@@ -3287,7 +3300,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
+        // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsReturned
         var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
+
         falsy.For(x => x.Dispose());
 
         try
@@ -4779,8 +4794,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
     enum Unknowable;
-
+#endif
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
@@ -7697,7 +7713,7 @@ public
 #endif
     {
         Unsafe.SkipInit(out T x);
-        return Ref(ref Unsafe.AsRef(ref x));
+        return Ref(ref x);
     }
 #endif
 #endif
@@ -11721,7 +11737,7 @@ public partial struct Two<T>(T left, T right) :
 // ReSharper disable once CheckNamespace
 
 
-// ReSharper disable once RedundantUsingDirective
+// ReSharper disable once RedundantExtendsListEntry RedundantUsingDirective
 
 
 
@@ -14312,7 +14328,6 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
-
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -14405,7 +14420,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
 }
 
@@ -14498,7 +14513,7 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }
 
@@ -14613,9 +14628,11 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     public bool Remove(T? item) => item is not null && list.Remove(item);
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     bool ICollection<T?>.Contains(T? item) => Contains(item);
 
     /// <inheritdoc />
+    [CollectionAccess(Read | ModifyExistingContent), Pure]
     bool ICollection<T?>.Remove(T? item) => Remove(item);
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
@@ -14623,7 +14640,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource, Pure]
 #if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
 #pragma warning disable CS8619
 #endif
@@ -14641,7 +14658,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }
 
@@ -14649,6 +14666,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
 #if !NET20 && !NET30
 // ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
+
 
 
 /// <summary>Provides the deconstruction to extract the head and tail of a collection.</summary>
@@ -14686,6 +14704,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="IList{T}.this" />
+    [CollectionAccess(Read), Pure]
     public T this[int index]
     {
         get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
@@ -14693,18 +14712,23 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     }
 
     /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count" />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public int Count => list.Count - 1;
 
     /// <inheritdoc />
+    [CollectionAccess(UpdatedContent)]
     public void Add(T item) => list.Add(item);
 
     /// <inheritdoc />
+    [CollectionAccess(ModifyExistingContent)]
     public void Clear() => list.Clear();
 
     /// <inheritdoc />
+    [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex)
     {
         for (var i = 0; i < Count && arrayIndex + i < array.Length; i++)
@@ -14712,33 +14736,35 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     }
 
     /// <inheritdoc />
-    public void Insert(int index, T item)
-    {
-        if (index is -1)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        list.Insert(index + 1, item);
-    }
+    [CollectionAccess(UpdatedContent)]
+    public void Insert(int index, T item) =>
+        list.Insert(index is not -1 ? index + 1 : throw new ArgumentOutOfRangeException(nameof(index)), item);
 
     /// <inheritdoc />
-    public void RemoveAt(int index)
-    {
-        if (index is -1)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        list.RemoveAt(index + 1);
-    }
+    [CollectionAccess(ModifyExistingContent)]
+    public void RemoveAt(int index) =>
+        list.RemoveAt(index is not -1 ? index + 1 : throw new ArgumentOutOfRangeException(nameof(index)));
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
+    [CollectionAccess(Read | ModifyExistingContent), Pure]
     public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc />
-    public int IndexOf(T item) => list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
+    [CollectionAccess(Read), Pure]
+    public int IndexOf(T item) =>
+        list.IndexOf(item) switch
+        {
+            0 => Find(item),
+            -1 => -1,
+            var x => x - 1,
+        };
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator()
     {
         var ret = ((IEnumerable)list).GetEnumerator();
@@ -14747,11 +14773,26 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
     }
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     public IEnumerator<T> GetEnumerator()
     {
         var ret = list.GetEnumerator();
         ret.MoveNext();
         return ret;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
+    public override string? ToString() => list.ToString();
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
+    int Find(T item)
+    {
+        for (var i = 0; i < Count; i++)
+            if (EqualityComparer<T>.Default.Equals(this[i], item))
+                return i;
+
+        return -1;
     }
 }
 #endif
@@ -16840,7 +16881,7 @@ public ref
     {
         Unsafe.SkipInit(out T one);
 #pragma warning disable 9091 // InlineAttribute makes this okay.
-        return Ref(ref Unsafe.AsRef(one));
+        return Ref(ref one);
 #pragma warning restore 9091
     }
 #endif
@@ -16993,7 +17034,7 @@ public ref
     {
         Unsafe.SkipInit(out TRef two);
 #pragma warning disable 9091 // InlineAttribute makes this okay.
-        return PooledSmallList<T>.From(ref Unsafe.AsRef(two));
+        return PooledSmallList<T>.From(ref two);
 #pragma warning restore 9091
     }
 #endif

@@ -68,8 +68,13 @@ static partial class MethodGroupings
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop()
     {
+        // .maxstack 8
+        // #if DEBUG
         // IL_0000: nop
         // IL_0001: ret
+        // #elif RELEASE
+        // IL_0000: ret
+        // #endif
     }
 
     /// <summary>Performs nothing.</summary>
@@ -78,8 +83,13 @@ static partial class MethodGroupings
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T>(T _)
     {
+        // .maxstack 8
+        // #if DEBUG
         // IL_0000: nop
         // IL_0001: ret
+        // #elif RELEASE
+        // IL_0000: ret
+        // #endif
     }
 
     /// <summary>Performs nothing.</summary>
@@ -90,8 +100,13 @@ static partial class MethodGroupings
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T1, T2>(T1 _, T2 __)
     {
+        // .maxstack 8
+        // #if DEBUG
         // IL_0000: nop
         // IL_0001: ret
+        // #elif RELEASE
+        // IL_0000: ret
+        // #endif
     }
 
     /// <summary>Create a delegate.</summary>

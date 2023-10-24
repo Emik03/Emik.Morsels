@@ -16,7 +16,7 @@ static partial class Indexers
     /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
+    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? -index.Value : index.Value).For();
 
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -50,12 +50,11 @@ static partial class Indexers
         {
             head = default;
             tail = Enumerable.Empty<T>();
+            return;
         }
-        else
-        {
-            head = e.MoveNext() ? e.Current : default;
-            tail = e.AsEnumerable();
-        }
+
+        head = e.MoveNext() ? e.Current : default;
+        tail = e.AsEnumerable();
     }
 
     /// <summary>Gets a specific item from a collection.</summary>

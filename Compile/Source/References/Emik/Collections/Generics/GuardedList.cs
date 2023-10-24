@@ -113,9 +113,11 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
     public bool Remove(T? item) => item is not null && list.Remove(item);
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     bool ICollection<T?>.Contains(T? item) => Contains(item);
 
     /// <inheritdoc />
+    [CollectionAccess(Read | ModifyExistingContent), Pure]
     bool ICollection<T?>.Remove(T? item) => Remove(item);
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
@@ -123,7 +125,7 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
     public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource, Pure]
 #if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
 #pragma warning disable CS8619
 #endif
@@ -141,6 +143,6 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }

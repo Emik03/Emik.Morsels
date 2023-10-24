@@ -12,8 +12,9 @@ using Expression = System.Linq.Expressions.Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
     enum Unknowable;
-
+#endif
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
