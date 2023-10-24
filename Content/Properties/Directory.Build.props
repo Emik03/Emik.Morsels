@@ -52,7 +52,7 @@
             253;436;1701;1702;3019;8002;8632;9192;9195;
             AOT0001;AOT0002;
             ASYNC0004;
-            CA1000;CA1016;CA1043;CA1046;CA1055;CA1062;CA1065;CA1066;CA1717;CA1303;CA1305;CA1307;CA1309;CA1310;CA1506;CA1704;CA1709;CA1711;CA1801;CA1812;CA1813;CA1822;CA2007;CA2201;CA2204;CA2225;CA5394;
+            CA1000;CA1016;CA1028;CA1043;CA1046;CA1055;CA1062;CA1065;CA1066;CA1717;CA1303;CA1305;CA1307;CA1309;CA1310;CA1506;CA1704;CA1709;CA1711;CA1801;CA1812;CA1813;CA1822;CA2007;CA2201;CA2204;CA2225;CA5394;
             DOC203;
             GU0009;GU0011;GU0017;GU0073;
             IDE0052;IDE0055;IDE0060;IDE0290;
@@ -141,7 +141,7 @@
         <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.6.2" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.96" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.97" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.7" PrivateAssets="all"/>
