@@ -12878,16 +12878,16 @@ public ref partial struct ImmutableArrayBuilder<T>
 
 
 /// <summary>Provides thread-safe access to keyboard input.</summary>
-public static class ConcurrentKeyboard
+public static class ConcurrentKeyboard // ReSharper disable InconsistentNaming
 {
     [ThreadStatic]
-    static int s_last;
+    static int t_last;
 
     [ThreadStatic]
-    static Keys[]? s_copy;
+    static Keys[]? t_copy;
 
     [ThreadStatic]
-    static List<Keys>? s_original;
+    static List<Keys>? t_orig; // ReSharper restore InconsistentNaming
 
     /// <summary>Thread-safe version of <see cref="Keyboard.GetState()"/>.</summary>
     /// <remarks><para>
@@ -12904,22 +12904,22 @@ public static class ConcurrentKeyboard
         const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Static;
 
         // This initialization runs only once per thread.
-        if (s_copy is null)
+        if (t_copy is null)
         {
-            s_copy = new Keys[Length];
-            s_original = typeof(Keyboard).GetField(Name, Flags)?.GetValue(null) as List<Keys>;
+            t_copy = new Keys[Length];
+            t_orig = typeof(Keyboard).GetField(Name, Flags)?.GetValue(null) as List<Keys>;
         }
 
         // Must be its own variable, as the backing array can change at any moment.
-        var original = CollectionsMarshal.AsSpan(s_original);
-        original.CopyTo(s_copy);
+        var original = CollectionsMarshal.AsSpan(t_orig);
+        original.CopyTo(t_copy);
 
         // Clear only what hasn't been overriden by the previous copy.
-        if (original.Length < s_last)
-            s_copy.AsSpan(original.Length..s_last).Clear();
+        if (original.Length < t_last)
+            t_copy.AsSpan(original.Length..t_last).Clear();
 
-        s_last = original.Length;
-        return new(s_copy);
+        t_last = original.Length;
+        return new(t_copy);
     }
 }
 #endif
