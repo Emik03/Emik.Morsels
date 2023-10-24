@@ -94,7 +94,7 @@ static partial class SmallList
     {
         Unsafe.SkipInit(out T one);
 #pragma warning disable 9091 // InlineAttribute makes this okay.
-        return Ref(ref Unsafe.AsRef(one));
+        return Ref(ref one);
 #pragma warning restore 9091
     }
 #endif
@@ -247,7 +247,7 @@ static partial class SmallList
     {
         Unsafe.SkipInit(out TRef two);
 #pragma warning disable 9091 // InlineAttribute makes this okay.
-        return PooledSmallList<T>.From(ref Unsafe.AsRef(two));
+        return PooledSmallList<T>.From(ref two);
 #pragma warning restore 9091
     }
 #endif

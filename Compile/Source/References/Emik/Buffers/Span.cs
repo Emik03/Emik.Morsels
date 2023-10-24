@@ -338,7 +338,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out T x);
-        return Ref(ref Unsafe.AsRef(ref x));
+        return Ref(ref x);
     }
 #endif
 #endif
