@@ -14,6 +14,7 @@ static partial class Conditionals
     /// The value <see cref="INumberBase{T}.One"/> or <see cref="INumberBase{T}.Zero"/>,
     /// based on the value of <paramref name="that"/>.
     /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T As<T>(this bool that)
         where T : INumberBase<T> =>
         that ? T.One : T.Zero;
