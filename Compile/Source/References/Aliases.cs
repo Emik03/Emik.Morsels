@@ -14,6 +14,7 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 #if ANDROID
 global using Action = System.Action;
 global using Array = System.Array;
+global using Console = System.Console;
 global using Directory = System.IO.Directory;
 global using Enum = System.Enum;
 global using Environment = System.Environment;
@@ -28,6 +29,7 @@ global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
 global using Random = System.Random;
 global using StringBuilder = System.Text.StringBuilder;
 global using Timer = System.Threading.Timer;
+global using Trace = System.Diagnostics.Trace;
 global using Type = System.Type;
 global using Vector = System.Numerics.Vector;
 global using Version = System.Version;
@@ -70,6 +72,7 @@ global using Range = System.Range;
 #if XNA
 global using Color = Microsoft.Xna.Framework.Color;
 global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
+global using Keyboard = Microsoft.Xna.Framework.Input.Keyboard;
 global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
 global using Vector2 = Microsoft.Xna.Framework.Vector2;
 #endif
