@@ -15,6 +15,7 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 global using Action = System.Action;
 global using Array = System.Array;
 global using Console = System.Console;
+global using Debug = System.Diagnostics.Debug;
 global using Directory = System.IO.Directory;
 global using Enum = System.Enum;
 global using Environment = System.Environment;
