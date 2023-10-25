@@ -14,6 +14,9 @@ global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMe
 #if KTANE
 global using Application = UnityEngine.Application;
 #endif
+#if ANDROID
+global using Array = System.Array;
+#endif
 global using Attribute = System.Attribute;
 #if KTANE
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
@@ -24,6 +27,10 @@ global using ContractAnnotationAttribute = unity::JetBrains.Annotations.Contract
 global using Debug = unity::UnityEngine.Debug;
 #endif
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+#if ANDROID
+global using Enum = System.Enum;
+global using ICollection = System.Collections.ICollection;
+#endif
 #if KTANE
 global using ImplicitUseKindFlags = unity::JetBrains.Annotations.ImplicitUseKindFlags;
 global using ImplicitUseTargetFlags = unity::JetBrains.Annotations.ImplicitUseTargetFlags;
@@ -31,6 +38,11 @@ global using InstantHandleAttribute = unity::JetBrains.Annotations.InstantHandle
 global using InvokerParameterNameAttribute = unity::JetBrains.Annotations.InvokerParameterNameAttribute;
 global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttribute;
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
+#endif
+#if ANDROID
+global using Math = System.Math;
+#endif
+#if KTANE
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
 global using NotifyPropertyChangedInvocatorAttribute =
@@ -50,9 +62,17 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #if !WAWA
 global using Range = System.Range;
 #endif
+#if ANDROID
+global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
+global using StringBuilder = System.Text.StringBuilder;
+global using Type = System.Type;
+#endif
 #if KTANE
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
+#endif
+#if ANDROID
+global using Version = System.Version;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
