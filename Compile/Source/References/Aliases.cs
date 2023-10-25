@@ -28,11 +28,9 @@ global using Path = System.IO.Path;
 global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
 global using Random = System.Random;
 global using StringBuilder = System.Text.StringBuilder;
-global using Timer = System.Threading.Timer;
 global using Trace = System.Diagnostics.Trace;
 global using Type = System.Type;
 global using Vector = System.Numerics.Vector;
-global using Version = System.Version;
 #endif
 #if KTANE
 global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
@@ -69,12 +67,16 @@ global using Range = System.Range;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 global using Range = System.Range;
 #endif
+#if !NETSTANDARD || NETSTANDARD1_2_OR_GREATER
+global using Timer = System.Threading.Timer;
+#endif
 #if XNA
 global using Color = Microsoft.Xna.Framework.Color;
 global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
 global using Keyboard = Microsoft.Xna.Framework.Input.Keyboard;
 global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
 global using Vector2 = Microsoft.Xna.Framework.Vector2;
+global using Version = System.Version;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
