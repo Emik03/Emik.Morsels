@@ -72,12 +72,25 @@ readonly
     /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe bool Eq(in T left, in T right)
     {
         fixed (T* l = &left)
         fixed (T* r = &right)
             return Eq(l, r);
+    }
+
+    /// <summary>Determines whether both references of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <param name="reference">The reference to determine if it is zeroed.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="reference"/>
+    /// points to a value with all zeros; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe bool EqZero(in T reference)
+    {
+        fixed (T* ptr = &reference)
+            return EqZero(ptr);
     }
 
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
@@ -367,7 +380,7 @@ readonly
     /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
     public static unsafe bool Eq(T* left, T* right)
     {
         byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
@@ -422,6 +435,73 @@ readonly
 
         for (; l < upper; l++, r++)
             if (*l != *r)
+                return false;
+
+        return true;
+    }
+
+    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
+    /// <param name="ptr">The pointer to determine if it is zeroed.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="ptr"/>
+    /// points to a value with all zeros; otherwise, <see langword="false"/>.
+    /// </returns>
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+    public static unsafe bool EqZero(T* ptr)
+    {
+        byte* x = (byte*)ptr, upper = (byte*)(ptr + 1);
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            for (; x <= upper - 64; x += 64)
+                if (!Vector512.EqualsAll(Vector512.Load(x), Vector512<byte>.Zero))
+                    return false;
+
+            if (sizeof(T) % 64 is 0)
+                return true;
+        }
+#endif
+#if NETCOREAPP3_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            for (; x <= upper - 32; x += 32)
+                if (!Vector256.EqualsAll(Vector256.Load(x), Vector256<byte>.Zero))
+                    return false;
+
+            if (sizeof(T) % 32 is 0)
+                return true;
+        }
+
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            for (; x <= upper - 16; x += 16)
+                if (!Vector128.EqualsAll(Vector128.Load(x), Vector128<byte>.Zero))
+                    return false;
+
+            if (sizeof(T) % 16 is 0)
+                return true;
+        }
+
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            for (; x <= upper - 8; x += 8)
+                if (!Vector64.EqualsAll(Vector64.Load(x), Vector64<byte>.Zero))
+                    return false;
+
+            if (sizeof(T) % 8 is 0)
+                return true;
+        }
+#endif
+        for (; x <= upper - sizeof(nuint); x += sizeof(nuint))
+            if (*(nuint*)x is not 0)
+                return false;
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return true;
+
+        for (; x < upper; x++)
+            if (*x is not 0)
                 return false;
 
         return true;
