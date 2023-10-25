@@ -6,85 +6,67 @@
 extern alias ms;
 #endif
 #if KTANE
-extern alias unity;
-
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
-global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
-#endif
-#if KTANE
-global using Application = UnityEngine.Application;
-#endif
-#if ANDROID
-global using Array = System.Array;
+extern alias unity;
 #endif
 global using Attribute = System.Attribute;
+global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+#if ANDROID
+global using Action = System.Action;
+global using Array = System.Array;
+global using Directory = System.IO.Directory;
+global using Enum = System.Enum;
+global using Environment = System.Environment;
+global using File = System.IO.File;
+global using ICollection = System.Collections.ICollection;
+global using Math = System.Math;
+global using Path = System.IO.Path;
+global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
+global using StringBuilder = System.Text.StringBuilder;
+global using Timer = System.Threading.Timer;
+global using Type = System.Type;
+global using Version = System.Version;
+#endif
 #if KTANE
+global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
+global using Application = UnityEngine.Application;
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
 global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations.CannotApplyEqualityOperatorAttribute;
 global using Component = unity::UnityEngine.Component;
 global using ContractAnnotationAttribute = unity::JetBrains.Annotations.ContractAnnotationAttribute;
 global using Debug = unity::UnityEngine.Debug;
-#endif
-global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
-#if ANDROID
-#if XNA
-global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
-#endif
-global using Directory = System.IO.Directory;
-global using Enum = System.Enum;
-global using Environment = System.Environment;
-global using File = System.IO.File;
-global using ICollection = System.Collections.ICollection;
-#endif
-#if KTANE
 global using ImplicitUseKindFlags = unity::JetBrains.Annotations.ImplicitUseKindFlags;
 global using ImplicitUseTargetFlags = unity::JetBrains.Annotations.ImplicitUseTargetFlags;
 global using InstantHandleAttribute = unity::JetBrains.Annotations.InstantHandleAttribute;
 global using InvokerParameterNameAttribute = unity::JetBrains.Annotations.InvokerParameterNameAttribute;
 global using LinqTunnelAttribute = unity::JetBrains.Annotations.LinqTunnelAttribute;
 global using LocalizationRequiredAttribute = unity::JetBrains.Annotations.LocalizationRequiredAttribute;
-#endif
-#if ANDROID
-global using Math = System.Math;
-#endif
-#if KTANE
 global using MeansImplicitUseAttribute = unity::JetBrains.Annotations.MeansImplicitUseAttribute;
 global using NoEnumerationAttribute = unity::JetBrains.Annotations.NoEnumerationAttribute;
 global using NotifyPropertyChangedInvocatorAttribute =
     unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
-#endif
-global using Path = System.IO.Path;
-#if KTANE
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
+global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
+global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
 #if KTANE && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #elif NET40_OR_GREATER
 global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
+global using Range = System.Range;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
-#endif
-#if !WAWA
 global using Range = System.Range;
 #endif
-#if ANDROID
-global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
 #if XNA
+global using Color = Microsoft.Xna.Framework.Color;
+global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
 global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
-#endif
-global using StringBuilder = System.Text.StringBuilder;
-global using Type = System.Type;
-#endif
-#if KTANE
-global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
-global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
-#endif
-#if ANDROID
-global using Version = System.Version;
+global using Vector2 = Microsoft.Xna.Framework.Vector2;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
