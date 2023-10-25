@@ -17,14 +17,19 @@ global using Array = System.Array;
 global using Directory = System.IO.Directory;
 global using Enum = System.Enum;
 global using Environment = System.Environment;
+global using Exception = System.Exception;
 global using File = System.IO.File;
+global using FileNotFoundException = System.IO.FileNotFoundException;
 global using ICollection = System.Collections.ICollection;
+global using IList = System.Collections.IList;
 global using Math = System.Math;
 global using Path = System.IO.Path;
 global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
+global using Random = System.Random;
 global using StringBuilder = System.Text.StringBuilder;
 global using Timer = System.Threading.Timer;
 global using Type = System.Type;
+global using Vector = System.Numerics.Vector;
 global using Version = System.Version;
 #endif
 #if KTANE
