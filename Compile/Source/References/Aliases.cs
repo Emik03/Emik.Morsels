@@ -31,7 +31,10 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 #if XNA
 global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
 #endif
+global using Directory = System.IO.Directory;
 global using Enum = System.Enum;
+global using Environment = System.Environment;
+global using File = System.IO.File;
 global using ICollection = System.Collections.ICollection;
 #endif
 #if KTANE
@@ -52,6 +55,9 @@ global using NotifyPropertyChangedInvocatorAttribute =
     unity::JetBrains.Annotations.NotifyPropertyChangedInvocatorAttribute;
 global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
+#endif
+global using Path = System.IO.Path;
+#if KTANE
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 #endif
