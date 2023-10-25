@@ -12961,10 +12961,10 @@ public ref partial struct ImmutableArrayBuilder<T>
     static bool TryFindInvalidState([NotNullWhen(false)] out Enum? invalid)
     {
         static bool IsModifierCausingInvalidState(KeyMods mod) =>
-            ReadOnlySpan<Keys>.Empty.ToState(mod) is var state &&
-            state.GetPressedKeyCount() is not 0 ||
-            state.CapsLock != mod is KeyMods.CapsLock ||
-            state.NumLock != mod is KeyMods.NumLock;
+            ReadOnlySpan<Keys>.Empty.ToState(mod) is { CapsLock: var capsLock, NumLock: var numLock } state &&
+            capsLock != mod is KeyMods.CapsLock ||
+            numLock != mod is KeyMods.NumLock ||
+            state.GetPressedKeyCount() is not 0;
 
         static bool IsKeyCausingInvalidState(Keys key) =>
             Span.In(key).ToState() is not { CapsLock: false, NumLock: false } state ||
