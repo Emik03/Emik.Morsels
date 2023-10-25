@@ -12883,8 +12883,9 @@ public ref partial struct ImmutableArrayBuilder<T>
 
     static ConcurrentKeyboard()
     {
-        Trace.Assert(Unsafe.SizeOf<Keys>() == Unsafe.SizeOf<int>(), $"sizeof({nameof(Keys)}) is not 4");
-        Trace.Assert(Unsafe.SizeOf<KeyMods>() == Unsafe.SizeOf<ushort>(), $"sizeof({nameof(KeyMods)}) is not 2");
+        Trace.Assert(Unsafe.SizeOf<Keys>() is sizeof(int), $"sizeof({nameof(Keys)}) is 4");
+        Trace.Assert(Unsafe.SizeOf<KeyMods>() is sizeof(ushort), $"sizeof({nameof(KeyMods)}) is 2");
+        Trace.Assert(Unsafe.SizeOf<KeyboardState>() >= sizeof(uint) * 8 + sizeof(byte), "Memory layout is known.");
 
         Trace.Assert(TryGetType(out var type), $"{nameof(type)} is not null");
         Trace.Assert(TryGetField(type, out var delegateField), $"{nameof(delegateField)} is not null");
