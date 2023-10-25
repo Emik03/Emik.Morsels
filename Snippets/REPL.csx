@@ -12881,7 +12881,9 @@ public ref partial struct ImmutableArrayBuilder<T>
 
 /// <summary>Provides thread-safe access to keyboard input.</summary>
 
+#pragma warning disable CA1810
     static ConcurrentKeyboard()
+#pragma warning restore CA1810
     {
         Trace.Assert(Unsafe.SizeOf<Keys>() is sizeof(int), $"sizeof({nameof(Keys)}) is 4");
         Trace.Assert(Unsafe.SizeOf<KeyMods>() is sizeof(ushort), $"sizeof({nameof(KeyMods)}) is 2");
@@ -12945,6 +12947,8 @@ public ref partial struct ImmutableArrayBuilder<T>
     /// This operation treats the provided <see cref="Span{T}"/> of <see cref="Keys"/> as a set for computation,
     /// meaning that repeated <see cref="Keys"/> of the same value have the same effect as if it appeared once.
     /// </para></remarks>
+    /// <param name="keys">The <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> to process.</param>
+    /// <param name="mod">The <see cref="KeyMods"/> for modifiers.</param>
     /// <returns>
     /// The <see cref="KeyboardState"/> that comes from both parameters
     /// <paramref name="keys"/> and <paramref name="mod"/>.
@@ -12972,13 +12976,10 @@ public ref partial struct ImmutableArrayBuilder<T>
             state.IsKeyUp(key) ||
             state.GetPressedKeyCount() is not 1;
 
-        foreach (var x in EnumMath.GetValues<KeyMods>().Where(IsModifierCausingInvalidState))
-            return (invalid = x) is null;
-
-        foreach (var x in EnumMath.GetValues<Keys>().Where(IsKeyCausingInvalidState))
-            return (invalid = x) is null;
-
-        return (invalid = null) is null;
+        var keyModTests = EnumMath.GetValues<KeyMods>().Where(IsModifierCausingInvalidState).Cast<Enum>();
+        var keyTests = EnumMath.GetValues<Keys>().Where(IsKeyCausingInvalidState).Cast<Enum>();
+        invalid = keyModTests.Concat(keyTests).Filter().FirstOrDefault();
+        return invalid is null;
     }
 
     [MustUseReturnValue]
@@ -12986,13 +12987,14 @@ public ref partial struct ImmutableArrayBuilder<T>
         (field = typeof(Keyboard).GetField("_keys", BindingFlags.NonPublic | BindingFlags.Static)) is not null;
 
     [MustUseReturnValue]
-    static bool TryGetField(in IReflect type, [NotNullWhen(true)] out FieldInfo? field) =>
+    static bool TryGetField(in Type type, [NotNullWhen(true)] out FieldInfo? field) =>
         (field = type.GetField(nameof(GetModState), BindingFlags.Public | BindingFlags.Static)) is not null;
 
     [MustUseReturnValue]
     static bool TryGetType([NotNullWhen(true)] out Type? type) =>
+#pragma warning disable REFL037
         (type = typeof(Keyboard).Assembly.GetType("Sdl+Keyboard")) is not null;
-
+#pragma warning restore REFL037
     [MustUseReturnValue]
     static bool TryGetValue(in FieldInfo delegateField, [NotNullWhen(true)] out Delegate? del) =>
         (del = delegateField.GetValue(null) as Delegate) is not null;
@@ -13484,6 +13486,38 @@ readonly
         where T : unmanaged =>
         source;
 
+    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAnd<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.And(next, ref t);
+
+        return t;
+    }
+
+    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.AndNot(next, ref t);
+
+        return t;
+    }
+
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -13496,6 +13530,22 @@ readonly
 
         foreach (var next in source)
             Bits<T>.Or(next, ref t);
+
+        return t;
+    }
+
+    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseXor<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.Xor(next, ref t);
 
         return t;
     }
@@ -13960,7 +14010,7 @@ readonly
 
 // ReSharper disable CheckNamespace StructCanBeMadeReadOnly
 
-#pragma warning disable CA1502
+
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -13970,156 +14020,6 @@ readonly
 #endif
     partial struct Bits<T>
 {
-    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
-    /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe bool Eq(in T left, in T right)
-    {
-        fixed (T* l = &left)
-        fixed (T* r = &right)
-            return Eq(l, r);
-    }
-
-    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
-    /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
-    /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
-    public static unsafe bool Eq(T* left, T* right)
-    {
-        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; l <= upper - 64; l += 64, r += 64)
-                if (!Vector512.EqualsAll(Vector512.Load(l), Vector512.Load(r)))
-                    return false;
-
-            if (sizeof(T) % 64 is 0)
-                return true;
-        }
-#endif
-#if NETCOREAPP3_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; l <= upper - 32; l += 32, r += 32)
-                if (!Vector256.EqualsAll(Vector256.Load(l), Vector256.Load(r)))
-                    return false;
-
-            if (sizeof(T) % 32 is 0)
-                return true;
-        }
-
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; l <= upper - 16; l += 16, r += 16)
-                if (!Vector128.EqualsAll(Vector128.Load(l), Vector128.Load(r)))
-                    return false;
-
-            if (sizeof(T) % 16 is 0)
-                return true;
-        }
-
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; l <= upper - 8; l += 8, r += 8)
-                if (!Vector64.EqualsAll(Vector64.Load(l), Vector64.Load(r)))
-                    return false;
-
-            if (sizeof(T) % 8 is 0)
-                return true;
-        }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            if (*(nuint*)l != *(nuint*)r)
-                return false;
-
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return true;
-
-        for (; l < upper; l++, r++)
-            if (*l != *r)
-                return false;
-
-        return true;
-    }
-
-    /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
-    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
-    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Or(in T read, ref T write)
-    {
-        fixed (T* r = &read)
-        fixed (T* w = &write)
-            Or(r, w);
-    }
-
-    /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
-    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
-    public static unsafe void Or(T* read, T* write)
-    {
-        byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; l <= upper - 64; l += 64, r += 64)
-                Vector512.BitwiseOr(Vector512.Load(l), Vector512.Load(r)).StoreAligned(r);
-
-            if (sizeof(T) % 64 is 0)
-                return;
-        }
-#endif
-#if NETCOREAPP3_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; l <= upper - 32; l += 32, r += 32)
-                Vector256.BitwiseOr(Vector256.Load(l), Vector256.Load(r)).StoreAligned(r);
-
-            if (sizeof(T) % 32 is 0)
-                return;
-        }
-
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; l <= upper - 16; l += 16, r += 16)
-                Vector128.BitwiseOr(Vector128.Load(l), Vector128.Load(r)).StoreAligned(r);
-
-            if (sizeof(T) % 16 is 0)
-                return;
-        }
-
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; l <= upper - 8; l += 8, r += 8)
-                Vector64.BitwiseOr(Vector64.Load(l), Vector64.Load(r)).StoreAligned(r);
-
-            if (sizeof(T) % 8 is 0)
-                return;
-        }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            *(nuint*)r = *(nuint*)l | *(nuint*)r;
-
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-
-        for (; l < upper; l++, r++)
-            *r = (byte)(*l | *r);
-    }
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Contains(T item)

@@ -18,6 +18,38 @@ static partial class BitsFactory
         where T : unmanaged =>
         source;
 
+    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAnd<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.And(next, ref t);
+
+        return t;
+    }
+
+    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.AndNot(next, ref t);
+
+        return t;
+    }
+
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -30,6 +62,22 @@ static partial class BitsFactory
 
         foreach (var next in source)
             Bits<T>.Or(next, ref t);
+
+        return t;
+    }
+
+    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseXor<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.Xor(next, ref t);
 
         return t;
     }
