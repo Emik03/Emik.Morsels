@@ -76,20 +76,23 @@
         <Morsels Condition="$(Morsels) == '' and Exists('Emik.Morsels/')">Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../Emik.Morsels/')">../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../Emik.Morsels/')">../../Emik.Morsels/</Morsels>
+        <AndroidSdkDirectory Condition="Exists('$(HOME)/Android/Sdk/')">$(HOME)/Android/Sdk/</AndroidSdkDirectory>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../Emik.Morsels/')">../../../Emik.Morsels/</Morsels>
         <Morsels Condition="$(Morsels) == '' and Exists('../../../../Emik.Morsels/')">../../../../Emik.Morsels/</Morsels>
+        <AndroidSdkDirectory Condition="Exists('$(USERPROFILE)/Android/android-sdk/')">$(USERPROFILE)/Android/android-sdk/</AndroidSdkDirectory>
         <Unity Condition="$(Unity) == '' and Exists('$(HOME)/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('$(HOME)/Unity/Hub/Editor/')[0])</Unity>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Celeste/')">$(HOME)/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Unity Condition="$(Unity) == '' and Exists('/Applications/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('/Applications/Unity/Hub/Editor/')[0])</Unity>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Celeste/')">$(HOME)/.local/share/Steam/steamapps/common/Celeste/</Celeste>
         <Celeste Condition="$(Celeste) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Celeste\')">C:\Program Files (x86)\Steam\steamapps\common\Celeste\</Celeste>
+        <AndroidSdkDirectory Condition="Exists('$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/')">$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/</AndroidSdkDirectory>
         <Unity Condition="$(Unity) == '' and Exists('C:\Program Files\Unity\Hub\Editor\')">$([System.IO.Directory]::GetDirectories('C:\Program Files\Unity\Hub\Editor\')[0])</Unity>
-        <Celeste Condition="$(Celeste) == '' and Exists('~/Library/Application Support/Steam/steamapps/common/Celeste/')">~/Library/Application Support/Steam/steamapps/common/Celeste/</Celeste>
         <Unity Condition="$(Unity) == '' and $([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*').Length) != 0">$([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*')[0])</Unity>
+        <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Celeste/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Celeste/</Celeste>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
-        <Ktane Condition="$(Ktane) == '' and Exists('~/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">~/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
+        <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
     </PropertyGroup>
     <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
     <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
