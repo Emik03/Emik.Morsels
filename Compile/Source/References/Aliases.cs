@@ -28,6 +28,9 @@ global using Debug = unity::UnityEngine.Debug;
 #endif
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 #if ANDROID
+#if XNA
+global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
+#endif
 global using Enum = System.Enum;
 global using ICollection = System.Collections.ICollection;
 #endif
@@ -64,6 +67,9 @@ global using Range = System.Range;
 #endif
 #if ANDROID
 global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
+#if XNA
+global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
+#endif
 global using StringBuilder = System.Text.StringBuilder;
 global using Type = System.Type;
 #endif
