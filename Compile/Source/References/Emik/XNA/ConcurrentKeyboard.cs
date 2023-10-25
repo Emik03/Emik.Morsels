@@ -7,7 +7,9 @@ namespace Emik.Morsels;
 /// <summary>Provides thread-safe access to keyboard input.</summary>
 static partial class ConcurrentKeyboard
 {
+#pragma warning disable CA1810
     static ConcurrentKeyboard()
+#pragma warning restore CA1810
     {
         Trace.Assert(Unsafe.SizeOf<Keys>() is sizeof(int), $"sizeof({nameof(Keys)}) is 4");
         Trace.Assert(Unsafe.SizeOf<KeyMods>() is sizeof(ushort), $"sizeof({nameof(KeyMods)}) is 2");
@@ -71,6 +73,8 @@ static partial class ConcurrentKeyboard
     /// This operation treats the provided <see cref="Span{T}"/> of <see cref="Keys"/> as a set for computation,
     /// meaning that repeated <see cref="Keys"/> of the same value have the same effect as if it appeared once.
     /// </para></remarks>
+    /// <param name="keys">The <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> to process.</param>
+    /// <param name="mod">The <see cref="KeyMods"/> for modifiers.</param>
     /// <returns>
     /// The <see cref="KeyboardState"/> that comes from both parameters
     /// <paramref name="keys"/> and <paramref name="mod"/>.
@@ -98,13 +102,10 @@ static partial class ConcurrentKeyboard
             state.IsKeyUp(key) ||
             state.GetPressedKeyCount() is not 1;
 
-        foreach (var x in EnumMath.GetValues<KeyMods>().Where(IsModifierCausingInvalidState))
-            return (invalid = x) is null;
-
-        foreach (var x in EnumMath.GetValues<Keys>().Where(IsKeyCausingInvalidState))
-            return (invalid = x) is null;
-
-        return (invalid = null) is null;
+        var keyModTests = EnumMath.GetValues<KeyMods>().Where(IsModifierCausingInvalidState).Cast<Enum>();
+        var keyTests = EnumMath.GetValues<Keys>().Where(IsKeyCausingInvalidState).Cast<Enum>();
+        invalid = keyModTests.Concat(keyTests).Filter().FirstOrDefault();
+        return invalid is null;
     }
 
     [MustUseReturnValue]
@@ -112,13 +113,14 @@ static partial class ConcurrentKeyboard
         (field = typeof(Keyboard).GetField("_keys", BindingFlags.NonPublic | BindingFlags.Static)) is not null;
 
     [MustUseReturnValue]
-    static bool TryGetField(in IReflect type, [NotNullWhen(true)] out FieldInfo? field) =>
+    static bool TryGetField(in Type type, [NotNullWhen(true)] out FieldInfo? field) =>
         (field = type.GetField(nameof(GetModState), BindingFlags.Public | BindingFlags.Static)) is not null;
 
     [MustUseReturnValue]
     static bool TryGetType([NotNullWhen(true)] out Type? type) =>
+#pragma warning disable REFL037
         (type = typeof(Keyboard).Assembly.GetType("Sdl+Keyboard")) is not null;
-
+#pragma warning restore REFL037
     [MustUseReturnValue]
     static bool TryGetValue(in FieldInfo delegateField, [NotNullWhen(true)] out Delegate? del) =>
         (del = delegateField.GetValue(null) as Delegate) is not null;
