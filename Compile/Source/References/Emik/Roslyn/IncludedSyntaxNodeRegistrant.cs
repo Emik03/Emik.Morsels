@@ -238,14 +238,19 @@ static partial class IncludedSyntaxNodeRegistrant
         StringBuilder sb = new(symbol.Name);
         ISymbol? containing = symbol;
 
+        if (symbol.TypeParameters.Length is not 0 and var length)
+            sb.Append('`').Append(length);
+
         while ((containing = containing.ContainingWithoutGlobal()) is not null)
+        {
             sb.Insert(0, '.').Insert(0, containing.Name);
+
+            if (containing is INamedTypeSymbol { TypeParameters.Length: not 0 and var i })
+                sb.Append('`').Append(i);
+        }
 
         if (prefix is not null)
             sb.Insert(0, '.').Insert(0, prefix);
-
-        if (symbol.TypeParameters.Length is not 0 and var i)
-            sb.Append('`').Append(i);
 
         return sb.Append(".g.cs").ToString();
     }
