@@ -12961,7 +12961,9 @@ public ref partial struct ImmutableArrayBuilder<T>
         while (Unsafe.IsAddressLessThan(ref start, ref end))
             Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
 
-        Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)(modifier & 4096 >> 11 | modifier & 8192 >> 13);
+        Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) =
+            (byte)(modifier & (int)KeyMods.NumLock >> 11 | modifier & (int)KeyMods.CapsLock >> 13);
+
         return output;
     }
 
@@ -13031,10 +13033,10 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     static Func<KeyMods> CompileModState(in Delegate del)
     {
-        var target = Expression.Constant(del.Target);
-        var method = Expression.Call(target, del.Method);
-        var keyMods = Expression.Convert(method, typeof(KeyMods));
-        return Expression.Lambda<Func<KeyMods>>(keyMods).Compile();
+        var constant = Expression.Constant(del);
+        var invoke = Expression.Invoke(constant);
+        var mods = Expression.Convert(invoke, typeof(KeyMods));
+        return Expression.Lambda<Func<KeyMods>>(mods).Compile();
     }
 #endif
 

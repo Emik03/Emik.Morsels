@@ -44,25 +44,26 @@ static partial class ConcurrentKeyboard
     /// meaning that repeated <see cref="Keys"/> of the same value have the same effect as if it appeared once.
     /// </para></remarks>
     /// <param name="keys">The <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> to process.</param>
-    /// <param name="mod">The <see cref="KeyMods"/> for modifiers.</param>
+    /// <param name="mods">The <see cref="KeyMods"/> for modifiers.</param>
     /// <returns>
     /// The <see cref="KeyboardState"/> that comes from both parameters
-    /// <paramref name="keys"/> and <paramref name="mod"/>.
+    /// <paramref name="keys"/> and <paramref name="mods"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState ToState(this in ReadOnlySpan<Keys> keys, KeyMods mod = KeyMods.None)
+    public static KeyboardState ToState(this in ReadOnlySpan<Keys> keys, KeyMods mods = KeyMods.None)
     {
         KeyboardState output = default;
         var reader = MemoryMarshal.Cast<Keys, int>(keys);
         ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
-        ref var modifier = ref Unsafe.As<KeyMods, ushort>(ref mod);
+        ref var bits = ref Unsafe.As<KeyMods, ushort>(ref mods);
         ref var start = ref MemoryMarshal.GetReference(reader);
         ref var end = ref Unsafe.Add(ref start, reader.Length);
 
         while (Unsafe.IsAddressLessThan(ref start, ref end))
             Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
 
-        Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)(modifier & 4096 >> 11 | modifier & 8192 >> 13);
+        Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)((bits & 4096) >> 11 | (bits & 8192) >> 13);
+
         return output;
     }
 
@@ -74,14 +75,14 @@ static partial class ConcurrentKeyboard
     /// meaning that repeated <see cref="Keys"/> of the same value have the same effect as if it appeared once.
     /// </para></remarks>
     /// <param name="keys">The <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> to process.</param>
-    /// <param name="mod">The <see cref="KeyMods"/> for modifiers.</param>
+    /// <param name="mods">The <see cref="KeyMods"/> for modifiers.</param>
     /// <returns>
     /// The <see cref="KeyboardState"/> that comes from both parameters
-    /// <paramref name="keys"/> and <paramref name="mod"/>.
+    /// <paramref name="keys"/> and <paramref name="mods"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState ToState(this Span<Keys> keys, KeyMods mod = KeyMods.None) =>
-        ((ReadOnlySpan<Keys>)keys).ToState(mod);
+    public static KeyboardState ToState(this Span<Keys> keys, KeyMods mods = KeyMods.None) =>
+        ((ReadOnlySpan<Keys>)keys).ToState(mods);
 
     /// <summary>Gets the current set of key modifiers that are active.</summary>
     /// <returns>The <see cref="KeyMods"/> representing the current modifiers active.</returns>
@@ -132,10 +133,10 @@ static partial class ConcurrentKeyboard
     [Pure]
     static Func<KeyMods> CompileModState(in Delegate del)
     {
-        var target = Expression.Constant(del.Target);
-        var method = Expression.Call(target, del.Method);
-        var keyMods = Expression.Convert(method, typeof(KeyMods));
-        return Expression.Lambda<Func<KeyMods>>(keyMods).Compile();
+        var constant = Expression.Constant(del);
+        var invoke = Expression.Invoke(constant);
+        var mods = Expression.Convert(invoke, typeof(KeyMods));
+        return Expression.Lambda<Func<KeyMods>>(mods).Compile();
     }
 }
 #endif
