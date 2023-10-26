@@ -11,7 +11,7 @@ static partial class Peeks
 {
     const string DebugFile = "/tmp/morsels.log";
 #if DEBUG
-    static Peeks() => File.Create(DebugFile);
+    static Peeks() => File.Create(DebugFile).Dispose();
 #endif
 
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
