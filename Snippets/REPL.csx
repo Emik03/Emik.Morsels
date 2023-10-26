@@ -11422,6 +11422,11 @@ public partial struct Two<T>(T left, T right) :
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
 
+    const string DebugFile = "/tmp/morsels.log";
+#if DEBUG
+    static Peeks() => File.Create(DebugFile);
+#endif
+
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
@@ -11458,6 +11463,8 @@ public partial struct Two<T>(T left, T right) :
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
         Trace.WriteLine(message);
 #endif
+        if (File.Exists(DebugFile))
+            File.AppendAllText(DebugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
     }
 
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>

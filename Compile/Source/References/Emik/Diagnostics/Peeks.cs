@@ -9,6 +9,11 @@ namespace Emik.Morsels;
 static partial class Peeks
 #pragma warning restore MA0048
 {
+    const string DebugFile = "/tmp/morsels.log";
+#if DEBUG
+    static Peeks() => File.Create(DebugFile);
+#endif
+
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
@@ -45,6 +50,8 @@ static partial class Peeks
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
         Trace.WriteLine(message);
 #endif
+        if (File.Exists(DebugFile))
+            File.AppendAllText(DebugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
     }
 
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
