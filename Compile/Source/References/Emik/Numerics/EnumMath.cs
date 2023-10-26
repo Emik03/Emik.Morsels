@@ -12,9 +12,8 @@ using Expression = System.Linq.Expressions.Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
     enum Unknowable;
-#endif
+
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
@@ -102,7 +101,7 @@ static partial class EnumMath
     public static T As<T>(this int value)
         where T : Enum =>
         typeof(T) == typeof(Enum)
-#if !NETSTANDARD2_1_OR_GREATER || !NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             ? (T)(Enum)(Unknowable)value
             : typeof(T).GetEnumUnderlyingType() switch
             {

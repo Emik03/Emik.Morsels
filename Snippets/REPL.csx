@@ -4795,9 +4795,8 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
 
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
     enum Unknowable;
-#endif
+
     static readonly Dictionary<Type, IList> s_dictionary = new();
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
@@ -4885,7 +4884,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static T As<T>(this int value)
         where T : Enum =>
         typeof(T) == typeof(Enum)
-#if !NETSTANDARD2_1_OR_GREATER || !NETCOREAPP3_0_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             ? (T)(Enum)(Unknowable)value
             : typeof(T).GetEnumUnderlyingType() switch
             {
