@@ -4827,9 +4827,23 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static int AsInt<T>(this T value)
         where T : Enum =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        (typeof(T) == typeof(Enum) ? value.GetType() : typeof(T)).GetEnumUnderlyingType() switch
+        {
+            var x when x == typeof(byte) => (byte)(object)value,
+            var x when x == typeof(sbyte) => (sbyte)(object)value,
+            var x when x == typeof(short) => (short)(object)value,
+            var x when x == typeof(ushort) => (ushort)(object)value,
+            var x when x == typeof(int) => (int)(object)value,
+            var x when x == typeof(uint) => (int)(uint)(object)value,
+            var x when x == typeof(long) => (int)(long)(object)value,
+            var x when x == typeof(ulong) => (int)(ulong)(object)value,
+            var x when x == typeof(nint) => (int)(nint)(object)value,
+            var x when x == typeof(nuint) => (int)(nuint)(object)value,
+            _ => throw Unreachable,
+        };
+#else
         typeof(T) == typeof(Enum)
-            ? (int)(object)value
-            : typeof(T).GetEnumUnderlyingType() switch
+            ? value.GetType().GetEnumUnderlyingType() switch
             {
                 var x when x == typeof(byte) => (byte)(object)value,
                 var x when x == typeof(sbyte) => (sbyte)(object)value,
@@ -4842,9 +4856,8 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
                 var x when x == typeof(nint) => (int)(nint)(object)value,
                 var x when x == typeof(nuint) => (int)(nuint)(object)value,
                 _ => throw Unreachable,
-            };
-#else
-        typeof(T) == typeof(Enum) ? (int)(object)value : MathCaching<T>.From(value);
+            }
+            : MathCaching<T>.From(value);
 #endif
 
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
@@ -4871,23 +4884,24 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T As<T>(this int value)
         where T : Enum =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        typeof(T).GetEnumUnderlyingType() switch
-        {
-            var x when x == typeof(byte) => (T)(object)(byte)value,
-            var x when x == typeof(sbyte) => (T)(object)(sbyte)value,
-            var x when x == typeof(short) => (T)(object)(short)value,
-            var x when x == typeof(ushort) => (T)(object)(ushort)value,
-            var x when x == typeof(int) => (T)(object)value,
-            var x when x == typeof(uint) => (T)(object)(uint)value,
-            var x when x == typeof(long) => (T)(object)(long)value,
-            var x when x == typeof(ulong) => (T)(object)(ulong)value,
-            var x when x == typeof(nint) => (T)(object)(nint)value,
-            var x when x == typeof(nuint) => (T)(object)(nuint)value,
-            _ => throw Unreachable,
-        };
-#else
         typeof(T) == typeof(Enum)
+#if !NETSTANDARD2_1_OR_GREATER || !NETCOREAPP3_0_OR_GREATER
+            ? (T)(Enum)(Unknowable)value
+            : typeof(T).GetEnumUnderlyingType() switch
+            {
+                var x when x == typeof(byte) => (T)(object)(byte)value,
+                var x when x == typeof(sbyte) => (T)(object)(sbyte)value,
+                var x when x == typeof(short) => (T)(object)(short)value,
+                var x when x == typeof(ushort) => (T)(object)(ushort)value,
+                var x when x == typeof(int) => (T)(object)value,
+                var x when x == typeof(uint) => (T)(object)(uint)value,
+                var x when x == typeof(long) => (T)(object)(long)value,
+                var x when x == typeof(ulong) => (T)(object)(ulong)value,
+                var x when x == typeof(nint) => (T)(object)(nint)value,
+                var x when x == typeof(nuint) => (T)(object)(nuint)value,
+                _ => throw Unreachable,
+            };
+#else
             ? (T)(Enum)MathCaching<Unknowable>.To(value)
             : MathCaching<T>.To(value);
 #endif
