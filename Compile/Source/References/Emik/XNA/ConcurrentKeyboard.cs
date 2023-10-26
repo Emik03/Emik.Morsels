@@ -130,7 +130,12 @@ static partial class ConcurrentKeyboard
         (keys = field.GetValue(null) as List<Keys>) is not null;
 
     [Pure]
-    static Func<KeyMods> CompileModState(in Delegate del) =>
-        Expression.Lambda<Func<KeyMods>>(Expression.Convert(Expression.Call(del.Method), typeof(KeyMods))).Compile();
+    static Func<KeyMods> CompileModState(in Delegate del)
+    {
+        var target = Expression.Constant(del.Target);
+        var method = Expression.Call(target, del.Method);
+        var keyMods = Expression.Convert(method, typeof(KeyMods));
+        return Expression.Lambda<Func<KeyMods>>(keyMods).Compile();
+    }
 }
 #endif
