@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable CA1502, MA0051
 /// <inheritdoc cref="Bits{T}"/>
@@ -92,12 +92,56 @@ readonly
         fixed (T* ptr = &reference)
             return EqZero(ptr);
     }
+#if !WAWA
+    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <param name="number">The bits to clamp.</param>
+    /// <param name="min">The minimum accepted value.</param>
+    /// <param name="max">The maximum accepted value.</param>
+    /// <returns>
+    /// The parameter <paramref name="number"/> if its bits are greater or equal to the parameter
+    /// <paramref name="min"/>, and lesser or equal to the parameter <paramref name="number"/>; otherwise,
+    /// <paramref name="min"/> if the parameter <paramref name="number"/> is lesser than
+    /// <paramref name="min"/>; otherwise, <paramref name="max"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ref readonly T Clamp(in T number, in T min, in T max) => ref Max(Min(number, max), min);
+
+    /// <summary>Returns the reference that contains the greater bits.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The parameter <paramref name="left"/> if its bits are greater or equal to the
+    /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe ref readonly T Max(in T left, in T right)
+    {
+        fixed (T* r = &left)
+        fixed (T* w = &right)
+            return ref *Max(r, w);
+    }
+
+    /// <summary>Returns the reference that contains the lesser bits.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The parameter <paramref name="left"/> if its bits are greater or equal to the
+    /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe ref readonly T Min(in T left, in T right)
+    {
+        fixed (T* r = &left)
+        fixed (T* w = &right)
+            return ref *Min(r, w);
+    }
+#endif
 
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void And(T* read, T* write)
     {
         byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
@@ -171,7 +215,7 @@ readonly
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void AndNot(T* read, T* write)
     {
         byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
@@ -244,7 +288,7 @@ readonly
     /// <summary>Computes the Bitwise-NOT computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="ptr">The <typeparamref name="T"/> to read and write from.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Not(T* ptr)
     {
         byte* x = (byte*)ptr, upper = (byte*)(ptr + 1);
@@ -318,7 +362,7 @@ readonly
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Or(T* read, T* write)
     {
         byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
@@ -392,7 +436,7 @@ readonly
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Xor(T* read, T* write)
     {
         byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
@@ -470,7 +514,7 @@ readonly
     /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe bool Eq(T* left, T* right)
     {
         byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
@@ -558,7 +602,7 @@ readonly
     /// The value <see langword="true"/> if the parameter <paramref name="ptr"/>
     /// points to a value with all zeros; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe bool EqZero(T* ptr)
     {
         byte* x = (byte*)ptr, upper = (byte*)(ptr + 1);
@@ -637,5 +681,114 @@ readonly
                 return false;
 
         return true;
+    }
+
+    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <param name="number">The bits to clamp.</param>
+    /// <param name="min">The minimum accepted value.</param>
+    /// <param name="max">The maximum accepted value.</param>
+    /// <returns>
+    /// The parameter <paramref name="number"/> if its bits are greater or equal to the parameter
+    /// <paramref name="min"/>, and lesser or equal to the parameter <paramref name="number"/>; otherwise,
+    /// <paramref name="min"/> if the parameter <paramref name="number"/> is lesser than
+    /// <paramref name="min"/>; otherwise, <paramref name="max"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe T* Clamp(T* number, T* min, T* max) => Max(Min(number, max), min);
+
+    /// <summary>Returns the pointer that contains the greater bits.</summary>
+    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The parameter <paramref name="left"/> if its bits are greater or equal to the
+    /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
+    /// </returns>
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe T* Max(T* left, T* right)
+    {
+        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
+
+        for (; l <= upper - sizeof(nuint); l += sizeof(nuint))
+            if (*(nuint*)l != *(nuint*)r)
+                return *(nuint*)l >= *(nuint*)r ? left : right;
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return left;
+
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong))
+            if (*(ulong*)l != *(ulong*)r)
+                return *(ulong*)l >= *(ulong*)r ? left : right;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return left;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint))
+            if (*(uint*)l != *(uint*)r)
+                return *(uint*)l >= *(uint*)r ? left : right;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return left;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort))
+            if (*(ushort*)l != *(ushort*)r)
+                return *(ushort*)l >= *(ushort*)r ? left : right;
+
+        if (sizeof(T) % sizeof(ushort) is 0)
+            return left;
+
+        for (; l < upper; l++)
+            if (*l != *r)
+                return *l >= *r ? left : right;
+
+        return left;
+    }
+
+    /// <summary>Returns the pointer that contains the lesser bits.</summary>
+    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The parameter <paramref name="left"/> if its bits are lesser or equal to the
+    /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
+    /// </returns>
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe T* Min(T* left, T* right)
+    {
+        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
+
+        for (; l <= upper - sizeof(nuint); l += sizeof(nuint))
+            if (*(nuint*)l != *(nuint*)r)
+                return *(nuint*)l <= *(nuint*)r ? left : right;
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return left;
+
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong))
+            if (*(ulong*)l != *(ulong*)r)
+                return *(ulong*)l <= *(ulong*)r ? left : right;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return left;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint))
+            if (*(uint*)l != *(uint*)r)
+                return *(uint*)l <= *(uint*)r ? left : right;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return left;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort))
+            if (*(ushort*)l != *(ushort*)r)
+                return *(ushort*)l <= *(ushort*)r ? left : right;
+
+        if (sizeof(T) % sizeof(ushort) is 0)
+            return left;
+
+        for (; l < upper; l++)
+            if (*l != *r)
+                return *l <= *r ? left : right;
+
+        return left;
     }
 }
