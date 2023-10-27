@@ -2,7 +2,7 @@
 
 // ReSharper disable CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-#pragma warning disable CA1502
+#pragma warning disable CA1502, MA0051
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -145,6 +145,24 @@ readonly
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
 
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
+            *(ulong*)r = *(ulong*)l & *(ulong*)r;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
+            *(uint*)r = *(uint*)l & *(uint*)r;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
+            *(ushort*)r = (ushort)(*(ushort*)l & *(ushort*)r);
+
+        if (sizeof(T) % sizeof(ushort) is 0)
+            return;
+
         for (; l < upper; l++, r++)
             *r = (byte)(*l & *r);
     }
@@ -201,6 +219,24 @@ readonly
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
 
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
+            *(ulong*)r = *(ulong*)l & ~*(ulong*)r;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
+            *(uint*)r = *(uint*)l & ~*(uint*)r;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
+            *(ushort*)r = (ushort)(*(ushort*)l & ~*(ushort*)r);
+
+        if (sizeof(T) % sizeof(ushort) is 0)
+            return;
+
         for (; l < upper; l++, r++)
             *r = (byte)(*l & ~*r);
     }
@@ -254,6 +290,24 @@ readonly
             *(nuint*)x = ~*(nuint*)x;
 
         if (sizeof(T) % sizeof(nuint) is 0)
+            return;
+
+        for (; x <= upper - sizeof(ulong); x += sizeof(ulong))
+            *(ulong*)x = ~*(ulong*)x;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return;
+
+        for (; x <= upper - sizeof(uint); x += sizeof(uint))
+            *(uint*)x = ~*(uint*)x;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return;
+
+        for (; x <= upper - sizeof(ushort); x += sizeof(ushort))
+            *(ushort*)x = (ushort)~*(ushort*)x;
+
+        if (sizeof(T) % sizeof(ushort) is 0)
             return;
 
         for (; x < upper; x++)
@@ -312,6 +366,24 @@ readonly
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
 
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
+            *(ulong*)r = *(ulong*)l | *(ulong*)r;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
+            *(uint*)r = *(uint*)l | *(uint*)r;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
+            *(ushort*)r = (ushort)(*(ushort*)l | *(ushort*)r);
+
+        if (sizeof(T) % sizeof(ushort) is 0)
+            return;
+
         for (; l < upper; l++, r++)
             *r = (byte)(*l | *r);
     }
@@ -366,6 +438,24 @@ readonly
             *(nuint*)r = *(nuint*)l ^ *(nuint*)r;
 
         if (sizeof(T) % sizeof(nuint) is 0)
+            return;
+
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
+            *(ulong*)r = *(ulong*)l ^ *(ulong*)r;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
+            *(uint*)r = *(uint*)l ^ *(uint*)r;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
+            *(ushort*)r = (ushort)(*(ushort*)l ^ *(ushort*)r);
+
+        if (sizeof(T) % sizeof(ushort) is 0)
             return;
 
         for (; l < upper; l++, r++)
@@ -433,6 +523,27 @@ readonly
         if (sizeof(T) % sizeof(nuint) is 0)
             return true;
 
+        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
+            if (*(ulong*)l != *(ulong*)r)
+                return false;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return true;
+
+        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
+            if (*(uint*)l != *(uint*)r)
+                return false;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return true;
+
+        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
+            if (*(ushort*)l != *(ushort*)r)
+                return false;
+
+        if (sizeof(T) % sizeof(ushort) is 0)
+            return true;
+
         for (; l < upper; l++, r++)
             if (*l != *r)
                 return false;
@@ -440,7 +551,7 @@ readonly
         return true;
     }
 
-    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <summary>Determines whether the pointer of <typeparamref name="T"/> contains all zeros.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="ptr">The pointer to determine if it is zeroed.</param>
     /// <returns>
@@ -498,6 +609,27 @@ readonly
                 return false;
 
         if (sizeof(T) % sizeof(nuint) is 0)
+            return true;
+
+        for (; x <= upper - sizeof(ulong); x += sizeof(ulong))
+            if (*(ulong*)x is not 0)
+                return false;
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return true;
+
+        for (; x <= upper - sizeof(uint); x += sizeof(uint))
+            if (*(uint*)x is not 0)
+                return false;
+
+        if (sizeof(T) % sizeof(uint) is 0)
+            return true;
+
+        for (; x <= upper - sizeof(ushort); x += sizeof(ushort))
+            if (*(ushort*)x is not 0)
+                return false;
+
+        if (sizeof(T) % sizeof(ushort) is 0)
             return true;
 
         for (; x < upper; x++)
