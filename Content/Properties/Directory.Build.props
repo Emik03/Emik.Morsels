@@ -159,7 +159,7 @@
         <PackageReference Include="SonarAnalyzer.CSharp" Version="9.12.0.78982" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all"/>
-        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.0.2" PrivateAssets="all"/>
+        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.0.4" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.4" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
@@ -191,7 +191,7 @@
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
         <PackageReference Include="ReSharper.ExportAnnotations.Task" Version="1.4.0" PrivateAssets="all"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0-eap3" PrivateAssets="all" IncludeAssets="compile"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0-eap4" PrivateAssets="all" IncludeAssets="compile"/>
     </ItemGroup>
     <!-- Explicit references -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))">
