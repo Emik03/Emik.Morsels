@@ -34,8 +34,8 @@ global using Type = System.Type;
 global using Vector = System.Numerics.Vector;
 #endif
 #if KTANE
-global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 global using Application = UnityEngine.Application;
+global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
 global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations.CannotApplyEqualityOperatorAttribute;
