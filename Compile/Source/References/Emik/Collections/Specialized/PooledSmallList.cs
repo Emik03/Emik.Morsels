@@ -100,8 +100,14 @@ ref
         }
     }
 
+    /// <summary>Gets the inner heap array, or a copy of the inlined array.</summary>
+    public readonly T[] ToArrayLazily
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => _rental ?? _view.ToArray();
+    }
+
     /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
-    /// <returns>The inner array.</returns>
     public T[]? DangerouslyTransferOwnership
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
