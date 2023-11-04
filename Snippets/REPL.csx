@@ -12238,7 +12238,7 @@ public abstract class FixedGenerator(
             { IsRecord: true } => "record",
             { IsValueType: true } => "struct",
             { IsReferenceType: true } => "class",
-            _ => throw Unreachable,
+            _ => "",
         };
 
     /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
