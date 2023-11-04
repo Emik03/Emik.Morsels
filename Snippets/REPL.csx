@@ -15966,7 +15966,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
-#pragma warning disable 8500
+#pragma warning disable 8500, RCS1146
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 
 #endif
@@ -16025,7 +16025,7 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe SmallList(IEnumerator<T>? enumerator)
     {
-        if (!enumerator?.MoveNext() ?? true)
+        if (enumerator is null || !enumerator.MoveNext())
             return;
 
         _first = enumerator.Current;
