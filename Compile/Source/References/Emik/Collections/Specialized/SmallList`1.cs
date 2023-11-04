@@ -3,7 +3,7 @@
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable 8500
 using static CollectionAccessType;
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 using static SmallList;
@@ -21,10 +21,6 @@ partial struct SmallList<T> :
     IList<T>,
     IReadOnlyList<T>
 {
-    static readonly object
-        s_one = new(),
-        s_two = new();
-
     static readonly T[] s_empty =
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         new T[0];
@@ -42,7 +38,7 @@ partial struct SmallList<T> :
     // ReSharper restore CommentTypo
 
     [ProvidesContext]
-    object? _rest;
+    IList<T>? _rest;
 
     T? _first, _second, _third;
 
@@ -65,17 +61,18 @@ partial struct SmallList<T> :
     /// </summary>
     /// <param name="enumerator">The enumerator to mutate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList(IEnumerator<T>? enumerator)
+    public unsafe SmallList(IEnumerator<T>? enumerator)
     {
         if (!enumerator?.MoveNext() ?? true)
             return;
 
-        // ReSharper disable once RedundantSuppressNullableWarningExpression
-        _first = enumerator!.Current;
+        _first = enumerator.Current;
 
         if (!enumerator.MoveNext())
         {
-            _rest = s_one;
+            fixed (IList<T>* ptr = &_rest)
+                *(nint*)ptr = 1;
+
             return;
         }
 
@@ -83,7 +80,9 @@ partial struct SmallList<T> :
 
         if (!enumerator.MoveNext())
         {
-            _rest = s_two;
+            fixed (IList<T>* ptr = &_rest)
+                *(nint*)ptr = 2;
+
             return;
         }
 
@@ -107,15 +106,26 @@ partial struct SmallList<T> :
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <param name="first">The first element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList(T first)
-        : this(first, default, default, s_one) { }
+    public unsafe SmallList(T first)
+    {
+        _first = first;
+
+        fixed (IList<T>* ptr = &_rest)
+            *(nint*)ptr = 1;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SmallList(T first, T second)
-        : this(first, second, default, s_two) { }
+    public unsafe SmallList(T first, T second)
+    {
+        _first = first;
+        _second = second;
+
+        fixed (IList<T>* ptr = &_rest)
+            *(nint*)ptr = 2;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 3 elements.</summary>
     /// <param name="first">The first element.</param>
@@ -132,7 +142,12 @@ partial struct SmallList<T> :
     /// <param name="rest">The rest of the elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third, IList<T> rest)
-        : this(first, second, third, (object)rest) { }
+    {
+        _first = first;
+        _second = second;
+        _third = third;
+        _rest = rest;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <param name="first">The first element.</param>
@@ -141,21 +156,7 @@ partial struct SmallList<T> :
     /// <param name="rest">The rest of the elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third, params T[] rest)
-        : this(first, second, third, (object)rest) { }
-
-    /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct. For internal use only.</summary>
-    /// <param name="first">The first element.</param>
-    /// <param name="second">The second element.</param>
-    /// <param name="third">The third element.</param>
-    /// <param name="rest">The backing rest object, either a list or an object representing the length.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    SmallList(T? first, T? second, T? third, object? rest)
-    {
-        _first = first;
-        _second = second;
-        _third = third;
-        _rest = rest;
-    }
+        : this(first, second, third, (IList<T>)rest) { }
 
     /// <summary>Gets the empty list.</summary>
     public static SmallList<T> Empty
@@ -176,18 +177,15 @@ partial struct SmallList<T> :
     }
 
     /// <inheritdoc cref="ICollection{T}.Count" />
-    public readonly int Count
+    public readonly unsafe int Count
     {
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get =>
-            _rest switch
-            {
-                null => 0,
-                _ when _rest == s_one => 1,
-                _ when _rest == s_two => 2,
-                _ when _rest == s_empty => 3,
-                _ => Rest!.Count + InlinedLength,
-            };
+        get
+        {
+            var local = _rest;
+            var ptr = *(nuint*)&local;
+            return ptr < InlinedLength ? (int)ptr : _rest!.Count + InlinedLength;
+        }
     }
 
     /// <summary>Gets the number of head elements used.</summary>
@@ -221,7 +219,7 @@ partial struct SmallList<T> :
                 0 => _first!,
                 1 => _second!,
                 2 => _third!,
-                _ => Rest![index - InlinedLength],
+                _ => _rest![index - InlinedLength],
             };
         }
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -234,11 +232,11 @@ partial struct SmallList<T> :
                 0 => _first = value,
                 1 => _second = value,
                 2 => _third = value,
-                _ => Rest![index - InlinedLength] = value,
+                _ => _rest![index - InlinedLength] = value,
             };
         }
     }
-#pragma warning disable MA0102
+
     /// <summary>Gets or sets the first element.</summary>
     public T First
     {
@@ -264,13 +262,16 @@ partial struct SmallList<T> :
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[2] = value;
     }
-#pragma warning restore MA0102
 
     /// <summary>Gets the rest of the elements.</summary>
-    public readonly IList<T>? Rest
+    public readonly unsafe IList<T>? Rest
     {
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), ProvidesContext, Pure]
-        get => _rest as IList<T>;
+        get
+        {
+            var local = _rest;
+            return *(nuint*)&local < InlinedLength ? null : _rest;
+        }
     }
 
     /// <summary>Determines whether both sequence are equal.</summary>
@@ -335,13 +336,13 @@ partial struct SmallList<T> :
         switch (length)
         {
             case >= 3:
-                output._third = default!;
+                output._third = default;
                 goto case 2;
             case 2:
-                output._second = default!;
+                output._second = default;
                 goto case 1;
             case 1:
-                output._first = default!;
+                output._first = default;
                 break;
         }
 
@@ -350,15 +351,23 @@ partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(T item)
+    public unsafe void Add(T item)
     {
         switch (Count)
         {
             case 0:
-                (_first, _rest) = (item, s_one);
+                _first = item;
+
+                fixed (IList<T>* ptr = &_rest)
+                    *(nint*)ptr = 1;
+
                 break;
             case 1:
-                (_second, _rest) = (item, s_two);
+                _second = item;
+
+                fixed (IList<T>* ptr = &_rest)
+                    *(nint*)ptr = 2;
+
                 break;
             case 2:
                 (_third, _rest) = (item, s_empty);
@@ -393,7 +402,7 @@ partial struct SmallList<T> :
         if (count - stackExpand <= 0)
             return;
 
-        var rest = _rest as List<T> ?? Rest!.ToList();
+        var rest = _rest as List<T> ?? new(_rest!);
         rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToCollectionLazily());
         _rest = rest;
     }
@@ -420,21 +429,21 @@ partial struct SmallList<T> :
         {
             case > InlinedLength:
                 IList<T>
-                    from = Rest!,
-                    to = list.Rest!;
+                    from = _rest!,
+                    to = list._rest!;
 
                 for (var i = 0; i < from.Count; i++)
                     to[i] = from[i];
 
                 goto case 3;
             case 3:
-                list._third = _third!;
+                list._third = _third;
                 goto case 2;
             case 2:
-                list._second = _second!;
+                list._second = _second;
                 goto case 1;
             case 1:
-                list._first = _first!;
+                list._first = _first;
                 break;
         }
     }
@@ -447,7 +456,7 @@ partial struct SmallList<T> :
         switch (Count)
         {
             case > InlinedLength:
-                Rest!.CopyTo(array, arrayIndex + InlinedLength);
+                _rest!.CopyTo(array, arrayIndex + InlinedLength);
                 goto case 3;
             case 3:
                 array[arrayIndex + 2] = _third!;
@@ -489,16 +498,8 @@ partial struct SmallList<T> :
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="del">The function to use.</param>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del)
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
-#endif
+    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
@@ -508,16 +509,8 @@ partial struct SmallList<T> :
     public unsafe void HeadSpan<TParam>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> del
-    )
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-#endif
+    ) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
@@ -527,16 +520,8 @@ partial struct SmallList<T> :
     public unsafe void HeadSpan<TParam>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> del
-    )
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-#endif
+    ) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
@@ -546,31 +531,32 @@ partial struct SmallList<T> :
     public unsafe void HeadSpan<TParam>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> del
-    )
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+    ) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 #endif
-#endif
-#pragma warning restore 8500
+
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Insert(int index, T item)
+    public unsafe void Insert(int index, T item)
     {
         BoundsCheck(index, out var count);
 
-        _rest = count switch
+        switch (count)
         {
-            0 => s_one,
-            1 => s_two,
-            2 => s_empty,
-            _ => _rest,
-        };
+            case 0:
+                fixed (IList<T>* ptr = &_rest)
+                    *(nint*)ptr = 1;
+
+                break;
+            case 1:
+                fixed (IList<T>* ptr = &_rest)
+                    *(nint*)ptr = 2;
+
+                break;
+            case 2:
+                _rest = s_empty;
+                break;
+        }
 
         if (count >= InlinedLength)
             EnsureMutability().Insert(0, _third!);
@@ -594,7 +580,7 @@ partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void RemoveAt(int index)
+    public unsafe void RemoveAt(int index)
     {
         BoundsCheck(index, out var count);
 
@@ -604,19 +590,28 @@ partial struct SmallList<T> :
         if (index is 0 or 1)
             _second = _third;
 
-        if (index < InlinedLength && Rest is [var head, ..])
+        if (index < InlinedLength && _rest is [var head, ..])
             _third = head;
 
         if (count > InlinedLength)
             EnsureMutability().RemoveAt(Math.Max(index - InlinedLength, 0));
 
-        _rest = count switch
+        switch (count)
         {
-            1 => null,
-            2 => s_one,
-            3 => s_two,
-            _ => _rest,
-        };
+            case 1:
+                _rest = null;
+                break;
+            case 2:
+                fixed (IList<T>* ptr = &_rest)
+                    *(nint*)ptr = 1;
+
+                break;
+            case 3:
+                fixed (IList<T>* ptr = &_rest)
+                    *(nint*)ptr = 2;
+
+                break;
+        }
     }
 
     /// <inheritdoc />
@@ -627,7 +622,7 @@ partial struct SmallList<T> :
             0 => Eq(_first, item),
             1 => Eq(_first, item) || Eq(_second, item),
             2 => Eq(_first, item) || Eq(_second, item) || Eq(_third, item),
-            _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || Rest!.Contains(item),
+            _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || _rest!.Contains(item),
         };
 
     /// <summary>Determines whether the item exists in the collection.</summary>
@@ -644,7 +639,7 @@ partial struct SmallList<T> :
             _ => comparer.Equals(_first, item) ||
                 comparer.Equals(_second, item) ||
                 comparer.Equals(_third, item) ||
-                Rest!.Contains(item, comparer),
+                _rest!.Contains(item, comparer),
         };
 
     /// <inheritdoc cref="object.Equals(object)"/>
@@ -662,18 +657,23 @@ partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Remove(T item) =>
-        Count switch
+    public unsafe bool Remove(T item)
+    {
+        switch (Count)
         {
-            0 => false,
-            1 => Eq(_first, item) && (_rest = null) is var _,
-            2 => Eq(_first, item)
-                ? (_rest = s_one) is var _ && (_first = _second) is var _
-                : Eq(_second, item) && (_rest = s_one) is var _,
-            _ => Eq(_first, item) ? RemoveHead(_first = _second) :
-                Eq(_second, item) ? RemoveHead(_second = _third) :
-                Eq(_third, item) ? RemoveHead() : EnsureMutability().Remove(item),
-        };
+            case 0: return false;
+            case 1: return Eq(_first, item) && (_rest = null) is var _;
+            case 2:
+                fixed (IList<T>* ptr = &_rest)
+                    return Eq(_first, item)
+                        ? (*(nint*)ptr = 1) is var _ && (_first = _second) is var _
+                        : Eq(_second, item) && (*(nint*)ptr = 1) is var _;
+            default:
+                return Eq(_first, item) ? RemoveHead(_first = _second) :
+                    Eq(_second, item) ? RemoveHead(_second = _third) :
+                    Eq(_third, item) ? RemoveHead() : EnsureMutability().Remove(item);
+        }
+    }
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -718,7 +718,8 @@ partial struct SmallList<T> :
                 Eq(_third, item) ? 2 : -1,
             _ => Eq(_first, item) ? 0 :
                 Eq(_second, item) ? 1 :
-                Eq(_third, item) ? 2 : Rest?.IndexOf(item) ?? -1,
+                Eq(_third, item) ? 2 :
+                _rest!.IndexOf(item) is var i && i is -1 ? i : i + 3,
         };
 
     /// <inheritdoc />
@@ -731,9 +732,9 @@ partial struct SmallList<T> :
             2 => $"[{_first}, {_second}]",
             3 => $"[{_first}, {_second}, {_third}]",
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            _ => $"[{_first}, {_second}, {_third}, {Rest!.Conjoin()}]",
+            _ => $"[{_first}, {_second}, {_third}, {_rest!.Conjoin()}]",
 #else
-            _ => $"[{_first}, {_second}, {_third}, {Rest}]",
+            _ => $"[{_first}, {_second}, {_third}, {_rest}]",
 #endif
         };
 
@@ -777,7 +778,7 @@ partial struct SmallList<T> :
 
         Unsafe.SkipInit(out SmallList<T> output);
 
-        if (length >= InlinedLength && Rest?.Skip(start).Take(length - InlinedLength).ToList() is { } list)
+        if (length >= InlinedLength && _rest?.Skip(start).Take(length - InlinedLength).ToList() is { } list)
             output._rest = list;
         else
             RestFromLength(length, out output._rest);
@@ -785,14 +786,14 @@ partial struct SmallList<T> :
         switch (length)
         {
             case >= 3:
-                output._third = start is 0 ? _third : Rest![start - 1];
+                output._third = start is 0 ? _third : _rest![start - 1];
                 goto case 2;
             case 2:
                 output._second = start switch
                 {
                     0 => _second,
                     1 => _third,
-                    _ => Rest![start - 2],
+                    _ => _rest![start - 2],
                 };
 
                 goto case 1;
@@ -802,7 +803,7 @@ partial struct SmallList<T> :
                     0 => _first,
                     1 => _second,
                     2 => _third,
-                    _ => Rest![start - 3],
+                    _ => _rest![start - 3],
                 };
 
                 break;
@@ -810,23 +811,14 @@ partial struct SmallList<T> :
 
         return output;
     }
-#pragma warning disable CS8500
 #if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del)
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
-#endif
+    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
@@ -838,16 +830,8 @@ partial struct SmallList<T> :
     public unsafe TResult HeadSpan<TParam, TResult>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> del
-    )
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-#endif
+    ) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
@@ -859,16 +843,8 @@ partial struct SmallList<T> :
     public unsafe TResult HeadSpan<TParam, TResult>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> del
-    )
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-#endif
+    ) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
@@ -880,18 +856,9 @@ partial struct SmallList<T> :
     public unsafe TResult HeadSpan<TParam, TResult>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> del
-    )
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (SmallList<T>* unused = &this)
-            return del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-    }
-#else
-        =>
-            del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
+    ) =>
+        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 #endif
-#endif
-#pragma warning restore CS8500
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -972,7 +939,7 @@ partial struct SmallList<T> :
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static void RestFromLength(int length, out object? rest)
+    static void RestFromLength(int length, out IList<T>? rest)
     {
         if (length is 0 or 1 or 2 or 3)
             RestFromLengthWithoutAllocations(length, out rest);
@@ -981,18 +948,30 @@ partial struct SmallList<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static void RestFromLengthWithoutAllocations(int length, out object? rest)
+    static unsafe void RestFromLengthWithoutAllocations(int length, out IList<T>? rest)
     {
-        Unsafe.SkipInit(out rest);
-
-        rest = length switch
+        switch (length)
         {
-            <= 0 => null,
-            1 => s_one,
-            2 => s_two,
-            3 => s_empty,
-            _ => rest,
-        };
+            case <= 0:
+                rest = null;
+                break;
+            case 1:
+                fixed (IList<T>* ptr = &rest)
+                    *(nint*)ptr = 1;
+
+                break;
+            case 2:
+                fixed (IList<T>* ptr = &rest)
+                    *(nint*)ptr = 2;
+
+                break;
+            case 3:
+                rest = s_empty;
+                break;
+            default:
+                Unsafe.SkipInit(out rest);
+                break;
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -1009,32 +988,28 @@ partial struct SmallList<T> :
 
     // ReSharper disable once UnusedParameter.Local
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    bool RemoveHead(T? _ = default)
+    unsafe bool RemoveHead(in T? _ = default)
     {
-        if (Rest is [var head, ..])
+        if (_rest is [var head, ..])
         {
             _third = head;
             EnsureMutability().RemoveAt(0);
         }
         else
-            _rest = s_two;
+            fixed (IList<T>* ptr = &_rest)
+                *(nint*)ptr = 2;
 
         return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    IList<T> EnsureMutability()
-    {
-        var rest = Rest switch
+    IList<T> EnsureMutability() =>
+        _rest = _rest switch
         {
             { IsReadOnly: true, Count: not 0 } x => x.ToList(),
             { Count: not 0 } x => x,
             _ => new List<T>(),
         };
-
-        _rest = rest;
-        return rest;
-    }
 
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
@@ -1085,7 +1060,7 @@ partial struct SmallList<T> :
                 0 => _list._first!,
                 1 => _list._second!,
                 2 => _list._third!,
-                var x => _list.Rest![x - InlinedLength],
+                var x => _list._rest![x - InlinedLength],
             }) is var _;
     }
 }
