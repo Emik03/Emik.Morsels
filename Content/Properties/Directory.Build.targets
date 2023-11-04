@@ -242,7 +242,7 @@
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.7.0"/>
-        <PackageReference Condition="$(IsBenchmark) == 'true'" Include="BenchmarkDotNet" Version="0.13.8" PrivateAssets="all"/>
+        <PackageReference Condition="$(IsBenchmark) == 'true'" Include="BenchmarkDotNet" Version="0.13.10" PrivateAssets="all"/>
         <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
         <Compile Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
