@@ -3,6 +3,7 @@
 // ReSharper disable CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective
 namespace Emik.Morsels;
 
+using static Span;
 using FieldInfo = System.Reflection.FieldInfo;
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -17,7 +18,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -25,7 +26,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,7 +34,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -41,7 +42,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,7 +50,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,7 +58,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -65,7 +66,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,7 +74,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,7 +82,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,7 +90,7 @@ static partial class Two
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

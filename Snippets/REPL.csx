@@ -7719,7 +7719,7 @@ public
         where T : unmanaged
 #endif
         =>
-            Ref(ref Unsafe.AsRef(_));
+            Ref(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7740,7 +7740,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7760,7 +7760,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7780,7 +7780,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7800,7 +7800,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7820,7 +7820,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7840,7 +7840,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7860,7 +7860,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7880,7 +7880,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7900,7 +7900,7 @@ public
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7922,7 +7922,7 @@ public
         =>
             PooledSmallList<T>
                .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
-               .AsSpan(ref Unsafe.AsRef(_));
+               .AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -7953,10 +7953,12 @@ public
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        new(Unsafe.AsRef(reference));
+#if NET8_0_OR_GREATER
+        new(ref AsRef(reference));
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        new(AsRef(reference));
 #else
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+        MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
 #endif
 #endif
 #if !NETSTANDARD1_0
@@ -8167,6 +8169,13 @@ public
             Marshal.FreeHGlobal(ptr);
         }
     }
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="Unsafe.AsRef{T}(ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable 8500
+    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef<T>(source);
+#pragma warning restore 8500
+#endif
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -10704,6 +10713,7 @@ readonly
 
 
 
+
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>
 /// Provides implementations to turn nested <see cref="Two{T}"/> instances into a continuous <see cref="Span{T}"/>.
@@ -10715,7 +10725,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10723,7 +10733,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10731,7 +10741,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10739,7 +10749,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10747,7 +10757,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10755,7 +10765,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10763,7 +10773,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10771,7 +10781,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10779,7 +10789,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="PooledSmallList{T}.From{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10787,7 +10797,7 @@ readonly
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        PooledSmallList<T>.AsSpan(ref Unsafe.AsRef(two));
+        PooledSmallList<T>.AsSpan(ref AsRef(two));
 
     /// <inheritdoc cref="Two{T}.op_Implicit(ValueTuple{T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -17742,7 +17752,7 @@ public ref
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        Ref(ref Unsafe.AsRef(_));
+        Ref(ref AsRef(_));
 #else
     public static unsafe PooledSmallList<T> New1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -17894,7 +17904,7 @@ public ref
         where T : unmanaged
 #endif
         where TRef : struct =>
-        PooledSmallList<T>.From(ref Unsafe.AsRef(_));
+        PooledSmallList<T>.From(ref AsRef(_));
 #else
     public static unsafe PooledSmallList<T> From<T, TRef>(in bool _ = false)
 #if UNMANAGED_SPAN
