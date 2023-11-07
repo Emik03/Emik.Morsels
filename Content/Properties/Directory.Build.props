@@ -67,14 +67,6 @@
             UEA0006
         </NoWarn>
     </PropertyGroup>
-    <!-- Benchmarks do not like being run from the artifacts path. -->
-    <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Benchmarks'">
-        <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
-    </PropertyGroup>
-    <!-- Roslyn projects should not embed documentation on output. -->
-    <PropertyGroup Condition="$(MSBuildProjectName.Contains('Analyzer')) or $(MSBuildProjectName.Contains('SourceGenerator'))">
-        <ExportJetBrainsAnnotations>false</ExportJetBrainsAnnotations>
-    </PropertyGroup>
     <!-- Fallback paths. -->
     <PropertyGroup>
         <Morsels Condition="$(Morsels) == '' and Exists('Emik.Morsels/')">Emik.Morsels/</Morsels>
@@ -98,6 +90,10 @@
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
     </PropertyGroup>
+    <!-- Benchmarks do not like being run from the artifacts path. -->
+    <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Benchmarks'">
+        <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
+    </PropertyGroup>
     <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
     <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
         <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../$(Morsels)'))</Morsels>
@@ -107,6 +103,10 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
         <TailCalls>true</TailCalls>
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+    </PropertyGroup>
+    <!-- Roslyn projects should not embed documentation on output. -->
+    <PropertyGroup Condition="$(MSBuildProjectName.Contains('Analyzer')) or $(MSBuildProjectName.Contains('SourceGenerator'))">
+        <ExportJetBrainsAnnotations>false</ExportJetBrainsAnnotations>
     </PropertyGroup>
     <!-- Sets the icon of the package, if it exists. -->
     <PropertyGroup Condition="Exists('Images/icon.png')">
