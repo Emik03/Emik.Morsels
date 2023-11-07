@@ -148,7 +148,7 @@
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.7" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.103" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.104" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.6.1" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.10" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
@@ -191,7 +191,7 @@
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
         <PackageReference Include="ReSharper.ExportAnnotations.Task" Version="1.4.0" PrivateAssets="all"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0-eap4" PrivateAssets="all" IncludeAssets="compile"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" PrivateAssets="all" IncludeAssets="compile"/>
     </ItemGroup>
     <!-- Explicit references -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))">
