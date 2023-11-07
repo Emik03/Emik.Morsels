@@ -17,7 +17,7 @@ static partial class MatrixFactory
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
 #if WAWA
-        iterator is null ? null : new(iterator.ToList(), countPerList);
+        iterator is null ? null : new(iterator as IList<T> ?? iterator.ToList(), countPerList);
 #else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
 #endif
@@ -31,7 +31,7 @@ static partial class MatrixFactory
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
 #if WAWA
-        iterator is null ? null : new(iterator.ToList(), countPerList);
+        iterator is null ? null : new(iterator as IList<T> ?? iterator.ToList(), countPerList);
 #else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
 #endif
