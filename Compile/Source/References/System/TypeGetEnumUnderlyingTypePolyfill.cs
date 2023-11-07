@@ -17,7 +17,7 @@ static class TypeGetEnumUnderlyingTypePolyfill
     /// </para></remarks>
     /// <param name="enumType">The enumeration whose underlying type will be retrieved.</param>
     /// <exception cref="ArgumentException"><paramref name="enumType"/> is not an <see cref="Enum"/>.</exception>
-    /// <returns>The underlying type of <see cref="enumType"/>.</returns>
+    /// <returns>The underlying type of <paramref name="enumType"/>.</returns>
     public static Type GetEnumUnderlyingType(this Type enumType) =>
         enumType.IsEnum
             ? enumType.GetFields(Public | NonPublic | Instance)[0].FieldType
