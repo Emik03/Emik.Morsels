@@ -8170,7 +8170,10 @@ public
         }
     }
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="Unsafe.AsRef{T}(ref T)"/>
+    /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
+    /// <typeparam name="T">The underlying type of the reference.</typeparam>
+    /// <param name="source">The read-only reference to reinterpret.</param>
+    /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
     public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef<T>(source);
