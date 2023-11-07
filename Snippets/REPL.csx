@@ -4854,7 +4854,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
                 var x when x == typeof(ulong) => (int)(ulong)(object)value,
                 var x when x == typeof(nint) => (int)(nint)(object)value,
                 var x when x == typeof(nuint) => (int)(nuint)(object)value,
-                _ => throw Unreachable,
+                _ => throw new NotSupportedException(),
             }
             : MathCaching<T>.From(value);
 #endif
