@@ -45,7 +45,6 @@
         <GenerateDocumentationFile>$('$(MSBuildProjectName.Contains(&quot;Analyzer&quot;))' == 'false')</GenerateDocumentationFile>
         <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
-        <ArtifactsPath Condition="'$(MSBuildProjectName)' != 'Benchmarks'">$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
         <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
         <NoWarn>
             (NoWarn);
@@ -68,8 +67,12 @@
             UEA0006
         </NoWarn>
     </PropertyGroup>
+    <!-- Benchmarks do not like being run from the artifacts path. -->
+    <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Benchmarks'">
+        <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
+    </PropertyGroup>
     <!-- Roslyn projects should not embed documentation on output. -->
-    <PropertyGroup>
+    <PropertyGroup Condition="$(MSBuildProjectName.Contains('Analyzer')) or $(MSBuildProjectName.Contains('SourceGenerator'))">
         <ExportJetBrainsAnnotations>false</ExportJetBrainsAnnotations>
     </PropertyGroup>
     <!-- Fallback paths. -->
