@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable BadPreprocessorIndent
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -557,6 +558,16 @@ static partial class Span
 #else
         MemoryMarshal.CreateSpan(ref reference, 1);
 #endif
+
+    /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
+    /// <typeparam name="TFrom">The source type.</typeparam>
+    /// <typeparam name="TTo">The destination type.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    public static unsafe Span<TTo> Ref<TFrom, TTo>(ref TFrom reference)
+        where TFrom : struct
+        where TTo : struct =>
+        MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
@@ -571,6 +582,16 @@ static partial class Span
 #else
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
 #endif
+
+    /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
+    /// <typeparam name="TFrom">The source type.</typeparam>
+    /// <typeparam name="TTo">The destination type.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    public static unsafe ReadOnlySpan<TTo> In<TFrom, TTo>(in TFrom reference)
+        where TFrom : struct
+        where TTo : struct =>
+        MemoryMarshal.Cast<TFrom, TTo>(In(reference));
 #endif
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
