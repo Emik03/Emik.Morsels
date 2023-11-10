@@ -1,7 +1,7 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace EmptyNamespace
-// ReSharper disable RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
+// ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
@@ -19,6 +19,83 @@ using static System.Linq.Expressions.Expression;
 #pragma warning restore 1574
 static partial class MemoryMarshal
 {
+    /// <summary>
+    /// Casts a Span of one primitive type <typeparamref name="TFrom"/>
+    /// to another primitive type <typeparamref name="TTo"/>.
+    /// These types may not contain pointers or references. This is checked at runtime in order to preserve type safety.
+    /// </summary>
+    /// <remarks><para>
+    /// Supported only for platforms that support misaligned memory
+    /// access or when the memory block is aligned by other means.
+    /// </para></remarks>
+    /// <typeparam name="TFrom">The type of the source span.</typeparam>
+    /// <typeparam name="TTo">The type of the target span.</typeparam>
+    /// <param name="span">The source slice, of type <typeparamref name="TFrom"/>.</param>
+    /// <returns>The converted span.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe Span<TTo> Cast<TFrom, TTo>(Span<TFrom> span)
+        where TFrom : struct
+        where TTo : struct
+    {
+        // Use unsigned integers - unsigned division by constant (especially by power of 2)
+        // and checked casts are faster and smaller.
+        var fromSize = (uint)Unsafe.SizeOf<TFrom>();
+        var toSize = (uint)Unsafe.SizeOf<TTo>();
+        var fromLength = (uint)span.Length;
+
+        var toLength = fromSize == toSize ? (int)fromLength :
+            fromSize is not 1 &&
+            (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
+            (int)(fromLength / toSize);
+
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            var ptr = span.Pointer;
+#else
+#pragma warning disable 8500
+        fixed (TFrom* ptr = span)
+#pragma warning restore 8500
+#endif
+            return new(ptr, toLength);
+    }
+
+    /// <summary>
+    /// Casts a ReadOnlySpan of one primitive type <typeparamref name="TFrom"/> to another primitive type <typeparamref name="TTo"/>.
+    /// These types may not contain pointers or references. This is checked at runtime in order to preserve type safety.
+    /// </summary>
+    /// <remarks><para>
+    /// Supported only for platforms that support misaligned memory
+    /// access or when the memory block is aligned by other means.
+    /// </para></remarks>
+    /// <typeparam name="TFrom">The type of the source span.</typeparam>
+    /// <typeparam name="TTo">The type of the target span.</typeparam>
+    /// <param name="span">The source slice, of type <typeparamref name="TFrom"/>.</param>
+    /// <returns>The converted read-only span.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe ReadOnlySpan<TTo> Cast<TFrom, TTo>(ReadOnlySpan<TFrom> span)
+        where TFrom : struct
+        where TTo : struct
+    {
+        // Use unsigned integers - unsigned division by constant (especially by power of 2)
+        // and checked casts are faster and smaller.
+        var fromSize = (uint)Unsafe.SizeOf<TFrom>();
+        var toSize = (uint)Unsafe.SizeOf<TTo>();
+        var fromLength = (uint)span.Length;
+
+        var toLength = fromSize == toSize ? (int)fromLength :
+            fromSize is not 1 &&
+            (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
+            (int)(fromLength / toSize);
+
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        var ptr = span.Pointer;
+#else
+#pragma warning disable 8500
+        fixed (TFrom* ptr = span)
+#pragma warning restore 8500
+#endif
+            return new(ptr, toLength);
+    }
+
     /// <summary>
     /// Create a new span over a portion of a regular managed object. This can be useful
     /// if part of a managed object represents a "fixed array." This is dangerous because the
