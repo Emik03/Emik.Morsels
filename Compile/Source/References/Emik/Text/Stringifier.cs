@@ -45,7 +45,11 @@ static partial class Stringifier
         UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
 #pragma warning restore CA1823, IDE0051
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static readonly Dictionary<Type, bool> s_hasMethods = new();
+    static readonly Dictionary<Type, bool>
+#if !WAWA
+        s_fullyUnmanaged = new(),
+#endif
+        s_hasMethods = new();
 
     static readonly Dictionary<Type, Delegate> s_stringifiers = new();
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -493,6 +497,26 @@ static partial class Stringifier
         return builder;
     }
 
+#if !WAWA
+    /// <summary>Gets the type name, with its generics extended.</summary>
+    /// <param name="type">The <see cref="Type"/> to get the name of.</param>
+    /// <returns>The name of the parameter <paramref name="type"/>.</returns>
+    [Pure]
+    public static bool IsUnmanaged([NotNullWhen(true)] this Type? type) =>
+        type is not null &&
+        (s_fullyUnmanaged.TryGetValue(type, out var answer) ? answer :
+            !type.IsValueType ? s_fullyUnmanaged[type] = false :
+            type.IsEnum || type.IsPointer || type.IsPrimitive ? s_fullyUnmanaged[type] = true :
+            s_fullyUnmanaged[type] = type.IsGenericTypeDefinition
+                ? type.GetCustomAttributesData()
+                   .Any(x => x.AttributeType.FullName is "System.Runtime.CompilerServices.IsUnmanagedAttribute")
+                : Array.TrueForAll(
+                    type.GetFields(
+                        BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+                    ),
+                    x => IsUnmanaged(x.FieldType)
+                ));
+#endif
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
 #pragma warning disable IDE0057
