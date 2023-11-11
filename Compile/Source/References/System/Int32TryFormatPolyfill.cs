@@ -25,7 +25,7 @@ static partial class Int32TryFormatPolyfill
     /// An optional object that supplies culture-specific formatting information for <paramref name="destination"/>.
     /// </param>
     /// <exception cref="NotSupportedException">The parameter <paramref name="format"/> isn't empty.</exception>
-    /// <returns><see keyword="true"/> if the formatting was successful; otherwise, <see keyword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the formatting was successful; otherwise, <see langword="false"/>.</returns>
     public static bool TryFormat(
         this int value,
         scoped Span<char> destination,
