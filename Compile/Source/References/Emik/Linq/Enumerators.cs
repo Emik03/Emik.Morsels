@@ -7,7 +7,7 @@ namespace Emik.Morsels;
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumeratorToEnumerable
 {
-    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
@@ -15,23 +15,25 @@ static partial class EnumeratorToEnumerable
     [Pure]
     public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
 
-    /// <summary>Wraps the enumerator inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
-    /// <returns>
-    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
-    /// </returns>
+    /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
 #pragma warning disable CA2000, IDISP004
         enumerator.AsGeneric().AsEnumerable();
 #pragma warning restore CA2000, IDISP004
 
-    /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside a <see cref="IEnumerable{T}"/>.</summary>
+    /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
+    /// <param name="array">The array to encapsulate.</param>
+    /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
+    [LinqTunnel, Pure] // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
+    public static IEnumerable<object?> AsGenericEnumerable(this Array array) => array.GetEnumerator().AsEnumerable();
+
+    /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
-    /// <returns>
-    /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
-    /// </returns>
+    /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) => new Enumerable<T>(enumerator);
 
