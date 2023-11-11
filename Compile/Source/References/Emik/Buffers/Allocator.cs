@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantUsingDirective
+// ReSharper disable CheckNamespace ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator LoopCanBeConvertedToQuery MergeIntoPattern NullableWarningSuppressionIsUsed RedundantUsingDirective SuggestBaseTypeForParameter
 namespace Emik.Morsels;
-#pragma warning disable 1574, 8500
+#pragma warning disable 1574, 8500, MA0051
 using static Span;
 
 /// <summary>Provides the method to convert spans.</summary>
