@@ -190,6 +190,24 @@ static partial class SpanQueries
         return source;
     }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(
+        this Memory<T> span,
+        ReadOnlyMemory<T> other,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        span.Span.SequenceEqual(other.Span, comparer);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(
+        this ReadOnlyMemory<T> span,
+        ReadOnlyMemory<T> other,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        span.Span.SequenceEqual(other.Span, comparer);
+
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> SkipWhile<T>(
