@@ -137,7 +137,7 @@ static partial class Peeks
 
         var location = shouldLogExpression
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            ? expression?.Collapse().SplitLines().Aggregate(new StringBuilder(Of), Accumulator)
+            ? expression?.Collapse().SplitSpanLines().Aggregate(new StringBuilder(Of), Accumulator)
 #else
             ? expression
               ?.Collapse()

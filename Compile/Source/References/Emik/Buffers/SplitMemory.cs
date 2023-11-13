@@ -1,29 +1,26 @@
-// SPDX-License-Identifier: MPL-2.0
+// <copyright file="SplitMemory.cs" company="Emik">
+// Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// </copyright>
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantExtendsListEntry StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
-using static Span;
-
-/// <summary>Methods to split spans into multiple spans.</summary>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+/// <summary>Methods to split memories into multiple memories.</summary>
 #pragma warning disable MA0048
-static partial class SplitSpanFactory
+static partial class SplitMemoryFactory
 #pragma warning restore MA0048
 {
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
-    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <typeparam name="T">The type of <see cref="SplitMemory{T}"/>.</typeparam>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
+    public static bool ConcatEqual<T>(this SplitMemory<T> left, SplitMemory<T> right)
         where T : IEquatable<T>?
-#endif
     {
         if (left == right)
             return true;
@@ -34,7 +31,7 @@ static partial class SplitSpanFactory
         if (!e2.MoveNext())
             return false;
 
-        ReadOnlySpan<T>
+        ReadOnlyMemory<T>
             reader1 = e1.Current,
             reader2 = e2.Current;
 
@@ -44,19 +41,15 @@ static partial class SplitSpanFactory
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
-    /// <typeparam name="T">The type of <see cref="SplitSpan{T}"/>.</typeparam>
+    /// <typeparam name="T">The type of <see cref="SplitMemory{T}"/>.</typeparam>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
+    public static bool SequenceEqual<T>(this SplitMemory<T> left, SplitMemory<T> right)
         where T : IEquatable<T>?
-#endif
     {
         if (left == right)
             return true;
@@ -71,127 +64,62 @@ static partial class SplitSpanFactory
         return !e2.MoveNext();
     }
 
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
+    /// <summary>Splits a memory by the specified separator.</summary>
+    /// <typeparam name="T">The type of element from the memory.</typeparam>
+    /// <param name="memory">The memory to split.</param>
     /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, separator, true);
+    public static SplitMemory<T> SplitAny<T>(this ReadOnlyMemory<T> memory, ReadOnlyMemory<T> separator)
+        where T : IEquatable<T> =>
+        new(memory, separator, true);
 
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            ((ReadOnlySpan<T>)span).SplitAny(separator);
+    public static SplitMemory<T> SplitAny<T>(this Memory<T> memory, ReadOnlyMemory<T> separator)
+        where T : IEquatable<T> =>
+        ((ReadOnlyMemory<T>)memory).SplitAny(separator);
 
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
+    /// <summary>Splits a memory by the specified separator.</summary>
+    /// <typeparam name="T">The type of element from the memory.</typeparam>
+    /// <param name="memory">The memory to split.</param>
     /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, separator, false);
+    public static SplitMemory<T> SplitAll<T>(this ReadOnlyMemory<T> memory, ReadOnlyMemory<T> separator)
+        where T : IEquatable<T> =>
+        new(memory, separator, false);
 
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            ((ReadOnlySpan<T>)span).SplitAll(separator);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, In(separator), true);
-
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitOn<T>(this Span<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            ((ReadOnlySpan<T>)span).SplitOn(separator);
+    public static SplitMemory<T> SplitAll<T>(this Memory<T> memory, ReadOnlyMemory<T> separator)
+        where T : IEquatable<T> =>
+        ((ReadOnlyMemory<T>)memory).SplitAll(separator);
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <param name="split">The instance to get the list from.</param>
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<string> ToList(this SplitSpan<char> split)
-    {
-        List<string> ret = new();
-
-        foreach (var next in split)
-            ret.Add(next.ToString());
-
-        return ret;
-    }
+    public static List<string> ToList(this SplitMemory<char> split) => split.Select(next => next.ToString()).ToList();
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
+    /// <typeparam name="T">The type of element from the memory.</typeparam>
     /// <param name="split">The instance to get the list from.</param>
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<T[]> ToList<T>(this SplitSpan<T> split)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>?
-#endif
-    {
-        List<T[]> ret = new();
-
-        foreach (var next in split)
-            ret.Add(next.ToArray());
-
-        return ret;
-    }
+    public static List<T[]> ToList<T>(this SplitMemory<T> split)
+        where T : IEquatable<T>? =>
+        split.Select(next => next.ToArray()).ToList();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Next<T>(
-        ref ReadOnlySpan<T> reader1,
-        ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
+        ref ReadOnlyMemory<T> reader1,
+        ref ReadOnlyMemory<T> reader2,
+        ref SplitMemory<T>.Enumerator e1,
+        ref SplitMemory<T>.Enumerator e2,
         out bool ret
     )
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
-#else
         where T : IEquatable<T>?
-#endif
     {
         Unsafe.SkipInit(out ret);
 
@@ -224,10 +152,10 @@ static partial class SplitSpanFactory
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool SameLength<T>(
-        ref ReadOnlySpan<T> reader1,
-        ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
+        ref ReadOnlyMemory<T> reader1,
+        ref ReadOnlyMemory<T> reader2,
+        ref SplitMemory<T>.Enumerator e1,
+        ref SplitMemory<T>.Enumerator e2,
         ref bool ret
     )
         where T : IEquatable<T>?
@@ -254,67 +182,64 @@ static partial class SplitSpanFactory
         reader2 = e2.Current;
         return false;
     }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
 
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAny(separator);
+    public static SplitMemory<char> SplitAny(this string memory, string separator) =>
+        memory.AsMemory().SplitAny(separator.AsMemory());
 
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
+    public static SplitMemory<char> SplitAny(this string memory, ReadOnlyMemory<char> separator) =>
+        memory.AsMemory().SplitAny(separator);
 
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAll(separator);
+    public static SplitMemory<char> SplitAll(this string memory, string separator) =>
+        memory.AsMemory().SplitAll(separator.AsMemory());
 
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanLines(this string span) => span.AsSpan().SplitLines();
+    public static SplitMemory<char> SplitAll(this string memory, ReadOnlyMemory<char> separator) =>
+        memory.AsMemory().SplitAll(separator);
 
-    /// <summary>Splits a span by line breaks.</summary>
+    /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char> SplitLines(this string memory) => memory.AsMemory().SplitLines();
+
+    /// <summary>Splits a memory by line breaks.</summary>
     /// <remarks><para>Line breaks are considered any character in <see cref="Whitespaces.Breaking"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <param name="memory">The memory to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
-        new(span, Whitespaces.Breaking.AsSpan(), true);
+    public static SplitMemory<char> SplitLines(this ReadOnlyMemory<char> memory) =>
+        new(memory, Whitespaces.Breaking.AsMemory(), true);
 
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
+    public static SplitMemory<char> SplitLines(this Memory<char> memory) => ((ReadOnlyMemory<char>)memory).SplitLines();
 
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitOn(this string span, in char separator) => span.AsSpan().SplitOn(separator);
+    public static SplitMemory<char> SplitWhitespace(this string memory) => memory.AsMemory().SplitWhitespace();
 
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanWhitespace(this string span) => span.AsSpan().SplitWhitespace();
-
-    /// <summary>Splits a span by whitespace.</summary>
+    /// <summary>Splits a memory by whitespace.</summary>
     /// <remarks><para>Whitespace is considered any character in <see cref="Whitespaces.Unicode"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <param name="memory">The memory to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
-        new(span, Whitespaces.Unicode.AsSpan(), true);
+    public static SplitMemory<char> SplitWhitespace(this ReadOnlyMemory<char> memory) =>
+        new(memory, Whitespaces.Unicode.AsMemory(), true);
 
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+    public static SplitMemory<char> SplitWhitespace(this Memory<char> memory) =>
+        ((ReadOnlyMemory<char>)memory).SplitWhitespace();
 #endif
 }
 
 /// <summary>Represents a split entry.</summary>
-/// <typeparam name="T">The type of element from the span.</typeparam>
+/// <typeparam name="T">The type of element from the memory.</typeparam>
 [StructLayout(LayoutKind.Auto)]
 #if CSHARPREPL
 public
@@ -322,36 +247,22 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-#if !NO_REF_STRUCTS
-    ref
-#endif
-    partial struct SplitSpan<T>
-#if UNMANAGED_SPAN
-    where T : unmanaged, IEquatable<T>?
-#else
+    partial struct SplitMemory<T> : IEquatable<SplitMemory<T>>, IEnumerable<ReadOnlyMemory<T>>
     where T : IEquatable<T>?
-#endif
 {
-    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="accumulator">The accumulator.</param>
-    /// <param name="next">The next slice from the enumeration.</param>
-    /// <returns>The final accumulator value.</returns>
-    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
-
     readonly bool _isAny;
 
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body) => Body = body;
+    public SplitMemory(ReadOnlyMemory<T> body) => Body = body;
 
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
+    /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
     /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator, bool isAny)
+    public SplitMemory(ReadOnlyMemory<T> body, ReadOnlyMemory<T> separator, bool isAny)
     {
         Body = body;
         Separator = separator;
@@ -361,7 +272,7 @@ readonly
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
     /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
-    public ReadOnlySpan<T> this[[NonNegativeValue] int index]
+    public ReadOnlyMemory<T> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
@@ -380,8 +291,8 @@ readonly
         }
     }
 
-    /// <summary>Gets the empty split span.</summary>
-    public static SplitSpan<T> Empty
+    /// <summary>Gets the empty split memory.</summary>
+    public static SplitMemory<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
     }
@@ -396,17 +307,23 @@ readonly
     }
 
     /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Body
+    public ReadOnlyMemory<T> Body
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
         [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
     }
 
     /// <summary>Gets the separator.</summary>
-    public ReadOnlySpan<T> Separator
+    public ReadOnlyMemory<T> Separator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
         [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+    }
+
+    /// <summary>Gets a <see cref="SplitSpan{T}"/> from the memory region.</summary>
+    public SplitSpan<T> SplitSpan
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(Body.Span, Separator.Span, IsAny);
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
@@ -414,20 +331,20 @@ readonly
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both splits are equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => left.Equals(right);
+    public static bool operator ==(SplitMemory<T> left, SplitMemory<T> right) => left.Equals(right);
 
     /// <summary>Determines whether both splits are not equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both splits are not equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => !left.Equals(right);
+    public static bool operator !=(SplitMemory<T> left, SplitMemory<T> right) => !left.Equals(right);
 
-    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
+    /// <summary>Separates the head from the tail of this <see cref="SplitMemory{T}"/>.</summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out ReadOnlySpan<T> head, out SplitSpan<T> tail)
+    public void Deconstruct(out ReadOnlyMemory<T> head, out SplitMemory<T> tail)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
         {
@@ -446,8 +363,9 @@ readonly
     public override bool Equals(object? obj) => false;
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
+    // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(scoped SplitSpan<T> other) =>
+    public bool Equals(SplitMemory<T> other) =>
         Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
         IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
@@ -481,19 +399,26 @@ readonly
 #endif
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
 
-    /// <summary>Gets the first element.</summary>
-    /// <returns>The first span from this instance.</returns>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+    IEnumerator<ReadOnlyMemory<T>> IEnumerable<ReadOnlyMemory<T>>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>Gets the first element.</summary>
+    /// <returns>The first memory from this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public ReadOnlyMemory<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
 
     /// <summary>Gets the last element.</summary>
-    /// <returns>The last span from this instance.</returns>
+    /// <returns>The last memory from this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> Last()
+    public ReadOnlyMemory<T> Last()
     {
         var e = GetEnumerator();
 
@@ -503,9 +428,9 @@ readonly
     }
 
     /// <summary>Gets the single element.</summary>
-    /// <returns>The single span from this instance.</returns>
+    /// <returns>The single memory from this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> Single() =>
+    public ReadOnlyMemory<T> Single() =>
         GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
 
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
@@ -516,11 +441,12 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
-        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<T>, TAccumulator> func
     )
     {
         var accumulator = seed;
 
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
             accumulator = func(accumulator, next);
 
@@ -528,34 +454,14 @@ readonly
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe Accumulator<StringBuilder> StringBuilderAccumulator() =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        static (builder, span) => builder.Append(
-            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, char>(ref MemoryMarshal.GetReference(span)), span.Length)
-        );
-#else
-        static (builder, span) =>
-        {
-#pragma warning disable 8500
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-            var ptr = span.Pointer;
-#else
-            fixed (T* ptr = span)
-#endif
-#pragma warning restore 8500
-                return builder.Append((char*)ptr, span.Length);
-        };
-#endif
+    static unsafe Func<StringBuilder, ReadOnlyMemory<T>, StringBuilder> StringBuilderAccumulator() =>
+        static (builder, memory) => builder.Append(Unsafe.As<ReadOnlyMemory<T>, ReadOnlyMemory<char>>(ref memory));
 
-    /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
+    /// <summary>Represents the enumeration object that views <see cref="SplitMemory{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public
-#if !NO_REF_STRUCTS
-        ref
-#endif
-        partial struct Enumerator(SplitSpan<T> split)
+    public partial struct Enumerator(SplitMemory<T> split) : IEnumerator<ReadOnlyMemory<T>>
     {
-        readonly SplitSpan<T> _split = split;
+        readonly SplitMemory<T> _split = split;
 
         [ValueRange(-1, int.MaxValue)]
 #pragma warning disable IDE0044
@@ -569,13 +475,23 @@ readonly
         }
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
-        public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+        public ReadOnlyMemory<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+
+        /// <inheritdoc />
+        readonly object IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
+        }
 
         /// <summary>
         /// Sets the enumerator to its initial position, which is before the first element in the collection.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _end = -1;
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void IDisposable.Dispose() { }
 
         /// <summary>Advances the enumerator to the next element of the collection.</summary>
         /// <returns>
@@ -608,8 +524,8 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Step(
             bool isAny,
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
+            ReadOnlyMemory<T> body,
+            ReadOnlyMemory<T> separator,
             scoped ref int end,
             out int start
         ) =>
@@ -617,8 +533,8 @@ readonly
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
+            ReadOnlyMemory<T> body,
+            ReadOnlyMemory<T> separator,
             scoped ref int end,
             out int start
         )
@@ -638,7 +554,7 @@ readonly
             start = end is -1 ? ++end : end += length;
 
             while (end <= bodyLength)
-                switch (body[end..].IndexOf(separator))
+                switch (body[end..].Span.IndexOf(separator.Span))
                 {
                     case -1:
                         end = bodyLength;
@@ -655,13 +571,9 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
+        static bool StepAny(ReadOnlyMemory<T> body, ReadOnlyMemory<T> separator, ref int end, out int start)
         {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.SkipInit(out start);
-#else
-            start = 0;
-#endif
 
             if (body.Length is var bodyLength && ++end >= bodyLength)
                 return false;
@@ -676,8 +588,8 @@ readonly
         Begin:
             var min = int.MaxValue;
 
-            foreach (var next in separator)
-                switch (body[end..].IndexOf(next))
+            foreach (var next in separator.Span)
+                switch (body[end..].Span.IndexOf(next))
                 {
                     case -1: continue;
                     case 0: goto Increment;
