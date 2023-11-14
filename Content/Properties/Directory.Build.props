@@ -30,6 +30,7 @@
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
@@ -42,7 +43,6 @@
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../'))=./</PathMap>
         <DefaultDocumentationInvalidCharReplacement>-</DefaultDocumentationInvalidCharReplacement>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-        <GenerateDocumentationFile>$('$(MSBuildProjectName.Contains(&quot;Analyzer&quot;))' == 'false')</GenerateDocumentationFile>
         <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
         <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
@@ -106,6 +106,7 @@
     </PropertyGroup>
     <!-- Roslyn projects should not embed documentation on output. -->
     <PropertyGroup Condition="$(MSBuildProjectName.Contains('Analyzer')) or $(MSBuildProjectName.Contains('SourceGenerator'))">
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <ExportJetBrainsAnnotations>false</ExportJetBrainsAnnotations>
     </PropertyGroup>
     <!-- Sets the icon of the package, if it exists. -->
