@@ -808,7 +808,7 @@ static partial class Span
     /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
-    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef<T>(source);
+    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef(source);
 #pragma warning restore 8500
 #endif
 #endif
