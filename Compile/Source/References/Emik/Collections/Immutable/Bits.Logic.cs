@@ -118,7 +118,7 @@ readonly
     {
         fixed (T* r = &left)
         fixed (T* w = &right)
-            return ref *Max(r, w);
+            return ref Unsafe.AsRef<T>(Max(r, w));
     }
 
     /// <summary>Returns the reference that contains the lesser bits.</summary>
@@ -133,7 +133,7 @@ readonly
     {
         fixed (T* r = &left)
         fixed (T* w = &right)
-            return ref *Min(r, w);
+            return ref Unsafe.AsRef<T>(Min(r, w));
     }
 #endif
 

@@ -575,7 +575,7 @@ static partial class Span
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER || CSHARPREPL
         new(ref AsRef(reference));
 #elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         new(AsRef(reference));
@@ -808,7 +808,11 @@ static partial class Span
     /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
-    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef(source);
+    public static unsafe ref T AsRef<T>(in T source)
+    {
+        fixed (T* ptr = &source)
+            return ref Unsafe.AsRef<T>(ptr);
+    }
 #pragma warning restore 8500
 #endif
 #endif

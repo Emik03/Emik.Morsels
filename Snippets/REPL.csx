@@ -7991,7 +7991,7 @@ public
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER || CSHARPREPL
         new(ref AsRef(reference));
 #elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         new(AsRef(reference));
@@ -8224,7 +8224,11 @@ public
     /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
-    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef(source);
+    public static unsafe ref T AsRef<T>(in T source)
+    {
+        fixed (T* ptr = &source)
+            return ref Unsafe.AsRef<T>(ptr);
+    }
 #pragma warning restore 8500
 #endif
 #endif
@@ -8338,13 +8342,13 @@ public
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>)).ToArray();
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(PooledSmallList<T>)).ToArray();
 #endif
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>)).ToArray();
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(Span<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -8355,13 +8359,13 @@ public
         where T : IEquatable<T>?
 #endif
         =>
-            MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>)).ToArray();
+            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(SplitSpan<T>)).ToArray();
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>)).ToArray();
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(ReadOnlySpan<T>)).ToArray();
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
@@ -10790,7 +10794,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective StructCanBeMadeReadOnly
 
 
 
@@ -10896,7 +10900,6 @@ readonly
 /// <typeparam name="T">The type of item to store.</typeparam>
 /// <param name="left">The first item.</param>
 /// <param name="right">The second item.</param>
-// ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
 [StructLayout(LayoutKind.Sequential)]
 #pragma warning disable MA0102
 #if !NO_READONLY_STRUCTS
@@ -14852,7 +14855,7 @@ readonly
     {
         fixed (T* r = &left)
         fixed (T* w = &right)
-            return ref *Max(r, w);
+            return ref Unsafe.AsRef<T>(Max(r, w));
     }
 
     /// <summary>Returns the reference that contains the lesser bits.</summary>
@@ -14867,7 +14870,7 @@ readonly
     {
         fixed (T* r = &left)
         fixed (T* w = &right)
-            return ref *Min(r, w);
+            return ref Unsafe.AsRef<T>(Min(r, w));
     }
 #endif
 

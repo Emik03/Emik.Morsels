@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
 using static Span;
@@ -108,7 +108,6 @@ static partial class Two
 /// <typeparam name="T">The type of item to store.</typeparam>
 /// <param name="left">The first item.</param>
 /// <param name="right">The second item.</param>
-// ReSharper disable BadPreprocessorIndent StructCanBeMadeReadOnly
 [StructLayout(LayoutKind.Sequential)]
 #pragma warning disable MA0102
 #if !NO_READONLY_STRUCTS
