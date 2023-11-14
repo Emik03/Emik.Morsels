@@ -7068,8 +7068,8 @@ public
                 minor > 0 ? minor.DigitCount() + 1 : 0) +
         length;
 
-    [Pure]
-    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 == 1 ? 0 : Math.Abs(i) % 10;
+    [Inline, Pure]
+    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 is 1 ? 0 : Math.Abs(i) % 10;
 
     [MustUseReturnValue]
     static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
