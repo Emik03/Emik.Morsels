@@ -8224,7 +8224,7 @@ public
     /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
-    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef<T>(source);
+    public static unsafe ref T AsRef<T>(in T source) => ref Unsafe.AsRef(source);
 #pragma warning restore 8500
 #endif
 #endif
@@ -8238,7 +8238,7 @@ public
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Where<T>(
@@ -8563,7 +8563,7 @@ public
         typeof(T) == typeof(uint) ||
         typeof(T) == typeof(ulong) ||
         typeof(T) == typeof(ushort);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
@@ -8583,7 +8583,7 @@ public
 #endif
         =>
             All((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(
@@ -8609,7 +8609,7 @@ public
 
         return true;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
@@ -8629,7 +8629,7 @@ public
 #endif
         =>
             Any((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
@@ -8655,7 +8655,7 @@ public
 
         return false;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> Select<T>(
@@ -8726,7 +8726,20 @@ public
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if ROSLYN
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+#else
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(
@@ -8744,6 +8757,7 @@ public
         IEqualityComparer<T>? comparer = null
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
+#endif
 
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -8786,7 +8800,7 @@ public
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> SkipWhile<T>(
@@ -8820,7 +8834,7 @@ public
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> TakeWhile<T>(
@@ -8862,7 +8876,7 @@ public
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> TakeWhile<T>(
@@ -8908,7 +8922,7 @@ public
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
@@ -9925,7 +9939,7 @@ readonly
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -9955,7 +9969,7 @@ readonly
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -9976,7 +9990,7 @@ readonly
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -10006,7 +10020,7 @@ readonly
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -10027,7 +10041,7 @@ readonly
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -10066,7 +10080,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -10093,7 +10107,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -10132,7 +10146,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -10338,7 +10352,7 @@ readonly
 
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+// ReSharper disable InvocationIsSkipped NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
@@ -10386,7 +10400,7 @@ readonly
 #endif
         =>
             Sum((ReadOnlySpan<T>)span);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -10444,7 +10458,7 @@ readonly
 #endif
         =>
             Average((ReadOnlySpan<T>)span, converter);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -10495,7 +10509,7 @@ readonly
 #endif
         =>
             Sum((ReadOnlySpan<T>)span, converter);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -10538,7 +10552,7 @@ readonly
         return sum;
     }
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -10558,7 +10572,7 @@ readonly
             Average((ReadOnlySpan<T>)span.Span);
 #endif
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -10577,7 +10591,7 @@ readonly
         =>
             Sum((ReadOnlySpan<T>)span.Span);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -10608,7 +10622,7 @@ readonly
         =>
             Average((ReadOnlySpan<T>)span.Span, converter);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -11033,7 +11047,7 @@ public partial struct Two<T>(T left, T right) :
 // ReSharper disable NullableWarningSuppressionIsUsed
 #pragma warning disable MA0048
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -11059,7 +11073,7 @@ public partial struct Two<T>(T left, T right) :
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -11091,7 +11105,7 @@ public partial struct Two<T>(T left, T right) :
 
         return accumulator;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -11123,7 +11137,7 @@ public partial struct Two<T>(T left, T right) :
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, seed, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -11150,7 +11164,7 @@ public partial struct Two<T>(T left, T right) :
 
         return seed;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -11185,7 +11199,7 @@ public partial struct Two<T>(T left, T right) :
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -11219,10 +11233,10 @@ public partial struct Two<T>(T left, T right) :
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantExtendsListEntry StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace InvertIf RedundantExtendsListEntry StructCanBeMadeReadOnly
 
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER || ROSLYN
 /// <summary>Methods to split memories into multiple memories.</summary>
 #pragma warning disable MA0048
 
@@ -11450,7 +11464,6 @@ public partial struct Two<T>(T left, T right) :
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char> SplitWhitespace(this Memory<char> memory) =>
         ((ReadOnlyMemory<char>)memory).SplitWhitespace();
-#endif
 
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="T">The type of element from the memory.</typeparam>
@@ -11817,6 +11830,7 @@ readonly
         }
     }
 }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 

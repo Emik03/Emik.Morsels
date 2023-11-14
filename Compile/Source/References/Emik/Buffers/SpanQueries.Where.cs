@@ -9,7 +9,7 @@ namespace Emik.Morsels;
 static partial class SpanQueries
 #pragma warning restore MA0048
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Where<T>(

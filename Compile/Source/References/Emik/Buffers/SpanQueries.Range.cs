@@ -11,7 +11,7 @@ using static OperatorCaching;
 static partial class SpanQueries
 #pragma warning restore MA0048
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);

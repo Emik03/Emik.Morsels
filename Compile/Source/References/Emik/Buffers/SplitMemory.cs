@@ -2,10 +2,10 @@
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantExtendsListEntry StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace InvertIf RedundantExtendsListEntry StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER || ROSLYN
 /// <summary>Methods to split memories into multiple memories.</summary>
 #pragma warning disable MA0048
 static partial class SplitMemoryFactory
@@ -235,7 +235,6 @@ static partial class SplitMemoryFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char> SplitWhitespace(this Memory<char> memory) =>
         ((ReadOnlyMemory<char>)memory).SplitWhitespace();
-#endif
 }
 
 /// <summary>Represents a split entry.</summary>
@@ -603,3 +602,4 @@ readonly
         }
     }
 }
+#endif
