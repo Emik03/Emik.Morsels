@@ -14250,6 +14250,25 @@ readonly
 
         return t;
     }
+#if !WAWA
+    /// <summary>Returns the reference that contains the least bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMin<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
+
+    /// <summary>Returns the reference that contains the most bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMax<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
+#endif
 
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
