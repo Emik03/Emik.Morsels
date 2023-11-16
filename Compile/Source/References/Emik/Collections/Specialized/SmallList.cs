@@ -85,7 +85,7 @@ static partial class SmallList
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
-        Ref(ref Unsafe.AsRef(_));
+        Ref(ref AsRef(_));
 #else
     public static unsafe PooledSmallList<T> New1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -94,7 +94,7 @@ static partial class SmallList
     {
         Unsafe.SkipInit(out T one);
 #pragma warning disable 9091 // InlineAttribute makes this okay.
-        return Ref(ref Unsafe.AsRef(one));
+        return Ref(ref one);
 #pragma warning restore 9091
     }
 #endif
@@ -237,7 +237,7 @@ static partial class SmallList
         where T : unmanaged
 #endif
         where TRef : struct =>
-        PooledSmallList<T>.From(ref Unsafe.AsRef(_));
+        PooledSmallList<T>.From(ref AsRef(_));
 #else
     public static unsafe PooledSmallList<T> From<T, TRef>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -247,7 +247,7 @@ static partial class SmallList
     {
         Unsafe.SkipInit(out TRef two);
 #pragma warning disable 9091 // InlineAttribute makes this okay.
-        return PooledSmallList<T>.From(ref Unsafe.AsRef(two));
+        return PooledSmallList<T>.From(ref two);
 #pragma warning restore 9091
     }
 #endif

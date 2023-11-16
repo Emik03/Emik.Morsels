@@ -86,7 +86,7 @@ static partial class Exit
     /// <exception cref="SecurityException">
     /// The caller does not have sufficient security permission to perform this function.
     /// </exception>
-    /// <returns>This method does not return. Specified to allow <see keyword="throw"/> expressions.</returns>
+    /// <returns>This method does not return. Specified to allow <see langword="throw"/> expressions.</returns>
     [ContractAnnotation("=> halt"),
      DoesNotReturn,
      SecuritySafeCritical,

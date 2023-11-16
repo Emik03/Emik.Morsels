@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace RedundantUsingDirective
+// ReSharper disable CheckNamespace ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator LoopCanBeConvertedToQuery MergeIntoPattern NullableWarningSuppressionIsUsed RedundantUsingDirective SuggestBaseTypeForParameter
 namespace Emik.Morsels;
-#pragma warning disable 1574, 8500
+#pragma warning disable 1574, 8500, MA0051
 using static Span;
 
 /// <summary>Provides the method to convert spans.</summary>
@@ -12,13 +12,13 @@ static partial class Allocator
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
-        [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(PooledSmallList<T>))];
+        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(PooledSmallList<T>))];
 #endif
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
-        [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>))];
+        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(Span<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,13 +29,13 @@ static partial class Allocator
         where T : IEquatable<T>?
 #endif
         =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>))];
+            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(SplitSpan<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
-       [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>))];
+       [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(ReadOnlySpan<T>))];
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>

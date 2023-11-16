@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-// ReSharper disable once RedundantUsingDirective
+// ReSharper disable once RedundantExtendsListEntry RedundantUsingDirective
 using static Peeks;
 using static Span;
 

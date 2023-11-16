@@ -6,25 +6,42 @@
 extern alias ms;
 #endif
 #if KTANE
-extern alias unity;
-
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
-global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
+extern alias unity;
+#endif
+global using Attribute = System.Attribute;
+global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+#if ANDROID
+global using Action = System.Action;
+global using Array = System.Array;
+global using Console = System.Console;
+global using Debug = System.Diagnostics.Debug;
+global using Directory = System.IO.Directory;
+global using Enum = System.Enum;
+global using Environment = System.Environment;
+global using Exception = System.Exception;
+global using File = System.IO.File;
+global using FileNotFoundException = System.IO.FileNotFoundException;
+global using ICollection = System.Collections.ICollection;
+global using IList = System.Collections.IList;
+global using Math = System.Math;
+global using Path = System.IO.Path;
+global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
+global using Random = System.Random;
+global using StringBuilder = System.Text.StringBuilder;
+global using Trace = System.Diagnostics.Trace;
+global using Type = System.Type;
+global using Vector = System.Numerics.Vector;
 #endif
 #if KTANE
 global using Application = UnityEngine.Application;
-#endif
-global using Attribute = System.Attribute;
-#if KTANE
+global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
 global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations.CannotApplyEqualityOperatorAttribute;
 global using Component = unity::UnityEngine.Component;
 global using ContractAnnotationAttribute = unity::JetBrains.Annotations.ContractAnnotationAttribute;
 global using Debug = unity::UnityEngine.Debug;
-#endif
-global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
-#if KTANE
 global using ImplicitUseKindFlags = unity::JetBrains.Annotations.ImplicitUseKindFlags;
 global using ImplicitUseTargetFlags = unity::JetBrains.Annotations.ImplicitUseTargetFlags;
 global using InstantHandleAttribute = unity::JetBrains.Annotations.InstantHandleAttribute;
@@ -39,20 +56,29 @@ global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
+global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
+global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #endif
 #if KTANE && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #elif NET40_OR_GREATER
 global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
+global using Range = System.Range;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
-#endif
-#if !WAWA
 global using Range = System.Range;
 #endif
-#if KTANE
-global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
-global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
+#if !NETSTANDARD || NETSTANDARD1_2_OR_GREATER
+global using Timer = System.Threading.Timer;
+#endif
+#if XNA
+global using Color = Microsoft.Xna.Framework.Color;
+global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
+global using Keyboard = Microsoft.Xna.Framework.Input.Keyboard;
+global using Rectangle = Microsoft.Xna.Framework.Rectangle;
+global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
+global using Vector2 = Microsoft.Xna.Framework.Vector2;
+global using Version = System.Version;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace

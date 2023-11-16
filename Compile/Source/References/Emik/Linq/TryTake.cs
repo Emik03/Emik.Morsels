@@ -137,6 +137,16 @@ static partial class TryTake
     public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
         iterable ?? Enumerable.Empty<T>();
 
+#if NETCOREAPP || ROSLYN
+    /// <summary>Returns the array, or an empty array.</summary>
+    /// <typeparam name="T">The type of array.</typeparam>
+    /// <param name="array">The array to potentially return.</param>
+    /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
+    [Pure]
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
+        array.IsDefault ? ImmutableArray<T>.Empty : array;
+#endif
+
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>

@@ -71,10 +71,17 @@ abstract partial class Assert(
     [Format("Expected @x to have any items, received an empty collection."), Pure]
     public static bool Any([InstantHandle] IEnumerable x)
     {
+        // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
         var e = x.GetEnumerator();
-        var result = e.MoveNext();
-        (e as IDisposable)?.Dispose();
-        return result;
+
+        try
+        {
+            return e.MoveNext();
+        }
+        finally
+        {
+            (e as IDisposable)?.Dispose();
+        }
     }
 
     /// <summary>Assertion that the enumerable must be empty.</summary>

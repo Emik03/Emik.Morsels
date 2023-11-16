@@ -8,7 +8,7 @@ using static OperatorCaching;
 using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+// ReSharper disable InvocationIsSkipped NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
@@ -58,7 +58,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             Sum((ReadOnlySpan<T>)span);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -116,7 +116,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             Average((ReadOnlySpan<T>)span, converter);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -167,7 +167,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             Sum((ReadOnlySpan<T>)span, converter);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -210,7 +210,7 @@ static partial class SpanSimdQueries
         return sum;
     }
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -230,7 +230,7 @@ static partial class SpanSimdQueries
             Average((ReadOnlySpan<T>)span.Span);
 #endif
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -249,7 +249,7 @@ static partial class SpanSimdQueries
         =>
             Sum((ReadOnlySpan<T>)span.Span);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -280,7 +280,7 @@ static partial class SpanSimdQueries
         =>
             Average((ReadOnlySpan<T>)span.Span, converter);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(

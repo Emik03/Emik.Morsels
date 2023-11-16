@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable BadPreprocessorIndent
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -330,7 +331,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            Ref(ref Unsafe.AsRef(_));
+            Ref(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline1<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -338,7 +339,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out T x);
-        return Ref(ref Unsafe.AsRef(x));
+        return Ref(ref x);
     }
 #endif
 #endif
@@ -351,7 +352,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline2<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -359,7 +360,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<T> x);
-        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref x);
     }
 #endif
 
@@ -371,7 +372,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline4<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -379,7 +380,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<T>> x);
-        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref x);
     }
 #endif
 
@@ -391,7 +392,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline8<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -399,7 +400,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<T>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -411,7 +412,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline16<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -419,7 +420,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -431,7 +432,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline32<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -439,7 +440,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -451,7 +452,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline64<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -459,7 +460,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -471,7 +472,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline128<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -479,7 +480,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -491,7 +492,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline256<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -499,7 +500,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -511,7 +512,7 @@ static partial class Span
         where T : unmanaged
 #endif
         =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(_));
+            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline512<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -519,7 +520,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref x);
     }
 #endif
 
@@ -533,7 +534,7 @@ static partial class Span
         =>
             PooledSmallList<T>
                .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
-               .AsSpan(ref Unsafe.AsRef(_));
+               .AsSpan(ref AsRef(_));
 #else
     public static unsafe Span<T> Inline1024<T>(in bool _ = false)
 #if UNMANAGED_SPAN
@@ -541,10 +542,7 @@ static partial class Span
 #endif
     {
         Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-
-        return PooledSmallList<T>
-           .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
-           .AsSpan(ref Unsafe.AsRef(x));
+        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref x);
     }
 #endif
 #endif
@@ -560,6 +558,16 @@ static partial class Span
 #else
         MemoryMarshal.CreateSpan(ref reference, 1);
 #endif
+
+    /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
+    /// <typeparam name="TFrom">The source type.</typeparam>
+    /// <typeparam name="TTo">The destination type.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    public static unsafe Span<TTo> Ref<TFrom, TTo>(ref TFrom reference)
+        where TFrom : struct
+        where TTo : struct =>
+        MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
@@ -567,11 +575,23 @@ static partial class Span
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> In<T>(in T reference) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        new(Unsafe.AsRef(reference));
+#if NET8_0_OR_GREATER || CSHARPREPL
+        new(ref AsRef(reference));
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        new(AsRef(reference));
 #else
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef(reference), 1);
+        MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
 #endif
+
+    /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
+    /// <typeparam name="TFrom">The source type.</typeparam>
+    /// <typeparam name="TTo">The destination type.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    public static unsafe ReadOnlySpan<TTo> In<TFrom, TTo>(in TFrom reference)
+        where TFrom : struct
+        where TTo : struct =>
+        MemoryMarshal.Cast<TFrom, TTo>(In(reference));
 #endif
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
@@ -781,5 +801,19 @@ static partial class Span
             Marshal.FreeHGlobal(ptr);
         }
     }
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+    /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
+    /// <typeparam name="T">The underlying type of the reference.</typeparam>
+    /// <param name="source">The read-only reference to reinterpret.</param>
+    /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable 8500
+    public static unsafe ref T AsRef<T>(in T source)
+    {
+        fixed (T* ptr = &source)
+            return ref Unsafe.AsRef<T>(ptr);
+    }
+#pragma warning restore 8500
+#endif
 #endif
 }

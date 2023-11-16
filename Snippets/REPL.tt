@@ -188,14 +188,11 @@ global using CommunityToolkit.HighPerformance.Streams;
 global using Emik;
 global using Emik.Results;
 global using Emik.Results.Extensions;
-global using Emik.Unions;
-global using Emik.Unions.Disjoints;
-global using Emik.Unions.Mappings;
-global using Emik.Unions.Tagged;
 global using JetBrains;
 global using JetBrains.Annotations;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
+global using static FastGenericNew.FastNew;
 global using static TextCopy.ClipboardService;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
@@ -302,5 +299,9 @@ static class Stringifier
     public static string Stringify<T>(T? source) => source.Stringify();
 }
 
+/// <summary>Polyfill for <c>nameof()</c>.</summary>
+static class Morsels;
+
 /// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>
 static object None => Emik.Results.Result.None;
+

@@ -16,7 +16,7 @@ static partial class Indexers
     /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? ~index.Value : index.Value).For();
+    public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? -index.Value : index.Value).For();
 
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -27,11 +27,11 @@ static partial class Indexers
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<int> For(this Range range) =>
-        range.Start.Value is var start &&
-        range.End.Value is var end &&
+        (range.Start.IsFromEnd ? -range.Start.Value : range.Start.Value) is var start &&
+        (range.End.IsFromEnd ? -range.End.Value : range.End.Value) is var end &&
         start == end ? Enumerable.Empty<int>() :
-        Math.Abs(start - end) is var len &&
-        start < end ? Enumerable.Range(start, len) : Enumerable.Repeat(start, len).Select((x, i) => x - i - 1);
+        start < end ? Enumerable.Range(start, end - start) :
+        Enumerable.Repeat(start, start - end).Select((x, i) => x - i);
 
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
     /// <remarks><para>
@@ -44,14 +44,17 @@ static partial class Indexers
     /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
     public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
     {
-        head = default;
-        tail = Enumerable.Empty<T>();
+        using var e = enumerable?.GetEnumerator();
 
-        if (enumerable?.GetEnumerator() is not { } enumerator)
+        if (e is null)
+        {
+            head = default;
+            tail = Enumerable.Empty<T>();
             return;
+        }
 
-        head = enumerator.MoveNext() ? enumerator.Current : default;
-        tail = enumerator.AsEnumerable();
+        head = e.MoveNext() ? e.Current : default;
+        tail = e.AsEnumerable();
     }
 
     /// <summary>Gets a specific item from a collection.</summary>
@@ -107,13 +110,13 @@ static partial class Indexers
     /// <summary>Gets an enumeration of an index.</summary>
     /// <param name="index">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
 
     /// <summary>Gets an enumeration of a range.</summary>
     /// <param name="range">The range to iterate over.</param>
     /// <returns>An enumeration from the range's start to end.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
 
     [Pure]

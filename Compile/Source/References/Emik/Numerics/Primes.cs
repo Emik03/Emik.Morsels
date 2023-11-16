@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable AsyncifyInvocation, CA1810, CA2008, MA0051, MEN004, S3949, S4462, VSTHRD002, VSTHRD105
+#pragma warning disable AsyncifyInvocation, CA1810, CA2008, MA0051, S3949, S4462, VSTHRD002, VSTHRD105
 // ReSharper disable CognitiveComplexity CommentTypo IdentifierTypo SuggestBaseTypeForParameter
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;

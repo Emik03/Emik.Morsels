@@ -4,6 +4,8 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+using static CollectionAccessType;
+
 /// <summary>Provides the deconstruction to extract the head and tail of a collection.</summary>
 static partial class Headless
 {
@@ -41,6 +43,7 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="IList{T}.this" />
+    [CollectionAccess(Read), Pure]
     public T this[int index]
     {
         get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
@@ -48,18 +51,23 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
     }
 
     /// <inheritdoc />
+    [CollectionAccess(None), Pure]
     public bool IsReadOnly => list.IsReadOnly;
 
     /// <inheritdoc cref="ICollection{T}.Count" />
+    [CollectionAccess(None), Pure]
     public int Count => list.Count - 1;
 
     /// <inheritdoc />
+    [CollectionAccess(UpdatedContent)]
     public void Add(T item) => list.Add(item);
 
     /// <inheritdoc />
+    [CollectionAccess(ModifyExistingContent)]
     public void Clear() => list.Clear();
 
     /// <inheritdoc />
+    [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex)
     {
         for (var i = 0; i < Count && arrayIndex + i < array.Length; i++)
@@ -67,33 +75,35 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
     }
 
     /// <inheritdoc />
-    public void Insert(int index, T item)
-    {
-        if (index is -1)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        list.Insert(index + 1, item);
-    }
+    [CollectionAccess(UpdatedContent)]
+    public void Insert(int index, T item) =>
+        list.Insert(index is not -1 ? index + 1 : throw new ArgumentOutOfRangeException(nameof(index)), item);
 
     /// <inheritdoc />
-    public void RemoveAt(int index)
-    {
-        if (index is -1)
-            throw new ArgumentOutOfRangeException(nameof(index));
-
-        list.RemoveAt(index + 1);
-    }
+    [CollectionAccess(ModifyExistingContent)]
+    public void RemoveAt(int index) =>
+        list.RemoveAt(index is not -1 ? index + 1 : throw new ArgumentOutOfRangeException(nameof(index)));
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     public bool Contains(T item) => list.Contains(item);
 
     /// <inheritdoc />
+    [CollectionAccess(Read | ModifyExistingContent), Pure]
     public bool Remove(T item) => list.Remove(item);
 
     /// <inheritdoc />
-    public int IndexOf(T item) => list.IndexOf(item) is var result && result is -1 ? -1 : result - 1;
+    [CollectionAccess(Read), Pure]
+    public int IndexOf(T item) =>
+        list.IndexOf(item) switch
+        {
+            0 => Find(item),
+            -1 => -1,
+            var x => x - 1,
+        };
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator()
     {
         var ret = ((IEnumerable)list).GetEnumerator();
@@ -102,11 +112,26 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
     }
 
     /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     public IEnumerator<T> GetEnumerator()
     {
         var ret = list.GetEnumerator();
         ret.MoveNext();
         return ret;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
+    public override string? ToString() => list.ToString();
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
+    int Find(T item)
+    {
+        for (var i = 0; i < Count; i++)
+            if (EqualityComparer<T>.Default.Equals(this[i], item))
+                return i;
+
+        return -1;
     }
 }
 #endif

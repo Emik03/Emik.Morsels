@@ -290,14 +290,12 @@ static partial class Each
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<int> For(this int num) =>
-        Math.Abs(num) is var abs && num < 0
-            ? Enumerable.Repeat(abs, abs).Select((x, i) => x - i - 1)
-            : Enumerable.Range(0, num);
+        num >= 0 ? Enumerable.Range(0, num) : Enumerable.Repeat(-num, -num).Select((x, i) => x - i - 1);
 
     /// <summary>Gets an enumeration of a number.</summary>
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
 
     /// <summary>
@@ -372,7 +370,7 @@ static partial class Each
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
-    [Pure]
+    [MustDisposeResource, Pure]
     public static IEnumerator<T> GetEnumerator<T>(this T num)
         where T : IComparisonOperators<T?, T?, bool>,
         ISubtractionOperators<T, T, T>,

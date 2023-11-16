@@ -26,7 +26,7 @@ static partial class SpanQueries
         typeof(T) == typeof(uint) ||
         typeof(T) == typeof(ulong) ||
         typeof(T) == typeof(ushort);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
@@ -46,7 +46,7 @@ static partial class SpanQueries
 #endif
         =>
             All((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(
@@ -72,7 +72,7 @@ static partial class SpanQueries
 
         return true;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(this IMemoryOwner<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
@@ -92,7 +92,7 @@ static partial class SpanQueries
 #endif
         =>
             Any((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
@@ -118,7 +118,7 @@ static partial class SpanQueries
 
         return false;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> Select<T>(
@@ -189,7 +189,39 @@ static partial class SpanQueries
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if ROSLYN
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+#else
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(
+        this Memory<T> span,
+        ReadOnlyMemory<T> other,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        span.Span.SequenceEqual(other.Span, comparer);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(
+        this ReadOnlyMemory<T> span,
+        ReadOnlyMemory<T> other,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        span.Span.SequenceEqual(other.Span, comparer);
+#endif
+
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> SkipWhile<T>(
@@ -231,7 +263,7 @@ static partial class SpanQueries
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> SkipWhile<T>(
@@ -265,7 +297,7 @@ static partial class SpanQueries
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> TakeWhile<T>(
@@ -307,7 +339,7 @@ static partial class SpanQueries
 
         return source;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> TakeWhile<T>(

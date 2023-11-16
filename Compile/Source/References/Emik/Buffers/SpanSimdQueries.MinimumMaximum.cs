@@ -11,7 +11,7 @@ using static SpanQueries;
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -41,7 +41,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -62,7 +62,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Maximum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -92,7 +92,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -113,7 +113,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, Minimum>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -152,7 +152,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -179,7 +179,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Maximum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -218,7 +218,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, Minimum>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(

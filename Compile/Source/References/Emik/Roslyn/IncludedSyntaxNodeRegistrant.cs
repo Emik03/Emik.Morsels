@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
-#pragma warning disable GlobalUsingsAnalyzer
+#pragma warning disable GlobalUsingsAnalyzer, SA1216
 // ReSharper disable once RedundantUsingDirective.Global
+global using GeneratedSource = (string HintName, string Source);
 global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 
 #pragma warning restore GlobalUsingsAnalyzer
@@ -15,9 +16,9 @@ static partial class IncludedSyntaxNodeRegistrant
 {
     /// <summary>Adds the deconstruction of the tuples onto the <see cref="SourceProductionContext"/>.</summary>
     /// <param name="context">The context to use for source generation.</param>
-    /// <param name="tuple">The tuple containing the hint name and source.</param>
-    public static void AddSource(SourceProductionContext context, (string HintName, string Source) tuple) =>
-        context.AddSource(tuple.HintName, tuple.Source);
+    /// <param name="generated">The tuple containing the hint name and source.</param>
+    public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
+        context.AddSource(generated.HintName, generated.Source);
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
@@ -237,14 +238,19 @@ static partial class IncludedSyntaxNodeRegistrant
         StringBuilder sb = new(symbol.Name);
         ISymbol? containing = symbol;
 
+        if (symbol.TypeParameters.Length is not 0 and var length)
+            sb.Append('`').Append(length);
+
         while ((containing = containing.ContainingWithoutGlobal()) is not null)
+        {
             sb.Insert(0, '.').Insert(0, containing.Name);
+
+            if (containing is INamedTypeSymbol { TypeParameters.Length: not 0 and var i })
+                sb.Append('`').Append(i);
+        }
 
         if (prefix is not null)
             sb.Insert(0, '.').Insert(0, prefix);
-
-        if (symbol.TypeParameters.Length is not 0 and var i)
-            sb.Append('`').Append(i);
 
         return sb.Append(".g.cs").ToString();
     }
@@ -260,7 +266,32 @@ static partial class IncludedSyntaxNodeRegistrant
             { IsRecord: true } => "record",
             { IsValueType: true } => "struct",
             { IsReferenceType: true } => "class",
-            _ => throw Unreachable,
+            _ => "",
+        };
+
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
+    /// <param name="kind">The symbol to get its keyword.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="kind"/>.</returns>
+    [Pure]
+    public static string KeywordInParameter(this RefKind kind) =>
+        kind switch
+        {
+            RefKind.In => "in ",
+            RefKind.Out => "out ",
+            RefKind.Ref => "ref ",
+            _ => "",
+        };
+
+    /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
+    /// <param name="kind">The symbol to get its keyword.</param>
+    /// <returns>The keyword used to declare the parameter <paramref name="kind"/>.</returns>
+    [Pure]
+    public static string KeywordInReturn(this RefKind kind) =>
+        kind switch
+        {
+            RefKind.Ref => "ref ",
+            RefKind.RefReadOnly => "ref readonly ",
+            _ => "",
         };
 
     /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
@@ -325,7 +356,7 @@ static partial class IncludedSyntaxNodeRegistrant
             diagnostic.Properties
         );
 
-    /// <summary>Gets all the members, including its interfaces and base type members.</summary>
+    /// <summary>Gets all the members, including its base type members.</summary>
     /// <param name="symbol">The symbol to get all of the members of.</param>
     /// <returns>
     /// All of the symbols of the parameter <paramref name="symbol"/>, including the members that come from its

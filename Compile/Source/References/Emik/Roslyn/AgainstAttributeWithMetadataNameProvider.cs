@@ -85,7 +85,7 @@ static partial class AgainstAttributeWithMetadataNameProvider
 
         try
         {
-            symbol.AppendFullyQualifiedMetadataName(ref builder);
+            symbol.AppendFullyQualifiedMetadataName(builder);
             return builder.WrittenSpan.SequenceEqual(name.AsSpan());
         }
         finally
@@ -104,7 +104,7 @@ static partial class AgainstAttributeWithMetadataNameProvider
 
         try
         {
-            symbol.AppendFullyQualifiedMetadataName(ref builder);
+            symbol.AppendFullyQualifiedMetadataName(builder);
             return builder.ToString();
         }
         finally
@@ -237,15 +237,15 @@ static partial class AgainstAttributeWithMetadataNameProvider
     /// <summary>Appends the fully qualified metadata name for a given symbol to a target builder.</summary>
     /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance.</param>
     /// <param name="builder">The target <see cref="ImmutableArrayBuilder{T}"/> instance.</param>
-    static void AppendFullyQualifiedMetadataName(this ISymbol symbol, ref ImmutableArrayBuilder<char> builder)
+    static void AppendFullyQualifiedMetadataName(this ISymbol symbol, in ImmutableArrayBuilder<char> builder)
     {
-        static void BuildFrom(ISymbol? symbol, ref ImmutableArrayBuilder<char> builder)
+        static void BuildFrom(ISymbol? symbol, in ImmutableArrayBuilder<char> builder)
         {
             switch (symbol)
             {
                 // Namespaces that are nested also append a leading '.'
                 case INamespaceSymbol { ContainingNamespace.IsGlobalNamespace: false }:
-                    BuildFrom(symbol.ContainingNamespace, ref builder);
+                    BuildFrom(symbol.ContainingNamespace, builder);
                     builder.Add('.');
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
@@ -262,21 +262,21 @@ static partial class AgainstAttributeWithMetadataNameProvider
 
                 // Types with a containing non-global namespace also append a leading '.'
                 case ITypeSymbol { ContainingSymbol: INamespaceSymbol namespaceSymbol }:
-                    BuildFrom(namespaceSymbol, ref builder);
+                    BuildFrom(namespaceSymbol, builder);
                     builder.Add('.');
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
 
                 // Nested types append a leading '+'
                 case ITypeSymbol { ContainingSymbol: ITypeSymbol typeSymbol }:
-                    BuildFrom(typeSymbol, ref builder);
+                    BuildFrom(typeSymbol, builder);
                     builder.Add('+');
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
             }
         }
 
-        BuildFrom(symbol, ref builder);
+        BuildFrom(symbol, builder);
     }
 }
 #endif

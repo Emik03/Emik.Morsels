@@ -9,7 +9,7 @@ namespace Emik.Morsels;
 static partial class SpanQueries
 #pragma warning restore MA0048
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -35,7 +35,7 @@ static partial class SpanQueries
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
@@ -67,7 +67,7 @@ static partial class SpanQueries
 
         return accumulator;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -99,7 +99,7 @@ static partial class SpanQueries
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, seed, func);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
@@ -126,7 +126,7 @@ static partial class SpanQueries
 
         return seed;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
@@ -161,7 +161,7 @@ static partial class SpanQueries
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
