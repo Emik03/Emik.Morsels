@@ -12,7 +12,7 @@ static partial class SplitFactory
 #pragma warning restore MA0048
 {
     /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
-    public static bool[] Booleans { get; } = { true, false };
+    public static bool[] Booleans { get; } = [true, false];
 
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
@@ -58,7 +58,7 @@ static partial class SplitFactory
         [InstantHandle] Predicate<T> predicate
     )
     {
-        List<T> t = new(), f = new();
+        List<T> t = [], f = [];
 
         foreach (var item in source)
 #pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.

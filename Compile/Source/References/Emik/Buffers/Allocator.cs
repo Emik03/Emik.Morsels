@@ -12,13 +12,13 @@ static partial class Allocator
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(PooledSmallList<T>)).ToArray();
+        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(PooledSmallList<T>))];
 #endif
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(Span<T>)).ToArray();
+        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(Span<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -29,13 +29,13 @@ static partial class Allocator
         where T : IEquatable<T>?
 #endif
         =>
-            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(SplitSpan<T>)).ToArray();
+            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(SplitSpan<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(ReadOnlySpan<T>)).ToArray();
+       [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(ReadOnlySpan<T>))];
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
@@ -43,6 +43,6 @@ static partial class Allocator
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static byte[] Raw<T>(T value) =>
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>()).ToArray();
+        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>())];
 #endif
 }

@@ -12,9 +12,10 @@ using Expression = System.Linq.Expressions.Expression;
 [UsedImplicitly]
 static partial class EnumMath
 {
+    // ReSharper disable once UnusedType.Local
     enum Unknowable;
 
-    static readonly Dictionary<Type, IList> s_dictionary = new();
+    static readonly Dictionary<Type, IList> s_dictionary = [];
 
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>

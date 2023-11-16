@@ -8,12 +8,13 @@ using static Peeks;
 using static Span;
 
 /// <summary>An extremely bad logger.</summary>
+// ReSharper disable once RedundantExtendsListEntry
 sealed partial class BadLogger : IDisposable
 {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Clear"/>
 #endif
-    static readonly byte[] s_clear = { 0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a };
+    static readonly byte[] s_clear = [0x1b, 0x5b, 0x48, 0x1b, 0x5b, 0x32, 0x4a, 0x1b, 0x5b, 0x33, 0x4a];
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Gets the buffer that clears the console when printed. Only on certain Linux terminals though.</summary>
     /// <remarks><para>

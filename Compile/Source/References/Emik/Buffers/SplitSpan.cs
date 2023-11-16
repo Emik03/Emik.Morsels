@@ -151,7 +151,7 @@ static partial class SplitSpanFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static List<string> ToList(this SplitSpan<char> split)
     {
-        List<string> ret = new();
+        List<string> ret = [];
 
         foreach (var next in split)
             ret.Add(next.ToString());
@@ -171,7 +171,7 @@ static partial class SplitSpanFactory
         where T : IEquatable<T>?
 #endif
     {
-        List<T[]> ret = new();
+        List<T[]> ret = [];
 
         foreach (var next in split)
             ret.Add(next.ToArray());
