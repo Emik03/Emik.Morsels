@@ -19,7 +19,7 @@ static partial class EnumStrings
     static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,
             null,
-            new[] { typeof(string), typeof(string) },
+            [typeof(string), typeof(string)],
             null
         ) ??
         throw Unreachable;
@@ -27,7 +27,7 @@ static partial class EnumStrings
     static readonly ConstructorInfo s_newInvalidEnumArgument = typeof(InvalidEnumArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,
             null,
-            new[] { typeof(string), typeof(int), typeof(Type) },
+            [typeof(string), typeof(int), typeof(Type)],
             null
         ) ??
         throw Unreachable;
@@ -77,10 +77,7 @@ static partial class EnumStrings
         }
 
         static SwitchCase[] Cases(bool isToT) =>
-            typeof(T)
-               .GetFields(BindingFlags.Static | BindingFlags.Public)
-               .Select(x => Case(x, isToT))
-               .ToArray();
+            [..typeof(T).GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => Case(x, isToT))];
 
         static SwitchCase Case(FieldInfo x, bool isToT)
         {

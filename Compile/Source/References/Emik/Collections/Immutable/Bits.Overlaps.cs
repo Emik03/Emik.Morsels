@@ -107,7 +107,7 @@ readonly
         T t = default;
 
         foreach (var next in other)
-            if (new Enumerator(next) is var e && !e.MoveNext() || e.MoveNext())
+            if ((Enumerator)next is var e && !e.MoveNext() || e.MoveNext())
                 return false;
             else
                 Or(next, ref t);

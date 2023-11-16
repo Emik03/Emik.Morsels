@@ -21,13 +21,6 @@ partial struct SmallList<T> :
     IList<T>,
     IReadOnlyList<T>
 {
-    static readonly T[] s_empty =
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-        new T[0];
-#else
-        [];
-#endif
-
     // DO NOT PLACE _rest BELOW GENERICS;
     // Doing so will cause only unmanaged generics to be mapped before the object,
     // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
@@ -90,7 +83,7 @@ partial struct SmallList<T> :
 
         if (!enumerator.MoveNext())
         {
-            _rest = s_empty;
+            _rest = [];
             return;
         }
 
@@ -133,7 +126,7 @@ partial struct SmallList<T> :
     /// <param name="third">The third element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third)
-        : this(first, second, third, s_empty) { }
+        : this(first, second, third, []) { }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <param name="first">The first element.</param>
@@ -370,7 +363,7 @@ partial struct SmallList<T> :
 
                 break;
             case 2:
-                (_third, _rest) = (item, s_empty);
+                (_third, _rest) = (item, []);
                 break;
             default:
                 EnsureMutability().Add(item);
@@ -475,7 +468,7 @@ partial struct SmallList<T> :
     /// <param name="tail">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out (T? First, T? Second, T? Third) head, out IList<T> tail) =>
-        (head, tail) = ((_first, _second, _third), Rest ?? s_empty);
+        (head, tail) = ((_first, _second, _third), Rest ?? []);
 
     /// <summary>Deconstructs this instance with the 3 first elements.</summary>
     /// <param name="first">The first element.</param>
@@ -492,7 +485,7 @@ partial struct SmallList<T> :
     /// <param name="rest">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest) =>
-        (first, second, third, rest) = (_first, _second, _third, Rest ?? s_empty);
+        (first, second, third, rest) = (_first, _second, _third, Rest ?? []);
 #if !UNMANAGED_SPAN
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -554,7 +547,7 @@ partial struct SmallList<T> :
 
                 break;
             case 2:
-                _rest = s_empty;
+                _rest = [];
                 break;
         }
 
@@ -966,7 +959,7 @@ partial struct SmallList<T> :
 
                 break;
             case 3:
-                rest = s_empty;
+                rest = [];
                 break;
             default:
                 Unsafe.SkipInit(out rest);
@@ -1008,7 +1001,7 @@ partial struct SmallList<T> :
         {
             { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
             { Count: not 0 } x => [.. x],
-            _ => (IList<T>)new List<T>(),
+            _ => (IList<T>)[],
         };
 
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>

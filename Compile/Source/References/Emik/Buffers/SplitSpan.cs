@@ -423,6 +423,18 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => !left.Equals(right);
 
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to call the constructor.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Enumerator(SplitSpan<T> value) => new(value);
+
+    /// <summary>Implicitly calls <see cref="Enumerator.Enumerable"/>.</summary>
+    /// <param name="value">The value to call <see cref="Enumerator.Enumerable"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator SplitSpan<T>(Enumerator value) => value.Enumerable;
+
     /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
@@ -555,8 +567,6 @@ readonly
 #endif
         partial struct Enumerator(SplitSpan<T> split)
     {
-        readonly SplitSpan<T> _split = split;
-
         [ValueRange(-1, int.MaxValue)]
 #pragma warning disable IDE0044
         int _end = -1;
@@ -570,6 +580,9 @@ readonly
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+
+        /// <summary>Gets the enumerable used to create this instance.</summary>
+        public SplitSpan<T> Enumerable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = split;
 
         /// <summary>
         /// Sets the enumerator to its initial position, which is before the first element in the collection.
@@ -585,13 +598,13 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            var body = _split.Body;
-            var separator = _split.Separator;
+            var body = Enumerable.Body;
+            var separator = Enumerable.Separator;
 
             if (separator.IsEmpty)
                 return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
 
-            while (Step(_split.IsAny, body, separator, ref _end, out var start))
+            while (Step(Enumerable.IsAny, body, separator, ref _end, out var start))
                 if (start != _end)
                     return (Current = body[start.._end]) is var _;
 

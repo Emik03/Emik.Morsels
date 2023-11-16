@@ -15,7 +15,7 @@ static partial class OnceFactory
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? new(source) : default;
+    public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? source : [];
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -23,7 +23,7 @@ static partial class OnceFactory
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? new(source) : default;
+    public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? source : [];
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -31,7 +31,7 @@ static partial class OnceFactory
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? new(source) : default;
+    public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? source : [];
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -40,7 +40,7 @@ static partial class OnceFactory
     [Pure]
     public static Once<T> YieldValued<T>(this T? source)
         where T : class =>
-        source is null ? default : new(source);
+        source is null ? [] : source;
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -49,7 +49,7 @@ static partial class OnceFactory
     [Pure]
     public static Once<T> YieldValued<T>(this T? source)
         where T : struct =>
-        source.HasValue ? new(source.Value) : default;
+        source.HasValue ? source.Value : [];
 }
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>

@@ -14,7 +14,7 @@ sealed class Primes : IEnumerable<ulong>
     {
         readonly object _lock = new();
 
-        byte[] _saved = Array.Empty<byte>();
+        byte[] _saved = [];
 
         uint _lwi, _lpd;
 
@@ -224,7 +224,7 @@ sealed class Primes : IEnumerable<ulong>
     const uint ChunkSize = 17, Fstcp = 11, Fstbp = 19;
 
     /// <summary>Big wheel primes, following prime.</summary>
-    static readonly byte[] s_primes = { 2, 3, 5, 7, 11, 13, 17 };
+    static readonly byte[] s_primes = [2, 3, 5, 7, 11, 13, 17];
 
     /// <summary>A Counting Look Up Table for very fast counting of primes.</summary>
     static readonly byte[] s_counting;
@@ -239,10 +239,10 @@ sealed class Primes : IEnumerable<ulong>
     /// The 2,3,57 factorial wheel increment pattern, (sum) 48 elements long, starting at prime 19 position.
     /// </summary>
     static readonly byte[] s_patterns =
-    {
+    [
         2, 3, 1, 3, 2, 1, 2, 3, 3, 1, 3, 2, 1, 3, 2, 3, 4, 2, 1, 2, 1, 2, 4, 3,
         2, 3, 1, 2, 3, 1, 3, 3, 2, 1, 2, 3, 1, 3, 2, 1, 2, 1, 5, 1, 5, 1, 2, 1,
-    };
+    ];
 
     /// <summary>The position of the wheel.</summary>
     static readonly byte[] s_positions;
@@ -388,7 +388,7 @@ sealed class Primes : IEnumerable<ulong>
     }
 
     /// <summary>Gets the shared instance.</summary>
-    public static Primes Shared { get; } = new();
+    public static Primes Shared { get; } = [];
 
     /// <summary>Gets the count of primes up the number, inclusively.</summary>
     /// <param name="topNumber">The <see cref="ulong"/> top number to check for prime.</param>

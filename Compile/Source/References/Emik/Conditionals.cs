@@ -188,7 +188,7 @@ static partial class Conditionals
     [LinqTunnel, Pure]
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
 #pragma warning disable 8619
-        iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
+        iterable?.Where(x => x is not null) ?? [];
 #pragma warning restore 8619
 
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
@@ -199,7 +199,7 @@ static partial class Conditionals
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
         where T : struct =>
 #pragma warning disable 8629
-        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();
+        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? [];
 #pragma warning restore 8629
 #endif
 }

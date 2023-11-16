@@ -34,7 +34,7 @@ static partial class SmallList
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> Create<T>() => default;
+    public static SmallList<T> Create<T>() => [];
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>

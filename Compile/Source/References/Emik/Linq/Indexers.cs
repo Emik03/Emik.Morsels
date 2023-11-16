@@ -29,7 +29,7 @@ static partial class Indexers
     public static IEnumerable<int> For(this Range range) =>
         (range.Start.IsFromEnd ? -range.Start.Value : range.Start.Value) is var start &&
         (range.End.IsFromEnd ? -range.End.Value : range.End.Value) is var end &&
-        start == end ? Enumerable.Empty<int>() :
+        start == end ? [] :
         start < end ? Enumerable.Range(start, end - start) :
         Enumerable.Repeat(start, start - end).Select((x, i) => x - i);
 
@@ -49,7 +49,7 @@ static partial class Indexers
         if (e is null)
         {
             head = default;
-            tail = Enumerable.Empty<T>();
+            tail = [];
             return;
         }
 

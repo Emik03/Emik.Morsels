@@ -5,6 +5,7 @@
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
+
 namespace System.Diagnostics.CodeAnalysis
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER
@@ -141,7 +142,7 @@ namespace System.Diagnostics.CodeAnalysis
         /// <param name="member">
         /// The field or property member that is promised to be not-null.
         /// </param>
-        public MemberNotNullAttribute(string member) => Members = new[] { member };
+        public MemberNotNullAttribute(string member) => Members = [member];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemberNotNullAttribute"/> class
@@ -174,7 +175,7 @@ namespace System.Diagnostics.CodeAnalysis
         public MemberNotNullWhenAttribute(bool returnValue, string member)
         {
             ReturnValue = returnValue;
-            Members = new[] { member };
+            Members = [member];
         }
 
         /// <summary>
@@ -259,13 +260,7 @@ namespace System.Diagnostics.CodeAnalysis
         public StringSyntaxAttribute(string syntax)
         {
             Syntax = syntax;
-
-            Arguments =
-#if NET46_OR_GREATER || NETSTANDARD1_3_OR_GREATER || NETCOREAPP
-                Array.Empty<object?>();
-#else
-                new object?[] { null };
-#endif
+            Arguments = [null];
         }
 
         /// <summary>
@@ -362,7 +357,7 @@ namespace System.Runtime.CompilerServices
         /// The empty string may be used as the name of the receiver in an instance method.
         /// </para></remarks>
         /// <param name="argument">The name of the argument that should be passed to the handler.</param>
-        public InterpolatedStringHandlerArgumentAttribute(string argument) => Arguments = new[] { argument };
+        public InterpolatedStringHandlerArgumentAttribute(string argument) => Arguments = [argument];
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InterpolatedStringHandlerArgumentAttribute"/> class.

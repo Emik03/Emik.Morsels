@@ -276,11 +276,7 @@ unsafe
     public T[] ToArray()
     {
         if (IsEmpty)
-#if NETFRAMEWORK && NET46_OR_GREATER || NETSTANDARD && NETSTANDARD1_3_OR_GREATER || NETCOREAPP
-            return Array.Empty<T>();
-#else
-            return new T[0];
-#endif
+            return [];
 
         var destination = new T[Length];
         CopyTo(destination);
@@ -626,11 +622,7 @@ unsafe
     public T[] ToArray()
     {
         if (IsEmpty)
-#if NETFRAMEWORK && NET46_OR_GREATER || NETSTANDARD && NETSTANDARD1_3_OR_GREATER || NETCOREAPP
-            return Array.Empty<T>();
-#else
-            return new T[0];
-#endif
+            return [];
 
         var destination = new T[Length];
         CopyTo(destination);
@@ -737,11 +729,11 @@ sealed class SpanDebugView<T>
 {
     /// <summary>Initializes a new instance of the <see cref="SpanDebugView{T}"/> class.</summary>
     /// <param name="span">The span to collect.</param>
-    public SpanDebugView(Span<T> span) => Items = span.ToArray();
+    public SpanDebugView(Span<T> span) => Items = [..span];
 
     /// <summary>Initializes a new instance of the <see cref="SpanDebugView{T}"/> class.</summary>
     /// <param name="span">The span to collect.</param>
-    public SpanDebugView(ReadOnlySpan<T> span) => Items = span.ToArray();
+    public SpanDebugView(ReadOnlySpan<T> span) => Items = [..span];
 
     /// <summary>Gets the items of this span.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]

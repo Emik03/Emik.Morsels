@@ -33,7 +33,7 @@ ref
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
     public PooledSmallList(int capacity)
-        : this(Span<T>.Empty) =>
+        : this([]) =>
         _view = _rental = Rent(capacity);
 
     /// <inheritdoc cref="Span{T}.Empty"/>

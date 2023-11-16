@@ -76,7 +76,7 @@ static partial class Permuted
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var list in lists)
             if (list is [])
-                return Enumerable.Empty<SmallList<T>>();
+                return [];
 
         return lists.CombinationsIterator();
     }

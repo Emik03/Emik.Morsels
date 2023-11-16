@@ -16,7 +16,7 @@ static partial class NullableItems
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IEnumerable<T?>? ItemCanBeEmptyNullable<T>(this IEnumerable<T>? iterable)
         where T : struct =>
-        iterable?.Select(x => new T?(x));
+        iterable?.Select(x => (T?)x);
 
 #pragma warning disable CS8619
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>

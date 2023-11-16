@@ -23,11 +23,7 @@ static partial class RuntimeHelpers
         var isArrayTypeEqual = default(T) is not null || typeof(T[]) == array.GetType();
 
         if (isArrayTypeEqual && length is 0)
-#if NET46_OR_GREATER || NETSTANDARD1_3_OR_GREATER || NETCOREAPP
-            return Array.Empty<T>();
-#else
-            return new T[0];
-#endif
+            return [];
 
         var dest = isArrayTypeEqual ? new T[length] :
             array.GetType().GetElementType() is { } element ? (T[])Array.CreateInstance(element, length) :

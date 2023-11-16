@@ -17,7 +17,7 @@ static partial class ManyQueries
     {
         try
         {
-            return assembly?.GetTypes() ?? Enumerable.Empty<Type>();
+            return assembly?.GetTypes() ?? [];
         }
         catch (ReflectionTypeLoadException ex)
         {
@@ -37,7 +37,7 @@ static partial class ManyQueries
         this T? item,
         [InstantHandle] Converter<T, IEnumerable<TResult>?> map
     ) =>
-        item is not null && map(item) is { } iterable ? iterable : Enumerable.Empty<TResult>();
+        item is not null && map(item) is { } iterable ? iterable : [];
 
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
@@ -51,7 +51,7 @@ static partial class ManyQueries
         [InstantHandle] Converter<T, IEnumerable<TResult>?> map
     )
         where T : struct =>
-        item.HasValue && map(item.Value) is { } iterable ? iterable : Enumerable.Empty<TResult>();
+        item.HasValue && map(item.Value) is { } iterable ? iterable : [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -67,8 +67,7 @@ static partial class ManyQueries
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, IEnumerable<TResult?>?> map
     ) =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -85,8 +84,7 @@ static partial class ManyQueries
         Func<T, IEnumerable<TResult?>?> map
     )
         where T : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -103,8 +101,7 @@ static partial class ManyQueries
         Func<T, IEnumerable<TResult?>?> map
     )
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -122,8 +119,7 @@ static partial class ManyQueries
     )
         where T : struct
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -139,8 +135,7 @@ static partial class ManyQueries
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, int, IEnumerable<TResult?>?> map
     ) =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -157,8 +152,7 @@ static partial class ManyQueries
         Func<T, int, IEnumerable<TResult?>?> map
     )
         where T : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -175,8 +169,7 @@ static partial class ManyQueries
         Func<T, int, IEnumerable<TResult?>?> map
     )
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -194,7 +187,6 @@ static partial class ManyQueries
     )
         where T : struct
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 }
 #endif

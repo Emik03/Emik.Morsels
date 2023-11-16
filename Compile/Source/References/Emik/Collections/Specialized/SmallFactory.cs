@@ -84,7 +84,7 @@ static partial class SmallFactory
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => new(iterable);
+    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => [..iterable];
 
     /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>

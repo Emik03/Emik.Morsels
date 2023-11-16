@@ -573,7 +573,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     [LinqTunnel, Pure]
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
 #pragma warning disable 8619
-        iterable?.Where(x => x is not null) ?? Enumerable.Empty<T>();
+        iterable?.Where(x => x is not null) ?? [];
 #pragma warning restore 8619
 
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
@@ -584,7 +584,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
         where T : struct =>
 #pragma warning disable 8629
-        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? Enumerable.Empty<T>();
+        iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? [];
 #pragma warning restore 8629
 #endif
 
@@ -606,7 +606,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     {
         try
         {
-            return assembly?.GetTypes() ?? Enumerable.Empty<Type>();
+            return assembly?.GetTypes() ?? [];
         }
         catch (ReflectionTypeLoadException ex)
         {
@@ -626,7 +626,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         this T? item,
         [InstantHandle] Converter<T, IEnumerable<TResult>?> map
     ) =>
-        item is not null && map(item) is { } iterable ? iterable : Enumerable.Empty<TResult>();
+        item is not null && map(item) is { } iterable ? iterable : [];
 
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
@@ -640,7 +640,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         [InstantHandle] Converter<T, IEnumerable<TResult>?> map
     )
         where T : struct =>
-        item.HasValue && map(item.Value) is { } iterable ? iterable : Enumerable.Empty<TResult>();
+        item.HasValue && map(item.Value) is { } iterable ? iterable : [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -656,8 +656,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, IEnumerable<TResult?>?> map
     ) =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -674,8 +673,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         Func<T, IEnumerable<TResult?>?> map
     )
         where T : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -692,8 +690,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         Func<T, IEnumerable<TResult?>?> map
     )
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -711,8 +708,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     )
         where T : struct
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -728,8 +724,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         [NoEnumeration] this IEnumerable<T?>? iterator,
         Func<T, int, IEnumerable<TResult?>?> map
     ) =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -746,8 +741,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         Func<T, int, IEnumerable<TResult?>?> map
     )
         where T : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -764,8 +758,7 @@ using static JetBrains.Annotations.CollectionAccessType;
         Func<T, int, IEnumerable<TResult?>?> map
     )
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
@@ -783,8 +776,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     )
         where T : struct
         where TResult : struct =>
-        iterator?.Filter().Select(map).SelectMany(x => x ?? Enumerable.Empty<TResult?>()).Filter() ??
-        Enumerable.Empty<TResult>();
+        iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -1064,13 +1056,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
-        value is { } t
-            ? FindPathToEmptyNullable(t, converter)
-#if NET20 || NET30
-            : new T[0];
-#else
-            : Enumerable.Empty<T>();
-#endif
+        value is { } t ? FindPathToEmptyNullable(t, converter) : [];
 
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
@@ -1101,7 +1087,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
     {
-        SmallList<T> output = default;
+        SmallList<T> output = [];
         T? maybe = value;
 
         while (maybe is { } yes)
@@ -1125,7 +1111,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
-        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : default;
+        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -2842,8 +2828,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <param name="iterable">The enumeration to potentially return.</param>
     /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
-        iterable ?? Enumerable.Empty<T>();
+    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) => iterable ?? [];
 
 #if NETCOREAPP || ROSLYN
     /// <summary>Returns the array, or an empty array.</summary>
@@ -2851,8 +2836,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <param name="array">The array to potentially return.</param>
     /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
     [Pure]
-    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
-        array.IsDefault ? ImmutableArray<T>.Empty : array;
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
 #endif
 
     /// <summary>Gets a specific character from a string.</summary>
@@ -2982,7 +2966,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     public static IEnumerable<int> For(this Range range) =>
         (range.Start.IsFromEnd ? -range.Start.Value : range.Start.Value) is var start &&
         (range.End.IsFromEnd ? -range.End.Value : range.End.Value) is var end &&
-        start == end ? Enumerable.Empty<int>() :
+        start == end ? [] :
         start < end ? Enumerable.Range(start, end - start) :
         Enumerable.Repeat(start, start - end).Select((x, i) => x - i);
 
@@ -3002,7 +2986,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         if (e is null)
         {
             head = default;
-            tail = Enumerable.Empty<T>();
+            tail = [];
             return;
         }
 
@@ -3253,7 +3237,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>The cartesian product of all of the parameter <paramref name="iterable"/>.</returns>
     public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> iterable) =>
         iterable.Aggregate(
-            Enumerable.Repeat(Enumerable.Empty<T>(), 1),
+            Enumerable.Repeat((IEnumerable<T>)[], 1),
             (sum, next) => sum.SelectMany(_ => next, (s, n) => s.Concat(Enumerable.Repeat(n, 1)))
         );
 #endif
@@ -3408,7 +3392,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var list in lists)
             if (list is [])
-                return Enumerable.Empty<SmallList<T>>();
+                return [];
 
         return lists.CombinationsIterator();
     }
@@ -3583,7 +3567,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IEnumerable<T?>? ItemCanBeEmptyNullable<T>(this IEnumerable<T>? iterable)
         where T : struct =>
-        iterable?.Select(x => new T?(x));
+        iterable?.Select(x => (T?)x);
 
 #pragma warning disable CS8619
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
@@ -4873,13 +4857,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         where T : Enum =>
         s_dictionary.TryGetValue(typeof(T), out var list)
             ? (IList<T>)list
-            : (T[])(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-                ? new T[0]
-#else
-                ? Array.Empty<T>()
-#endif
-                : Enum.GetValues(typeof(T)));
+            : (IList<T>)(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
+                ? []
+                : (T[])Enum.GetValues(typeof(T)));
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
@@ -5370,7 +5350,7 @@ public sealed class Primes : IEnumerable<ulong>
     {
         readonly object _lock = new();
 
-        byte[] _saved = Array.Empty<byte>();
+        byte[] _saved = [];
 
         uint _lwi, _lpd;
 
@@ -5580,7 +5560,7 @@ public sealed class Primes : IEnumerable<ulong>
     const uint ChunkSize = 17, Fstcp = 11, Fstbp = 19;
 
     /// <summary>Big wheel primes, following prime.</summary>
-    static readonly byte[] s_primes = { 2, 3, 5, 7, 11, 13, 17 };
+    static readonly byte[] s_primes = [2, 3, 5, 7, 11, 13, 17];
 
     /// <summary>A Counting Look Up Table for very fast counting of primes.</summary>
     static readonly byte[] s_counting;
@@ -5595,10 +5575,10 @@ public sealed class Primes : IEnumerable<ulong>
     /// The 2,3,57 factorial wheel increment pattern, (sum) 48 elements long, starting at prime 19 position.
     /// </summary>
     static readonly byte[] s_patterns =
-    {
+    [
         2, 3, 1, 3, 2, 1, 2, 3, 3, 1, 3, 2, 1, 3, 2, 3, 4, 2, 1, 2, 1, 2, 4, 3,
         2, 3, 1, 2, 3, 1, 3, 3, 2, 1, 2, 3, 1, 3, 2, 1, 2, 1, 5, 1, 5, 1, 2, 1,
-    };
+    ];
 
     /// <summary>The position of the wheel.</summary>
     static readonly byte[] s_positions;
@@ -5744,7 +5724,7 @@ public sealed class Primes : IEnumerable<ulong>
     }
 
     /// <summary>Gets the shared instance.</summary>
-    public static Primes Shared { get; } = new();
+    public static Primes Shared { get; } = [];
 
     /// <summary>Gets the count of primes up the number, inclusively.</summary>
     /// <param name="topNumber">The <see cref="ulong"/> top number to check for prime.</param>
@@ -6236,7 +6216,7 @@ public sealed class Primes : IEnumerable<ulong>
     static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,
             null,
-            new[] { typeof(string), typeof(string) },
+            [typeof(string), typeof(string)],
             null
         ) ??
         throw Unreachable;
@@ -6244,7 +6224,7 @@ public sealed class Primes : IEnumerable<ulong>
     static readonly ConstructorInfo s_newInvalidEnumArgument = typeof(InvalidEnumArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,
             null,
-            new[] { typeof(string), typeof(int), typeof(Type) },
+            [typeof(string), typeof(int), typeof(Type)],
             null
         ) ??
         throw Unreachable;
@@ -6294,10 +6274,7 @@ public sealed class Primes : IEnumerable<ulong>
         }
 
         static SwitchCase[] Cases(bool isToT) =>
-            typeof(T)
-               .GetFields(BindingFlags.Static | BindingFlags.Public)
-               .Select(x => Case(x, isToT))
-               .ToArray();
+            [..typeof(T).GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => Case(x, isToT))];
 
         static SwitchCase Case(FieldInfo x, bool isToT)
         {
@@ -6475,7 +6452,7 @@ public sealed class Primes : IEnumerable<ulong>
 
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
+// ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
 #if WAWA
 namespace Wawa.Modules;
@@ -6777,7 +6754,7 @@ public
             string source,
         string separator
     ) =>
-        source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+        source.Split((char[])[..separator], StringSplitOptions.RemoveEmptyEntries);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -6859,10 +6836,10 @@ public
             IDictionary { Count: 0 } => "{ }",
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
             ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
-            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
+            IEnumerable x => $"[{EnumeratorStringifier(x.GetEnumerator(), depth - 1, useQuotes)}]",
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 #pragma warning disable IDISP004
-            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
+            ITuple x => $"({EnumeratorStringifier(x.AsEnumerable().GetEnumerator(), depth - 1, useQuotes)})",
 #pragma warning restore IDISP004
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
@@ -7078,7 +7055,7 @@ public
     static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
         count is 0
             ? "[Count: 0]"
-            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth, useQuotes, count)}]";
+            : $"[Count: {count}; {EnumeratorStringifier(e.GetEnumerator(), depth, useQuotes, count)}]";
 
     [Pure]
     static string Escape(char c) =>
@@ -7116,36 +7093,43 @@ public
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
         Enum.ToObject(type, i);
 #else
-        Enum.Parse($"{i}");
+        Enum.Parse(type, $"{i}");
 #endif
 
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
-        this IEnumerator iterator,
+        [HandlesResourceDisposal] this IEnumerator iterator,
         [NonNegativeValue] int depth,
         bool useQuotes,
         [NonNegativeValue] int? count = null
     )
     {
-        StringBuilder builder = new();
-
-        if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, depth, useQuotes));
-
-        var i = 0;
-
-        while (iterator.MoveNext())
+        try
         {
-            if (checked(++i) >= MaxIteration)
+            StringBuilder builder = new();
+
+            if (iterator.MoveNext())
+                builder.Append(Stringify(iterator.Current, depth, useQuotes));
+
+            var i = 0;
+
+            while (iterator.MoveNext())
             {
-                builder.Append(Separator).Append(Etcetera(count - i));
-                break;
+                if (checked(++i) >= MaxIteration)
+                {
+                    builder.Append(Separator).Append(Etcetera(count - i));
+                    break;
+                }
+
+                builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
             }
 
-            builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
+            return builder;
         }
-
-        return builder;
+        finally
+        {
+            (iterator as IDisposable)?.Dispose();
+        }
     }
 #if !WAWA
     [MustUseReturnValue]
@@ -7176,7 +7160,7 @@ public
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
         if (source.GetType() is var t && t != typeof(T))
-            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, [source, depth, false]);
 #pragma warning restore 8600, 8603
 
         // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
@@ -7198,18 +7182,13 @@ public
             exInstance = Parameter(typeof(T), nameof(T)),
             exDepth = Parameter(typeof(int), nameof(Int32));
 
-        var deeperProperties = typeof(T).IsInterface
-            ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties())
-            : Enumerable.Empty<PropertyInfo>();
-
-        var deeperFields = typeof(T).IsInterface
-            ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields())
-            : Enumerable.Empty<FieldInfo>();
+        var deepProperties = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties()) : [];
+        var deepFields = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields()) : [];
 
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var properties = typeof(T)
            .GetProperties(Flags)
-           .Concat(deeperProperties)
+           .Concat(deepProperties)
            .Where(CanUse)
            .OrderBy(x => x.Name, StringComparer.Ordinal)
 #if NETFRAMEWORK && !NET40_OR_GREATER
@@ -7219,7 +7198,7 @@ public
 #endif
         var fields = typeof(T)
            .GetFields(Flags)
-           .Concat(deeperFields)
+           .Concat(deepFields)
            .OrderBy(x => x.Name, StringComparer.Ordinal)
 #if NETFRAMEWORK && !NET40_OR_GREATER
            .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
@@ -9427,6 +9406,18 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => !left.Equals(right);
 
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to call the constructor.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Enumerator(SplitSpan<T> value) => new(value);
+
+    /// <summary>Implicitly calls <see cref="Enumerator.Enumerable"/>.</summary>
+    /// <param name="value">The value to call <see cref="Enumerator.Enumerable"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator SplitSpan<T>(Enumerator value) => value.Enumerable;
+
     /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
@@ -9559,8 +9550,6 @@ readonly
 #endif
         partial struct Enumerator(SplitSpan<T> split)
     {
-        readonly SplitSpan<T> _split = split;
-
         [ValueRange(-1, int.MaxValue)]
 #pragma warning disable IDE0044
         int _end = -1;
@@ -9574,6 +9563,9 @@ readonly
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlySpan<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+
+        /// <summary>Gets the enumerable used to create this instance.</summary>
+        public SplitSpan<T> Enumerable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = split;
 
         /// <summary>
         /// Sets the enumerator to its initial position, which is before the first element in the collection.
@@ -9589,13 +9581,13 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            var body = _split.Body;
-            var separator = _split.Separator;
+            var body = Enumerable.Body;
+            var separator = Enumerable.Separator;
 
             if (separator.IsEmpty)
                 return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
 
-            while (Step(_split.IsAny, body, separator, ref _end, out var start))
+            while (Step(Enumerable.IsAny, body, separator, ref _end, out var start))
                 if (start != _end)
                     return (Current = body[start.._end]) is var _;
 
@@ -11335,7 +11327,7 @@ public partial struct Two<T>(T left, T right) :
     /// <param name="split">The instance to get the list from.</param>
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<string> ToList(this SplitMemory<char> split) => split.Select(next => next.ToString()).ToList();
+    public static List<string> ToList(this SplitMemory<char> split) => [..split.Select(next => next.ToString())];
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <typeparam name="T">The type of element from the memory.</typeparam>
@@ -11344,7 +11336,7 @@ public partial struct Two<T>(T left, T right) :
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static List<T[]> ToList<T>(this SplitMemory<T> split)
         where T : IEquatable<T>? =>
-        split.Select(next => next.ToArray()).ToList();
+        [..split.Select(next => next.ToArray())];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Next<T>(
@@ -12255,7 +12247,7 @@ readonly
 #else
             ? expression
               ?.Collapse()
-               .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+               .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
                .Select(x => x.Trim())
                .Prepend(Of)
                .Conjoin("")
@@ -13694,7 +13686,7 @@ public ref partial struct ImmutableArrayBuilder<T>
     static bool TryFindInvalidState([NotNullWhen(false)] out Enum? invalid)
     {
         static bool IsModifierCausingInvalidState(KeyMods mod) =>
-            ReadOnlySpan<Keys>.Empty.ToState(mod) is { CapsLock: var capsLock, NumLock: var numLock } state &&
+            ((ReadOnlySpan<Keys>)[]).ToState(mod) is { CapsLock: var capsLock, NumLock: var numLock } state &&
             capsLock != mod is KeyMods.CapsLock ||
             numLock != mod is KeyMods.NumLock ||
             state.GetPressedKeyCount() is not 0;
@@ -13955,7 +13947,7 @@ readonly
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? new(source) : default;
+    public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? source : [];
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -13963,7 +13955,7 @@ readonly
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? new(source) : default;
+    public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? source : [];
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -13971,7 +13963,7 @@ readonly
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? new(source) : default;
+    public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? source : [];
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -13980,7 +13972,7 @@ readonly
     [Pure]
     public static Once<T> YieldValued<T>(this T? source)
         where T : class =>
-        source is null ? default : new(source);
+        source is null ? [] : source;
 
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -13989,7 +13981,7 @@ readonly
     [Pure]
     public static Once<T> YieldValued<T>(this T? source)
         where T : struct =>
-        source.HasValue ? new(source.Value) : default;
+        source.HasValue ? source.Value : [];
 
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
@@ -14251,15 +14243,6 @@ readonly
         return t;
     }
 #if !WAWA
-    /// <summary>Returns the reference that contains the least bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMin<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
-
     /// <summary>Returns the reference that contains the most bits.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -14268,6 +14251,15 @@ readonly
     public static T BitwiseMax<T>(this IEnumerable<T> source)
         where T : unmanaged =>
         source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
+
+    /// <summary>Returns the reference that contains the least bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMin<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
 #endif
 
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
@@ -15662,7 +15654,7 @@ readonly
         T t = default;
 
         foreach (var next in other)
-            if (new Enumerator(next) is var e && !e.MoveNext() || e.MoveNext())
+            if ((Enumerator)next is var e && !e.MoveNext() || e.MoveNext())
                 return false;
             else
                 Or(next, ref t);
@@ -15688,7 +15680,7 @@ readonly
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
 #if WAWA
-        iterator is null ? null : new(iterator as IList<T> ?? iterator.ToList(), countPerList);
+        iterator is null ? null : new(iterator as IList<T> ?? [..iterator], countPerList);
 #else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
 #endif
@@ -15702,7 +15694,7 @@ readonly
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
 #if WAWA
-        iterator is null ? null : new(iterator as IList<T> ?? iterator.ToList(), countPerList);
+        iterator is null ? null : new(iterator as IList<T> ?? [..iterator], countPerList);
 #else
         iterator is null ? null : new(iterator.ToListLazily(), countPerList);
 #endif
@@ -16489,7 +16481,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
         [InstantHandle] Predicate<T> predicate
     )
     {
-        SmallList<T> t = default, f = default;
+        SmallList<T> t = [], f = [];
 
         foreach (var item in source)
             (predicate(item) ? t : f).Add(item);
@@ -16704,13 +16696,6 @@ public partial struct SmallList<T> :
     IList<T>,
     IReadOnlyList<T>
 {
-    static readonly T[] s_empty =
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-        new T[0];
-#else
-        [];
-#endif
-
     // DO NOT PLACE _rest BELOW GENERICS;
     // Doing so will cause only unmanaged generics to be mapped before the object,
     // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
@@ -16773,7 +16758,7 @@ public partial struct SmallList<T> :
 
         if (!enumerator.MoveNext())
         {
-            _rest = s_empty;
+            _rest = [];
             return;
         }
 
@@ -16816,7 +16801,7 @@ public partial struct SmallList<T> :
     /// <param name="third">The third element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third)
-        : this(first, second, third, s_empty) { }
+        : this(first, second, third, []) { }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <param name="first">The first element.</param>
@@ -17053,7 +17038,7 @@ public partial struct SmallList<T> :
 
                 break;
             case 2:
-                (_third, _rest) = (item, s_empty);
+                (_third, _rest) = (item, []);
                 break;
             default:
                 EnsureMutability().Add(item);
@@ -17158,7 +17143,7 @@ public partial struct SmallList<T> :
     /// <param name="tail">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out (T? First, T? Second, T? Third) head, out IList<T> tail) =>
-        (head, tail) = ((_first, _second, _third), Rest ?? s_empty);
+        (head, tail) = ((_first, _second, _third), Rest ?? []);
 
     /// <summary>Deconstructs this instance with the 3 first elements.</summary>
     /// <param name="first">The first element.</param>
@@ -17175,7 +17160,7 @@ public partial struct SmallList<T> :
     /// <param name="rest">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest) =>
-        (first, second, third, rest) = (_first, _second, _third, Rest ?? s_empty);
+        (first, second, third, rest) = (_first, _second, _third, Rest ?? []);
 #if !UNMANAGED_SPAN
 #pragma warning disable 8500
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -17237,7 +17222,7 @@ public partial struct SmallList<T> :
 
                 break;
             case 2:
-                _rest = s_empty;
+                _rest = [];
                 break;
         }
 
@@ -17649,7 +17634,7 @@ public partial struct SmallList<T> :
 
                 break;
             case 3:
-                rest = s_empty;
+                rest = [];
                 break;
             default:
                 Unsafe.SkipInit(out rest);
@@ -17691,7 +17676,7 @@ public partial struct SmallList<T> :
         {
             { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
             { Count: not 0 } x => [.. x],
-            _ => (IList<T>)new List<T>(),
+            _ => (IList<T>)[],
         };
 
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>
@@ -17832,7 +17817,7 @@ public partial struct SmallList<T> :
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => new(iterable);
+    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => [..iterable];
 
     /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
@@ -17876,7 +17861,7 @@ public ref
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
     public PooledSmallList(int capacity)
-        : this(Span<T>.Empty) =>
+        : this([]) =>
         _view = _rental = Rent(capacity);
 
     /// <inheritdoc cref="Span{T}.Empty"/>
@@ -18412,7 +18397,7 @@ public ref
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> Create<T>() => default;
+    public static SmallList<T> Create<T>() => [];
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
@@ -18969,7 +18954,7 @@ abstract partial class Assert(
     [Pure]
     public static IList<Assert.Result> RunAll(this IEnumerator<Assert.Result> enumerator)
     {
-        SmallList<Assert.Result> collected = default;
+        SmallList<Assert.Result> collected = [];
 
         while (enumerator.MoveNext())
             collected.Add(enumerator.Current.Run());

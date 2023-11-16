@@ -100,7 +100,7 @@ static partial class SplitMemoryFactory
     /// <param name="split">The instance to get the list from.</param>
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<string> ToList(this SplitMemory<char> split) => split.Select(next => next.ToString()).ToList();
+    public static List<string> ToList(this SplitMemory<char> split) => [..split.Select(next => next.ToString())];
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <typeparam name="T">The type of element from the memory.</typeparam>
@@ -109,7 +109,7 @@ static partial class SplitMemoryFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static List<T[]> ToList<T>(this SplitMemory<T> split)
         where T : IEquatable<T>? =>
-        split.Select(next => next.ToArray()).ToList();
+        [..split.Select(next => next.ToArray())];
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Next<T>(

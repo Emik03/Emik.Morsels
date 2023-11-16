@@ -91,7 +91,7 @@ static partial class CartesianProductFactories
     /// <returns>The cartesian product of all of the parameter <paramref name="iterable"/>.</returns>
     public static IEnumerable<IEnumerable<T>> CartesianProduct<T>(this IEnumerable<IEnumerable<T>> iterable) =>
         iterable.Aggregate(
-            Enumerable.Repeat(Enumerable.Empty<T>(), 1),
+            Enumerable.Repeat((IEnumerable<T>)[], 1),
             (sum, next) => sum.SelectMany(_ => next, (s, n) => s.Concat(Enumerable.Repeat(n, 1)))
         );
 }

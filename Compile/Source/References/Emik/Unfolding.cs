@@ -61,13 +61,7 @@ static partial class Unfolding
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
-        value is { } t
-            ? FindPathToEmptyNullable(t, converter)
-#if NET20 || NET30
-            : new T[0];
-#else
-            : Enumerable.Empty<T>();
-#endif
+        value is { } t ? FindPathToEmptyNullable(t, converter) : [];
 
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
@@ -98,7 +92,7 @@ static partial class Unfolding
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
     {
-        SmallList<T> output = default;
+        SmallList<T> output = [];
         T? maybe = value;
 
         while (maybe is { } yes)
@@ -122,5 +116,5 @@ static partial class Unfolding
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
-        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : default;
+        value is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
 }

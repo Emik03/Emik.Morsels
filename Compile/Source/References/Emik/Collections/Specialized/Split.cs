@@ -82,7 +82,7 @@ static partial class SplitFactory
         [InstantHandle] Predicate<T> predicate
     )
     {
-        SmallList<T> t = default, f = default;
+        SmallList<T> t = [], f = [];
 
         foreach (var item in source)
             (predicate(item) ? t : f).Add(item);

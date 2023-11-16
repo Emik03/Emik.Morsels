@@ -85,13 +85,9 @@ static partial class EnumMath
         where T : Enum =>
         s_dictionary.TryGetValue(typeof(T), out var list)
             ? (IList<T>)list
-            : (T[])(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-                ? new T[0]
-#else
-                ? Array.Empty<T>()
-#endif
-                : Enum.GetValues(typeof(T)));
+            : (IList<T>)(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
+                ? []
+                : (T[])Enum.GetValues(typeof(T)));
 
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>

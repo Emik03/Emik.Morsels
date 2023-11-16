@@ -141,7 +141,7 @@ static partial class Peeks
 #else
             ? expression
               ?.Collapse()
-               .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+               .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
                .Select(x => x.Trim())
                .Prepend(Of)
                .Conjoin("")

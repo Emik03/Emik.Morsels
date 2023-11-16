@@ -93,7 +93,7 @@ static partial class ConcurrentKeyboard
     static bool TryFindInvalidState([NotNullWhen(false)] out Enum? invalid)
     {
         static bool IsModifierCausingInvalidState(KeyMods mod) =>
-            ReadOnlySpan<Keys>.Empty.ToState(mod) is { CapsLock: var capsLock, NumLock: var numLock } state &&
+            ((ReadOnlySpan<Keys>)[]).ToState(mod) is { CapsLock: var capsLock, NumLock: var numLock } state &&
             capsLock != mod is KeyMods.CapsLock ||
             numLock != mod is KeyMods.NumLock ||
             state.GetPressedKeyCount() is not 0;

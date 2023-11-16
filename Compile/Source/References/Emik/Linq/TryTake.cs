@@ -134,8 +134,7 @@ static partial class TryTake
     /// <param name="iterable">The enumeration to potentially return.</param>
     /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) =>
-        iterable ?? Enumerable.Empty<T>();
+    public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) => iterable ?? [];
 
 #if NETCOREAPP || ROSLYN
     /// <summary>Returns the array, or an empty array.</summary>
@@ -143,8 +142,7 @@ static partial class TryTake
     /// <param name="array">The array to potentially return.</param>
     /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
     [Pure]
-    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
-        array.IsDefault ? ImmutableArray<T>.Empty : array;
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
 #endif
 
     /// <summary>Gets a specific character from a string.</summary>

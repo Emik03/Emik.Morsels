@@ -16,7 +16,7 @@ static partial class AssertResultEnumerableOperations
     [Pure]
     public static IList<Assert.Result> RunAll(this IEnumerator<Assert.Result> enumerator)
     {
-        SmallList<Assert.Result> collected = default;
+        SmallList<Assert.Result> collected = [];
 
         while (enumerator.MoveNext())
             collected.Add(enumerator.Current.Run());

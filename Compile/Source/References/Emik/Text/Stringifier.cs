@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
+// ReSharper disable CheckNamespace RedundantNameQualifier
 #pragma warning disable 1696, SA1137, SA1216
 #if WAWA
 namespace Wawa.Modules;
@@ -305,7 +305,7 @@ static partial class Stringifier
             string source,
         string separator
     ) =>
-        source.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+        source.Split((char[])[..separator], StringSplitOptions.RemoveEmptyEntries);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -387,10 +387,10 @@ static partial class Stringifier
             IDictionary { Count: 0 } => "{ }",
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
             ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
-            IEnumerable x => $"[{x.GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)}]",
+            IEnumerable x => $"[{EnumeratorStringifier(x.GetEnumerator(), depth - 1, useQuotes)}]",
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 #pragma warning disable IDISP004
-            ITuple x => $"({x.AsEnumerable().GetEnumerator().EnumeratorStringifier(depth - 1, useQuotes)})",
+            ITuple x => $"({EnumeratorStringifier(x.AsEnumerable().GetEnumerator(), depth - 1, useQuotes)})",
 #pragma warning restore IDISP004
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
@@ -606,7 +606,7 @@ static partial class Stringifier
     static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
         count is 0
             ? "[Count: 0]"
-            : $"[Count: {count}; {e.GetEnumerator().EnumeratorStringifier(depth, useQuotes, count)}]";
+            : $"[Count: {count}; {EnumeratorStringifier(e.GetEnumerator(), depth, useQuotes, count)}]";
 
     [Pure]
     static string Escape(char c) =>
@@ -644,36 +644,43 @@ static partial class Stringifier
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
         Enum.ToObject(type, i);
 #else
-        Enum.Parse($"{i}");
+        Enum.Parse(type, $"{i}");
 #endif
 
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
-        this IEnumerator iterator,
+        [HandlesResourceDisposal] this IEnumerator iterator,
         [NonNegativeValue] int depth,
         bool useQuotes,
         [NonNegativeValue] int? count = null
     )
     {
-        StringBuilder builder = new();
-
-        if (iterator.MoveNext())
-            builder.Append(Stringify(iterator.Current, depth, useQuotes));
-
-        var i = 0;
-
-        while (iterator.MoveNext())
+        try
         {
-            if (checked(++i) >= MaxIteration)
+            StringBuilder builder = new();
+
+            if (iterator.MoveNext())
+                builder.Append(Stringify(iterator.Current, depth, useQuotes));
+
+            var i = 0;
+
+            while (iterator.MoveNext())
             {
-                builder.Append(Separator).Append(Etcetera(count - i));
-                break;
+                if (checked(++i) >= MaxIteration)
+                {
+                    builder.Append(Separator).Append(Etcetera(count - i));
+                    break;
+                }
+
+                builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
             }
 
-            builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
+            return builder;
         }
-
-        return builder;
+        finally
+        {
+            (iterator as IDisposable)?.Dispose();
+        }
     }
 #if !WAWA
     [MustUseReturnValue]
@@ -704,7 +711,7 @@ static partial class Stringifier
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
 #pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
         if (source.GetType() is var t && t != typeof(T))
-            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, new object[] { source, depth, false });
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, [source, depth, false]);
 #pragma warning restore 8600, 8603
 
         // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
@@ -726,18 +733,13 @@ static partial class Stringifier
             exInstance = Parameter(typeof(T), nameof(T)),
             exDepth = Parameter(typeof(int), nameof(Int32));
 
-        var deeperProperties = typeof(T).IsInterface
-            ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties())
-            : Enumerable.Empty<PropertyInfo>();
-
-        var deeperFields = typeof(T).IsInterface
-            ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields())
-            : Enumerable.Empty<FieldInfo>();
+        var deepProperties = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties()) : [];
+        var deepFields = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields()) : [];
 
         // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
         var properties = typeof(T)
            .GetProperties(Flags)
-           .Concat(deeperProperties)
+           .Concat(deepProperties)
            .Where(CanUse)
            .OrderBy(x => x.Name, StringComparer.Ordinal)
 #if NETFRAMEWORK && !NET40_OR_GREATER
@@ -747,7 +749,7 @@ static partial class Stringifier
 #endif
         var fields = typeof(T)
            .GetFields(Flags)
-           .Concat(deeperFields)
+           .Concat(deepFields)
            .OrderBy(x => x.Name, StringComparer.Ordinal)
 #if NETFRAMEWORK && !NET40_OR_GREATER
            .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
