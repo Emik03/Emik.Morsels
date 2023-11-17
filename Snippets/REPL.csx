@@ -14307,6 +14307,8 @@ readonly
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
     where T : unmanaged
 {
+    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
+
     // ReSharper disable once ReplaceWithPrimaryConstructorParameter
     readonly T _value = bits;
 
@@ -14416,6 +14418,26 @@ readonly
         return -1;
     }
 
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public override string ToString()
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+        =>
+            string.Create(s_typeSize, (Enumerator)this, CopyTo);
+#else
+    {
+        StringBuilder sb = new(s_typeSize);
+        sb.Append('0', s_typeSize);
+        Enumerator that = this;
+        var end = s_typeSize - 1;
+
+        while (that.MoveNext())
+            sb[end - (int)(that.Index * s_nativeSize) - BitOperations.TrailingZeroCount(that.Mask)] ^= '\x01';
+
+        return $"{sb}";
+    }
+#endif
+
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
@@ -14430,6 +14452,21 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static unsafe void CopyTo(Span<char> span, Enumerator that)
+    {
+        span.Fill('0');
+
+        fixed (char* ptr = span)
+        {
+            var end = ptr + s_typeSize - 1;
+
+            while (that.MoveNext())
+                *(end - (int)(that.Index * s_nativeSize) - BitOperations.TrailingZeroCount(that.Mask)) ^= '\x01';
+        }
+    }
+#endif
 
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -14455,6 +14492,20 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
+
+        /// <summary>Reconstructs the original enumerable that can create this instance.</summary>
+        [CollectionAccess(Read)]
+        public readonly Bits<T> AsBits
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        }
+
+        /// <summary>Gets the underlying value that is being enumerated.</summary>
+        [CollectionAccess(Read)]
+        public readonly T AsValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        }
 
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
@@ -14522,8 +14573,12 @@ readonly
             return false;
         }
 
+        /// <inheritdoc />
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public readonly override string ToString() => $"{AsBits}";
+
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint FalsyMask() => (nuint)1 << sizeof(nuint) * BitsInByte - 2;
+        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
 
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
