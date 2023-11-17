@@ -157,6 +157,63 @@ readonly
             }
         );
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+    static unsafe int TrailingZeroCount(nuint value)
+#if !NETCOREAPP3_0_OR_GREATER
+        =>
+            BitOperations.TrailingZeroCount(value);
+#else
+    {
+        const int BitsInUInt = BitsInByte * sizeof(uint);
+
+        for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
+            if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
+                return j + i * BitsInUInt;
+
+        return sizeof(nuint) * BitsInByte;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static int Map([ValueRange(0, 1u << 31)] uint value) =>
+        value switch // Always a power of two.
+        {
+            0 => 32,
+            1 << 0 => 0,
+            1 << 1 => 1,
+            1 << 2 => 2,
+            1 << 3 => 3,
+            1 << 4 => 4,
+            1 << 5 => 5,
+            1 << 6 => 6,
+            1 << 7 => 7,
+            1 << 8 => 8,
+            1 << 9 => 9,
+            1 << 10 => 10,
+            1 << 11 => 11,
+            1 << 12 => 12,
+            1 << 13 => 13,
+            1 << 14 => 14,
+            1 << 15 => 15,
+            1 << 16 => 10,
+            1 << 17 => 11,
+            1 << 18 => 12,
+            1 << 19 => 13,
+            1 << 20 => 14,
+            1 << 21 => 15,
+            1 << 22 => 10,
+            1 << 23 => 11,
+            1 << 24 => 12,
+            1 << 25 => 13,
+            1 << 26 => 14,
+            1 << 27 => 15,
+            1 << 28 => 10,
+            1 << 29 => 11,
+            1 << 30 => 12,
+            1u << 31 => 13,
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
+        };
+#endif
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     static unsafe T Nth(T* p, int index)

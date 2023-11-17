@@ -228,23 +228,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override string ToString()
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        =>
-            string.Create(s_typeSize, (Enumerator)this, CopyTo);
-#else
-    {
-        StringBuilder sb = new(s_typeSize);
-        sb.Append('0', s_typeSize);
-        Enumerator that = this;
-        var end = s_typeSize - 1;
-
-        while (that.MoveNext())
-            sb[end - (int)(that.Index * s_nativeSize) - BitOperations.TrailingZeroCount(that.Mask)] ^= '\x01';
-
-        return $"{sb}";
-    }
-#endif
+    public override string ToString() => ((Enumerator)this).ToRemainingString();
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
@@ -260,21 +244,6 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe void CopyTo(Span<char> span, Enumerator that)
-    {
-        span.Fill('0');
-
-        fixed (char* ptr = span)
-        {
-            var end = ptr + s_typeSize - 1;
-
-            while (that.MoveNext())
-                *(end - (int)(that.Index * s_nativeSize) - BitOperations.TrailingZeroCount(that.Mask)) ^= '\x01';
-        }
-    }
-#endif
 
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -301,7 +270,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
 
-        /// <summary>Reconstructs the original enumerable that can create this instance.</summary>
+        /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
         [CollectionAccess(Read)]
         public readonly Bits<T> AsBits
         {
@@ -383,7 +352,26 @@ readonly
 
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public readonly override string ToString() => $"{AsBits}";
+        public readonly override string ToString()
+        {
+            var copy = this;
+            return copy.ToRemainingString();
+        }
+
+        /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
+        /// <returns>The <see cref="string"/> result of this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+        public unsafe string ToRemainingString()
+        {
+            var ptr = stackalloc char[s_typeSize];
+            new Span<char>(ptr, s_typeSize).Fill('0');
+            var last = ptr + s_typeSize - 1;
+
+            while (MoveNext())
+                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
+
+            return new(ptr, 0, s_typeSize);
+        }
 
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;

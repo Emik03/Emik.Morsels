@@ -14420,23 +14420,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override string ToString()
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        =>
-            string.Create(s_typeSize, (Enumerator)this, CopyTo);
-#else
-    {
-        StringBuilder sb = new(s_typeSize);
-        sb.Append('0', s_typeSize);
-        Enumerator that = this;
-        var end = s_typeSize - 1;
-
-        while (that.MoveNext())
-            sb[end - (int)(that.Index * s_nativeSize) - BitOperations.TrailingZeroCount(that.Mask)] ^= '\x01';
-
-        return $"{sb}";
-    }
-#endif
+    public override string ToString() => ((Enumerator)this).ToRemainingString();
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
@@ -14452,21 +14436,6 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe void CopyTo(Span<char> span, Enumerator that)
-    {
-        span.Fill('0');
-
-        fixed (char* ptr = span)
-        {
-            var end = ptr + s_typeSize - 1;
-
-            while (that.MoveNext())
-                *(end - (int)(that.Index * s_nativeSize) - BitOperations.TrailingZeroCount(that.Mask)) ^= '\x01';
-        }
-    }
-#endif
 
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -14493,7 +14462,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
 
-        /// <summary>Reconstructs the original enumerable that can create this instance.</summary>
+        /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
         [CollectionAccess(Read)]
         public readonly Bits<T> AsBits
         {
@@ -14575,7 +14544,26 @@ readonly
 
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public readonly override string ToString() => $"{AsBits}";
+        public readonly override string ToString()
+        {
+            var copy = this;
+            return copy.ToRemainingString();
+        }
+
+        /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
+        /// <returns>The <see cref="string"/> result of this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+        public unsafe string ToRemainingString()
+        {
+            var ptr = stackalloc char[s_typeSize];
+            new Span<char>(ptr, s_typeSize).Fill('0');
+            var last = ptr + s_typeSize - 1;
+
+            while (MoveNext())
+                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
+
+            return new(ptr, 0, s_typeSize);
+        }
 
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
@@ -14767,6 +14755,63 @@ readonly
                 _ => throw new ArgumentOutOfRangeException(nameof(remainder), (nuint)remainder, null),
             }
         );
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+    static unsafe int TrailingZeroCount(nuint value)
+#if !NETCOREAPP3_0_OR_GREATER
+        =>
+            BitOperations.TrailingZeroCount(value);
+#else
+    {
+        const int BitsInUInt = BitsInByte * sizeof(uint);
+
+        for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
+            if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
+                return j + i * BitsInUInt;
+
+        return sizeof(nuint) * BitsInByte;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static int Map([ValueRange(0, 1u << 31)] uint value) =>
+        value switch // Always a power of two.
+        {
+            0 => 32,
+            1 << 0 => 0,
+            1 << 1 => 1,
+            1 << 2 => 2,
+            1 << 3 => 3,
+            1 << 4 => 4,
+            1 << 5 => 5,
+            1 << 6 => 6,
+            1 << 7 => 7,
+            1 << 8 => 8,
+            1 << 9 => 9,
+            1 << 10 => 10,
+            1 << 11 => 11,
+            1 << 12 => 12,
+            1 << 13 => 13,
+            1 << 14 => 14,
+            1 << 15 => 15,
+            1 << 16 => 10,
+            1 << 17 => 11,
+            1 << 18 => 12,
+            1 << 19 => 13,
+            1 << 20 => 14,
+            1 << 21 => 15,
+            1 << 22 => 10,
+            1 << 23 => 11,
+            1 << 24 => 12,
+            1 << 25 => 13,
+            1 << 26 => 14,
+            1 << 27 => 15,
+            1 << 28 => 10,
+            1 << 29 => 11,
+            1 << 30 => 12,
+            1u << 31 => 13,
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
+        };
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
