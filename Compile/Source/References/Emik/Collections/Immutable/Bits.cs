@@ -354,8 +354,8 @@ readonly
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public readonly override string ToString()
         {
-            var copy = this;
-            return copy.ToRemainingString();
+            var that = this;
+            return that.ToRemainingString();
         }
 
         /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
