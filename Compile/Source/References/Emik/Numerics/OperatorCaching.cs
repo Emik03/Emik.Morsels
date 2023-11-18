@@ -17,7 +17,7 @@ static partial class OperatorCaching
     /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
-        Underlying<T>() switch
+        typeof(T) switch
         {
             var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
             var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
@@ -50,7 +50,7 @@ static partial class OperatorCaching
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
-        Underlying<T>() switch
+        typeof(T) switch
         {
             var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! + (byte)(object)r!),
             var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
@@ -75,7 +75,7 @@ static partial class OperatorCaching
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
-        Underlying<T>() switch
+        typeof(T) switch
         {
             var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! / r),
             var x when x == typeof(double) => (T)(object)((double)(object)l! / r),
@@ -105,9 +105,6 @@ static partial class OperatorCaching
     [DoesNotReturn, Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
         throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static Type Underlying<T>() => typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T);
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
@@ -152,7 +149,7 @@ static partial class OperatorCaching
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            Underlying<T>() switch
+            (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
             {
                 var x when x == typeof(byte) => (T)(object)byte.MinValue,
                 var x when x == typeof(double) => (T)(object)double.MinValue,
