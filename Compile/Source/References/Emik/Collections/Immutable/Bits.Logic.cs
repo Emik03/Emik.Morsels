@@ -149,7 +149,7 @@ readonly
         if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
         {
             for (; l <= upper - 64; l += 64, r += 64)
-                Vector512.BitwiseAnd(Vector512.Load(l), Vector512.Load(r)).StoreAligned(r);
+                *(Vector512<byte>*)r = Vector512.BitwiseAnd(Vector512.Load(l), Vector512.Load(r));
 
             if (sizeof(T) % 64 is 0)
                 return;
@@ -159,7 +159,7 @@ readonly
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
-                Vector256.BitwiseAnd(Vector256.Load(l), Vector256.Load(r)).StoreAligned(r);
+                *(Vector256<byte>*)r = Vector256.BitwiseAnd(Vector256.Load(l), Vector256.Load(r));
 
             if (sizeof(T) % 32 is 0)
                 return;
@@ -168,7 +168,7 @@ readonly
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
-                Vector128.BitwiseAnd(Vector128.Load(l), Vector128.Load(r)).StoreAligned(r);
+                *(Vector128<byte>*)r = Vector128.BitwiseAnd(Vector128.Load(l), Vector128.Load(r));
 
             if (sizeof(T) % 16 is 0)
                 return;
@@ -177,7 +177,7 @@ readonly
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
-                Vector64.BitwiseAnd(Vector64.Load(l), Vector64.Load(r)).StoreAligned(r);
+                *(Vector64<byte>*)r = Vector64.BitwiseAnd(Vector64.Load(l), Vector64.Load(r));
 
             if (sizeof(T) % 8 is 0)
                 return;
@@ -223,7 +223,7 @@ readonly
         if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
         {
             for (; l <= upper - 64; l += 64, r += 64)
-                Vector512.AndNot(Vector512.Load(l), Vector512.Load(r)).StoreAligned(r);
+                *(Vector512<byte>*)r = Vector512.AndNot(Vector512.Load(l), Vector512.Load(r));
 
             if (sizeof(T) % 64 is 0)
                 return;
@@ -233,7 +233,7 @@ readonly
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
-                Vector256.AndNot(Vector256.Load(l), Vector256.Load(r)).StoreAligned(r);
+                *(Vector256<byte>*)r = Vector256.AndNot(Vector256.Load(l), Vector256.Load(r));
 
             if (sizeof(T) % 32 is 0)
                 return;
@@ -242,7 +242,7 @@ readonly
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
-                Vector128.AndNot(Vector128.Load(l), Vector128.Load(r)).StoreAligned(r);
+                *(Vector128<byte>*)r = Vector128.AndNot(Vector128.Load(l), Vector128.Load(r));
 
             if (sizeof(T) % 16 is 0)
                 return;
@@ -251,7 +251,7 @@ readonly
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
-                Vector64.AndNot(Vector64.Load(l), Vector64.Load(r)).StoreAligned(r);
+                *(Vector64<byte>*)r = Vector64.AndNot(Vector64.Load(l), Vector64.Load(r));
 
             if (sizeof(T) % 8 is 0)
                 return;
@@ -296,7 +296,7 @@ readonly
         if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
         {
             for (; x <= upper - 64; x += 64)
-                Vector512.OnesComplement(Vector512.Load(x)).StoreAligned(x);
+                *(Vector512<byte>*)x = Vector512.OnesComplement(Vector512.Load(x));
 
             if (sizeof(T) % 64 is 0)
                 return;
@@ -306,7 +306,7 @@ readonly
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; x <= upper - 32; x += 32)
-                Vector256.OnesComplement(Vector256.Load(x)).StoreAligned(x);
+                *(Vector256<byte>*)x = Vector256.OnesComplement(Vector256.Load(x));
 
             if (sizeof(T) % 32 is 0)
                 return;
@@ -315,7 +315,7 @@ readonly
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; x <= upper - 16; x += 16)
-                Vector128.OnesComplement(Vector128.Load(x)).StoreAligned(x);
+                *(Vector128<byte>*)x = Vector128.OnesComplement(Vector128.Load(x));
 
             if (sizeof(T) % 16 is 0)
                 return;
@@ -324,7 +324,7 @@ readonly
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; x <= upper - 8; x += 8)
-                Vector64.OnesComplement(Vector64.Load(x)).StoreAligned(x);
+                *(Vector64<byte>*)x = Vector64.OnesComplement(Vector64.Load(x));
 
             if (sizeof(T) % 8 is 0)
                 return;
@@ -370,7 +370,7 @@ readonly
         if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
         {
             for (; l <= upper - 64; l += 64, r += 64)
-                Vector512.BitwiseOr(Vector512.Load(l), Vector512.Load(r)).StoreAligned(r);
+               *(Vector512<byte>*)r = Vector512.BitwiseOr(Vector512.Load(l), Vector512.Load(r));
 
             if (sizeof(T) % 64 is 0)
                 return;
@@ -380,7 +380,7 @@ readonly
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
-                Vector256.BitwiseOr(Vector256.Load(l), Vector256.Load(r)).StoreAligned(r);
+                *(Vector256<byte>*)r = Vector256.BitwiseOr(Vector256.Load(l), Vector256.Load(r));
 
             if (sizeof(T) % 32 is 0)
                 return;
@@ -389,7 +389,7 @@ readonly
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
-                Vector128.BitwiseOr(Vector128.Load(l), Vector128.Load(r)).StoreAligned(r);
+                *(Vector128<byte>*)r = Vector128.BitwiseOr(Vector128.Load(l), Vector128.Load(r));
 
             if (sizeof(T) % 16 is 0)
                 return;
@@ -398,7 +398,7 @@ readonly
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
-                Vector64.BitwiseOr(Vector64.Load(l), Vector64.Load(r)).StoreAligned(r);
+                *(Vector64<byte>*)r = Vector64.BitwiseOr(Vector64.Load(l), Vector64.Load(r));
 
             if (sizeof(T) % 8 is 0)
                 return;
@@ -444,7 +444,7 @@ readonly
         if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
         {
             for (; l <= upper - 64; l += 64, r += 64)
-                Vector512.Xor(Vector512.Load(l), Vector512.Load(r)).StoreAligned(r);
+                *(Vector512<byte>*)r = Vector512.Xor(Vector512.Load(l), Vector512.Load(r));
 
             if (sizeof(T) % 64 is 0)
                 return;
@@ -454,7 +454,7 @@ readonly
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
-                Vector256.Xor(Vector256.Load(l), Vector256.Load(r)).StoreAligned(r);
+                *(Vector256<byte>*)r = Vector256.Xor(Vector256.Load(l), Vector256.Load(r));
 
             if (sizeof(T) % 32 is 0)
                 return;
@@ -463,7 +463,7 @@ readonly
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
-                Vector128.Xor(Vector128.Load(l), Vector128.Load(r)).StoreAligned(r);
+                *(Vector128<byte>*)r = Vector128.Xor(Vector128.Load(l), Vector128.Load(r));
 
             if (sizeof(T) % 16 is 0)
                 return;
@@ -472,7 +472,7 @@ readonly
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
-                Vector64.Xor(Vector64.Load(l), Vector64.Load(r)).StoreAligned(r);
+                *(Vector64<byte>*)r = Vector64.Xor(Vector64.Load(l), Vector64.Load(r));
 
             if (sizeof(T) % 8 is 0)
                 return;
