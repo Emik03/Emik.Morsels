@@ -27,10 +27,10 @@ global using System;
 global using System.Buffers;
 global using System.Buffers.Binary;
 global using System.Buffers.Text;
-global using System.CodeDom;
 global using System.CodeDom.Compiler;
 global using System.Collections;
 global using System.Collections.Concurrent;
+global using System.Collections.Frozen;
 global using System.Collections.Generic;
 global using System.Collections.Immutable;
 global using System.Collections.ObjectModel;
@@ -40,10 +40,7 @@ global using System.ComponentModel.DataAnnotations;
 global using System.ComponentModel.DataAnnotations.Schema;
 global using System.ComponentModel.Design;
 global using System.ComponentModel.Design.Serialization;
-global using System.Configuration;
 global using System.Configuration.Assemblies;
-global using System.Configuration.Internal;
-global using System.Configuration.Provider;
 global using System.Data;
 global using System.Data.Common;
 global using System.Data.Odbc;
@@ -81,12 +78,14 @@ global using System.IO.Pipes;
 global using System.IO.Ports;
 global using System.Linq;
 global using System.Linq.Expressions;
+global using System.Linq.Expressions.Interpreter;
 global using System.Media;
 global using System.Net;
 global using System.Net.Cache;
 global using System.Net.Http;
 global using System.Net.Http.Headers;
 global using System.Net.Http.Json;
+global using System.Net.Http.Metrics;
 global using System.Net.Mail;
 global using System.Net.Mime;
 global using System.Net.NetworkInformation;
@@ -108,9 +107,11 @@ global using System.Runtime.ConstrainedExecution;
 global using System.Runtime.ExceptionServices;
 global using System.Runtime.InteropServices;
 global using System.Runtime.InteropServices.ComTypes;
+global using System.Runtime.InteropServices.Marshalling;
 global using System.Runtime.InteropServices.ObjectiveC;
 global using System.Runtime.Intrinsics;
 global using System.Runtime.Intrinsics.Arm;
+global using System.Runtime.Intrinsics.Wasm;
 global using System.Runtime.Intrinsics.X86;
 global using System.Runtime.Loader;
 global using System.Runtime.Remoting;
@@ -161,7 +162,7 @@ global using System.Xml.Schema;
 global using System.Xml.Serialization;
 global using System.Xml.XPath;
 global using System.Xml.Xsl;
-global using CommunityToolkit;
+global using System.Xml.Xsl.Runtime;
 global using CommunityToolkit.Common;
 global using CommunityToolkit.Common.Collections;
 global using CommunityToolkit.Common.Deferred;
@@ -171,21 +172,17 @@ global using CommunityToolkit.Diagnostics;
 global using CommunityToolkit.Helpers;
 global using CommunityToolkit.HighPerformance;
 global using CommunityToolkit.HighPerformance.Buffers;
-global using CommunityToolkit.HighPerformance.Buffers.Internals;
-global using CommunityToolkit.HighPerformance.Buffers.Internals.Interfaces;
 global using CommunityToolkit.HighPerformance.Buffers.Views;
 global using CommunityToolkit.HighPerformance.Enumerables;
 global using CommunityToolkit.HighPerformance.Helpers;
-global using CommunityToolkit.HighPerformance.Helpers.Internals;
 global using CommunityToolkit.HighPerformance.Memory;
-global using CommunityToolkit.HighPerformance.Memory.Internals;
 global using CommunityToolkit.HighPerformance.Memory.Views;
 global using CommunityToolkit.HighPerformance.Streams;
-global using Emik;
 global using Emik.Results;
 global using Emik.Results.Extensions;
-global using JetBrains;
+global using FastGenericNew;
 global using JetBrains.Annotations;
+global using TextCopy;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
 global using static FastGenericNew.FastNew;
@@ -193,7 +190,6 @@ global using static TextCopy.ClipboardService;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
-
 global using GeneratedSource = (string HintName, string Source);
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
@@ -5172,7 +5168,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
     /// <typeparam name="T">The type to check.</typeparam>
     /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
 
     /// <summary>Performs an addition operation to return the sum.</summary>
@@ -5225,45 +5221,28 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
             _ => Fail<T>(),
         };
 
-    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
-    /// <typeparam name="T">The type that failed.</typeparam>
-    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>This method does not return.</returns>
-    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Fail<T>() =>
-        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
-
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T MinValue<T>() =>
-        Underlying<T>() switch
-        {
-            var x when x == typeof(byte) => (T)(object)byte.MinValue,
-            var x when x == typeof(double) => (T)(object)double.MinValue,
-            var x when x == typeof(float) => (T)(object)float.MinValue,
-            var x when x == typeof(int) => (T)(object)int.MinValue,
-#if NET5_0_OR_GREATER
-            var x when x == typeof(nint) => (T)(object)nint.MinValue,
-            var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
-#endif
-            var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-            var x when x == typeof(short) => (T)(object)short.MinValue,
-            var x when x == typeof(uint) => (T)(object)uint.MinValue,
-            var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-            var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-            _ => DirectOperators<T>.MinValue,
-        };
+    public static T MinValue<T>() => DirectOperators<T>.MinValue;
+
+    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
+    /// <typeparam name="T">The type that failed.</typeparam>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>This method does not return.</returns>
+    [DoesNotReturn, Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Fail<T>() =>
+        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Type Underlying<T>() => typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T);
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
-    // ReSharper disable once ClassNeverInstantiated.Local
+    // ReSharper disable once ClassNeverInstantiated.Global
 #pragma warning disable S1118
-    sealed partial class DirectOperators<T>
+    public sealed partial class DirectOperators<T>
 #pragma warning restore S1118
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
@@ -5302,7 +5281,23 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!;
+            Underlying<T>() switch
+            {
+                var x when x == typeof(byte) => (T)(object)byte.MinValue,
+                var x when x == typeof(double) => (T)(object)double.MinValue,
+                var x when x == typeof(float) => (T)(object)float.MinValue,
+                var x when x == typeof(int) => (T)(object)int.MinValue,
+#if NET5_0_OR_GREATER
+                var x when x == typeof(nint) => (T)(object)nint.MinValue,
+                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
+#endif
+                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+                var x when x == typeof(short) => (T)(object)short.MinValue,
+                var x when x == typeof(uint) => (T)(object)uint.MinValue,
+                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+                _ => typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!,
+            };
 
         /// <summary>Gets the function for dividing.</summary>
         public static Converter<T?, T>? Increment { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
@@ -6347,11 +6342,11 @@ public
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, bool>
 #if !WAWA
-        s_fullyUnmanaged = new(),
+        s_fullyUnmanaged = [],
 #endif
-        s_hasMethods = new();
+        s_hasMethods = [];
 
-    static readonly Dictionary<Type, Delegate> s_stringifiers = new();
+    static readonly Dictionary<Type, Delegate> s_stringifiers = [];
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
     {
