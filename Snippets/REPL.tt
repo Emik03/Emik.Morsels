@@ -8,8 +8,8 @@
 #pragma warning disable CS0208
 #define NET8_0
 #define NET80
-#define NET7_0
-#define NET70
+#define NET8_0_OR_GREATER
+#define NET80_OR_GREATER
 #define NET7_0_OR_GREATER
 #define NET70_OR_GREATER
 #define NET6_0_OR_GREATER
@@ -228,7 +228,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static SecurityAction;" => "using static System.Security.Permissions.SecurityAction;",
         "using static CollectionAccessType;" => "using static JetBrains.Annotations.CollectionAccessType;",
         "using static SecurityPermissionFlag;" => "using static System.Security.Permissions.SecurityPermissionFlag;",
-        _ => x};
+        _ => x
+    };
 
     string[] typeDeclarations = { "ref", "sealed", "partial", "class", "delegate", "enum", "struct", "record" };
 
