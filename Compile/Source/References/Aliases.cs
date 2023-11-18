@@ -66,9 +66,6 @@ global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
 global using Range = System.Range;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
-#if !NET8_0_OR_GREATER
-global using Range = System.Range;
-#endif
 #endif
 #if !NETSTANDARD || NETSTANDARD1_2_OR_GREATER
 global using Timer = System.Threading.Timer;
