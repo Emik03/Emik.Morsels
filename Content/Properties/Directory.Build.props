@@ -91,7 +91,7 @@
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
     </PropertyGroup>
     <!-- Benchmarks do not like being run from the artifacts path. -->
-    <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Benchmarks'">
+    <PropertyGroup Condition="!$(MSBuildProjectName.Contains('Benchmark'))">
         <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
     </PropertyGroup>
     <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
