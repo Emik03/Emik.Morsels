@@ -313,7 +313,7 @@ static partial class SpanSimdQueries
             Sum((ReadOnlySpan<T>)span.Span, converter);
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
@@ -326,7 +326,7 @@ static partial class SpanSimdQueries
     }
 #endif
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
         // ReSharper disable RedundantNameQualifier
@@ -344,7 +344,7 @@ static partial class SpanSimdQueries
         );
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T UnderlyingSum<T>(this in ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
         {
@@ -361,7 +361,7 @@ static partial class SpanSimdQueries
             _ => throw Unreachable,
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
 #pragma warning restore MA0051

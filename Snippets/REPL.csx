@@ -5146,7 +5146,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>The value <see langword="true"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
-        Underlying<T>() switch
+        typeof(T) switch
         {
             var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
             var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
@@ -5179,7 +5179,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
-        Underlying<T>() switch
+        typeof(T) switch
         {
             var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! + (byte)(object)r!),
             var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
@@ -5204,7 +5204,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
-        Underlying<T>() switch
+        typeof(T) switch
         {
             var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! / r),
             var x when x == typeof(double) => (T)(object)((double)(object)l! / r),
@@ -5234,9 +5234,6 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [DoesNotReturn, Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
         throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static Type Underlying<T>() => typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T);
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
@@ -5281,7 +5278,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            Underlying<T>() switch
+            (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
             {
                 var x when x == typeof(byte) => (T)(object)byte.MinValue,
                 var x when x == typeof(double) => (T)(object)double.MinValue,
@@ -10395,8 +10392,6 @@ readonly
         where T : struct
 #endif
     {
-        if (typeof(T).IsEnum)
-            return span.UnderlyingSum();
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
             Vector<T>.IsSupported &&
@@ -10405,6 +10400,9 @@ readonly
             span.Length >= Vector<T>.Count * 4)
             return SumVectorized(span);
 #endif
+        if (typeof(T).IsEnum)
+            return span.UnderlyingSum();
+
         T sum = default!;
 
         foreach (var value in span)
@@ -10626,7 +10624,7 @@ readonly
             Sum((ReadOnlySpan<T>)span.Span, converter);
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
@@ -10639,7 +10637,7 @@ readonly
     }
 #endif
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
         // ReSharper disable RedundantNameQualifier
@@ -10657,7 +10655,7 @@ readonly
         );
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T UnderlyingSum<T>(this in ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
         {
@@ -10674,7 +10672,7 @@ readonly
             _ => throw Unreachable,
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
 #pragma warning restore MA0051
