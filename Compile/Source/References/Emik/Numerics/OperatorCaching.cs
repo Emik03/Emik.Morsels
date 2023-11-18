@@ -39,7 +39,7 @@ static partial class OperatorCaching
     /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
     /// <typeparam name="T">The type to check.</typeparam>
     /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
 
     /// <summary>Performs an addition operation to return the sum.</summary>
@@ -92,45 +92,28 @@ static partial class OperatorCaching
             _ => Fail<T>(),
         };
 
-    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
-    /// <typeparam name="T">The type that failed.</typeparam>
-    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>This method does not return.</returns>
-    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Fail<T>() =>
-        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
-
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T MinValue<T>() =>
-        Underlying<T>() switch
-        {
-            var x when x == typeof(byte) => (T)(object)byte.MinValue,
-            var x when x == typeof(double) => (T)(object)double.MinValue,
-            var x when x == typeof(float) => (T)(object)float.MinValue,
-            var x when x == typeof(int) => (T)(object)int.MinValue,
-#if NET5_0_OR_GREATER
-            var x when x == typeof(nint) => (T)(object)nint.MinValue,
-            var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
-#endif
-            var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
-            var x when x == typeof(short) => (T)(object)short.MinValue,
-            var x when x == typeof(uint) => (T)(object)uint.MinValue,
-            var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
-            var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
-            _ => DirectOperators<T>.MinValue,
-        };
+    public static T MinValue<T>() => DirectOperators<T>.MinValue;
+
+    /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
+    /// <typeparam name="T">The type that failed.</typeparam>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>This method does not return.</returns>
+    [DoesNotReturn, Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Fail<T>() =>
+        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Type Underlying<T>() => typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T);
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
-    // ReSharper disable once ClassNeverInstantiated.Local
+    // ReSharper disable once ClassNeverInstantiated.Global
 #pragma warning disable S1118
-    sealed partial class DirectOperators<T>
+    public sealed partial class DirectOperators<T>
 #pragma warning restore S1118
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
@@ -169,7 +152,23 @@ static partial class OperatorCaching
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!;
+            Underlying<T>() switch
+            {
+                var x when x == typeof(byte) => (T)(object)byte.MinValue,
+                var x when x == typeof(double) => (T)(object)double.MinValue,
+                var x when x == typeof(float) => (T)(object)float.MinValue,
+                var x when x == typeof(int) => (T)(object)int.MinValue,
+#if NET5_0_OR_GREATER
+                var x when x == typeof(nint) => (T)(object)nint.MinValue,
+                var x when x == typeof(nuint) => (T)(object)nuint.MinValue,
+#endif
+                var x when x == typeof(sbyte) => (T)(object)sbyte.MinValue,
+                var x when x == typeof(short) => (T)(object)short.MinValue,
+                var x when x == typeof(uint) => (T)(object)uint.MinValue,
+                var x when x == typeof(ulong) => (T)(object)ulong.MinValue,
+                var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
+                _ => typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!,
+            };
 
         /// <summary>Gets the function for dividing.</summary>
         public static Converter<T?, T>? Increment { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
