@@ -47,11 +47,11 @@ static partial class Stringifier
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, bool>
 #if !WAWA
-        s_fullyUnmanaged = new(),
+        s_fullyUnmanaged = [],
 #endif
-        s_hasMethods = new();
+        s_hasMethods = [];
 
-    static readonly Dictionary<Type, Delegate> s_stringifiers = new();
+    static readonly Dictionary<Type, Delegate> s_stringifiers = [];
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
     {
