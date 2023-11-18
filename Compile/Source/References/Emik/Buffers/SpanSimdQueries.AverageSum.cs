@@ -81,8 +81,6 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
     {
-        if (typeof(T).IsEnum)
-            return span.UnderlyingSum();
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
             Vector<T>.IsSupported &&
@@ -91,6 +89,9 @@ static partial class SpanSimdQueries
             span.Length >= Vector<T>.Count * 4)
             return SumVectorized(span);
 #endif
+        if (typeof(T).IsEnum)
+            return span.UnderlyingSum();
+
         T sum = default!;
 
         foreach (var value in span)
