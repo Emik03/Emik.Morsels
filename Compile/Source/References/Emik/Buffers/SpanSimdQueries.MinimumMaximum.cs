@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
@@ -277,7 +277,19 @@ static partial class SpanSimdQueries
             _ => throw Unreachable,
         };
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static Vector<T> LoadUnsafe<T>(in T source)
+#if !NET8_0_OR_GREATER
+        where T : struct
+#endif
+        =>
+#if NET8_0_OR_GREATER
+            Vector.LoadUnsafe(source);
+#else
+            Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
@@ -291,8 +303,8 @@ static partial class SpanSimdQueries
 
         if (span.IsEmpty)
             return default!;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-        if (!IsNumericPrimitive<T>() || !Vector128.IsHardwareAccelerated || span.Length < Vector128<T>.Count)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+        if (!IsNumericPrimitive<T>() || !Vector.IsHardwareAccelerated || span.Length < Vector<T>.Count)
 #endif
         {
             value = span[0];
@@ -300,89 +312,51 @@ static partial class SpanSimdQueries
             for (var i = 1; i < span.Length; i++)
                 if (Compare<T, TMinMax>(span[i], value))
                     value = span[i];
+
+            return value;
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-        else if (!Vector256.IsHardwareAccelerated || span.Length < Vector256<T>.Count)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+        ref var current = ref MemoryMarshal.GetReference(span);
+        ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector<T>.Count);
+
+        var best = LoadUnsafe(current);
+        current = ref Unsafe.Add(ref current, Vector<T>.Count)!;
+
+        while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
         {
-            ref var current = ref MemoryMarshal.GetReference(span);
-            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector128<T>.Count);
-
-            var best = Vector128.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector128<T>.Count)!;
-
-            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
-            {
-                best = typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref current)),
-                    var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref current)),
-                    _ => throw Unreachable,
-                };
-
-                current = ref Unsafe.Add(ref current, Vector128<T>.Count)!;
-            }
-
             best = typeof(TMinMax) switch
             {
-                var x when x == typeof(Maximum) => Vector128.Max(best, Vector128.LoadUnsafe(ref lastVectorStart)),
-                var x when x == typeof(Minimum) => Vector128.Min(best, Vector128.LoadUnsafe(ref lastVectorStart)),
+                var x when x == typeof(Maximum) => Vector.Max(best, LoadUnsafe(current)),
+                var x when x == typeof(Minimum) => Vector.Min(best, LoadUnsafe(current)),
                 _ => throw Unreachable,
             };
 
-            value = best[0];
-
-            for (var i = 1; i < Vector128<T>.Count; i++)
-                if (typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
-                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
-                    _ => throw Unreachable,
-                })
-                    value = best[i];
+            current = ref Unsafe.Add(ref current, Vector<T>.Count)!;
         }
-        else
+
+        best = typeof(TMinMax) switch
         {
-            ref var current = ref MemoryMarshal.GetReference(span);
-            ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector256<T>.Count);
+            var x when x == typeof(Maximum) => Vector.Max(best, LoadUnsafe(lastVectorStart)),
+            var x when x == typeof(Minimum) => Vector.Min(best, LoadUnsafe(lastVectorStart)),
+            _ => throw Unreachable,
+        };
 
-            var best = Vector256.LoadUnsafe(ref current);
-            current = ref Unsafe.Add(ref current, Vector256<T>.Count)!;
+        value = best[0];
 
-            while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
+        for (var i = 1; i < Vector<T>.Count; i++)
+            if (typeof(TMinMax) switch
             {
-                best = typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref current)),
-                    var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref current)),
-                    _ => throw Unreachable,
-                };
-
-                current = ref Unsafe.Add(ref current, Vector256<T>.Count)!;
-            }
-
-            best = typeof(TMinMax) switch
-            {
-                var x when x == typeof(Maximum) => Vector256.Max(best, Vector256.LoadUnsafe(ref lastVectorStart)),
-                var x when x == typeof(Minimum) => Vector256.Min(best, Vector256.LoadUnsafe(ref lastVectorStart)),
+                var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
+                var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
                 _ => throw Unreachable,
-            };
+            })
+                value = best[i];
 
-            value = best[0];
-
-            for (var i = 1; i < Vector256<T>.Count; i++)
-                if (typeof(TMinMax) switch
-                {
-                    var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
-                    var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
-                    _ => throw Unreachable,
-                })
-                    value = best[i];
-        }
-#endif
         return value;
+#endif
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     static T MinMax<T, TResult, TMinMax>(
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
