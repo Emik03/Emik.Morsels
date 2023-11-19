@@ -10198,7 +10198,7 @@ readonly
             _ => throw Unreachable,
         };
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Vector<T> LoadUnsafe<T>(in T source)
 #if !NET8_0_OR_GREATER
         where T : struct
@@ -10227,7 +10227,7 @@ readonly
         if (span.IsEmpty)
             return default!;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (!IsNumericPrimitive<T>() || !Vector.IsHardwareAccelerated || span.Length < Vector<T>.Count)
+        if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || span.Length < Vector<T>.Count)
 #endif
         {
             value = span[0];
@@ -10241,21 +10241,18 @@ readonly
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector<T>.Count);
-
         var best = LoadUnsafe(current);
         current = ref Unsafe.Add(ref current, Vector<T>.Count)!;
 
-        while (Unsafe.IsAddressLessThan(ref current, ref lastVectorStart))
-        {
+        for (;
+            Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
+            current = ref Unsafe.Add(ref current, Vector<T>.Count)!)
             best = typeof(TMinMax) switch
             {
                 var x when x == typeof(Maximum) => Vector.Max(best, LoadUnsafe(current)),
                 var x when x == typeof(Minimum) => Vector.Min(best, LoadUnsafe(current)),
                 _ => throw Unreachable,
             };
-
-            current = ref Unsafe.Add(ref current, Vector<T>.Count)!;
-        }
 
         best = typeof(TMinMax) switch
         {
@@ -10291,20 +10288,25 @@ readonly
         if (enumerable.IsEmpty)
             return default!;
 
-        var value = enumerable[0];
-        var best = converter(value);
+        ref var bestValue = ref MemoryMarshal.GetReference(enumerable);
+        ref var current = ref Unsafe.Add(ref bestValue, 1);
+        ref var last = ref Unsafe.Add(ref bestValue, enumerable.Length);
+        var bestKey = converter(current);
 
-        for (var i = 1; i < enumerable.Length; i++)
-            if (converter(enumerable[i]) is var next &&
+        for (; Unsafe.IsAddressLessThan(ref current, ref last); current = ref Unsafe.Add(ref current, 1)!)
+            if (converter(current) is var next &&
                 typeof(TMinMax) switch
                 {
-                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, best),
-                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, best),
+                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, bestKey),
+                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, bestKey),
                     _ => throw Unreachable,
                 })
-                (value, best) = (enumerable[i], next);
+            {
+                bestKey = next;
+                bestValue = ref current;
+            }
 
-        return value;
+        return bestValue;
     }
 
     struct Minimum;
