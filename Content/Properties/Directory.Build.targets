@@ -198,10 +198,10 @@
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <MarkdownIndexFilePath>$(ProjectDir)Documentation/index.md</MarkdownIndexFilePath>
         <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE</DefineConstants>
-        <PackageProjectUrl Condition="$(PackageProjectUrl) == ''">$(RepositoryUrl)</PackageProjectUrl>
+        <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">$(RepositoryUrl)</PackageProjectUrl>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
-        <DefineConstants Condition="$(IsCeleste) == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
+        <DefineConstants Condition="'$(IsCeleste)' == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
     <!-- The file 'index.md' may not necessarily exist. In which case the assembly name is probably used. -->
     <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
@@ -248,18 +248,18 @@
         <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.5.5"/>
     </ItemGroup>
     <!-- Celeste references. -->
-    <ItemGroup Condition="$(IsCeleste) == 'true'">
+    <ItemGroup Condition="'$(IsCeleste)' == 'true'">
         <Reference Include="FNA" HintPath="$(Celeste)/FNA.dll" Private="false"/>
         <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
         <Reference Include="YamlDotNet" HintPath="$(Celeste)/YamlDotNet.dll" Private="false"/>
         <Reference Include="MonoMod.Utils" HintPath="$(Celeste)/MonoMod.Utils.dll" Private="false"/>
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
-        <Reference Condition="Exists('$(Celeste)/Celeste.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
-        <Reference Condition="Exists('$(Celeste)/Celeste.exe')" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
-        <Reference Condition="Exists('$(Celeste)/Celeste.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.Mod.mm.dll" Private="false"/>
+        <Reference Condition="Exists('$(Celeste)/Celeste.dll') and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp'))" Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
+        <Reference Condition="Exists('$(Celeste)/Celeste.exe') and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netframework'))" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
+        <Reference Condition="Exists('$(Celeste)/Celeste.Mod.mm.dll') and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netframework'))" Include="Celeste.Mod" HintPath="$(Celeste)/Celeste.Mod.mm.dll" Private="false"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
-    <ItemGroup Condition="$(IsKtane) == 'true'">
+    <ItemGroup Condition="'$(IsKtane)' == 'true'">
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
