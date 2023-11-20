@@ -276,7 +276,7 @@ static partial class SpanSimdQueries
             var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
             _ => throw Unreachable,
         };
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Vector<T> LoadUnsafe<T>(in T source)
 #if !NET8_0_OR_GREATER
@@ -290,7 +290,7 @@ static partial class SpanSimdQueries
 #else
             Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
-
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
