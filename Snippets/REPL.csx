@@ -10197,7 +10197,7 @@ readonly
             var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
             _ => throw Unreachable,
         };
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Vector<T> LoadUnsafe<T>(in T source)
 #if !NET8_0_OR_GREATER
@@ -10211,7 +10211,7 @@ readonly
 #else
             Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
-
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
@@ -10642,9 +10642,8 @@ readonly
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
-        // ReSharper disable RedundantNameQualifier
-        System.Diagnostics.Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
-        System.Diagnostics.Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
+        Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
+        Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
 
         System.Diagnostics.Debug.Assert(
             Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>(),

@@ -4,7 +4,7 @@
 // ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 8500
+#pragma warning disable 8500, SA1137
 #endif
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -49,7 +49,7 @@ static partial class MemoryMarshal
             (int)(fromLength / toSize);
 
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-            var ptr = span.Pointer;
+        var ptr = span.Pointer;
 #else
 #pragma warning disable 8500
         fixed (TFrom* ptr = span)
@@ -137,7 +137,7 @@ static partial class MemoryMarshal
         =>
             Cache<T>.ReadOnlySpan(ref reference, length);
 #endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <summary>Returns a reference to the element of the read-only span at index 0.</summary>
     /// <remarks><para>
     /// If the read-only span is empty, this method returns a reference to the location where the
@@ -148,7 +148,12 @@ static partial class MemoryMarshal
     /// <param name="span">The read-only from which the reference is retrieved.</param>
     /// <returns>A reference to the element at index 0.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T GetReference<T>(ReadOnlySpan<T> span) => ref Unsafe.AsRef(span.GetPinnableReference());
+    public static unsafe ref T GetReference<T>(ReadOnlySpan<T> span) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        ref Unsafe.AsRef(span.GetPinnableReference());
+#else
+        ref Unsafe.AsRef<T>(span.Pointer);
+#endif
 
     /// <summary>Returns a reference to the element of the span at index 0.</summary>
     /// <remarks><para>
@@ -160,7 +165,11 @@ static partial class MemoryMarshal
     /// <param name="span">The span from which the reference is retrieved.</param>
     /// <returns>A reference to the element at index 0.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ref T GetReference<T>(Span<T> span) => ref span.GetPinnableReference();
+    public static unsafe ref T GetReference<T>(Span<T> span) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        ref Unsafe.AsRef(span.GetPinnableReference());
+#else
+        ref Unsafe.AsRef<T>(span.Pointer);
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     static class Cache<T>
