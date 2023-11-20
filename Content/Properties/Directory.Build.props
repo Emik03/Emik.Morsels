@@ -170,11 +170,11 @@
         <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.6.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.TheSquareHole" Version="1.1.3" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.8.14" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23525.2" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0-preview1.23165.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.23525.2" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="8.0.100"/>
