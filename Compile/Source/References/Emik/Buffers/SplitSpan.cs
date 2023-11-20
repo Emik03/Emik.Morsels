@@ -548,6 +548,12 @@ readonly
 #else
         static (builder, span) =>
         {
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+            for (var i = 0; i < span.Length; i++)
+                builder.Append(((char*)span.Pointer)[i]);
+
+            return builder;
+#else
 #pragma warning disable 8500
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
             var ptr = span.Pointer;
@@ -556,6 +562,7 @@ readonly
 #endif
 #pragma warning restore 8500
                 return builder.Append((char*)ptr, span.Length);
+#endif
         };
 #endif
 

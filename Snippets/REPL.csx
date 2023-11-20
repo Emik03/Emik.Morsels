@@ -9525,6 +9525,12 @@ readonly
 #else
         static (builder, span) =>
         {
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+            for (var i = 0; i < span.Length; i++)
+                builder.Append(((char*)span.Pointer)[i]);
+
+            return builder;
+#else
 #pragma warning disable 8500
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
             var ptr = span.Pointer;
@@ -9533,6 +9539,7 @@ readonly
 #endif
 #pragma warning restore 8500
                 return builder.Append((char*)ptr, span.Length);
+#endif
         };
 #endif
 
@@ -10222,6 +10229,7 @@ readonly
 #endif
 #pragma warning restore MA0051
     {
+        // ReSharper disable once TooWideLocalVariableScope
         T value;
 
         if (span.IsEmpty)
@@ -10642,8 +10650,9 @@ readonly
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
-        Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
-        Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
+        // ReSharper disable RedundantNameQualifier
+        System.Diagnostics.Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
+        System.Diagnostics.Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
 
         System.Diagnostics.Debug.Assert(
             Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>(),
