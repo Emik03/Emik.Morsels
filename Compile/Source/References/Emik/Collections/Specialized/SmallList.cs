@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
+
+// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext RedundantUsingDirective
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
@@ -70,7 +70,7 @@ static partial class SmallList
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first, T second, T third, params T[] rest) =>
         new(first, second, third, rest);
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Allocates an inlined list of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="PooledSmallList{T}"/> will point to uninitialized memory.
@@ -251,5 +251,5 @@ static partial class SmallList
 #pragma warning restore 9091
     }
 #endif
-}
 #endif
+}

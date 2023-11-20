@@ -14177,7 +14177,7 @@ readonly
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
 
 
 
@@ -14302,7 +14302,7 @@ readonly
 
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
-    public T Current
+    public readonly T Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
     }
@@ -14333,7 +14333,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CopyTo(T[] array, int arrayIndex)
+    public readonly void CopyTo(T[] array, int arrayIndex)
     {
         foreach (var next in this)
             array[arrayIndex++] = next;
@@ -14381,7 +14381,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int IndexOf(T item)
+    public readonly int IndexOf(T item)
     {
         using var e = new Enumerator(item);
 
@@ -14401,22 +14401,22 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override string ToString() => ((Enumerator)this).ToRemainingString();
+    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => _value;
+    public readonly Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -14579,8 +14579,8 @@ readonly
 }
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+#pragma warning disable IDE0250
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 
 /// <inheritdoc cref="Bits{T}"/>
@@ -14739,7 +14739,7 @@ readonly
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
     static unsafe int TrailingZeroCount(nuint value)
-#if !NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         =>
             BitOperations.TrailingZeroCount(value);
 #else
@@ -14832,10 +14832,10 @@ readonly
 }
 
 // SPDX-License-Identifier: MPL-2.0
+#pragma warning disable CA1502, MA0051, IDE0250
+// ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 
-// ReSharper disable CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 
-#pragma warning disable CA1502, MA0051
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -15627,8 +15627,8 @@ readonly
 }
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+#pragma warning disable IDE0250
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 
 /// <inheritdoc cref="Bits{T}"/>
@@ -16760,10 +16760,8 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
-#pragma warning disable 8500, RCS1146
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500, MA0102, RCS1146
 
-#endif
 
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
@@ -18444,8 +18442,8 @@ public ref
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext
+
+// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext RedundantUsingDirective
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
@@ -18514,7 +18512,7 @@ public ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first, T second, T third, params T[] rest) =>
         new(first, second, third, rest);
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Allocates an inlined list of the specified size.</summary>
     /// <remarks><para>
     /// The returned <see cref="PooledSmallList{T}"/> will point to uninitialized memory.

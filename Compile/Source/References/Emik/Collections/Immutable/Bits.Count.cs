@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+#pragma warning disable IDE0250
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
 /// <inheritdoc cref="Bits{T}"/>
@@ -159,7 +159,7 @@ readonly
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
     static unsafe int TrailingZeroCount(nuint value)
-#if !NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         =>
             BitOperations.TrailingZeroCount(value);
 #else

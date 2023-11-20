@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable CheckNamespace StructCanBeMadeReadOnly
+#pragma warning disable IDE0250
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
 /// <inheritdoc cref="Bits{T}"/>

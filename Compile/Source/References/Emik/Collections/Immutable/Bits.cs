@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -129,7 +129,7 @@ readonly
 
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
-    public T Current
+    public readonly T Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
     }
@@ -160,7 +160,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CopyTo(T[] array, int arrayIndex)
+    public readonly void CopyTo(T[] array, int arrayIndex)
     {
         foreach (var next in this)
             array[arrayIndex++] = next;
@@ -208,7 +208,7 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int IndexOf(T item)
+    public readonly int IndexOf(T item)
     {
         using var e = new Enumerator(item);
 
@@ -228,22 +228,22 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override string ToString() => ((Enumerator)this).ToRemainingString();
+    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => _value;
+    public readonly Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
