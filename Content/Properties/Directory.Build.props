@@ -24,6 +24,7 @@
         <PackageId>$(MSBuildProjectName)</PackageId>
         <EnableNETAnalyzers>true</EnableNETAnalyzers>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <FastNew_PrettyOutput>true</FastNew_PrettyOutput>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
         <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
