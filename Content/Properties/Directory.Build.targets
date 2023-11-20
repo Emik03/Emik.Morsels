@@ -249,6 +249,7 @@
     </ItemGroup>
     <!-- Celeste references. -->
     <ItemGroup Condition="'$(IsCeleste)' == 'true'">
+        <PackageReference Remove="Emik.SourceGenerators.Tattoo"/>
         <Reference Include="FNA" HintPath="$(Celeste)/FNA.dll" Private="false"/>
         <Reference Include="DotNetZip" HintPath="$(Celeste)/DotNetZip.dll" Private="false"/>
         <Reference Include="YamlDotNet" HintPath="$(Celeste)/YamlDotNet.dll" Private="false"/>
