@@ -15,7 +15,6 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 global using Action = System.Action;
 global using Array = System.Array;
 global using Console = System.Console;
-global using Debug = System.Diagnostics.Debug;
 global using Directory = System.IO.Directory;
 global using Enum = System.Enum;
 global using Environment = System.Environment;
@@ -58,6 +57,8 @@ global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReference
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
+#else
+global using Debug = System.Diagnostics.Debug;
 #endif
 #if KTANE && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
