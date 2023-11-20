@@ -301,6 +301,7 @@ static partial class SpanSimdQueries
 #endif
 #pragma warning restore MA0051
     {
+        // ReSharper disable once TooWideLocalVariableScope
         T value;
 
         if (span.IsEmpty)
