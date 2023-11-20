@@ -9,7 +9,7 @@
 //
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
-#pragma warning disable CA1200, CA1508, CA1710, CA1815, CA2208, CA5394, DOC100, DOC202, IDE0161, IDE0250, IDE0251, MA0012, MA0015, MA0048, MA0051, MA0097, MA0102, SA1129, SA1137, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
+#pragma warning disable CA1200, CA1508, CA1710, CA1815, CA2208, CA5394, DOC100, DOC202, IDE0161, IDE0250, IDE0251, MA0012, MA0015, MA0048, MA0051, MA0097, MA0102, S1210, S3928, SA1129, SA1137, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
 namespace System
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER || NETCOREAPP && !NETCOREAPP2_0_OR_GREATER
@@ -190,7 +190,6 @@ namespace System
                 ValueTuple => 0,
                 _ => throw new ArgumentException(),
             };
-
 #endif
 
         [Pure, ValueRange(0)]
@@ -221,7 +220,7 @@ namespace System
         [Pure]
         object ITuple.this[[ValueRange(0, -1)] int index]
         {
-            [DoesNotReturn] get => throw new IndexOutOfRangeException();
+            [DoesNotReturn] get => throw new ArgumentOutOfRangeException(nameof(index), index, null);
         }
 
         /// <summary>Creates a new struct 0-tuple.</summary>
@@ -554,7 +553,6 @@ namespace System
 
             return comparer.Compare(Item1, objTuple.Item1);
         }
-
 #endif
 
         [Pure]
@@ -584,16 +582,8 @@ namespace System
         /// <summary>
         /// Get the element at position <param name="index"/>.
         /// </summary>
-        object? ITuple.this[[ValueRange(0)] int index]
-        {
-            get
-            {
-                if (index != 0)
-                    throw new IndexOutOfRangeException();
-
-                return Item1;
-            }
-        }
+        object? ITuple.this[[ValueRange(0)] int index] =>
+            index is 0 ? Item1 : throw new ArgumentOutOfRangeException(nameof(index), index, null);
     }
 
     /// <summary>
@@ -784,7 +774,7 @@ namespace System
             {
                 0 => Item1,
                 1 => Item2,
-                _ => throw new IndexOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
             };
     }
 
@@ -996,7 +986,7 @@ namespace System
                 0 => Item1,
                 1 => Item2,
                 2 => Item3,
-                _ => throw new IndexOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
             };
     }
 
@@ -1231,7 +1221,7 @@ namespace System
                 1 => Item2,
                 2 => Item3,
                 3 => Item4,
-                _ => throw new IndexOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
             };
     }
 
@@ -1488,7 +1478,7 @@ namespace System
                 2 => Item3,
                 3 => Item4,
                 4 => Item5,
-                _ => throw new IndexOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
             };
     }
 
@@ -1769,7 +1759,7 @@ namespace System
                 3 => Item4,
                 4 => Item5,
                 5 => Item6,
-                _ => throw new IndexOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
             };
     }
 
@@ -2080,7 +2070,7 @@ namespace System
                 4 => Item5,
                 5 => Item6,
                 6 => Item7,
-                _ => throw new IndexOutOfRangeException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(index), index, null),
             };
     }
 
@@ -2558,7 +2548,7 @@ namespace System
                 if (index == 7)
                     return Rest;
 
-                throw new IndexOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(index), index, null);
             }
         }
     }
