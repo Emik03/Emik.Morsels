@@ -256,6 +256,7 @@
         <Reference Include="MMHOOK_Celeste" HintPath="$(Celeste)/MMHOOK_Celeste.dll" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.dll" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.exe')" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
+        <Reference Condition="Exists('$(Celeste)/Celeste.Mod.mm.dll')" Include="Celeste" HintPath="$(Celeste)/Celeste.Mod.mm.dll" Private="false"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="$(IsKtane) == 'true'">
