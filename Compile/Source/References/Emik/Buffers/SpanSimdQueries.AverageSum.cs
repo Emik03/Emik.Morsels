@@ -329,9 +329,8 @@ static partial class SpanSimdQueries
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
-        // ReSharper disable RedundantNameQualifier
-        System.Diagnostics.Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
-        System.Diagnostics.Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
+        Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
+        Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
 
         System.Diagnostics.Debug.Assert(
             Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>(),
