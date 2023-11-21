@@ -8941,7 +8941,7 @@ public
         // Vector512<T> is the largest vector type.
         const int InitialCapacity = 512;
 
-        static T[] s_values = new T[InitialCapacity];
+        static T[] s_values = new T[InitialCapacity / Unsafe.SizeOf<T>()];
 
         static InAscendingOrder() => Populate(s_values);
 
@@ -8967,7 +8967,7 @@ public
             return span[..length];
         }
 
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Populate(scoped Span<T> span)
         {
             for (var i = 1; i < span.Length; i++)
