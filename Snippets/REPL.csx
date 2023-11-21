@@ -5144,32 +5144,41 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <typeparam name="T">The type of value to increment.</typeparam>
     /// <param name="t">The value to increment.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    /// <returns>The value <see langword="true"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Increment<T>(ref T t) =>
-        typeof(T) switch
-        {
-            var x when x == typeof(byte) => ++Unsafe.As<T, byte>(ref t) is var _,
-            var x when x == typeof(double) => ++Unsafe.As<T, double>(ref t) is var _,
-            var x when x == typeof(float) => ++Unsafe.As<T, float>(ref t) is var _,
-            var x when x == typeof(int) => ++Unsafe.As<T, int>(ref t) is var _,
-#if NET5_0_OR_GREATER
-            var x when x == typeof(nint) => ++Unsafe.As<T, nint>(ref t) is var _,
-            var x when x == typeof(nuint) => ++Unsafe.As<T, nuint>(ref t) is var _,
-#endif
-            var x when x == typeof(sbyte) => ++Unsafe.As<T, sbyte>(ref t) is var _,
-            var x when x == typeof(short) => ++Unsafe.As<T, short>(ref t) is var _,
-            var x when x == typeof(uint) => ++Unsafe.As<T, uint>(ref t) is var _,
-            var x when x == typeof(ulong) => ++Unsafe.As<T, ulong>(ref t) is var _,
-            var x when x == typeof(ushort) => ++Unsafe.As<T, ushort>(ref t) is var _,
-            _ when DirectOperators<T>.IsSupported => (t = DirectOperators<T>.Increment(t)) is var _,
-            _ => Fail<T>() is var _,
-        };
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    public static void Increment<T>(ref T t)
+    {
+        if (typeof(T) == typeof(byte))
+            Unsafe.As<T, byte>(ref t)++;
+        else if (typeof(T) == typeof(double))
+            Unsafe.As<T, double>(ref t)++;
+        else if (typeof(T) == typeof(float))
+            Unsafe.As<T, float>(ref t)++;
+        else if (typeof(T) == typeof(int))
+            Unsafe.As<T, int>(ref t)++;
+        else if (typeof(T) == typeof(nint))
+            Unsafe.As<T, nint>(ref t)++;
+        else if (typeof(T) == typeof(nuint))
+            Unsafe.As<T, nuint>(ref t)++;
+        else if (typeof(T) == typeof(sbyte))
+            Unsafe.As<T, sbyte>(ref t)++;
+        else if (typeof(T) == typeof(short))
+            Unsafe.As<T, short>(ref t)++;
+        else if (typeof(T) == typeof(uint))
+            Unsafe.As<T, uint>(ref t)++;
+        else if (typeof(T) == typeof(ulong))
+            Unsafe.As<T, ulong>(ref t)++;
+        else if (typeof(T) == typeof(ushort))
+            Unsafe.As<T, ushort>(ref t)++;
+        else if (DirectOperators<T>.IsSupported)
+            t = DirectOperators<T>.Increment(t);
+        else
+            Fail<T>();
+    }
 
     /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
     /// <typeparam name="T">The type to check.</typeparam>
     /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
 
     /// <summary>Performs an addition operation to return the sum.</summary>
@@ -5178,7 +5187,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <param name="r">The right-hand side.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
         typeof(T) switch
         {
@@ -5203,7 +5212,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <param name="r">The right-hand side.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
         typeof(T) switch
         {
@@ -5225,14 +5234,14 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T MinValue<T>() => DirectOperators<T>.MinValue;
 
     /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
     /// <typeparam name="T">The type that failed.</typeparam>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>This method does not return.</returns>
-    [DoesNotReturn, Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
         throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
 
