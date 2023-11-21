@@ -15,7 +15,7 @@ static partial class OperatorCaching
     /// <param name="t">The value to increment.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The value <see langword="true"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Increment<T>(ref T t) =>
         typeof(T) switch
         {
@@ -39,7 +39,7 @@ static partial class OperatorCaching
     /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
     /// <typeparam name="T">The type to check.</typeparam>
     /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
 
     /// <summary>Performs an addition operation to return the sum.</summary>
@@ -48,7 +48,7 @@ static partial class OperatorCaching
     /// <param name="r">The right-hand side.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
         typeof(T) switch
         {
@@ -73,7 +73,7 @@ static partial class OperatorCaching
     /// <param name="r">The right-hand side.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
         typeof(T) switch
         {
@@ -95,14 +95,14 @@ static partial class OperatorCaching
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T MinValue<T>() => DirectOperators<T>.MinValue;
 
     /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
     /// <typeparam name="T">The type that failed.</typeparam>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
     /// <returns>This method does not return.</returns>
-    [DoesNotReturn, Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
         throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
 
