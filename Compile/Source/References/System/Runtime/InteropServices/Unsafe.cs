@@ -7,6 +7,11 @@ static class Unsafe
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
     public static void SkipInit<T>(out T value) => value = default!;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable 8500
+    public static unsafe int SizeOf<T>() => sizeof(T);
+#pragma warning restore 8500
 }
 #else
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
@@ -23,7 +28,7 @@ static unsafe class Unsafe
     // https://github.com/dotnet/runtime/blob/release/6.0/src/libraries/System.Runtime.CompilerServices.Unsafe/src/System.Runtime.CompilerServices.Unsafe.il
     // Last update: 98ace7d4837fcd81c1f040b1f67e63e9e1973e13 - these methods became intrinsics starting from .NET 7
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Read<T>(void* source)
     {
         Ldarg(nameof(source));
@@ -31,7 +36,7 @@ static unsafe class Unsafe
         return Return<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T ReadUnaligned<T>(void* source)
     {
         Ldarg(nameof(source));
@@ -40,7 +45,7 @@ static unsafe class Unsafe
         return Return<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T ReadUnaligned<T>(ref byte source)
     {
         Ldarg(nameof(source));
@@ -93,7 +98,7 @@ static unsafe class Unsafe
         Stobj(typeof(T));
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static void* AsPointer<T>(ref T value)
     {
         Ldarg(nameof(value));
@@ -108,7 +113,7 @@ static unsafe class Unsafe
         throw Unreachable();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int SizeOf<T>()
     {
         Sizeof(typeof(T));
@@ -181,6 +186,7 @@ static unsafe class Unsafe
         Initblk();
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void InitBlockUnaligned(ref byte startAddress, byte value, uint byteCount)
     {
         Ldarg(nameof(startAddress));
@@ -190,7 +196,7 @@ static unsafe class Unsafe
         Initblk();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T As<T>(object o)
         where T : class
     {
@@ -198,7 +204,7 @@ static unsafe class Unsafe
         return Return<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T AsRef<T>(void* source)
     {
         // For .NET Core the roundtrip via a local is no longer needed
@@ -219,21 +225,21 @@ static unsafe class Unsafe
 #endif
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T AsRef<T>(in T source)
     {
         Ldarg(nameof(source));
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref TTo As<TFrom, TTo>(ref TFrom source)
     {
         Ldarg(nameof(source));
         return ref ReturnRef<TTo>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Unbox<T>(object box)
         where T : struct
     {
@@ -242,7 +248,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Add<T>(ref T source, int elementOffset)
     {
         Ldarg(nameof(source));
@@ -254,7 +260,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static void* Add<T>(void* source, int elementOffset)
     {
         Ldarg(nameof(source));
@@ -266,7 +272,7 @@ static unsafe class Unsafe
         return ReturnPointer();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Add<T>(ref T source, IntPtr elementOffset)
     {
         Ldarg(nameof(source));
@@ -277,7 +283,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Add<T>(ref T source, nuint elementOffset)
     {
         Ldarg(nameof(source));
@@ -288,7 +294,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T AddByteOffset<T>(ref T source, IntPtr byteOffset)
     {
         Ldarg(nameof(source));
@@ -297,7 +303,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T AddByteOffset<T>(ref T source, nuint byteOffset)
     {
         Ldarg(nameof(source));
@@ -306,7 +312,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Subtract<T>(ref T source, int elementOffset)
     {
         Ldarg(nameof(source));
@@ -318,7 +324,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static void* Subtract<T>(void* source, int elementOffset)
     {
         Ldarg(nameof(source));
@@ -330,7 +336,7 @@ static unsafe class Unsafe
         return ReturnPointer();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Subtract<T>(ref T source, IntPtr elementOffset)
     {
         Ldarg(nameof(source));
@@ -341,7 +347,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T Subtract<T>(ref T source, nuint elementOffset)
     {
         Ldarg(nameof(source));
@@ -352,7 +358,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T SubtractByteOffset<T>(ref T source, IntPtr byteOffset)
     {
         Ldarg(nameof(source));
@@ -361,7 +367,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T SubtractByteOffset<T>(ref T source, nuint byteOffset)
     {
         Ldarg(nameof(source));
@@ -370,7 +376,7 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static IntPtr ByteOffset<T>(ref T origin, ref T target)
     {
         Ldarg(nameof(target));
@@ -379,7 +385,7 @@ static unsafe class Unsafe
         return Return<IntPtr>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool AreSame<T>(ref T left, ref T right)
     {
         Ldarg(nameof(left));
@@ -388,7 +394,7 @@ static unsafe class Unsafe
         return Return<bool>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsAddressGreaterThan<T>(ref T left, ref T right)
     {
         Ldarg(nameof(left));
@@ -397,7 +403,7 @@ static unsafe class Unsafe
         return Return<bool>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsAddressLessThan<T>(ref T left, ref T right)
     {
         Ldarg(nameof(left));
@@ -406,7 +412,7 @@ static unsafe class Unsafe
         return Return<bool>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsNullRef<T>(ref T source)
     {
         Ldarg(nameof(source));
@@ -416,7 +422,7 @@ static unsafe class Unsafe
         return Return<bool>();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T NullRef<T>()
     {
         Ldc_I4_0();

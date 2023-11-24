@@ -367,11 +367,27 @@ static partial class SpanSimdQueries
     {
         if (enumerable.IsEmpty)
             return default!;
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        var bestValue = enumerable[0];
+        var bestKey = converter(bestValue);
 
+        for (var i = 1; i < enumerable.Length; i++)
+            if (converter(enumerable[i]) is var next &&
+                typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, bestKey),
+                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, bestKey),
+                    _ => throw Unreachable,
+                })
+            {
+                bestKey = next;
+                bestValue = enumerable[i];
+            }
+#else
         ref var bestValue = ref MemoryMarshal.GetReference(enumerable);
         ref var current = ref Unsafe.Add(ref bestValue, 1);
         ref var last = ref Unsafe.Add(ref bestValue, enumerable.Length);
-        var bestKey = converter(current);
+        var bestKey = converter(bestValue);
 
         for (; Unsafe.IsAddressLessThan(ref current, ref last); current = ref Unsafe.Add(ref current, 1)!)
             if (converter(current) is var next &&
@@ -385,7 +401,7 @@ static partial class SpanSimdQueries
                 bestKey = next;
                 bestValue = ref current;
             }
-
+#endif
         return bestValue;
     }
 

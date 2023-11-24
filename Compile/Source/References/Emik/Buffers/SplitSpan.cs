@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantUsingDirective StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
 using static Span;
@@ -122,7 +122,7 @@ static partial class SplitSpanFactory
 #endif
         =>
             ((ReadOnlySpan<T>)span).SplitAll(separator);
-
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
@@ -144,6 +144,7 @@ static partial class SplitSpanFactory
 #endif
         =>
             ((ReadOnlySpan<T>)span).SplitOn(separator);
+#endif
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <param name="split">The instance to get the list from.</param>

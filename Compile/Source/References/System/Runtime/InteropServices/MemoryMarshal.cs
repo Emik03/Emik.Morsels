@@ -137,7 +137,7 @@ static partial class MemoryMarshal
         =>
             Cache<T>.ReadOnlySpan(ref reference, length);
 #endif
-
+#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
     /// <summary>Returns a reference to the element of the read-only span at index 0.</summary>
     /// <remarks><para>
     /// If the read-only span is empty, this method returns a reference to the location where the
@@ -170,6 +170,7 @@ static partial class MemoryMarshal
         ref Unsafe.AsRef(span.GetPinnableReference());
 #else
         ref Unsafe.AsRef<T>(span.Pointer);
+#endif
 #endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     static class Cache<T>

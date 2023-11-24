@@ -8334,7 +8334,7 @@ public
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
-        [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(Span<T>))];
+        [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -8345,13 +8345,13 @@ public
         where T : IEquatable<T>?
 #endif
         =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(SplitSpan<T>))];
+            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
-       [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(ReadOnlySpan<T>))];
+       [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>))];
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
@@ -8990,7 +8990,7 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantUsingDirective StructCanBeMadeReadOnly
 
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
 
@@ -9110,7 +9110,7 @@ public
 #endif
         =>
             ((ReadOnlySpan<T>)span).SplitAll(separator);
-
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
@@ -9132,6 +9132,7 @@ public
 #endif
         =>
             ((ReadOnlySpan<T>)span).SplitOn(separator);
+#endif
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <param name="split">The instance to get the list from.</param>
@@ -10305,11 +10306,27 @@ readonly
     {
         if (enumerable.IsEmpty)
             return default!;
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        var bestValue = enumerable[0];
+        var bestKey = converter(bestValue);
 
+        for (var i = 1; i < enumerable.Length; i++)
+            if (converter(enumerable[i]) is var next &&
+                typeof(TMinMax) switch
+                {
+                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, bestKey),
+                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, bestKey),
+                    _ => throw Unreachable,
+                })
+            {
+                bestKey = next;
+                bestValue = enumerable[i];
+            }
+#else
         ref var bestValue = ref MemoryMarshal.GetReference(enumerable);
         ref var current = ref Unsafe.Add(ref bestValue, 1);
         ref var last = ref Unsafe.Add(ref bestValue, enumerable.Length);
-        var bestKey = converter(current);
+        var bestKey = converter(bestValue);
 
         for (; Unsafe.IsAddressLessThan(ref current, ref last); current = ref Unsafe.Add(ref current, 1)!)
             if (converter(current) is var next &&
@@ -10323,7 +10340,7 @@ readonly
                 bestKey = next;
                 bestValue = ref current;
             }
-
+#endif
         return bestValue;
     }
 
@@ -10660,7 +10677,7 @@ readonly
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
     {
-        // ReSharper disable RedundantNameQualifier
+        // ReSharper disable RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
         System.Diagnostics.Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
 
