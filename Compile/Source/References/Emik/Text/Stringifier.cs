@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #pragma warning disable 1696, SA1137, SA1216
 #if WAWA
 namespace Wawa.Modules;
@@ -304,7 +304,7 @@ static partial class Stringifier
 #endif
             string source,
         string separator
-    ) =>
+    ) => // ReSharper disable once RedundantCast
         source.Split((char[])[..separator], StringSplitOptions.RemoveEmptyEntries);
 
     /// <summary>
@@ -508,8 +508,9 @@ static partial class Stringifier
             !type.IsValueType ? s_fullyUnmanaged[type] = false :
             type.IsEnum || type.IsPointer || type.IsPrimitive ? s_fullyUnmanaged[type] = true :
             s_fullyUnmanaged[type] = type.IsGenericTypeDefinition
-                ? type.GetCustomAttributesData()
-                   .Any(x => x.AttributeType.FullName is "System.Runtime.CompilerServices.IsUnmanagedAttribute")
+                ? type
+                   .GetCustomAttributes()
+                   .Any(x => x?.GetType().FullName is "System.Runtime.CompilerServices.IsUnmanagedAttribute")
                 : Array.TrueForAll(
                     type.GetFields(
                         BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic

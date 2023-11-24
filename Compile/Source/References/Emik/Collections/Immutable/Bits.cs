@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry RedundantReadonlyModifier
 #pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
 namespace Emik.Morsels;
 
@@ -49,7 +49,7 @@ static partial class BitsFactory
 
         return t;
     }
-#if !WAWA
+#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
     /// <summary>Returns the reference that contains the most bits.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>

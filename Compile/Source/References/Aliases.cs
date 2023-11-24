@@ -2,15 +2,16 @@
 
 // ReSharper disable MissingBlankLines RedundantUsingDirective.Global
 #pragma warning disable GlobalUsingsAnalyzer, SA1649
-#if NETFRAMEWORK
-extern alias ms;
-#endif
 #if KTANE
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 extern alias unity;
 #endif
+#if NETFRAMEWORK
+extern alias ms;
+#endif
 global using Attribute = System.Attribute;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+global using Version = System.Version;
 #if ANDROID
 global using Action = System.Action;
 global using Array = System.Array;
@@ -78,7 +79,6 @@ global using Keyboard = Microsoft.Xna.Framework.Input.Keyboard;
 global using Rectangle = Microsoft.Xna.Framework.Rectangle;
 global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
 global using Vector2 = Microsoft.Xna.Framework.Vector2;
-global using Version = System.Version;
 #endif
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace

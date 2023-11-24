@@ -92,7 +92,7 @@ readonly
         fixed (T* ptr = &reference)
             return EqZero(ptr);
     }
-#if !WAWA
+#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <param name="number">The bits to clamp.</param>
     /// <param name="min">The minimum accepted value.</param>
