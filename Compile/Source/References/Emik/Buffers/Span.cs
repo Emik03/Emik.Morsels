@@ -81,7 +81,7 @@ static partial class Span
     /// </para><para>
     /// However, there isn't as much stack memory available as there is heap, which can cause a DoS (Denial of Service)
     /// vulnerability if you aren't careful. The methods in <c>Span</c> will automatically switch to unmanaged heap
-    /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
+    /// allocation if the type argument and length create an array that exceeds 1kiB (1024 bytes).
     /// </para></remarks>
     public const int StackallocSize = 1 << 10;
 #if !NETSTANDARD1_0
@@ -286,6 +286,28 @@ static partial class Span
     }
 #endif
 
+    /// <summary>Gets the reference that whose address is within the null range.</summary>
+    /// <remarks><para>
+    /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
+    /// valid reference will never be within this range. This allows reference types to be a disjoint union of a valid
+    /// reference, and an 11-bit number. Be careful with the values returned by this function: <see langword="null"/>
+    /// comparisons can <see langword="return"/> <see langword="false"/>, but will behave as such.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the nullable reference type.</typeparam>
+    /// <param name="reference">
+    /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
+    /// </param>
+    /// <param name="address">The number to set.</param>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
+        where T : class
+    {
+#pragma warning disable 8500
+        fixed (T* ptr = &reference)
+#pragma warning restore 8500
+            *(nuint*)ptr = address;
+    }
+
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
@@ -313,6 +335,15 @@ static partial class Span
         length * sizeof(T);
 #pragma warning restore 8500
 #endif // ReSharper disable RedundantUnsafeContext
+
+    /// <summary>Returns the memory address of a given reference object.</summary>
+    /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
+    /// <param name="reference">The reference <see cref="object"/> for which to get the address.</param>
+    /// <returns>The memory address of the reference object.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable 8500
+    public static unsafe nuint ToAddress(this object? reference) => *(nuint*)&reference;
+#pragma warning restore 8500
 #pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
