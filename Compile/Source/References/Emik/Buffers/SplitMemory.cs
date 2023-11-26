@@ -273,14 +273,190 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct SplitMemory<T> : IEquatable<SplitMemory<T>>, IEnumerable<ReadOnlyMemory<T>>
+    partial struct SplitMemory<T> : IEquatable<SplitMemory<T>>
     where T : IEquatable<T>?
 {
-#if NET8_0_OR_GREATER
-    readonly SearchValues<T>? _search;
-#else
-    readonly bool _isAny;
+    public
+#if !NO_READONLY_STRUCTS
+        readonly
 #endif
+        struct Of<TStrategy>(SplitMemory<T> split) : IEquatable<Of<TStrategy>>, IEnumerable<ReadOnlyMemory<T>>
+        where TStrategy : SplitSpan<T>.IStrategy
+    {
+        /// <summary>Gets the line.</summary>
+        public ReadOnlyMemory<T> Body
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => split.Body;
+        }
+
+        /// <summary>Gets the separator.</summary>
+        public ReadOnlyMemory<T> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => split.Separator;
+        }
+
+        /// <summary>Computes the length.</summary>
+        /// <returns>The length.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public int Count()
+        {
+            var e = GetEnumerator();
+            var count = 0;
+
+            while (e.MoveNext())
+                count++;
+
+            return count;
+        }
+
+        /// <inheritdoc />
+        public override string ToString() =>
+            typeof(T) == typeof(char)
+                ? Aggregate(new(), StringBuilderAccumulator()).ToString()
+                : this.ToList().Stringify(3, true);
+
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Enumerator GetEnumerator() => new(split);
+
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        IEnumerator<ReadOnlyMemory<T>> IEnumerable<ReadOnlyMemory<T>>.GetEnumerator() => GetEnumerator();
+
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        /// <summary>Gets the first element.</summary>
+        /// <returns>The first memory from this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlyMemory<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+
+        /// <summary>Gets the last element.</summary>
+        /// <returns>The last memory from this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlyMemory<T> Last()
+#if NET8_0_OR_GREATER
+        =>
+            _search.ToAddress() switch
+            {
+                0 => Body.Span.LastIndexOf(Separator.Span),
+                1 => Body.Span.LastIndexOfAny(Separator.Span),
+                _ => Body.Span.LastIndexOfAny(_search!),
+            } is not -1 and var index
+                ? Body[index..]
+                : default;
+#else
+            =>
+                (IsAny ? Body.Span.LastIndexOfAny(Separator.Span) : Body.Span.LastIndexOf(Separator.Span))
+                is not -1 and var i
+                    ? Body[i..]
+                    : default;
+#endif
+
+        /// <summary>Gets the single element.</summary>
+        /// <returns>The single memory from this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlyMemory<T> Single() =>
+            GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+
+        /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
+        /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+        /// <param name="seed">The accumulator.</param>
+        /// <param name="func">An accumulator function to be invoked on each element.</param>
+        /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+        public TAccumulator Aggregate<TAccumulator>(
+            TAccumulator seed,
+            [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<T>, TAccumulator> func
+        )
+        {
+            var accumulator = seed;
+
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+            foreach (var next in this)
+                accumulator = func(accumulator, next);
+
+            return accumulator;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+        static unsafe Func<StringBuilder, ReadOnlyMemory<T>, StringBuilder> StringBuilderAccumulator() =>
+            static (builder, memory) => builder.Append(Unsafe.As<ReadOnlyMemory<T>, ReadOnlyMemory<char>>(ref memory));
+
+        /// <summary>Represents the enumeration object that views <see cref="SplitMemory{T}"/>.</summary>
+        [StructLayout(LayoutKind.Auto)]
+        public partial struct Enumerator(SplitMemory<T> split) : IEnumerator<ReadOnlyMemory<T>>
+        {
+            [ValueRange(-1, int.MaxValue)]
+            int _end = -1;
+
+            /// <summary>Gets the current index.</summary>
+            public readonly int Index
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
+            }
+
+            /// <inheritdoc cref="IEnumerator{T}.Current"/>
+            public ReadOnlyMemory<T> Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+                private set;
+            }
+
+            /// <summary>Gets the enumerable used to create this instance.</summary>
+            public readonly SplitMemory<T> Enumerable
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => split;
+            }
+
+            /// <inheritdoc />
+            readonly object IEnumerator.Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
+            }
+
+            /// <summary>
+            /// Sets the enumerator to its initial position, which is before the first element in the collection.
+            /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset() => _end = -1;
+
+            /// <inheritdoc />
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly void IDisposable.Dispose() { }
+
+            /// <summary>Advances the enumerator to the next element of the collection.</summary>
+            /// <returns>
+            /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
+            /// <see langword="false"/> if the enumerator has passed the end of the collection.
+            /// </returns>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                var body = split.Body;
+                var separator = split.Separator;
+
+                if (separator.IsEmpty)
+                    return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
+
+                while (SplitSpan<T>.Enumerator.Step(
+                    split.IsAny,
+#if NET8_0_OR_GREATER
+                search,
+#endif
+                    body.Span,
+                    separator.Span,
+                    ref _end,
+                    out var start
+                ))
+                    if (start != _end)
+                        return (Current = body[start.._end]) is var _;
+
+                return false;
+            }
+        }
+    }
 
     /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
@@ -290,18 +466,11 @@ readonly
     /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
-    /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitMemory(ReadOnlyMemory<T> body, ReadOnlyMemory<T> separator, bool isAny)
+    public SplitMemory(ReadOnlyMemory<T> body, ReadOnlyMemory<T> separator)
     {
         Body = body;
         Separator = separator;
-#if NET8_0_OR_GREATER
-        if (isAny)
-            UnsafelySetNullishTo(out _search, 1);
-#else
-        _isAny = isAny;
-#endif
     }
 #if NET8_0_OR_GREATER
     /// <summary>
@@ -443,173 +612,8 @@ readonly
         IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body));
 #pragma warning restore SA1119, RCS1032
 
-    /// <summary>Computes the length.</summary>
-    /// <returns>The length.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int Count()
-    {
-        var e = GetEnumerator();
-        var count = 0;
-
-        while (e.MoveNext())
-            count++;
-
-        return count;
-    }
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 127);
-
-    /// <inheritdoc />
-    public override string ToString() =>
-        typeof(T) == typeof(char)
-            ? Aggregate(new(), StringBuilderAccumulator()).ToString()
-            : this.ToList().Stringify(3, true);
-
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => new(this);
-
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator<ReadOnlyMemory<T>> IEnumerable<ReadOnlyMemory<T>>.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    /// <summary>Gets the first element.</summary>
-    /// <returns>The first memory from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlyMemory<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
-
-    /// <summary>Gets the last element.</summary>
-    /// <returns>The last memory from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlyMemory<T> Last()
-#if NET8_0_OR_GREATER
-        =>
-            _search.ToAddress() switch
-            {
-                0 => Body.Span.LastIndexOf(Separator.Span),
-                1 => Body.Span.LastIndexOfAny(Separator.Span),
-                _ => Body.Span.LastIndexOfAny(_search!),
-            } is not -1 and var index
-                ? Body[index..]
-                : default;
-#else
-        =>
-            (IsAny ? Body.Span.LastIndexOfAny(Separator.Span) : Body.Span.LastIndexOf(Separator.Span))
-            is not -1 and var i
-                ? Body[i..]
-                : default;
-#endif
-
-    /// <summary>Gets the single element.</summary>
-    /// <returns>The single memory from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlyMemory<T> Single() =>
-        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
-
-    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
-        TAccumulator seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<T>, TAccumulator> func
-    )
-    {
-        var accumulator = seed;
-
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var next in this)
-            accumulator = func(accumulator, next);
-
-        return accumulator;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe Func<StringBuilder, ReadOnlyMemory<T>, StringBuilder> StringBuilderAccumulator() =>
-        static (builder, memory) => builder.Append(Unsafe.As<ReadOnlyMemory<T>, ReadOnlyMemory<char>>(ref memory));
-
-    /// <summary>Represents the enumeration object that views <see cref="SplitMemory{T}"/>.</summary>
-    [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator(SplitMemory<T> split) : IEnumerator<ReadOnlyMemory<T>>
-    {
-        [ValueRange(-1, int.MaxValue)]
-        int _end = -1;
-
-        /// <summary>Gets the current index.</summary>
-        public readonly int Index
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
-        }
-
-        /// <inheritdoc cref="IEnumerator{T}.Current"/>
-        public ReadOnlyMemory<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
-
-        /// <summary>Gets the enumerable used to create this instance.</summary>
-        public readonly SplitMemory<T> Enumerable
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => split;
-        }
-
-        /// <inheritdoc />
-        readonly object IEnumerator.Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
-        }
-
-        /// <summary>
-        /// Sets the enumerator to its initial position, which is before the first element in the collection.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => _end = -1;
-
-        /// <inheritdoc />
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        readonly void IDisposable.Dispose() { }
-
-        /// <summary>Advances the enumerator to the next element of the collection.</summary>
-        /// <returns>
-        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
-        /// <see langword="false"/> if the enumerator has passed the end of the collection.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
-        {
-            var body = split.Body;
-            var separator = split.Separator;
-#if NET8_0_OR_GREATER
-            var search = split._search;
-#endif
-            if (separator.IsEmpty
-#if NET8_0_OR_GREATER
-              &&
-                search.ToAddress() is 0 or 1
-#endif
-            )
-                return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
-
-            while (SplitSpan<T>.Enumerator.Step(
-                split.IsAny,
-#if NET8_0_OR_GREATER
-                search,
-#endif
-                body.Span,
-                separator.Span,
-                ref _end,
-                out var start
-            ))
-                if (start != _end)
-                    return (Current = body[start.._end]) is var _;
-
-            return false;
-        }
-    }
 }
 #endif
