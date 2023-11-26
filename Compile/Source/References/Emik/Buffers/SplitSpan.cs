@@ -122,6 +122,19 @@ static partial class SplitSpanFactory
 #endif
         =>
             ((ReadOnlySpan<T>)span).SplitAll(separator);
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, SearchValues<T> separator)
+        where T : IEquatable<T> =>
+        new(span, separator);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitOn<T>(this Span<T> span, SearchValues<T> separator)
+        where T : IEquatable<T> =>
+        ((ReadOnlySpan<T>)span).SplitOn(separator);
+#endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -286,7 +299,11 @@ static partial class SplitSpanFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, Whitespaces.BreakingSearch);
+#else
         new(span, Whitespaces.Breaking.AsSpan(), true);
+#endif
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -306,11 +323,21 @@ static partial class SplitSpanFactory
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, Whitespaces.UnicodeSearch);
+#else
         new(span, Whitespaces.Unicode.AsSpan(), true);
+#endif
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+#endif
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitSpanOn(this string span, SearchValues<char> separator) =>
+        span.AsSpan().SplitOn(separator);
 #endif
 }
 
@@ -340,7 +367,11 @@ readonly
     /// <returns>The final accumulator value.</returns>
     public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
 
+#if NET8_0_OR_GREATER
+    readonly SearchValues<T>? _search;
+#else
     readonly bool _isAny;
+#endif
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
@@ -356,8 +387,28 @@ readonly
     {
         Body = body;
         Separator = separator;
+#if NET8_0_OR_GREATER
+        if (isAny)
+            UnsafelySetNullishTo(out _search, 1);
+#else
         _isAny = isAny;
+#endif
     }
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SplitSpan{T}"/> struct
+    /// where <see cref="IsAny"/> is <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>This constructor is only available starting from .NET 8.0 or later.</para></remarks>
+    /// <param name="body">The line to split.</param>
+    /// <param name="separator">The characters for separation.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<T> body, SearchValues<T> separator)
+    {
+        Body = body;
+        _search = separator;
+    }
+#endif
 
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
@@ -384,16 +435,27 @@ readonly
     /// <summary>Gets the empty split span.</summary>
     public static SplitSpan<T> Empty
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 
     /// <summary>
     /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
     /// or if all of them match.
     /// </summary>
+#if NET8_0_OR_GREATER
+    [MemberNotNullWhen(true, nameof(_search))]
+#endif
     public bool IsAny
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _isAny || Separator.Length is 1;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+#if NET8_0_OR_GREATER
+            _search is not null
+#else
+            _isAny
+#endif
+          ||
+            Separator.Length is 1;
     }
 
     /// <summary>Gets the line.</summary>
@@ -450,7 +512,6 @@ readonly
         }
 
         head = e.Current;
-
         tail = this with { Body = Body[e.Index..] };
     }
 
@@ -461,9 +522,14 @@ readonly
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(scoped SplitSpan<T> other) =>
-        Body.IsEmpty && other.Body.IsEmpty ||
+#if NET8_0_OR_GREATER
+        _search == other._search &&
+#endif // ReSharper disable once ArrangeRedundantParentheses
+#pragma warning disable SA1119, RCS1032
+        (Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
-        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
+        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body));
+#pragma warning restore SA1119, RCS1032
 
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
@@ -507,6 +573,23 @@ readonly
     /// <returns>The last span from this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlySpan<T> Last()
+#if NET8_0_OR_GREATER
+        =>
+            _search.ToAddress() switch
+            {
+                0 => Body.LastIndexOf(Separator),
+                1 => Body.LastIndexOfAny(Separator), // ReSharper disable once NullableWarningSuppressionIsUsed
+                _ => Body.LastIndexOfAny(_search!),
+            } is not -1 and var index
+                ? Body[index..]
+                : default;
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        =>
+            (IsAny ? Body.LastIndexOfAny(Separator) : Body.LastIndexOf(Separator))
+            is not -1 and var i
+                ? Body[i..]
+                : default;
+#else
     {
         var e = GetEnumerator();
 
@@ -514,6 +597,7 @@ readonly
 
         return e.Current;
     }
+#endif
 
     /// <summary>Gets the single element.</summary>
     /// <returns>The single span from this instance.</returns>
@@ -592,6 +676,49 @@ readonly
         /// <summary>Gets the enumerable used to create this instance.</summary>
         public SplitSpan<T> Enumerable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = split;
 
+#if NET8_0_OR_GREATER
+        /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
+        /// <param name="search">The search value.</param>
+        /// <param name="body">The reference to its body.</param>
+        /// <param name="separator">The reference to its separator.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
+        /// <returns>Whether or not to continue looping.</returns>
+#else
+        /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
+        /// <param name="body">The reference to its body.</param>
+        /// <param name="separator">The reference to its separator.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
+        /// <returns>Whether or not to continue looping.</returns>
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Step(
+            bool isAny,
+#if NET8_0_OR_GREATER
+            SearchValues<T>? search,
+#endif
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
+            scoped ref int end,
+            out int start
+        ) =>
+            isAny
+                ? StepAny(
+#if NET8_0_OR_GREATER
+#pragma warning disable SA1114
+                    search,
+#pragma warning restore SA1114
+#endif
+                    body,
+                    separator,
+                    ref end,
+                    out start
+                )
+                : StepAll(body, separator, ref end, out start);
+
         /// <summary>
         /// Sets the enumerator to its initial position, which is before the first element in the collection.
         /// </summary>
@@ -608,38 +735,37 @@ readonly
         {
             var body = Enumerable.Body;
             var separator = Enumerable.Separator;
-
-            if (separator.IsEmpty)
+#if NET8_0_OR_GREATER
+            var search = Enumerable._search;
+#endif
+            if (separator.IsEmpty
+#if NET8_0_OR_GREATER
+              &&
+                search.ToAddress() is 0 or 1
+#endif
+            )
                 return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
 
-            while (Step(Enumerable.IsAny, body, separator, ref _end, out var start))
+            while (Step(
+                Enumerable.IsAny,
+#if NET8_0_OR_GREATER
+                search,
+#endif
+                body,
+                separator,
+                ref _end,
+                out var start
+            ))
                 if (start != _end)
                     return (Current = body[start.._end]) is var _;
 
             return false;
         }
 
-        /// <summary>Attempts to step through to the next slice.</summary>
-        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
-        /// <param name="body">The reference to its body.</param>
-        /// <param name="separator">The reference to its separator.</param>
-        /// <param name="end">The ending index of the slice.</param>
-        /// <param name="start">The starting index of the slice.</param>
-        /// <returns>Whether or not to continue looping.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Step(
-            bool isAny,
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
-            scoped ref int end,
-            out int start
-        ) =>
-            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
             scoped ref int end,
             out int start
         )
@@ -676,17 +802,33 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
-        {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            Unsafe.SkipInit(out start);
-#else
-            start = 0;
+        static bool StepAny(
+#if NET8_0_OR_GREATER
+            SearchValues<T>? search,
 #endif
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
+            ref int end,
+            out int start
+        )
+        {
+            Unsafe.SkipInit(out start);
 
             if (body.Length is var bodyLength && ++end >= bodyLength)
                 return false;
-
+#if NET8_0_OR_GREATER
+            if (search.ToAddress() is not 1) // ReSharper disable once NullableWarningSuppressionIsUsed
+                return body[end..].IndexOfAnyExcept(search!) is not -1 and var startSearch &&
+                    (start = end += startSearch) is var _ && // ReSharper disable once NullableWarningSuppressionIsUsed
+                    body[end..].IndexOfAny(search!) is var endSearch &&
+                    (end = endSearch is -1 ? body.Length : end + endSearch) is var _;
+#endif
+#if NET7_0_OR_GREATER
+            return body[end..].IndexOfAnyExcept(separator) is not -1 and var startSeparator &&
+                (start = end += startSeparator) is var _ &&
+                body[end..].IndexOfAny(separator) is var endSeparator &&
+                (end = endSeparator is -1 ? body.Length : end + endSeparator) is var _;
+#else
             start = end;
             goto Begin;
 
@@ -709,6 +851,7 @@ readonly
 
             end = min is int.MaxValue ? bodyLength : end + min;
             return true;
+#endif
         }
     }
 }

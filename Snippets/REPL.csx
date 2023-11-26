@@ -4717,6 +4717,69 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
 
 /// <summary>Extension methods to clamp numbers.</summary>
 
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static uint RoundUpToPowerOf2(this uint value)
+#if NET6_0_OR_GREATER
+        =>
+            BitOperations.RoundUpToPowerOf2(value);
+#else
+    {
+        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+        --value;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        return value + 1;
+    }
+#endif
+
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ulong RoundUpToPowerOf2(this ulong value)
+#if NET6_0_OR_GREATER
+        =>
+            BitOperations.RoundUpToPowerOf2(value);
+#else
+    {
+        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+        --value;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        value |= value >> 32;
+        return value + 1;
+    }
+#endif
+
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    // ReSharper disable RedundantUnsafeContext
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
+#if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
+        BitOperations.RoundUpToPowerOf2(value);
+#else
+        sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
+#endif
 #if !NET7_0_OR_GREATER
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <param name="number">The number to clip.</param>
@@ -5025,7 +5088,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         unmanaged,
 #endif
         Enum
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+#if NET5_0_OR_GREATER
         =>
             source.TryGetSpan(out var span) ? span.Sum() : source.Aggregate(Add);
 #else
@@ -5654,7 +5717,7 @@ public sealed class Primes : IEnumerable<ulong>
         s_counting = new byte[1 << 16];
 
         for (var i = 0; i < s_counting.Length; i++)
-            s_counting[i] = (byte)BitOperations.PopCount((ushort)(i ^ -1));
+            s_counting[i] = (byte)((uint)(ushort)(i ^ -1)).RoundUpToPowerOf2();
 
         s_wheelIndices = new byte[s_length];
 
@@ -7275,6 +7338,29 @@ public
 
     /// <summary>All unicode characters that appear to be whitespace.</summary>
     public const string Combined = $"{Unicode}{Related}";
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="Breaking"/>
+    public static SearchValues<char> BreakingSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Breaking);
+
+    /// <inheritdoc cref="NonBreaking"/>
+    public static SearchValues<char> NonBreakingSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } = SearchValues.Create(NonBreaking);
+
+    /// <inheritdoc cref="Related"/>
+    public static SearchValues<char> RelatedSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Related);
+
+    /// <inheritdoc cref="Unicode"/>
+    public static SearchValues<char> UnicodeSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Unicode);
+
+    /// <inheritdoc cref="Combined"/>
+    public static SearchValues<char> CombinedSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Combined);
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -7484,7 +7570,7 @@ public
     /// </para><para>
     /// However, there isn't as much stack memory available as there is heap, which can cause a DoS (Denial of Service)
     /// vulnerability if you aren't careful. The methods in <c>Span</c> will automatically switch to unmanaged heap
-    /// allocation if the type argument and length create an array that exceeds 1kB (1024 bytes).
+    /// allocation if the type argument and length create an array that exceeds 1kiB (1024 bytes).
     /// </para></remarks>
     public const int StackallocSize = 1 << 10;
 #if !NETSTANDARD1_0
@@ -7689,6 +7775,28 @@ public
     }
 #endif
 
+    /// <summary>Gets the reference that whose address is within the null range.</summary>
+    /// <remarks><para>
+    /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
+    /// valid reference will never be within this range. This allows reference types to be a disjoint union of a valid
+    /// reference, and an 11-bit number. Be careful with the values returned by this function: <see langword="null"/>
+    /// comparisons can <see langword="return"/> <see langword="false"/>, but will behave as such.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the nullable reference type.</typeparam>
+    /// <param name="reference">
+    /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
+    /// </param>
+    /// <param name="address">The number to set.</param>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
+        where T : class
+    {
+#pragma warning disable 8500
+        fixed (T* ptr = &reference)
+#pragma warning restore 8500
+            *(nuint*)ptr = address;
+    }
+
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
@@ -7716,6 +7824,15 @@ public
         length * sizeof(T);
 #pragma warning restore 8500
 #endif // ReSharper disable RedundantUnsafeContext
+
+    /// <summary>Returns the memory address of a given reference object.</summary>
+    /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
+    /// <param name="reference">The reference <see cref="object"/> for which to get the address.</param>
+    /// <returns>The memory address of the reference object.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable 8500
+    public static unsafe nuint ToAddress(this object? reference) => *(nuint*)&reference;
+#pragma warning restore 8500
 #pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
@@ -7956,7 +8073,7 @@ public
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> Ref<T>(ref T reference) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NET7_0_OR_GREATER
         new(ref reference);
 #else
         MemoryMarshal.CreateSpan(ref reference, 1);
@@ -7980,7 +8097,7 @@ public
     public static ReadOnlySpan<T> In<T>(in T reference) =>
 #if NET8_0_OR_GREATER || CSHARPREPL
         new(ref AsRef(reference));
-#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#elif NET7_0_OR_GREATER
         new(AsRef(reference));
 #else
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
@@ -8718,19 +8835,7 @@ public
         return source;
     }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
-#if ROSLYN
-    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
-        span.Span.SequenceEqual(other.Span);
-
-    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
-        span.Span.SequenceEqual(other.Span);
-#else
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(
@@ -8748,6 +8853,18 @@ public
         IEqualityComparer<T>? comparer = null
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
+#else
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
 #endif
 
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
@@ -8969,7 +9086,7 @@ public
             if (length <= original.Length)
                 return original[..length];
 
-            var replacement = new T[BitOperations.RoundUpToPowerOf2((uint)length)];
+            var replacement = new T[((uint)length).RoundUpToPowerOf2()];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span[(original.Length - 1)..]);
@@ -9111,6 +9228,19 @@ public
 #endif
         =>
             ((ReadOnlySpan<T>)span).SplitAll(separator);
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, SearchValues<T> separator)
+        where T : IEquatable<T> =>
+        new(span, separator);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T> SplitOn<T>(this Span<T> span, SearchValues<T> separator)
+        where T : IEquatable<T> =>
+        ((ReadOnlySpan<T>)span).SplitOn(separator);
+#endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9275,7 +9405,11 @@ public
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, BreakingSearch);
+#else
         new(span, Breaking.AsSpan(), true);
+#endif
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9295,11 +9429,21 @@ public
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, UnicodeSearch);
+#else
         new(span, Unicode.AsSpan(), true);
+#endif
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+#endif
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char> SplitSpanOn(this string span, SearchValues<char> separator) =>
+        span.AsSpan().SplitOn(separator);
 #endif
 
 /// <summary>Represents a split entry.</summary>
@@ -9328,7 +9472,11 @@ readonly
     /// <returns>The final accumulator value.</returns>
     public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
 
+#if NET8_0_OR_GREATER
+    readonly SearchValues<T>? _search;
+#else
     readonly bool _isAny;
+#endif
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
@@ -9344,8 +9492,28 @@ readonly
     {
         Body = body;
         Separator = separator;
+#if NET8_0_OR_GREATER
+        if (isAny)
+            UnsafelySetNullishTo(out _search, 1);
+#else
         _isAny = isAny;
+#endif
     }
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SplitSpan{T}"/> struct
+    /// where <see cref="IsAny"/> is <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>This constructor is only available starting from .NET 8.0 or later.</para></remarks>
+    /// <param name="body">The line to split.</param>
+    /// <param name="separator">The characters for separation.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<T> body, SearchValues<T> separator)
+    {
+        Body = body;
+        _search = separator;
+    }
+#endif
 
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
@@ -9372,16 +9540,27 @@ readonly
     /// <summary>Gets the empty split span.</summary>
     public static SplitSpan<T> Empty
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 
     /// <summary>
     /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
     /// or if all of them match.
     /// </summary>
+#if NET8_0_OR_GREATER
+    [MemberNotNullWhen(true, nameof(_search))]
+#endif
     public bool IsAny
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _isAny || Separator.Length is 1;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+#if NET8_0_OR_GREATER
+            _search is not null
+#else
+            _isAny
+#endif
+          ||
+            Separator.Length is 1;
     }
 
     /// <summary>Gets the line.</summary>
@@ -9438,7 +9617,6 @@ readonly
         }
 
         head = e.Current;
-
         tail = this with { Body = Body[e.Index..] };
     }
 
@@ -9449,9 +9627,14 @@ readonly
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(scoped SplitSpan<T> other) =>
-        Body.IsEmpty && other.Body.IsEmpty ||
+#if NET8_0_OR_GREATER
+        _search == other._search &&
+#endif // ReSharper disable once ArrangeRedundantParentheses
+#pragma warning disable SA1119, RCS1032
+        (Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
-        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
+        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body));
+#pragma warning restore SA1119, RCS1032
 
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
@@ -9495,6 +9678,23 @@ readonly
     /// <returns>The last span from this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlySpan<T> Last()
+#if NET8_0_OR_GREATER
+        =>
+            _search.ToAddress() switch
+            {
+                0 => Body.LastIndexOf(Separator),
+                1 => Body.LastIndexOfAny(Separator), // ReSharper disable once NullableWarningSuppressionIsUsed
+                _ => Body.LastIndexOfAny(_search!),
+            } is not -1 and var index
+                ? Body[index..]
+                : default;
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        =>
+            (IsAny ? Body.LastIndexOfAny(Separator) : Body.LastIndexOf(Separator))
+            is not -1 and var i
+                ? Body[i..]
+                : default;
+#else
     {
         var e = GetEnumerator();
 
@@ -9502,6 +9702,7 @@ readonly
 
         return e.Current;
     }
+#endif
 
     /// <summary>Gets the single element.</summary>
     /// <returns>The single span from this instance.</returns>
@@ -9580,6 +9781,49 @@ readonly
         /// <summary>Gets the enumerable used to create this instance.</summary>
         public SplitSpan<T> Enumerable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = split;
 
+#if NET8_0_OR_GREATER
+        /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
+        /// <param name="search">The search value.</param>
+        /// <param name="body">The reference to its body.</param>
+        /// <param name="separator">The reference to its separator.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
+        /// <returns>Whether or not to continue looping.</returns>
+#else
+        /// <summary>Attempts to step through to the next slice.</summary>
+        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
+        /// <param name="body">The reference to its body.</param>
+        /// <param name="separator">The reference to its separator.</param>
+        /// <param name="end">The ending index of the slice.</param>
+        /// <param name="start">The starting index of the slice.</param>
+        /// <returns>Whether or not to continue looping.</returns>
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Step(
+            bool isAny,
+#if NET8_0_OR_GREATER
+            SearchValues<T>? search,
+#endif
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
+            scoped ref int end,
+            out int start
+        ) =>
+            isAny
+                ? StepAny(
+#if NET8_0_OR_GREATER
+#pragma warning disable SA1114
+                    search,
+#pragma warning restore SA1114
+#endif
+                    body,
+                    separator,
+                    ref end,
+                    out start
+                )
+                : StepAll(body, separator, ref end, out start);
+
         /// <summary>
         /// Sets the enumerator to its initial position, which is before the first element in the collection.
         /// </summary>
@@ -9596,38 +9840,37 @@ readonly
         {
             var body = Enumerable.Body;
             var separator = Enumerable.Separator;
-
-            if (separator.IsEmpty)
+#if NET8_0_OR_GREATER
+            var search = Enumerable._search;
+#endif
+            if (separator.IsEmpty
+#if NET8_0_OR_GREATER
+              &&
+                search.ToAddress() is 0 or 1
+#endif
+            )
                 return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
 
-            while (Step(Enumerable.IsAny, body, separator, ref _end, out var start))
+            while (Step(
+                Enumerable.IsAny,
+#if NET8_0_OR_GREATER
+                search,
+#endif
+                body,
+                separator,
+                ref _end,
+                out var start
+            ))
                 if (start != _end)
                     return (Current = body[start.._end]) is var _;
 
             return false;
         }
 
-        /// <summary>Attempts to step through to the next slice.</summary>
-        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
-        /// <param name="body">The reference to its body.</param>
-        /// <param name="separator">The reference to its separator.</param>
-        /// <param name="end">The ending index of the slice.</param>
-        /// <param name="start">The starting index of the slice.</param>
-        /// <returns>Whether or not to continue looping.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Step(
-            bool isAny,
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
-            scoped ref int end,
-            out int start
-        ) =>
-            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool StepAll(
-            scoped ReadOnlySpan<T> body,
-            scoped ReadOnlySpan<T> separator,
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
             scoped ref int end,
             out int start
         )
@@ -9664,17 +9907,33 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(scoped ReadOnlySpan<T> body, scoped ReadOnlySpan<T> separator, ref int end, out int start)
-        {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            Unsafe.SkipInit(out start);
-#else
-            start = 0;
+        static bool StepAny(
+#if NET8_0_OR_GREATER
+            SearchValues<T>? search,
 #endif
+            in ReadOnlySpan<T> body,
+            in ReadOnlySpan<T> separator,
+            ref int end,
+            out int start
+        )
+        {
+            Unsafe.SkipInit(out start);
 
             if (body.Length is var bodyLength && ++end >= bodyLength)
                 return false;
-
+#if NET8_0_OR_GREATER
+            if (search.ToAddress() is not 1) // ReSharper disable once NullableWarningSuppressionIsUsed
+                return body[end..].IndexOfAnyExcept(search!) is not -1 and var startSearch &&
+                    (start = end += startSearch) is var _ && // ReSharper disable once NullableWarningSuppressionIsUsed
+                    body[end..].IndexOfAny(search!) is var endSearch &&
+                    (end = endSearch is -1 ? body.Length : end + endSearch) is var _;
+#endif
+#if NET7_0_OR_GREATER
+            return body[end..].IndexOfAnyExcept(separator) is not -1 and var startSeparator &&
+                (start = end += startSeparator) is var _ &&
+                body[end..].IndexOfAny(separator) is var endSeparator &&
+                (end = endSeparator is -1 ? body.Length : end + endSeparator) is var _;
+#else
             start = end;
             goto Begin;
 
@@ -9697,6 +9956,7 @@ readonly
 
             end = min is int.MaxValue ? bodyLength : end + min;
             return true;
+#endif
         }
     }
 }
@@ -10247,7 +10507,13 @@ readonly
         if (span.IsEmpty)
             return default!;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || span.Length < Vector<T>.Count)
+        if (!IsNumericPrimitive<T>() ||
+#if NET7_0_OR_GREATER
+            !Vector<T>.IsSupported ||
+#endif
+            !Vector.IsHardwareAccelerated ||
+            span.Length < Vector<T>.Count
+        )
 #endif
         {
             value = span[0];
@@ -10432,7 +10698,9 @@ readonly
     {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
+#if NET7_0_OR_GREATER
             Vector<T>.IsSupported &&
+#endif
             Vector.IsHardwareAccelerated &&
             Vector<T>.Count > 2 &&
             span.Length >= Vector<T>.Count * 4)
@@ -11240,12 +11508,13 @@ public partial struct Two<T>(T left, T right) :
 // Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // </copyright>
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace InvertIf RedundantExtendsListEntry StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace InvertIf RedundantExtendsListEntry RedundantUsingDirective StructCanBeMadeReadOnly
 
-#pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
+#pragma warning disable 8500, 8618, IDE0044, IDE0250, MA0048, MA0071, MA0102, SA1114, SA1137
+
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER || ROSLYN
 /// <summary>Methods to split memories into multiple memories.</summary>
-#pragma warning disable MA0048
 
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="T">The type of <see cref="SplitMemory{T}"/>.</typeparam>
@@ -11331,6 +11600,19 @@ public partial struct Two<T>(T left, T right) :
     public static SplitMemory<T> SplitAll<T>(this Memory<T> memory, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)memory).SplitAll(separator);
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<T> SplitOn<T>(this ReadOnlyMemory<T> memory, SearchValues<T> separator)
+        where T : IEquatable<T> =>
+        new(memory, separator);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<T> SplitOn<T>(this Memory<T> memory, SearchValues<T> separator)
+        where T : IEquatable<T> =>
+        ((ReadOnlyMemory<T>)memory).SplitOn(separator);
+#endif
 
     /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
     /// <param name="split">The instance to get the list from.</param>
@@ -11449,11 +11731,21 @@ public partial struct Two<T>(T left, T right) :
     /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char> SplitLines(this ReadOnlyMemory<char> memory) =>
+#if NET8_0_OR_GREATER
+        new(memory, BreakingSearch);
+#else
         new(memory, Breaking.AsMemory(), true);
+#endif
 
     /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char> SplitLines(this Memory<char> memory) => ((ReadOnlyMemory<char>)memory).SplitLines();
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char> SplitOn(this string memory, SearchValues<char> separator) =>
+        memory.AsMemory().SplitOn(separator);
+#endif
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -11465,7 +11757,11 @@ public partial struct Two<T>(T left, T right) :
     /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char> SplitWhitespace(this ReadOnlyMemory<char> memory) =>
+#if NET8_0_OR_GREATER
+        new(memory, UnicodeSearch);
+#else
         new(memory, Unicode.AsMemory(), true);
+#endif
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -11484,7 +11780,11 @@ readonly
     partial struct SplitMemory<T> : IEquatable<SplitMemory<T>>, IEnumerable<ReadOnlyMemory<T>>
     where T : IEquatable<T>?
 {
+#if NET8_0_OR_GREATER
+    readonly SearchValues<T>? _search;
+#else
     readonly bool _isAny;
+#endif
 
     /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
@@ -11500,8 +11800,28 @@ readonly
     {
         Body = body;
         Separator = separator;
+#if NET8_0_OR_GREATER
+        if (isAny)
+            UnsafelySetNullishTo(out _search, 1);
+#else
         _isAny = isAny;
+#endif
     }
+#if NET8_0_OR_GREATER
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SplitMemory{T}"/> struct
+    /// where <see cref="IsAny"/> is <see langword="true"/>.
+    /// </summary>
+    /// <remarks><para>This constructor is only available starting from .NET 8.0 or later.</para></remarks>
+    /// <param name="body">The line to split.</param>
+    /// <param name="separator">The characters for separation.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitMemory(ReadOnlyMemory<T> body, SearchValues<T> separator)
+    {
+        Body = body;
+        _search = separator;
+    }
+#endif
 
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
@@ -11528,16 +11848,27 @@ readonly
     /// <summary>Gets the empty split memory.</summary>
     public static SplitMemory<T> Empty
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 
     /// <summary>
     /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
     /// or if all of them match.
     /// </summary>
+#if NET8_0_OR_GREATER
+    [MemberNotNullWhen(true, nameof(_search))]
+#endif
     public bool IsAny
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _isAny || Separator.Length is 1;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+#if NET8_0_OR_GREATER
+            _search is not null
+#else
+            _isAny
+#endif
+        ||
+            Separator.Length is 1;
     }
 
     /// <summary>Gets the line.</summary>
@@ -11557,7 +11888,15 @@ readonly
     /// <summary>Gets a <see cref="SplitSpan{T}"/> from the memory region.</summary>
     public SplitSpan<T> SplitSpan
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(Body.Span, Separator.Span, IsAny);
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+#if NET8_0_OR_GREATER
+            _search.ToAddress() > 1
+                ? new(Body.Span, _search!)
+                :
+#endif
+                new(Body.Span, Separator.Span, IsAny);
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
@@ -11588,7 +11927,6 @@ readonly
         }
 
         head = e.Current;
-
         tail = this with { Body = Body[e.Index..] };
     }
 
@@ -11600,9 +11938,14 @@ readonly
     // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Equals(SplitMemory<T> other) =>
-        Body.IsEmpty && other.Body.IsEmpty ||
+#if NET8_0_OR_GREATER
+        _search == other._search &&
+#endif // ReSharper disable once ArrangeRedundantParentheses
+#pragma warning disable SA1119, RCS1032
+        (Body.IsEmpty && other.Body.IsEmpty ||
         Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
-        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body);
+        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body));
+#pragma warning restore SA1119, RCS1032
 
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
@@ -11620,17 +11963,13 @@ readonly
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
+    public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 127);
 
     /// <inheritdoc />
     public override string ToString() =>
         typeof(T) == typeof(char)
             ? Aggregate(new(), StringBuilderAccumulator()).ToString()
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
             : this.ToList().Stringify(3, true);
-#else
-            : throw new NotSupportedException();
-#endif
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -11653,13 +11992,23 @@ readonly
     /// <returns>The last memory from this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlyMemory<T> Last()
-    {
-        var e = GetEnumerator();
-
-        while (e.MoveNext()) { }
-
-        return e.Current;
-    }
+#if NET8_0_OR_GREATER
+        =>
+            _search.ToAddress() switch
+            {
+                0 => Body.Span.LastIndexOf(Separator.Span),
+                1 => Body.Span.LastIndexOfAny(Separator.Span),
+                _ => Body.Span.LastIndexOfAny(_search!),
+            } is not -1 and var index
+                ? Body[index..]
+                : default;
+#else
+        =>
+            (IsAny ? Body.Span.LastIndexOfAny(Separator.Span) : Body.Span.LastIndexOf(Separator.Span))
+            is not -1 and var i
+                ? Body[i..]
+                : default;
+#endif
 
     /// <summary>Gets the single element.</summary>
     /// <returns>The single memory from this instance.</returns>
@@ -11695,12 +12044,8 @@ readonly
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(SplitMemory<T> split) : IEnumerator<ReadOnlyMemory<T>>
     {
-        readonly SplitMemory<T> _split = split;
-
         [ValueRange(-1, int.MaxValue)]
-#pragma warning disable IDE0044
         int _end = -1;
-#pragma warning restore IDE0044
 
         /// <summary>Gets the current index.</summary>
         public readonly int Index
@@ -11710,6 +12055,12 @@ readonly
 
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public ReadOnlyMemory<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
+
+        /// <summary>Gets the enumerable used to create this instance.</summary>
+        public readonly SplitMemory<T> Enumerable
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => split;
+        }
 
         /// <inheritdoc />
         readonly object IEnumerator.Current
@@ -11735,105 +12086,33 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            var body = _split.Body;
-            var separator = _split.Separator;
-
-            if (separator.IsEmpty)
+            var body = split.Body;
+            var separator = split.Separator;
+#if NET8_0_OR_GREATER
+            var search = split._search;
+#endif
+            if (separator.IsEmpty
+#if NET8_0_OR_GREATER
+              &&
+                search.ToAddress() is 0 or 1
+#endif
+            )
                 return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
 
-            while (Step(_split.IsAny, body, separator, ref _end, out var start))
+            while (SplitSpan<T>.Enumerator.Step(
+                split.IsAny,
+#if NET8_0_OR_GREATER
+                search,
+#endif
+                body.Span,
+                separator.Span,
+                ref _end,
+                out var start
+            ))
                 if (start != _end)
                     return (Current = body[start.._end]) is var _;
 
             return false;
-        }
-
-        /// <summary>Attempts to step through to the next slice.</summary>
-        /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
-        /// <param name="body">The reference to its body.</param>
-        /// <param name="separator">The reference to its separator.</param>
-        /// <param name="end">The ending index of the slice.</param>
-        /// <param name="start">The starting index of the slice.</param>
-        /// <returns>Whether or not to continue looping.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Step(
-            bool isAny,
-            ReadOnlyMemory<T> body,
-            ReadOnlyMemory<T> separator,
-            scoped ref int end,
-            out int start
-        ) =>
-            isAny ? StepAny(body, separator, ref end, out start) : StepAll(body, separator, ref end, out start);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAll(
-            ReadOnlyMemory<T> body,
-            ReadOnlyMemory<T> separator,
-            scoped ref int end,
-            out int start
-        )
-        {
-            Unsafe.SkipInit(out start);
-
-            if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
-            {
-                if (body.SequenceEqual(separator))
-                    return false;
-
-                start = 0;
-                end = bodyLength;
-                return true;
-            }
-
-            start = end is -1 ? ++end : end += length;
-
-            while (end <= bodyLength)
-                switch (body[end..].Span.IndexOf(separator.Span))
-                {
-                    case -1:
-                        end = bodyLength;
-                        return true;
-                    case 0:
-                        end = start += length;
-                        continue;
-                    case var i:
-                        end += i;
-                        return true;
-                }
-
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool StepAny(ReadOnlyMemory<T> body, ReadOnlyMemory<T> separator, ref int end, out int start)
-        {
-            Unsafe.SkipInit(out start);
-
-            if (body.Length is var bodyLength && ++end >= bodyLength)
-                return false;
-
-            start = end;
-            goto Begin;
-
-        Increment:
-            start++;
-            end++;
-
-        Begin:
-            var min = int.MaxValue;
-
-            foreach (var next in separator.Span)
-                switch (body[end..].Span.IndexOf(next))
-                {
-                    case -1: continue;
-                    case 0: goto Increment;
-                    case var i when i < min:
-                        min = i;
-                        continue;
-                }
-
-            end = min is int.MaxValue ? bodyLength : end + min;
-            return true;
         }
     }
 }
@@ -15016,7 +15295,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -15090,7 +15369,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -15163,7 +15442,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; x <= upper - 32; x += 32)
@@ -15237,7 +15516,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -15311,7 +15590,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -15390,7 +15669,7 @@ readonly
                 return true;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -15478,7 +15757,7 @@ readonly
                 return true;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; x <= upper - 32; x += 32)
@@ -16785,7 +17064,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable 8500, MA0102, RCS1146
@@ -16836,7 +17115,7 @@ public partial struct SmallList<T> :
     /// </summary>
     /// <param name="enumerator">The enumerator to mutate.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe SmallList(IEnumerator<T>? enumerator)
+    public SmallList(IEnumerator<T>? enumerator)
     {
         if (enumerator is null || !enumerator.MoveNext())
             return;
@@ -16845,9 +17124,7 @@ public partial struct SmallList<T> :
 
         if (!enumerator.MoveNext())
         {
-            fixed (IList<T>* ptr = &_rest)
-                *(nint*)ptr = 1;
-
+            UnsafelySetNullishTo(out _rest, 1);
             return;
         }
 
@@ -16855,9 +17132,7 @@ public partial struct SmallList<T> :
 
         if (!enumerator.MoveNext())
         {
-            fixed (IList<T>* ptr = &_rest)
-                *(nint*)ptr = 2;
-
+            UnsafelySetNullishTo(out _rest, 2);
             return;
         }
 
@@ -16881,25 +17156,21 @@ public partial struct SmallList<T> :
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <param name="first">The first element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe SmallList(T first)
+    public SmallList(T first)
     {
         _first = first;
-
-        fixed (IList<T>* ptr = &_rest)
-            *(nint*)ptr = 1;
+        UnsafelySetNullishTo(out _rest, 1);
     }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe SmallList(T first, T second)
+    public SmallList(T first, T second)
     {
         _first = first;
         _second = second;
-
-        fixed (IList<T>* ptr = &_rest)
-            *(nint*)ptr = 2;
+        UnsafelySetNullishTo(out _rest, 2);
     }
 
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 3 elements.</summary>
@@ -16952,15 +17223,10 @@ public partial struct SmallList<T> :
     }
 
     /// <inheritdoc cref="ICollection{T}.Count" />
-    public readonly unsafe int Count
+    public readonly int Count
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            var local = _rest;
-            var ptr = *(nuint*)&local;
-            return ptr < InlinedLength ? (int)ptr : _rest!.Count + InlinedLength;
-        }
+        get => _rest.ToAddress() is < InlinedLength and var address ? (int)address : _rest!.Count + InlinedLength;
     }
 
     /// <summary>Gets the number of head elements used.</summary>
@@ -17039,14 +17305,10 @@ public partial struct SmallList<T> :
     }
 
     /// <summary>Gets the rest of the elements.</summary>
-    public readonly unsafe IList<T>? Rest
+    public readonly IList<T>? Rest
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), ProvidesContext, Pure]
-        get
-        {
-            var local = _rest;
-            return *(nuint*)&local < InlinedLength ? null : _rest;
-        }
+        get => _rest.ToAddress() < InlinedLength ? null : _rest;
     }
 
     /// <summary>Determines whether both sequence are equal.</summary>
@@ -17126,23 +17388,17 @@ public partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Add(T item)
+    public void Add(T item)
     {
         switch (Count)
         {
             case 0:
                 _first = item;
-
-                fixed (IList<T>* ptr = &_rest)
-                    *(nint*)ptr = 1;
-
+                UnsafelySetNullishTo(out _rest, 1);
                 break;
             case 1:
                 _second = item;
-
-                fixed (IList<T>* ptr = &_rest)
-                    *(nint*)ptr = 2;
-
+                UnsafelySetNullishTo(out _rest, 2);
                 break;
             case 2:
                 (_third, _rest) = (item, []);
@@ -17273,7 +17529,7 @@ public partial struct SmallList<T> :
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <param name="del">The function to use.</param>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del) =>
+    public void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del) =>
         del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -17281,7 +17537,7 @@ public partial struct SmallList<T> :
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void HeadSpan<TParam>(
+    public void HeadSpan<TParam>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> del
     ) =>
@@ -17292,7 +17548,7 @@ public partial struct SmallList<T> :
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void HeadSpan<TParam>(
+    public void HeadSpan<TParam>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> del
     ) =>
@@ -17303,7 +17559,7 @@ public partial struct SmallList<T> :
     /// <param name="param">The reference parameter to pass into the function.</param>
     /// <param name="del">The function to use.</param>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void HeadSpan<TParam>(
+    public void HeadSpan<TParam>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> del
     ) =>
@@ -17312,29 +17568,25 @@ public partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Insert(int index, T item)
+    public void Insert(int index, T item)
     {
         BoundsCheck(index, out var count);
 
         switch (count)
         {
             case 0:
-                fixed (IList<T>* ptr = &_rest)
-                    *(nint*)ptr = 1;
-
+                UnsafelySetNullishTo(out _rest, 1);
                 break;
             case 1:
-                fixed (IList<T>* ptr = &_rest)
-                    *(nint*)ptr = 2;
-
+                UnsafelySetNullishTo(out _rest, 2);
                 break;
             case 2:
                 _rest = [];
                 break;
+            case >= InlinedLength:
+                EnsureMutability().Insert(0, _third!);
+                break;
         }
-
-        if (count >= InlinedLength)
-            EnsureMutability().Insert(0, _third!);
 
         switch (index)
         {
@@ -17355,7 +17607,7 @@ public partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void RemoveAt(int index)
+    public void RemoveAt(int index)
     {
         BoundsCheck(index, out var count);
 
@@ -17370,23 +17622,8 @@ public partial struct SmallList<T> :
 
         if (count > InlinedLength)
             EnsureMutability().RemoveAt(Math.Max(index - InlinedLength, 0));
-
-        switch (count)
-        {
-            case 1:
-                _rest = null;
-                break;
-            case 2:
-                fixed (IList<T>* ptr = &_rest)
-                    *(nint*)ptr = 1;
-
-                break;
-            case 3:
-                fixed (IList<T>* ptr = &_rest)
-                    *(nint*)ptr = 2;
-
-                break;
-        }
+        else
+            UnsafelySetNullishTo(out _rest, (byte)count);
     }
 
     /// <inheritdoc />
@@ -17405,15 +17642,15 @@ public partial struct SmallList<T> :
     /// <param name="comparer">The comparer to use.</param>
     /// <returns>The value determining whether the parameter <paramref name="item"/> exists in the collection.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool Contains(T item, IEqualityComparer<T?> comparer) =>
+    public readonly bool Contains(T item, IEqualityComparer<T> comparer) =>
         Count switch
         {
-            0 => comparer.Equals(_first, item),
-            1 => comparer.Equals(_first, item) || comparer.Equals(_second, item),
-            2 => comparer.Equals(_first, item) || comparer.Equals(_second, item) || comparer.Equals(_third, item),
-            _ => comparer.Equals(_first, item) ||
-                comparer.Equals(_second, item) ||
-                comparer.Equals(_third, item) ||
+            0 => comparer.Equals(_first!, item),
+            1 => comparer.Equals(_first!, item) || comparer.Equals(_second!, item),
+            2 => comparer.Equals(_first!, item) || comparer.Equals(_second!, item) || comparer.Equals(_third!, item),
+            _ => comparer.Equals(_first!, item) ||
+                comparer.Equals(_second!, item) ||
+                comparer.Equals(_third!, item) ||
                 _rest!.Contains(item, comparer),
         };
 
@@ -17432,17 +17669,24 @@ public partial struct SmallList<T> :
 
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe bool Remove(T item)
+    public bool Remove(T item)
     {
         switch (Count)
         {
             case 0: return false;
             case 1: return Eq(_first, item) && (_rest = null) is var _;
             case 2:
-                fixed (IList<T>* ptr = &_rest)
-                    return Eq(_first, item)
-                        ? (*(nint*)ptr = 1) is var _ && (_first = _second) is var _
-                        : Eq(_second, item) && (*(nint*)ptr = 1) is var _;
+                if (Eq(_first, item))
+                {
+                    UnsafelySetNullishTo(out _rest, 1);
+                    return (_first = _second) is var _;
+                }
+
+                if (!Eq(_second, item))
+                    return false;
+
+                UnsafelySetNullishTo(out _rest, 1);
+                return true;
             default:
                 return Eq(_first, item) ? RemoveHead(_first = _second) :
                     Eq(_second, item) ? RemoveHead(_second = _third) :
@@ -17457,7 +17701,6 @@ public partial struct SmallList<T> :
         unchecked
         {
             const int Prime = 397;
-
             var hashCode = 0;
 
             switch (Count)
@@ -17592,7 +17835,7 @@ public partial struct SmallList<T> :
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public unsafe TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del) =>
+    public TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del) =>
         del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
 
     /// <summary>Creates the temporary span to be passed into the function.</summary>
@@ -17602,7 +17845,7 @@ public partial struct SmallList<T> :
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public unsafe TResult HeadSpan<TParam, TResult>(
+    public TResult HeadSpan<TParam, TResult>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> del
     ) =>
@@ -17615,7 +17858,7 @@ public partial struct SmallList<T> :
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public unsafe TResult HeadSpan<TParam, TResult>(
+    public TResult HeadSpan<TParam, TResult>(
         ReadOnlySpan<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> del
     ) =>
@@ -17628,7 +17871,7 @@ public partial struct SmallList<T> :
     /// <param name="del">The function to use.</param>
     /// <returns>The result of the parameter <paramref name="del"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public unsafe TResult HeadSpan<TParam, TResult>(
+    public TResult HeadSpan<TParam, TResult>(
         Span<TParam> param,
         [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> del
     ) =>
@@ -17723,7 +17966,7 @@ public partial struct SmallList<T> :
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe void RestFromLengthWithoutAllocations(int length, out IList<T>? rest)
+    static void RestFromLengthWithoutAllocations(int length, out IList<T>? rest)
     {
         switch (length)
         {
@@ -17731,14 +17974,10 @@ public partial struct SmallList<T> :
                 rest = null;
                 break;
             case 1:
-                fixed (IList<T>* ptr = &rest)
-                    *(nint*)ptr = 1;
-
+                UnsafelySetNullishTo(out rest, 1);
                 break;
             case 2:
-                fixed (IList<T>* ptr = &rest)
-                    *(nint*)ptr = 2;
-
+                UnsafelySetNullishTo(out rest, 2);
                 break;
             case 3:
                 rest = [];
@@ -17763,7 +18002,7 @@ public partial struct SmallList<T> :
 
     // ReSharper disable once UnusedParameter.Local
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    unsafe bool RemoveHead(in T? _ = default)
+    bool RemoveHead(in T? _ = default)
     {
         if (_rest is [var head, ..])
         {
@@ -17771,8 +18010,7 @@ public partial struct SmallList<T> :
             EnsureMutability().RemoveAt(0);
         }
         else
-            fixed (IList<T>* ptr = &_rest)
-                *(nint*)ptr = 2;
+            UnsafelySetNullishTo(out _rest, 2);
 
         return true;
     }
@@ -18427,7 +18665,7 @@ public ref
     readonly T[] Rent([NonNegativeValue] int by)
     {
         var sum = unchecked((uint)(_view.Length + by));
-        var length = unchecked((int)BitOperations.RoundUpToPowerOf2(sum));
+        var length = unchecked((int)sum.RoundUpToPowerOf2());
         return ArrayPool<T>.Shared.Rent(length);
     }
 
