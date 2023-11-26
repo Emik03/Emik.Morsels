@@ -39,6 +39,7 @@
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <DefaultDocumentationFileNameFactory>Morsels</DefaultDocumentationFileNameFactory>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../'))=./</PathMap>
