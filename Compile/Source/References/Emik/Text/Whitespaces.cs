@@ -21,4 +21,27 @@ static partial class Whitespaces
 
     /// <summary>All unicode characters that appear to be whitespace.</summary>
     public const string Combined = $"{Unicode}{Related}";
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="Breaking"/>
+    public static SearchValues<char> BreakingSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Breaking);
+
+    /// <inheritdoc cref="NonBreaking"/>
+    public static SearchValues<char> NonBreakingSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } = SearchValues.Create(NonBreaking);
+
+    /// <inheritdoc cref="Related"/>
+    public static SearchValues<char> RelatedSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Related);
+
+    /// <inheritdoc cref="Unicode"/>
+    public static SearchValues<char> UnicodeSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Unicode);
+
+    /// <inheritdoc cref="Combined"/>
+    public static SearchValues<char> CombinedSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+        SearchValues.Create(Combined);
+#endif
 }
