@@ -190,19 +190,7 @@ static partial class SpanQueries
         return source;
     }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
-#if ROSLYN
-    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
-        span.Span.SequenceEqual(other.Span);
-
-    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
-        where T : IEquatable<T>? =>
-        span.Span.SequenceEqual(other.Span);
-#else
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(
@@ -220,6 +208,18 @@ static partial class SpanQueries
         IEqualityComparer<T>? comparer = null
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
+#else
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
 #endif
 
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>

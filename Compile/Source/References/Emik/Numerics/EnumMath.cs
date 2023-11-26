@@ -256,7 +256,7 @@ static partial class EnumMath
         unmanaged,
 #endif
         Enum
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+#if NET5_0_OR_GREATER
         =>
             source.TryGetSpan(out var span) ? span.Sum() : source.Aggregate(Add);
 #else
