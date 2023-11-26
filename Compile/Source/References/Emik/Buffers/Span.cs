@@ -584,7 +584,7 @@ static partial class Span
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> Ref<T>(ref T reference) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NET7_0_OR_GREATER
         new(ref reference);
 #else
         MemoryMarshal.CreateSpan(ref reference, 1);
@@ -608,7 +608,7 @@ static partial class Span
     public static ReadOnlySpan<T> In<T>(in T reference) =>
 #if NET8_0_OR_GREATER || CSHARPREPL
         new(ref AsRef(reference));
-#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#elif NET7_0_OR_GREATER
         new(AsRef(reference));
 #else
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);

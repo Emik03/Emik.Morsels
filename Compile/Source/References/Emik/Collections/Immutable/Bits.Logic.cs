@@ -155,7 +155,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -229,7 +229,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -302,7 +302,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; x <= upper - 32; x += 32)
@@ -376,7 +376,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -450,7 +450,7 @@ readonly
                 return;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -529,7 +529,7 @@ readonly
                 return true;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; l <= upper - 32; l += 32, r += 32)
@@ -617,7 +617,7 @@ readonly
                 return true;
         }
 #endif
-#if NETCOREAPP3_0_OR_GREATER
+#if NET7_0_OR_GREATER
         if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
         {
             for (; x <= upper - 32; x += 32)
