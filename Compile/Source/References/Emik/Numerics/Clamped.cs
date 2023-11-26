@@ -6,6 +6,69 @@ namespace Emik.Morsels;
 /// <summary>Extension methods to clamp numbers.</summary>
 static partial class Clamped
 {
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static uint RoundUpToPowerOf2(this uint value)
+#if NET6_0_OR_GREATER
+        =>
+            BitOperations.RoundUpToPowerOf2(value);
+#else
+    {
+        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+        --value;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        return value + 1;
+    }
+#endif
+
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ulong RoundUpToPowerOf2(this ulong value)
+#if NET6_0_OR_GREATER
+        =>
+            BitOperations.RoundUpToPowerOf2(value);
+#else
+    {
+        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+        --value;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        value |= value >> 32;
+        return value + 1;
+    }
+#endif
+
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    // ReSharper disable RedundantUnsafeContext
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
+#if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
+        BitOperations.RoundUpToPowerOf2(value);
+#else
+        sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
+#endif
 #if !NET7_0_OR_GREATER
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <param name="number">The number to clip.</param>

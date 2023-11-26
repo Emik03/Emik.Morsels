@@ -492,7 +492,7 @@ ref
     readonly T[] Rent([NonNegativeValue] int by)
     {
         var sum = unchecked((uint)(_view.Length + by));
-        var length = unchecked((int)BitOperations.RoundUpToPowerOf2(sum));
+        var length = unchecked((int)sum.RoundUpToPowerOf2());
         return ArrayPool<T>.Shared.Rent(length);
     }
 

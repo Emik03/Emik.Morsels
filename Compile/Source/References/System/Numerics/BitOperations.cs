@@ -122,5 +122,15 @@ static partial class BitOperations
         value |= value >> 32;
         return value + 1;
     }
+
+    /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
+    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
+    /// </returns>
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe nuint RoundUpToPowerOf2(nuint value) =>
+        sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 }
 #endif

@@ -316,7 +316,7 @@ sealed class Primes : IEnumerable<ulong>
         s_counting = new byte[1 << 16];
 
         for (var i = 0; i < s_counting.Length; i++)
-            s_counting[i] = (byte)BitOperations.PopCount((ushort)(i ^ -1));
+            s_counting[i] = (byte)((uint)(ushort)(i ^ -1)).RoundUpToPowerOf2();
 
         s_wheelIndices = new byte[s_length];
 
