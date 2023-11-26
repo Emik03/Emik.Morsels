@@ -83,7 +83,9 @@ static partial class SpanSimdQueries
     {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
+#if NET7_0_OR_GREATER
             Vector<T>.IsSupported &&
+#endif
             Vector.IsHardwareAccelerated &&
             Vector<T>.Count > 2 &&
             span.Length >= Vector<T>.Count * 4)

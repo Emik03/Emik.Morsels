@@ -307,7 +307,13 @@ static partial class SpanSimdQueries
         if (span.IsEmpty)
             return default!;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || span.Length < Vector<T>.Count)
+        if (!IsNumericPrimitive<T>() ||
+#if NET7_0_OR_GREATER
+            !Vector<T>.IsSupported ||
+#endif
+            !Vector.IsHardwareAccelerated ||
+            span.Length < Vector<T>.Count
+        )
 #endif
         {
             value = span[0];
