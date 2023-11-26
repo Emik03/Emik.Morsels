@@ -156,7 +156,8 @@ namespace System.Diagnostics.CodeAnalysis
         /// <summary>Gets field or AttributeTargets.Property member names.</summary>
         public string[] Members { get; }
     }
-
+#endif
+#if !NET5_0_OR_GREATER
     /// <summary>
     /// Specifies that the method or property will ensure that the listed field and property members
     /// have not-null values when returning with the specified return value condition.
