@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantUsingDirective StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
 #pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
 using static Span;
@@ -374,86 +374,215 @@ readonly
 #if !NO_REF_STRUCTS
         ref
 #endif
-        partial struct Of<TStrategy>(SplitMemory<T> split)
+        partial struct Of<TStrategy>(SplitSpan<T> body, ReadOnlySpan<T> separator)
         where TStrategy : IStrategy
     {
+        readonly ReadOnlySpan<T> _separator = separator;
+
+        public ReadOnlySpan<T> Body { get; } = body.Body;
+
+        /// <summary>Gets the specified index.</summary>
+        /// <param name="index">The index to get.</param>
+        /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
+        public ReadOnlySpan<T> this[[NonNegativeValue] int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get
+            {
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (index < 0)
+                    throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+
+                var e = GetEnumerator();
+
+                for (var i = 0; i <= index; i++)
+                    if (!e.MoveNext())
+                        return default;
+
+                return e.Current;
+            }
+        }
+
+        /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+        // ReSharper restore NullableWarningSuppressionIsUsed
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public Enumerator GetEnumerator() => new(Body, _separator);
+
+        /// <summary>Gets the first element.</summary>
+        /// <returns>The first span from this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+
+        /// <summary>Gets the last element.</summary>
+        /// <returns>The last span from this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> Last()
+    #if NET8_0_OR_GREATER
+            =>
+                _search.ToAddress() switch
+                {
+                    0 => Body.LastIndexOf(Separator),
+                    1 => Body.LastIndexOfAny(Separator), // ReSharper disable once NullableWarningSuppressionIsUsed
+                    _ => Body.LastIndexOfAny(_search!),
+                } is not -1 and var index
+                    ? Body[index..]
+                    : default;
+    #elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            =>
+                (IsAny ? Body.LastIndexOfAny(Separator) : Body.LastIndexOf(Separator))
+                is not -1 and var i
+                    ? Body[i..]
+                    : default;
+    #else
+        {
+            var e = GetEnumerator();
+
+            while (e.MoveNext()) { }
+
+            return e.Current;
+        }
+    #endif
+
+        /// <summary>Implicitly calls the constructor.</summary>
+        /// <param name="value">The value to call the constructor.</param>
+        /// <returns>The value that was passed in to this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator Enumerator(Of<TStrategy> value) => new(value);
+
+        /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
+        /// <param name="head">The first element of this enumeration.</param>
+        /// <param name="tail">The rest of this enumeration.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Deconstruct(out ReadOnlySpan<T> head, out Of<TStrategy> tail)
+        {
+            if (GetEnumerator() is var e && !e.MoveNext())
+            {
+                head = default;
+                tail = default;
+                return;
+            }
+
+            head = e.Current;
+            tail = new(Body[e.Index..], _separator);
+        }
+
+        /// <summary>Computes the length.</summary>
+        /// <returns>The length.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public int Count()
+        {
+            var e = GetEnumerator();
+            var count = 0;
+
+            while (e.MoveNext())
+                count++;
+
+            return count;
+        }
+
+        /// <inheritdoc />
+        public override string ToString() =>
+            typeof(T) == typeof(char)
+                ? Aggregate(new(), StringBuilderAccumulator()).ToString()
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+                : this.ToList().Stringify(3, true);
+#else
+                : throw new NotSupportedException();
+#endif
+
+        /// <summary>Gets the single element.</summary>
+        /// <returns>The single span from this instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public ReadOnlySpan<T> Single() =>
+            GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+
+        /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
+        /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+        /// <param name="seed">The accumulator.</param>
+        /// <param name="func">An accumulator function to be invoked on each element.</param>
+        /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+        public TAccumulator Aggregate<TAccumulator>(
+            TAccumulator seed,
+            [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+        )
+        {
+            var accumulator = seed;
+
+            foreach (var next in this)
+                accumulator = func(accumulator, next);
+
+            return accumulator;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+        static unsafe Accumulator<StringBuilder> StringBuilderAccumulator() =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            static (builder, span) => builder.Append(
+                MemoryMarshal.CreateReadOnlySpan(
+                    ref Unsafe.As<T, char>(ref MemoryMarshal.GetReference(span)),
+                    span.Length
+                )
+            );
+#else
+            static (builder, span) =>
+            {
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+                for (var i = 0; i < span.Length; i++)
+                    builder.Append(((char*)span.Pointer)[i]);
+
+                return builder;
+#else
+#pragma warning disable 8500
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+                var ptr = span.Pointer;
+#else
+                fixed (T* ptr = span)
+#endif
+#pragma warning restore 8500
+                    return builder.Append((char*)ptr, span.Length);
+#endif
+            };
+#endif
+
         /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
         [StructLayout(LayoutKind.Auto)]
         public
 #if !NO_REF_STRUCTS
             ref
 #endif
-            partial struct Enumerator(SplitSpan<T> split)
+            partial struct Enumerator(ReadOnlySpan<T> body, ReadOnlySpan<T> separator)
         {
-            [ValueRange(-1, int.MaxValue)]
-#pragma warning disable IDE0044
-            int _end = -1;
-#pragma warning restore IDE0044
+            readonly ReadOnlySpan<T> _separator = separator;
 
-            /// <summary>Gets the current index.</summary>
-            public readonly int Index
+            ReadOnlySpan<T> _body = body, _current;
+
+            public readonly ReadOnlySpan<T> Body
             {
-                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             }
 
             /// <inheritdoc cref="IEnumerator{T}.Current"/>
-            public ReadOnlySpan<T> Current
+            public readonly ReadOnlySpan<T> Current
             {
-                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-                private set;
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
             }
 
-            /// <summary>Gets the enumerable used to create this instance.</summary>
-            public SplitSpan<T> Enumerable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } = split;
-
-#if NET8_0_OR_GREATER
-            /// <summary>Attempts to step through to the next slice.</summary>
-            /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
-            /// <param name="search">The search value.</param>
-            /// <param name="body">The reference to its body.</param>
-            /// <param name="separator">The reference to its separator.</param>
-            /// <param name="end">The ending index of the slice.</param>
-            /// <param name="start">The starting index of the slice.</param>
-            /// <returns>Whether or not to continue looping.</returns>
-#else
-            /// <summary>Attempts to step through to the next slice.</summary>
-            /// <param name="isAny">Determines whether to call <see cref="StepAny"/> or <see cref="StepAll"/>.</param>
-            /// <param name="body">The reference to its body.</param>
-            /// <param name="separator">The reference to its separator.</param>
-            /// <param name="end">The ending index of the slice.</param>
-            /// <param name="start">The starting index of the slice.</param>
-            /// <returns>Whether or not to continue looping.</returns>
-#endif
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool Step(
-                bool isAny,
-#if NET8_0_OR_GREATER
-                SearchValues<T>? search,
-#endif
-                in ReadOnlySpan<T> body,
-                in ReadOnlySpan<T> separator,
-                scoped ref int end,
-                out int start
+            public static bool MoveNext(
+                scoped ref ReadOnlySpan<T> body,
+                scoped in ReadOnlySpan<T> separator,
+                scoped ref ReadOnlySpan<T> current
             ) =>
-                isAny
-                    ? StepAny(
-#if NET8_0_OR_GREATER
-#pragma warning disable SA1114
-                        search,
-#pragma warning restore SA1114
-#endif
-                        body,
-                        separator,
-                        ref end,
-                        out start
-                    )
-                    : StepAll(body, separator, ref end, out start);
-
-            /// <summary>
-            /// Sets the enumerator to its initial position, which is before the first element in the collection.
-            /// </summary>
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Reset() => _end = -1;
+                typeof(TStrategy) switch
+                {
+                    _ when body.IsEmpty => true,
+                    _ when separator.IsEmpty => !body.IsEmpty && current.IsEmpty && (current = body) is var _,
+                    var x when x == typeof(All) => MoveNextAll(ref body, separator, ref current),
+                    var x when x == typeof(All.One) => MoveNextAllOne(ref body, separator, ref current),
+                    var x when x == typeof(Any) => MoveNextAny(ref body, separator, ref current),
+                    var x when x == typeof(Any.Search) => MoveNextAnySearch(ref body, separator, ref current),
+                    _ => throw new NotSupportedException($"Unrecognized type: {typeof(TStrategy).Name}"),
+                };
 
             /// <summary>Advances the enumerator to the next element of the collection.</summary>
             /// <returns>
@@ -461,128 +590,152 @@ readonly
             /// <see langword="false"/> if the enumerator has passed the end of the collection.
             /// </returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool MoveNext()
-            {
-                var body = Enumerable.Body;
-                var separator = Enumerable.Separator;
-
-                if (separator.IsEmpty)
-                    return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
-
-                int start;
-
-                var output = typeof(TStrategy) switch
-                {
-                    var x when x == typeof(All) => StepAll(body, separator, ref _end, out start),
-                    var x when x == typeof(Any) => StepAny(body, separator, ref _end, out start),
-                    var x when x == typeof(Any.WithSearchValues) => StepAnySearch(body, separator, ref _end, out start),
-                    var x when x == typeof(All.One) => StepAnySearch(body, separator, ref _end, out start),
-                    _ => throw new NotSupportedException($"No case for {typeof(TStrategy).Name}."),
-                };
-
-                if (output)
-                    Current = body[start.._end];
-
-                return output;
-            }
+            public bool MoveNext() => MoveNext(ref _body, _separator, ref _current);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool StepAll(
-                in ReadOnlySpan<T> body,
-                in ReadOnlySpan<T> separator,
-                scoped ref int end,
-                out int start
+            static bool MoveNextAll(
+                scoped ref ReadOnlySpan<T> body,
+                scoped in ReadOnlySpan<T> separator,
+                scoped ref ReadOnlySpan<T> current
             )
             {
-                Unsafe.SkipInit(out start);
+                System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(All), "typeof(TStrategy) == typeof(All)");
+            Retry:
 
-                if (body.Length is var bodyLength && separator.Length is var length && bodyLength == length)
-                {
-                    if (body.SequenceEqual(separator))
-                        return false;
-
-                    start = 0;
-                    end = bodyLength;
-                    return true;
-                }
-
-                start = end is -1 ? ++end : end += length;
-
-                while (end <= bodyLength)
-                    switch (body[end..].IndexOf(separator))
-                    {
-                        case -1:
-                            end = bodyLength;
-                            return true;
-                        case 0:
-                            end = start += length;
-                            continue;
-                        case var i:
-                            end += i;
-                            return true;
-                    }
-
-                return false;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static bool StepAny(
-                in ReadOnlySpan<T> body,
-                in ReadOnlySpan<T> separator,
-                ref int end,
-                out int start
-            )
-            {
-                Unsafe.SkipInit(out start);
-
-                if (body.Length is var bodyLength && ++end >= bodyLength)
+                if (body.IsEmpty)
                     return false;
+
+                switch (body.IndexOf(separator))
+                {
+                    case -1:
+                        current = body;
+                        body = default;
+                        return true;
+                    case 0:
+                        body = body[separator.Length..];
+                        goto Retry;
+                    case var i:
+                        current = body[..i];
+                        body = body[(i + separator.Length)..];
+                        return true;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool MoveNextAllOne(
+                scoped ref ReadOnlySpan<T> body,
+                scoped in ReadOnlySpan<T> separator,
+                scoped ref ReadOnlySpan<T> current
+            )
+            {
+                System.Diagnostics.Debug.Assert(
+                    typeof(TStrategy) == typeof(All.One),
+                    "typeof(TStrategy) == typeof(All.One)"
+                );
+
+                ref var single = ref MemoryMarshal.GetReference(separator);
+            Retry:
+
+                if (body.IsEmpty)
+                    return false;
+
+                switch (body.IndexOf(single))
+                {
+                    case -1:
+                        current = body;
+                        body = default;
+                        return true;
+                    case 0:
+                        body = body[1..];
+                        goto Retry;
+                    case var i:
+                        current = body[..i++];
+                        body = body[i..];
+                        return true;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool MoveNextAny(
+                scoped ref ReadOnlySpan<T> body,
+                scoped in ReadOnlySpan<T> separator,
+                scoped ref ReadOnlySpan<T> current
+            )
+            {
+                System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(Any), "typeof(TStrategy) == typeof(Any)");
+            Retry:
+
+                if (body.IsEmpty)
+                    return false;
+
 #if NET7_0_OR_GREATER
-                return body[end..].IndexOfAnyExcept(separator) is not -1 and var startSeparator &&
-                    (start = end += startSeparator) is var _ &&
-                    body[end..].IndexOfAny(separator) is var endSeparator &&
-                    (end = endSeparator is -1 ? body.Length : end + endSeparator) is var _;
+                switch (body.IndexOfAny(separator))
+                {
+                    case -1:
+                        current = body;
+                        body = default;
+                        return true;
+                    case 0:
+                        body = body[1..];
+                        goto Retry;
+                    case var i:
+                        current = body[..i++];
+                        body = body[i..];
+                        return true;
+                }
 #else
-                start = end;
-                goto Begin;
-
-            Increment:
-                start++;
-                end++;
-
-            Begin:
-                var min = int.MaxValue;
-
                 foreach (var next in separator)
-                    switch (body[end..].IndexOf(next))
+                    switch (body.IndexOf(next))
                     {
                         case -1: continue;
-                        case 0: goto Increment;
-                        case var i when i < min:
-                            min = i;
-                            continue;
+                        case 0:
+                            body = body[1..];
+                            goto Retry;
+                        case var i:
+                            current = body[..i++];
+                            body = body[i..];
+                            return true;
                     }
 
-                end = min is int.MaxValue ? bodyLength : end + min;
+                current = body;
+                body = default;
                 return true;
 #endif
             }
 
  #if NET8_0_OR_GREATER
-            static bool StepAnySearch(
-                ReadOnlySpan<T> body,
-                ReadOnlySpan<T> separator,
-                ref int end,
-                out int start
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static bool MoveNextAnySearch(
+                scoped ref ReadOnlySpan<T> body,
+                scoped in ReadOnlySpan<T> separator,
+                scoped ref ReadOnlySpan<T> current
             )
             {
-                Unsafe.SkipInit(out start);
-                ref readonly var search = ref Unsafe.As<T, SearchValues<T>>(ref MemoryMarshal.GetReference(separator));
+                System.Diagnostics.Debug.Assert(
+                    typeof(TStrategy) == typeof(Any.Search),
+                    "typeof(TStrategy) == typeof(Any.Search)"
+                );
 
-                return body[end..].IndexOfAnyExcept(search) is not -1 and var startSearch &&
-                    (start = end += startSearch) is var _ &&
-                    body[end..].IndexOfAny(search) is var endSearch &&
-                    (end = endSearch is -1 ? body.Length : end + endSearch) is var _;
+                ref readonly var search = ref Unsafe.As<T, SearchValues<T>>(ref MemoryMarshal.GetReference(separator));
+            Retry:
+
+                if (body.IsEmpty)
+                    return false;
+
+                switch (body.IndexOfAny(search))
+                {
+                    case -1:
+                        current = body;
+                        body = default;
+                        return true;
+                    case 0:
+                        body = body[separator.Length..];
+                        goto Retry;
+                    case var i:
+                        current = body[..i];
+                        body = body[(i + separator.Length)..];
+                        return true;
+                }
             }
 #endif
         }
@@ -599,7 +752,7 @@ readonly
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct WithSearchValues : IStrategy;
+            struct Search : IStrategy;
 #endif
     }
 
@@ -618,69 +771,25 @@ readonly
 
     public interface IStrategy;
 
-#if NET8_0_OR_GREATER
-    readonly SearchValues<T>? _search;
-#else
-    readonly bool _isAny;
-#endif
+    readonly ReadOnlySpan<T> _body, _separator;
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body) => Body = body;
+    public SplitSpan(ReadOnlySpan<T> body) => _body = body;
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     /// <param name="separator">The characters for separation.</param>
-    /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator, bool isAny)
+    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator)
     {
-        Body = body;
-        Separator = separator;
-#if NET8_0_OR_GREATER
-        if (isAny)
-            UnsafelySetNullishTo(out _search, 1);
-#else
-        _isAny = isAny;
-#endif
-    }
-#if NET8_0_OR_GREATER
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SplitSpan{T}"/> struct
-    /// where <see cref="IsAny"/> is <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para>This constructor is only available starting from .NET 8.0 or later.</para></remarks>
-    /// <param name="body">The line to split.</param>
-    /// <param name="separator">The characters for separation.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body, SearchValues<T> separator)
-    {
-        Body = body;
-        _search = separator;
-    }
-#endif
+        _body = body;
 
-    /// <summary>Gets the specified index.</summary>
-    /// <param name="index">The index to get.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
-    public ReadOnlySpan<T> this[[NonNegativeValue] int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+        if (separator.Length is 0)
+            return;
 
-            var e = GetEnumerator();
-
-            for (var i = 0; i <= index; i++)
-                if (!e.MoveNext())
-                    return default;
-
-            return e.Current;
-        }
+        _separator = separator;
     }
 
     /// <summary>Gets the empty split span.</summary>
@@ -689,38 +798,10 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
 
-    /// <summary>
-    /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
-    /// or if all of them match.
-    /// </summary>
-#if NET8_0_OR_GREATER
-    [MemberNotNullWhen(true, nameof(_search))]
-#endif
-    public bool IsAny
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get =>
-#if NET8_0_OR_GREATER
-            _search is not null
-#else
-            _isAny
-#endif
-          ||
-            Separator.Length is 1;
-    }
-
     /// <summary>Gets the line.</summary>
     public ReadOnlySpan<T> Body
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
-    }
-
-    /// <summary>Gets the separator.</summary>
-    public ReadOnlySpan<T> Separator
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
@@ -737,168 +818,11 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(scoped SplitSpan<T> left, scoped SplitSpan<T> right) => !left.Equals(right);
 
-    /// <summary>Implicitly calls the constructor.</summary>
-    /// <param name="value">The value to call the constructor.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Enumerator(SplitSpan<T> value) => new(value);
-
-    /// <summary>Implicitly calls <see cref="Enumerator.Enumerable"/>.</summary>
-    /// <param name="value">The value to call <see cref="Enumerator.Enumerable"/>.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator SplitSpan<T>(Enumerator value) => value.Enumerable;
-
-    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
-    /// <param name="head">The first element of this enumeration.</param>
-    /// <param name="tail">The rest of this enumeration.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out ReadOnlySpan<T> head, out SplitSpan<T> tail)
-    {
-        if (GetEnumerator() is var e && !e.MoveNext())
-        {
-            head = default;
-            tail = default;
-            return;
-        }
-
-        head = e.Current;
-        tail = this with { Body = Body[e.Index..] };
-    }
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override bool Equals(object? obj) => false;
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(scoped SplitSpan<T> other) =>
-#if NET8_0_OR_GREATER
-        _search == other._search &&
-#endif // ReSharper disable once ArrangeRedundantParentheses
-#pragma warning disable SA1119, RCS1032
-        (Body.IsEmpty && other.Body.IsEmpty ||
-        Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
-        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body));
-#pragma warning restore SA1119, RCS1032
-
-    /// <summary>Computes the length.</summary>
-    /// <returns>The length.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int Count()
-    {
-        var e = GetEnumerator();
-        var count = 0;
-
-        while (e.MoveNext())
-            count++;
-
-        return count;
-    }
-
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 31);
-
-    /// <inheritdoc />
-    public override string ToString() =>
-        typeof(T) == typeof(char)
-            ? Aggregate(new(), StringBuilderAccumulator()).ToString()
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            : this.ToList().Stringify(3, true);
-#else
-            : throw new NotSupportedException();
-#endif
-
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    // ReSharper restore NullableWarningSuppressionIsUsed
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => new(this);
-
-    /// <summary>Gets the first element.</summary>
-    /// <returns>The first span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
-
-    /// <summary>Gets the last element.</summary>
-    /// <returns>The last span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> Last()
-#if NET8_0_OR_GREATER
-        =>
-            _search.ToAddress() switch
-            {
-                0 => Body.LastIndexOf(Separator),
-                1 => Body.LastIndexOfAny(Separator), // ReSharper disable once NullableWarningSuppressionIsUsed
-                _ => Body.LastIndexOfAny(_search!),
-            } is not -1 and var index
-                ? Body[index..]
-                : default;
-#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        =>
-            (IsAny ? Body.LastIndexOfAny(Separator) : Body.LastIndexOf(Separator))
-            is not -1 and var i
-                ? Body[i..]
-                : default;
-#else
-    {
-        var e = GetEnumerator();
-
-        while (e.MoveNext()) { }
-
-        return e.Current;
-    }
-#endif
-
-    /// <summary>Gets the single element.</summary>
-    /// <returns>The single span from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlySpan<T> Single() =>
-        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
-
-    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
-        TAccumulator seed,
-        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
-    )
-    {
-        var accumulator = seed;
-
-        foreach (var next in this)
-            accumulator = func(accumulator, next);
-
-        return accumulator;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe Accumulator<StringBuilder> StringBuilderAccumulator() =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        static (builder, span) => builder.Append(
-            MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, char>(ref MemoryMarshal.GetReference(span)), span.Length)
-        );
-#else
-        static (builder, span) =>
-        {
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            for (var i = 0; i < span.Length; i++)
-                builder.Append(((char*)span.Pointer)[i]);
-
-            return builder;
-#else
-#pragma warning disable 8500
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-            var ptr = span.Pointer;
-#else
-            fixed (T* ptr = span)
-#endif
-#pragma warning restore 8500
-                return builder.Append((char*)ptr, span.Length);
-#endif
-        };
-#endif
+    public bool Equals(scoped SplitSpan<T> other) => Body.SequenceEqual(other.Body);
 }
