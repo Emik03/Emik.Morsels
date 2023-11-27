@@ -2,7 +2,7 @@
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
-#pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
+#pragma warning disable 8618, CA1823, IDE0250, MA0071, MA0102, SA1137
 using static Span;
 
 /// <summary>Methods to split spans into multiple spans.</summary>
@@ -367,6 +367,7 @@ readonly
     /// <returns>The final accumulator value.</returns>
     public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<T> next);
 
+    [StructLayout(LayoutKind.Auto)]
     public
 #if !NO_READONLY_STRUCTS
         readonly
@@ -374,12 +375,26 @@ readonly
 #if !NO_REF_STRUCTS
         ref
 #endif
-        partial struct Of<TStrategy>(SplitSpan<T> body, ReadOnlySpan<T> separator)
+        partial struct Of<TStrategy>(SplitSpan<T> body, ReadOnlySpan<TStrategy> separator)
         where TStrategy : IStrategy
     {
-        readonly ReadOnlySpan<T> _separator = separator;
+        readonly ReadOnlySpan<T> _body = body._body;
 
-        public ReadOnlySpan<T> Body { get; } = body.Body;
+        readonly ReadOnlySpan<TStrategy> _separator = separator;
+
+        /// <inheritdoc cref="SplitSpan{T}.Body"/>
+#pragma warning disable SA1600, RCS1085
+        public ReadOnlySpan<T> Body
+#pragma warning restore SA1600, RCS1085
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+        }
+
+        static NotSupportedException Error
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get => new($"Unrecognized type: {typeof(TStrategy).Name}");
+        }
 
         /// <summary>Gets the specified index.</summary>
         /// <param name="index">The index to get.</param>
@@ -416,38 +431,19 @@ readonly
         /// <summary>Gets the last element.</summary>
         /// <returns>The last span from this instance.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public ReadOnlySpan<T> Last()
-    #if NET8_0_OR_GREATER
-            =>
-                _search.ToAddress() switch
-                {
-                    0 => Body.LastIndexOf(Separator),
-                    1 => Body.LastIndexOfAny(Separator), // ReSharper disable once NullableWarningSuppressionIsUsed
-                    _ => Body.LastIndexOfAny(_search!),
-                } is not -1 and var index
-                    ? Body[index..]
-                    : default;
-    #elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            =>
-                (IsAny ? Body.LastIndexOfAny(Separator) : Body.LastIndexOf(Separator))
-                is not -1 and var i
-                    ? Body[i..]
-                    : default;
-    #else
-        {
-            var e = GetEnumerator();
-
-            while (e.MoveNext()) { }
-
-            return e.Current;
-        }
-    #endif
-
-        /// <summary>Implicitly calls the constructor.</summary>
-        /// <param name="value">The value to call the constructor.</param>
-        /// <returns>The value that was passed in to this instance.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator Enumerator(Of<TStrategy> value) => new(value);
+        public ReadOnlySpan<T> Last() =>
+            typeof(TStrategy) switch
+            {
+                var x when x == typeof(All) => Body.LastIndexOfAny(UnsafelyAsT(_separator)),
+                var x when x == typeof(All.One) => Body.LastIndexOfAny(UnsafelyAsT(_separator)),
+                var x when x == typeof(Any) => Body.LastIndexOfAny(UnsafelyAsT(_separator)),
+#if NET8_0_OR_GREATER
+                var x when x == typeof(Any.Search) => Body.LastIndexOfAny(UnsafelyAsSearchValuesT(_separator)),
+#endif
+                _ => throw Error,
+            } is not -1 and var index
+                ? Body[index..]
+                : default;
 
         /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
         /// <param name="head">The first element of this enumeration.</param>
@@ -545,18 +541,44 @@ readonly
             };
 #endif
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static ReadOnlySpan<T> UnsafelyAsT(scoped in ReadOnlySpan<TStrategy> separator)
+        {
+            System.Diagnostics.Debug.Assert(
+                Unsafe.SizeOf<TStrategy>() == Unsafe.SizeOf<T>(),
+                "Unsafe.SizeOf<TStrategy>() == Unsafe.SizeOf<T>()"
+            );
+
+            return MemoryMarshal.CreateReadOnlySpan(
+                ref Unsafe.As<TStrategy, T>(ref MemoryMarshal.GetReference(separator)),
+                separator.Length
+            );
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static ref SearchValues<T> UnsafelyAsSearchValuesT(scoped in ReadOnlySpan<TStrategy> separator)
+        {
+            System.Diagnostics.Debug.Assert(
+                Unsafe.SizeOf<TStrategy>() == Unsafe.SizeOf<SearchValues<T>>(),
+                "Unsafe.SizeOf<TStrategy>() == Unsafe.SizeOf<SearchValues<T>>()"
+            );
+
+            return ref Unsafe.As<TStrategy, SearchValues<T>>(ref MemoryMarshal.GetReference(separator));
+        }
+
         /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
         [StructLayout(LayoutKind.Auto)]
         public
 #if !NO_REF_STRUCTS
             ref
 #endif
-            partial struct Enumerator(ReadOnlySpan<T> body, ReadOnlySpan<T> separator)
+            partial struct Enumerator(ReadOnlySpan<T> body, ReadOnlySpan<TStrategy> separator)
         {
-            readonly ReadOnlySpan<T> _separator = separator;
+            readonly ReadOnlySpan<TStrategy> _separator = separator;
 
             ReadOnlySpan<T> _body = body, _current;
 
+            /// <inheritdoc cref="SplitSpan{T}.Body"/>
             public readonly ReadOnlySpan<T> Body
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
@@ -570,18 +592,19 @@ readonly
 
             public static bool MoveNext(
                 scoped ref ReadOnlySpan<T> body,
-                scoped in ReadOnlySpan<T> separator,
+                scoped in ReadOnlySpan<TStrategy> separator,
                 scoped ref ReadOnlySpan<T> current
             ) =>
                 typeof(TStrategy) switch
                 {
                     _ when body.IsEmpty => true,
                     _ when separator.IsEmpty => !body.IsEmpty && current.IsEmpty && (current = body) is var _,
-                    var x when x == typeof(All) => MoveNextAll(ref body, separator, ref current),
-                    var x when x == typeof(All.One) => MoveNextAllOne(ref body, separator, ref current),
-                    var x when x == typeof(Any) => MoveNextAny(ref body, separator, ref current),
-                    var x when x == typeof(Any.Search) => MoveNextAnySearch(ref body, separator, ref current),
-                    _ => throw new NotSupportedException($"Unrecognized type: {typeof(TStrategy).Name}"),
+                    var x when x == typeof(All) => MoveNextAll(ref body, UnsafelyAsT(separator), ref current),
+                    var x when x == typeof(All.One) => MoveNextAllOne(ref body, UnsafelyAsT(separator), ref current),
+                    var x when x == typeof(Any) => MoveNextAny(ref body, UnsafelyAsT(separator), ref current),
+                    var x when x == typeof(Any.Search) =>
+                        MoveNextAnySearch(ref body, UnsafelyAsSearchValuesT(separator), ref current),
+                    _ => throw Error,
                 };
 
             /// <summary>Advances the enumerator to the next element of the collection.</summary>
@@ -707,7 +730,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool MoveNextAnySearch(
                 scoped ref ReadOnlySpan<T> body,
-                scoped in ReadOnlySpan<T> separator,
+                in SearchValues<T> separator,
                 scoped ref ReadOnlySpan<T> current
             )
             {
@@ -716,24 +739,23 @@ readonly
                     "typeof(TStrategy) == typeof(Any.Search)"
                 );
 
-                ref readonly var search = ref Unsafe.As<T, SearchValues<T>>(ref MemoryMarshal.GetReference(separator));
             Retry:
 
                 if (body.IsEmpty)
                     return false;
 
-                switch (body.IndexOfAny(search))
+                switch (body.IndexOfAny(separator))
                 {
                     case -1:
                         current = body;
                         body = default;
                         return true;
                     case 0:
-                        body = body[separator.Length..];
+                        body = body[1..];
                         goto Retry;
                     case var i:
                         current = body[..i];
-                        body = body[(i + separator.Length)..];
+                        body = body[(i + 1)..];
                         return true;
                 }
             }
@@ -747,12 +769,19 @@ readonly
 #endif
         struct Any : IStrategy
     {
+        [UsedImplicitly]
+        readonly T _item;
+
 #if NET8_0_OR_GREATER
         public
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct Search : IStrategy;
+            struct Search : IStrategy
+        {
+            [UsedImplicitly]
+            readonly SearchValues<T> _item;
+        }
 #endif
     }
 
@@ -762,35 +791,28 @@ readonly
 #endif
         struct All : IStrategy
     {
+        [UsedImplicitly]
+        readonly T _item;
+
         public
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct One : IStrategy;
+            struct One : IStrategy
+        {
+            [UsedImplicitly]
+            readonly T _item;
+        }
     }
 
     public interface IStrategy;
 
-    readonly ReadOnlySpan<T> _body, _separator;
+    readonly ReadOnlySpan<T> _body;
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitSpan(ReadOnlySpan<T> body) => _body = body;
-
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
-    /// <param name="body">The line to split.</param>
-    /// <param name="separator">The characters for separation.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body, ReadOnlySpan<T> separator)
-    {
-        _body = body;
-
-        if (separator.Length is 0)
-            return;
-
-        _separator = separator;
-    }
 
     /// <summary>Gets the empty split span.</summary>
     public static SplitSpan<T> Empty
@@ -799,7 +821,7 @@ readonly
     }
 
     /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Body
+    public readonly ReadOnlySpan<T> Body
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }

@@ -9110,7 +9110,7 @@ public
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
-#pragma warning disable 8618, IDE0250, MA0071, MA0102, SA1137
+#pragma warning disable 8618, CA1823, IDE0250, MA0071, MA0102, SA1137
 
 
 /// <summary>Methods to split spans into multiple spans.</summary>
@@ -9482,9 +9482,12 @@ readonly
         partial struct Of<TStrategy>(SplitSpan<T> body, ReadOnlySpan<T> separator)
         where TStrategy : IStrategy
     {
-        readonly ReadOnlySpan<T> _separator = separator;
+        readonly ReadOnlySpan<T> _body = body._body, _separator = separator;
 
-        public ReadOnlySpan<T> Body { get; } = body.Body;
+        public ReadOnlySpan<T> Body
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+        }
 
         /// <summary>Gets the specified index.</summary>
         /// <param name="index">The index to get.</param>
@@ -9547,12 +9550,6 @@ readonly
             return e.Current;
         }
     #endif
-
-        /// <summary>Implicitly calls the constructor.</summary>
-        /// <param name="value">The value to call the constructor.</param>
-        /// <returns>The value that was passed in to this instance.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator Enumerator(Of<TStrategy> value) => new(value);
 
         /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
         /// <param name="head">The first element of this enumeration.</param>
@@ -9852,12 +9849,19 @@ readonly
 #endif
         struct Any : IStrategy
     {
+        [UsedImplicitly]
+        readonly T _item;
+
 #if NET8_0_OR_GREATER
         public
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct Search : IStrategy;
+            struct Search : IStrategy
+        {
+            [UsedImplicitly]
+            readonly SearchValues<T> _item;
+        }
 #endif
     }
 
@@ -9867,19 +9871,28 @@ readonly
 #endif
         struct All : IStrategy
     {
+        [UsedImplicitly]
+        readonly T _item;
+
         public
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct One : IStrategy;
+            struct One : IStrategy
+        {
+            [UsedImplicitly]
+            readonly T _item;
+        }
     }
 
     public interface IStrategy;
 
+    readonly ReadOnlySpan<T> _body;
+
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<T> body) => Body = body;
+    public SplitSpan(ReadOnlySpan<T> body) => _body = body;
 
     /// <summary>Gets the empty split span.</summary>
     public static SplitSpan<T> Empty
@@ -9888,10 +9901,9 @@ readonly
     }
 
     /// <summary>Gets the line.</summary>
-    public ReadOnlySpan<T> Body
+    public readonly ReadOnlySpan<T> Body
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
