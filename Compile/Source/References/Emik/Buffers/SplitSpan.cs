@@ -18,16 +18,18 @@ static partial class SplitSpanFactory
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
+    public static bool ConcatEqual<T, TFirstStrategy, TSecondStrategy>(
+        this SplitSpan<T>.Of<TFirstStrategy> left,
+        SplitSpan<T>.Of<TSecondStrategy> right
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>?
 #else
         where T : IEquatable<T>?
 #endif
+        where TFirstStrategy : SplitSpan<T>.IStrategy
+        where TSecondStrategy : SplitSpan<T>.IStrategy
     {
-        if (left == right)
-            return true;
-
         if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
             return !e2.MoveNext();
 
@@ -51,16 +53,18 @@ static partial class SplitSpanFactory
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this SplitSpan<T> left, SplitSpan<T> right)
+    public static bool SequenceEqual<T, TFirstStrategy, TSecondStrategy>(
+        this SplitSpan<T>.Of<TFirstStrategy> left,
+        SplitSpan<T>.Of<TSecondStrategy> right
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>?
 #else
         where T : IEquatable<T>?
 #endif
+        where TFirstStrategy : SplitSpan<T>.IStrategy
+        where TSecondStrategy : SplitSpan<T>.IStrategy
     {
-        if (left == right)
-            return true;
-
         var e1 = left.GetEnumerator();
         var e2 = right.GetEnumerator();
 
@@ -77,14 +81,14 @@ static partial class SplitSpanFactory
     /// <param name="separator">The separator.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.Any> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            new(span, separator, true);
+            new(span, separator);
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -194,11 +198,11 @@ static partial class SplitSpanFactory
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Next<T>(
+    static bool Next<T, TFirstStrategy, TSecondStrategy>(
         ref ReadOnlySpan<T> reader1,
         ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
+        ref SplitSpan<T>.Of<TFirstStrategy>.Enumerator e1,
+        ref SplitSpan<T>.Of<TSecondStrategy>.Enumerator e2,
         out bool ret
     )
 #if UNMANAGED_SPAN
@@ -206,6 +210,8 @@ static partial class SplitSpanFactory
 #else
         where T : IEquatable<T>?
 #endif
+        where TFirstStrategy : SplitSpan<T>.IStrategy
+        where TSecondStrategy : SplitSpan<T>.IStrategy
     {
         Unsafe.SkipInit(out ret);
 
@@ -271,22 +277,22 @@ static partial class SplitSpanFactory
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanAny(this string span, string separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any> SplitSpanAny(this string span, string separator) =>
         span.AsSpan().SplitAny(separator.AsSpan());
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAny(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any> SplitAny(this string span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAny(separator);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanAll(this string span, string separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.All> SplitSpanAll(this string span, string separator) =>
         span.AsSpan().SplitAll(separator.AsSpan());
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitAll(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.All> SplitAll(this string span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAll(separator);
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
@@ -431,19 +437,14 @@ readonly
         /// <summary>Gets the last element.</summary>
         /// <returns>The last span from this instance.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public ReadOnlySpan<T> Last() =>
-            typeof(TStrategy) switch
-            {
-                var x when x == typeof(All) => Body.LastIndexOfAny(UnsafelyAsT(_separator)),
-                var x when x == typeof(All.One) => Body.LastIndexOfAny(UnsafelyAsT(_separator)),
-                var x when x == typeof(Any) => Body.LastIndexOfAny(UnsafelyAsT(_separator)),
-#if NET8_0_OR_GREATER
-                var x when x == typeof(Any.Search) => Body.LastIndexOfAny(UnsafelyAsSearchValuesT(_separator)),
-#endif
-                _ => throw Error,
-            } is not -1 and var index
-                ? Body[index..]
-                : default;
+        public ReadOnlySpan<T> Last()
+        {
+            var e = GetEnumerator();
+
+            while (e.MoveNext()) { }
+
+            return e.Current;
+        }
 
         /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T}"/>.</summary>
         /// <param name="head">The first element of this enumeration.</param>
@@ -459,8 +460,18 @@ readonly
             }
 
             head = e.Current;
-            tail = new(Body[e.Index..], _separator);
+            tail = new(Body[head.Length..], _separator);
         }
+
+        public bool Equals<TOtherStrategy>(Of<TOtherStrategy> other)
+            where TOtherStrategy : IStrategy =>
+            typeof(TStrategy) == typeof(TOtherStrategy) &&
+            MemoryMarshal.Cast(
+                ref Unsafe.As<TOtherStrategy, TStrategy>(ref MemoryMarshal.GetReference(other._separator)),
+                other._separator.Length
+            ) is var reinterpret &&
+            _separator.SequenceEqual(reinterpret) &&
+            _body.SequenceEqual(other._body);
 
         /// <summary>Computes the length.</summary>
         /// <returns>The length.</returns>
