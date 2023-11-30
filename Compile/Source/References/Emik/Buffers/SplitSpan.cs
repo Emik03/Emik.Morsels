@@ -182,12 +182,13 @@ static partial class SplitSpanFactory
     /// <param name="split">The instance to get the list from.</param>
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<T[]> ToList<T>(this SplitSpan<T> split)
+    public static List<T[]> ToList<T, TStrategy>(this SplitSpan<T>.Of<TStrategy> split)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>?
 #endif
+        where TStrategy : SplitSpan<T>.IStrategy
     {
         List<T[]> ret = [];
 
@@ -465,11 +466,8 @@ readonly
 
         public bool Equals<TOtherStrategy>(Of<TOtherStrategy> other)
             where TOtherStrategy : IStrategy =>
-            typeof(TStrategy) == typeof(TOtherStrategy) &&
-            MemoryMarshal.Cast(
-                ref Unsafe.As<TOtherStrategy, TStrategy>(ref MemoryMarshal.GetReference(other._separator)),
-                other._separator.Length
-            ) is var reinterpret &&
+            To<TStrategy>.Is<TOtherStrategy>.Supported &&
+            To<TStrategy>.From(other._separator) is var reinterpret &&
             _separator.SequenceEqual(reinterpret) &&
             _body.SequenceEqual(other._body);
 
@@ -565,17 +563,13 @@ readonly
                 separator.Length
             );
         }
-
+#if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static ref SearchValues<T> UnsafelyAsSearchValuesT(scoped in ReadOnlySpan<TStrategy> separator)
         {
-            System.Diagnostics.Debug.Assert(
-                Unsafe.SizeOf<TStrategy>() == Unsafe.SizeOf<SearchValues<T>>(),
-                "Unsafe.SizeOf<TStrategy>() == Unsafe.SizeOf<SearchValues<T>>()"
-            );
-
             return ref Unsafe.As<TStrategy, SearchValues<T>>(ref MemoryMarshal.GetReference(separator));
         }
+#endif
 
         /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
         [StructLayout(LayoutKind.Auto)]
@@ -603,18 +597,20 @@ readonly
 
             public static bool MoveNext(
                 scoped ref ReadOnlySpan<T> body,
-                scoped in ReadOnlySpan<TStrategy> separator,
+                in ReadOnlySpan<TStrategy> separator,
                 scoped ref ReadOnlySpan<T> current
             ) =>
                 typeof(TStrategy) switch
                 {
                     _ when body.IsEmpty => true,
                     _ when separator.IsEmpty => !body.IsEmpty && current.IsEmpty && (current = body) is var _,
-                    var x when x == typeof(All) => MoveNextAll(ref body, UnsafelyAsT(separator), ref current),
-                    var x when x == typeof(All.One) => MoveNextAllOne(ref body, UnsafelyAsT(separator), ref current),
-                    var x when x == typeof(Any) => MoveNextAny(ref body, UnsafelyAsT(separator), ref current),
+                    var x when x == typeof(All) => MoveNextAll(ref body, To<T>.From(separator), ref current),
+                    var x when x == typeof(All.One) => MoveNextAllOne(ref body, To<T>.From(separator), ref current),
+                    var x when x == typeof(Any) => MoveNextAny(ref body, To<T>.From(separator), ref current),
+#if NET8_0_OR_GREATER
                     var x when x == typeof(Any.Search) =>
-                        MoveNextAnySearch(ref body, UnsafelyAsSearchValuesT(separator), ref current),
+                        MoveNextAnySearch(ref body, To<SearchValues<T>>.From(separator), ref current),
+#endif
                     _ => throw Error,
                 };
 
@@ -629,7 +625,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool MoveNextAll(
                 scoped ref ReadOnlySpan<T> body,
-                scoped in ReadOnlySpan<T> separator,
+                scoped ReadOnlySpan<T> separator,
                 scoped ref ReadOnlySpan<T> current
             )
             {
@@ -658,7 +654,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool MoveNextAllOne(
                 scoped ref ReadOnlySpan<T> body,
-                scoped in ReadOnlySpan<T> separator,
+                scoped ReadOnlySpan<T> separator,
                 scoped ref ReadOnlySpan<T> current
             )
             {
@@ -692,7 +688,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool MoveNextAny(
                 scoped ref ReadOnlySpan<T> body,
-                scoped in ReadOnlySpan<T> separator,
+                scoped ReadOnlySpan<T> separator,
                 scoped ref ReadOnlySpan<T> current
             )
             {
@@ -741,7 +737,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool MoveNextAnySearch(
                 scoped ref ReadOnlySpan<T> body,
-                in SearchValues<T> separator,
+                scoped ReadOnlySpan<SearchValues<T>> separator,
                 scoped ref ReadOnlySpan<T> current
             )
             {
@@ -750,12 +746,14 @@ readonly
                     "typeof(TStrategy) == typeof(Any.Search)"
                 );
 
+                ref var reference = ref MemoryMarshal.GetReference(separator);
+
             Retry:
 
                 if (body.IsEmpty)
                     return false;
 
-                switch (body.IndexOfAny(separator))
+                switch (body.IndexOfAny(reference))
                 {
                     case -1:
                         current = body;
@@ -778,29 +776,34 @@ readonly
 #if !NO_READONLY_STRUCTS
         readonly
 #endif
-        struct Any : IStrategy
+        struct Any : IEquatable<Any>, IStrategy
     {
-        [UsedImplicitly]
-        readonly T _item;
-
 #if NET8_0_OR_GREATER
         public
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct Search : IStrategy
+            struct Search : IEquatable<Search>, IStrategy
         {
             [UsedImplicitly]
             readonly SearchValues<T> _item;
+
+            /// <inheritdoc />
+            bool IEquatable<Search>.Equals(Search other) => _item == other._item;
         }
 #endif
+        [UsedImplicitly]
+        readonly T _item;
+
+        /// <inheritdoc />
+        bool IEquatable<Any>.Equals(Any other) => _item?.Equals(other._item) ?? false;
     }
 
     public
 #if !NO_READONLY_STRUCTS
         readonly
 #endif
-        struct All : IStrategy
+        struct All : IStrategy, IEquatable<All>
     {
         [UsedImplicitly]
         readonly T _item;
@@ -809,11 +812,17 @@ readonly
 #if !NO_READONLY_STRUCTS
             readonly
 #endif
-            struct One : IStrategy
+            struct One : IStrategy, IEquatable<One>
         {
             [UsedImplicitly]
             readonly T _item;
+
+            /// <inheritdoc />
+            bool IEquatable<One>.Equals(One other) => _item?.Equals(other._item) ?? false;
         }
+
+        /// <inheritdoc />
+        bool IEquatable<All>.Equals(All other) => _item?.Equals(other._item) ?? false;
     }
 
     public interface IStrategy;
