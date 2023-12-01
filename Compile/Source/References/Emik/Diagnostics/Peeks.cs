@@ -195,7 +195,7 @@ static partial class Peeks
 
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static Span<T> Debug<T>(
-        this Span<T> value,
+        this in Span<T> value,
         bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T[], object?>? map = null,
@@ -221,7 +221,7 @@ static partial class Peeks
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static PooledSmallList<T> Debug<T>(
-        this PooledSmallList<T> value,
+        this in PooledSmallList<T> value,
         bool shouldPrettify = true,
         bool shouldLogExpression = false,
         [InstantHandle] Converter<T[], object?>? map = null,
@@ -248,12 +248,12 @@ static partial class Peeks
 #endif
 
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static SplitSpan<T> Debug<T>(
-        this SplitSpan<T> value,
+    public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
+        this in SplitSpan<TBody, TSeparator, TStrategy> value,
         bool shouldPrettify = true,
         bool shouldLogExpression = false,
-        [InstantHandle] Converter<List<T[]>, object?>? map = null,
-        [InstantHandle] Predicate<List<T[]>>? filter = null,
+        [InstantHandle] Converter<List<TBody[]>, object?>? map = null,
+        [InstantHandle] Predicate<List<TBody[]>>? filter = null,
         [InstantHandle] Action<string>? logger = null,
         [CallerArgumentExpression(nameof(value))] string? expression = null,
         [CallerFilePath] string? path = null,
@@ -261,9 +261,12 @@ static partial class Peeks
         [CallerMemberName] string? member = null
     )
 #if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
+        where TBody : unmanaged, IEquatable<TBody>
 #else
-        where T : IEquatable<T>?
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
 #endif
     {
         // ReSharper disable ExplicitCallerInfoArgument
