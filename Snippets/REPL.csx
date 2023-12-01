@@ -7555,14 +7555,8 @@ public
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
-        public static unsafe ReadOnlySpan<TTo> From<TFrom>(in ReadOnlySpan<TFrom> source)
-        {
-            if (typeof(TTo) != typeof(TFrom) && !Is<TFrom>.Supported)
-                throw Is<TFrom>.Error;
-
-            fixed (ReadOnlySpan<TFrom>* ptr = &source)
-                return *(ReadOnlySpan<TTo>*)ptr;
-        }
+        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
 
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
@@ -7575,14 +7569,8 @@ public
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
-        public static unsafe Span<TTo> From<TFrom>(in Span<TFrom> source)
-        {
-            if (typeof(TTo) != typeof(TFrom) && !Is<TFrom>.Supported)
-                throw Is<TFrom>.Error;
-
-            fixed (Span<TFrom>* ptr = &source)
-                return *(Span<TTo>*)ptr;
-        }
+        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
 #pragma warning restore 8500, RCS1158
     }
 
@@ -9817,9 +9805,11 @@ readonly
     }
 
     /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
 
     /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
         typeof(TBody) == typeof(char)
             ? Aggregate(new(), StringBuilderAccumulator()).ToString()
@@ -9928,6 +9918,7 @@ readonly
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="split">The enumerable to enumerate.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(SplitSpan<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
 
@@ -9958,21 +9949,25 @@ readonly
         /// <see langword="true"/> if a step was able to be performed successfully;
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
         public static bool MoveNext(
             scoped ref ReadOnlySpan<TBody> body,
             scoped in ReadOnlySpan<TSeparator> separator,
             scoped ref ReadOnlySpan<TBody> current
         ) =>
-            typeof(TStrategy) switch
+            0 switch
             {
                 _ when separator.IsEmpty => !body.IsEmpty && current.IsEmpty && (current = body) is var _,
-                var x when x == typeof(MatchAll) => MoveNextAll(ref body, To<TBody>.From(separator), ref current),
+                _ when typeof(TStrategy) == typeof(MatchAll) =>
+                    MoveNextAll(ref body, To<TBody>.From(separator), ref current),
 #if NET8_0_OR_GREATER
-                var x when typeof(TSeparator) == typeof(SearchValues<TBody>) && x == typeof(MatchAny) =>
+                _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(ref body, To<SearchValues<TBody>>.From(separator), ref current),
 #endif
-                var x when x == typeof(MatchAny) => MoveNextAny(ref body, To<TBody>.From(separator), ref current),
-                var x when x == typeof(MatchOne) => MoveNextOne(ref body, To<TBody>.From(separator), ref current),
+                _ when typeof(TStrategy) == typeof(MatchAny) =>
+                    MoveNextAny(ref body, To<TBody>.From(separator), ref current),
+                _ when typeof(TStrategy) == typeof(MatchOne) =>
+                    MoveNextOne(ref body, To<TBody>.From(separator), ref current),
                 _ => throw Error,
             };
 
@@ -9984,7 +9979,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => MoveNext(ref _body, _separator, ref _current);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
         static bool MoveNextAll(
             scoped ref ReadOnlySpan<TBody> body,
             scoped ReadOnlySpan<TBody> separator,
@@ -10014,7 +10009,7 @@ readonly
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
         static bool MoveNextAny(
             scoped ref ReadOnlySpan<TBody> body,
             scoped ReadOnlySpan<TBody> separator,
@@ -10064,7 +10059,7 @@ readonly
         }
 
 #if NET8_0_OR_GREATER
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
         static bool MoveNextAny(
             scoped ref ReadOnlySpan<TBody> body,
             scoped ReadOnlySpan<SearchValues<TBody>> separator,
@@ -10096,7 +10091,7 @@ readonly
             }
         }
 #endif
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
         static bool MoveNextOne(
             scoped ref ReadOnlySpan<TBody> body,
             scoped ReadOnlySpan<TBody> separator,
@@ -12388,6 +12383,7 @@ readonly
         /// <see langword="true"/> if a step was able to be performed successfully;
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool MoveNext(
             ref ReadOnlyMemory<TBody> body,
             scoped in ReadOnlySpan<TSeparator> separator,

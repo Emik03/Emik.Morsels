@@ -714,6 +714,7 @@ readonly
         /// <see langword="true"/> if a step was able to be performed successfully;
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool MoveNext(
             ref ReadOnlyMemory<TBody> body,
             scoped in ReadOnlySpan<TSeparator> separator,

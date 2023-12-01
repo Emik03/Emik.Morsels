@@ -23,19 +23,25 @@ static partial class Span
             /// Gets a value indicating whether the conversion between types
             /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
             /// </summary>
-            public static unsafe bool Supported { get; } = typeof(TTo) == typeof(TFrom) ||
+            public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+                typeof(TTo) == typeof(TFrom) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
                 IsReinterpretable(typeof(TFrom), typeof(TTo));
 
             /// <summary>
             /// Gets the error that occurs when converting between types would cause undefined behavior.
             /// </summary>
-            public static NotSupportedException Error =>
-                new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
+            public static NotSupportedException Error
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+                get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
+            }
 
+            [Pure]
             static bool IsReinterpretable(Type first, Type second) =>
                 first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
 
+            [Pure]
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
         }
 
@@ -52,14 +58,9 @@ static partial class Span
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
-        public static unsafe ReadOnlySpan<TTo> From<TFrom>(in ReadOnlySpan<TFrom> source)
-        {
-            if (typeof(TTo) != typeof(TFrom) && !Is<TFrom>.Supported)
-                throw Is<TFrom>.Error;
-
-            fixed (ReadOnlySpan<TFrom>* ptr = &source)
-                return *(ReadOnlySpan<TTo>*)ptr;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
 
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
@@ -72,14 +73,9 @@ static partial class Span
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
-        public static unsafe Span<TTo> From<TFrom>(in Span<TFrom> source)
-        {
-            if (typeof(TTo) != typeof(TFrom) && !Is<TFrom>.Supported)
-                throw Is<TFrom>.Error;
-
-            fixed (Span<TFrom>* ptr = &source)
-                return *(Span<TTo>*)ptr;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
 #pragma warning restore 8500, RCS1158
     }
 
