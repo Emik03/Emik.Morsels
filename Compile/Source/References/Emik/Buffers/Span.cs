@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent
+// ReSharper disable BadPreprocessorIndent ConvertToStaticClass
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -10,14 +10,14 @@ static partial class Span
 {
     /// <summary>Provides reinterpret span methods.</summary>
     /// <typeparam name="TTo">The type to convert to.</typeparam>
-    public static partial class To<TTo>
+    public static class To<TTo>
     {
-#pragma warning disable 8500
+#pragma warning disable 8500, RCS1158
         /// <summary>
         /// Encapsulates the functionality to determine if a conversion is supported between two types.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
-        public static partial class Is<TFrom>
+        public static class Is<TFrom>
         {
             /// <summary>
             /// Gets a value indicating whether the conversion between types
@@ -52,8 +52,14 @@ static partial class Span
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
-        public static unsafe ReadOnlySpan<TTo> From<TFrom>(in ReadOnlySpan<TFrom> source) =>
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
+        public static unsafe ReadOnlySpan<TTo> From<TFrom>(in ReadOnlySpan<TFrom> source)
+        {
+            if (typeof(TTo) != typeof(TFrom) && !Is<TFrom>.Supported)
+                throw Is<TFrom>.Error;
+
+            fixed (ReadOnlySpan<TFrom>* ptr = &source)
+                return *(ReadOnlySpan<TTo>*)ptr;
+        }
 
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
@@ -66,9 +72,15 @@ static partial class Span
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
-        public static unsafe Span<TTo> From<TFrom>(in Span<TFrom> source) =>
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
-#pragma warning restore 8500
+        public static unsafe Span<TTo> From<TFrom>(in Span<TFrom> source)
+        {
+            if (typeof(TTo) != typeof(TFrom) && !Is<TFrom>.Supported)
+                throw Is<TFrom>.Error;
+
+            fixed (Span<TFrom>* ptr = &source)
+                return *(Span<TTo>*)ptr;
+        }
+#pragma warning restore 8500, RCS1158
     }
 
     /// <summary>A callback for a span.</summary>
