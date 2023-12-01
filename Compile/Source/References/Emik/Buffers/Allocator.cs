@@ -22,14 +22,17 @@ static partial class Allocator
 
     /// <inheritdoc cref="Raw{T}(T)" />
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(scoped SplitSpan<T> value)
+    public static unsafe byte[] Raw<TBody, TSeparator, TStrategy>(scoped SplitSpan<TBody, TSeparator, TStrategy> value)
 #if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
+        where TBody : unmanaged, IEquatable<TBody>?
 #else
-        where T : IEquatable<T>?
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
 #endif
         =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>))];
+            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<TBody, TSeparator, TStrategy>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
