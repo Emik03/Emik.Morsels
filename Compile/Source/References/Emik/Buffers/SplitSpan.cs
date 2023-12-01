@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace InvertIf RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
 #pragma warning disable 8618, CA1823, IDE0250, MA0071, MA0102, SA1137
 using static Span;
@@ -27,8 +27,8 @@ static partial class SplitSpanFactory
 #else
         where T : IEquatable<T>?
 #endif
-        where TFirstStrategy : SplitSpan<T>.IStrategy
-        where TSecondStrategy : SplitSpan<T>.IStrategy
+        where TFirstStrategy : IEquatable<TFirstStrategy>, SplitSpan<T>.IStrategy
+        where TSecondStrategy : IEquatable<TSecondStrategy>, SplitSpan<T>.IStrategy
     {
         if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
             return !e2.MoveNext();
@@ -62,8 +62,8 @@ static partial class SplitSpanFactory
 #else
         where T : IEquatable<T>?
 #endif
-        where TFirstStrategy : SplitSpan<T>.IStrategy
-        where TSecondStrategy : SplitSpan<T>.IStrategy
+        where TFirstStrategy : IEquatable<TFirstStrategy>, SplitSpan<T>.IStrategy
+        where TSecondStrategy : IEquatable<TSecondStrategy>, SplitSpan<T>.IStrategy
     {
         var e1 = left.GetEnumerator();
         var e2 = right.GetEnumerator();
@@ -81,18 +81,18 @@ static partial class SplitSpanFactory
     /// <param name="separator">The separator.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T>.Of<SplitSpan<T>.Any> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.Any> SplitAny<T>(this ReadOnlySpan<T> span, in ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            new(span, separator);
+            new(span, To<SplitSpan<T>.Any>.From(separator));
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.Any> SplitAny<T>(this Span<T> span, in ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -107,18 +107,18 @@ static partial class SplitSpanFactory
     /// <param name="separator">The separator.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.All> SplitAll<T>(this ReadOnlySpan<T> span, in ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            new(span, separator, false);
+            new(span, To<SplitSpan<T>.All>.From(separator));
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.All> SplitAll<T>(this Span<T> span, in ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -129,31 +129,34 @@ static partial class SplitSpanFactory
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, SearchValues<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.Any.Search> SplitOn<T>(
+        this ReadOnlySpan<T> span,
+        SearchValues<T> separator
+    )
         where T : IEquatable<T> =>
-        new(span, separator);
+        new(span, To<SplitSpan<T>.Any.Search>.From(In(separator)));
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitOn<T>(this Span<T> span, SearchValues<T> separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.Any.Search> SplitOn<T>(this Span<T> span, SearchValues<T> separator)
         where T : IEquatable<T> =>
         ((ReadOnlySpan<T>)span).SplitOn(separator);
 #endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.All.One> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            new(span, In(separator), true);
+            new(span, To<SplitSpan<T>.All.One>.From(In(separator)));
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T> SplitOn<T>(this Span<T> span, in T separator)
+    public static SplitSpan<T>.Of<SplitSpan<T>.All.One> SplitOn<T>(this Span<T> span, in T separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -167,7 +170,8 @@ static partial class SplitSpanFactory
     /// <param name="split">The instance to get the list from.</param>
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<string> ToList(this SplitSpan<char> split)
+    public static List<string> ToList<TStrategy>(this SplitSpan<char>.Of<TStrategy> split)
+        where TStrategy : IEquatable<TStrategy>, SplitSpan<char>.IStrategy
     {
         List<string> ret = [];
 
@@ -188,7 +192,7 @@ static partial class SplitSpanFactory
 #else
         where T : IEquatable<T>?
 #endif
-        where TStrategy : SplitSpan<T>.IStrategy
+        where TStrategy : IEquatable<TStrategy>, SplitSpan<T>.IStrategy
     {
         List<T[]> ret = [];
 
@@ -211,8 +215,8 @@ static partial class SplitSpanFactory
 #else
         where T : IEquatable<T>?
 #endif
-        where TFirstStrategy : SplitSpan<T>.IStrategy
-        where TSecondStrategy : SplitSpan<T>.IStrategy
+        where TFirstStrategy : IEquatable<TFirstStrategy>, SplitSpan<T>.IStrategy
+        where TSecondStrategy : IEquatable<TSecondStrategy>, SplitSpan<T>.IStrategy
     {
         Unsafe.SkipInit(out ret);
 
@@ -244,14 +248,16 @@ static partial class SplitSpanFactory
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool SameLength<T>(
+    static bool SameLength<T, TFirstStrategy, TSecondStrategy>(
         ref ReadOnlySpan<T> reader1,
         ref ReadOnlySpan<T> reader2,
-        ref SplitSpan<T>.Enumerator e1,
-        ref SplitSpan<T>.Enumerator e2,
+        ref SplitSpan<T>.Of<TFirstStrategy>.Enumerator e1,
+        ref SplitSpan<T>.Of<TSecondStrategy>.Enumerator e2,
         ref bool ret
     )
         where T : IEquatable<T>?
+        where TFirstStrategy : IEquatable<TFirstStrategy>, SplitSpan<T>.IStrategy
+        where TSecondStrategy : IEquatable<TSecondStrategy>, SplitSpan<T>.IStrategy
     {
         if (!reader1.SequenceEqual(reader2))
         {
@@ -283,7 +289,7 @@ static partial class SplitSpanFactory
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char>.Of<SplitSpan<char>.Any> SplitAny(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any> SplitAny(this string span, in ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAny(separator);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
@@ -293,57 +299,65 @@ static partial class SplitSpanFactory
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char>.Of<SplitSpan<char>.All> SplitAll(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.All> SplitAll(this string span, in ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAll(separator);
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanLines(this string span) => span.AsSpan().SplitLines();
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitSpanLines(this string span) =>
+        span.AsSpan().SplitLines();
 
     /// <summary>Splits a span by line breaks.</summary>
     /// <remarks><para>Line breaks are considered any character in <see cref="Whitespaces.Breaking"/>.</para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this ReadOnlySpan<char> span) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitLines(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, Whitespaces.BreakingSearch);
+        new(span, To<SplitSpan<char>.Any.Search>.From(In(Whitespaces.BreakingSearch)));
 #else
         new(span, Whitespaces.Breaking.AsSpan(), true);
 #endif
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitLines(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitLines();
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitLines(this Span<char> span) =>
+        ((ReadOnlySpan<char>)span).SplitLines();
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitOn(this string span, in char separator) => span.AsSpan().SplitOn(separator);
+    public static SplitSpan<char>.Of<SplitSpan<char>.All.One> SplitOn(this string span, in char separator) =>
+        span.AsSpan().SplitOn(separator);
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanWhitespace(this string span) => span.AsSpan().SplitWhitespace();
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitSpanWhitespace(this string span) =>
+        span.AsSpan().SplitWhitespace();
 
     /// <summary>Splits a span by whitespace.</summary>
     /// <remarks><para>Whitespace is considered any character in <see cref="Whitespaces.Unicode"/>.</para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this ReadOnlySpan<char> span) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitWhitespace(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, Whitespaces.UnicodeSearch);
+        new(span, To<SplitSpan<char>.Any.Search>.From(In(Whitespaces.UnicodeSearch)));
 #else
-        new(span, Whitespaces.Unicode.AsSpan(), true);
+        new(span, To<SplitSpan<char>.Any>.From(Whitespaces.Unicode.AsSpan()));
 #endif
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitWhitespace(this Span<char> span) => ((ReadOnlySpan<char>)span).SplitWhitespace();
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitWhitespace(this Span<char> span) =>
+        ((ReadOnlySpan<char>)span).SplitWhitespace();
 #endif
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char> SplitSpanOn(this string span, SearchValues<char> separator) =>
+    public static SplitSpan<char>.Of<SplitSpan<char>.Any.Search> SplitSpanOn(
+        this string span,
+        SearchValues<char> separator
+    ) =>
         span.AsSpan().SplitOn(separator);
 #endif
 }
@@ -383,7 +397,7 @@ readonly
         ref
 #endif
         partial struct Of<TStrategy>(SplitSpan<T> body, ReadOnlySpan<TStrategy> separator)
-        where TStrategy : IStrategy
+        where TStrategy : IEquatable<TStrategy>, IStrategy
     {
         readonly ReadOnlySpan<T> _body = body._body;
 
@@ -461,11 +475,11 @@ readonly
             }
 
             head = e.Current;
-            tail = new(Body[head.Length..], _separator);
+            tail = new(new(Body[head.Length..]), _separator);
         }
 
         public bool Equals<TOtherStrategy>(Of<TOtherStrategy> other)
-            where TOtherStrategy : IStrategy =>
+            where TOtherStrategy : IEquatable<TOtherStrategy>, IStrategy =>
             To<TStrategy>.Is<TOtherStrategy>.Supported &&
             To<TStrategy>.From(other._separator) is var reinterpret &&
             _separator.SequenceEqual(reinterpret) &&
@@ -778,7 +792,6 @@ readonly
 #endif
         struct Any : IEquatable<Any>, IStrategy
     {
-#if NET8_0_OR_GREATER
         public
 #if !NO_READONLY_STRUCTS
             readonly
@@ -786,17 +799,25 @@ readonly
             struct Search : IEquatable<Search>, IStrategy
         {
             [UsedImplicitly]
+#if NET8_0_OR_GREATER
             readonly SearchValues<T> _item;
+#else
+            readonly T _item;
+#endif
 
             /// <inheritdoc />
-            bool IEquatable<Search>.Equals(Search other) => _item == other._item;
+            // ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+            bool IEquatable<Search>.Equals(Search other) =>
+                _item is null ? other._item is null : other._item is not null && _item.Equals(other._item);
+            // ReSharper restore ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         }
-#endif
+
         [UsedImplicitly]
         readonly T _item;
 
         /// <inheritdoc />
-        bool IEquatable<Any>.Equals(Any other) => _item?.Equals(other._item) ?? false;
+        bool IEquatable<Any>.Equals(Any other) =>
+            _item is null ? other._item is null : other._item is not null && _item.Equals(other._item);
     }
 
     public
@@ -818,11 +839,13 @@ readonly
             readonly T _item;
 
             /// <inheritdoc />
-            bool IEquatable<One>.Equals(One other) => _item?.Equals(other._item) ?? false;
+            bool IEquatable<One>.Equals(One other) =>
+                _item is null ? other._item is null : other._item is not null && _item.Equals(other._item);
         }
 
         /// <inheritdoc />
-        bool IEquatable<All>.Equals(All other) => _item?.Equals(other._item) ?? false;
+        bool IEquatable<All>.Equals(All other) =>
+            _item is null ? other._item is null : other._item is not null && _item.Equals(other._item);
     }
 
     public interface IStrategy;
