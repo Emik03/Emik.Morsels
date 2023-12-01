@@ -238,6 +238,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static SplitFactory;" => "",
         "using Range = System.Range;" => "",
         "using static OperatorCaching;" => "",
+        "using static SplitSpanFactory;" => "",
+        "using static SplitMemoryFactory;" => "",
         "global using static Unforgiving;" => "",
         "global using static TupleExtracts;" => "",
         "global using static FixedGenerator;" => "",
