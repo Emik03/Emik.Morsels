@@ -3,6 +3,8 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
+using static Span;
+
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
 /// <param name="value">The value to encapsulate.</param>
@@ -44,6 +46,6 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override Span<T> GetSpan() => new(ref _value);
+    public override Span<T> GetSpan() => Ref(ref _value);
 }
 #endif
