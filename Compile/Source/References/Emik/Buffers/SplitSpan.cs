@@ -544,7 +544,7 @@ readonly
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     // ReSharper restore NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => new(_body, _separator);
+    public Enumerator GetEnumerator() => new(this);
 
     /// <summary>Gets the first element.</summary>
     /// <returns>The first span from this instance.</returns>
@@ -672,6 +672,12 @@ readonly
         ReadOnlySpan<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
+        /// <param name="body">The body.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Enumerator(ReadOnlySpan<TBody> body)
+            : this(body, default) { }
+
+        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="split">The enumerable to enumerate.</param>
         public Enumerator(SplitSpan<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
@@ -709,7 +715,6 @@ readonly
         ) =>
             typeof(TStrategy) switch
             {
-                _ when body.IsEmpty => true,
                 _ when separator.IsEmpty => !body.IsEmpty && current.IsEmpty && (current = body) is var _,
                 var x when x == typeof(All) => MoveNextAll(ref body, To<TBody>.From(separator), ref current),
 #if NET8_0_OR_GREATER
@@ -737,6 +742,7 @@ readonly
         )
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(All), "typeof(TStrategy) == typeof(All)");
+            System.Diagnostics.Debug.Assert(!separator.IsEmpty, "!separator.IsEmpty");
         Retry:
 
             if (body.IsEmpty)
@@ -766,6 +772,7 @@ readonly
         )
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(Any), "typeof(TStrategy) == typeof(Any)");
+            System.Diagnostics.Debug.Assert(!separator.IsEmpty, "!separator.IsEmpty");
         Retry:
 
             if (body.IsEmpty)
@@ -820,22 +827,21 @@ readonly
             );
 
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "!separator.IsEmpty");
-            System.Diagnostics.Debug.Assert(!body.IsEmpty, "!body.IsEmpty");
 
-            ref var reference = ref MemoryMarshal.GetReference(separator);
+            ref var single = ref MemoryMarshal.GetReference(separator);
 
         Retry:
 
-            switch (body.IndexOfAny(reference))
+            if (body.IsEmpty)
+                return false;
+
+            switch (body.IndexOfAny(single))
             {
                 case -1:
                     current = body;
                     body = default;
                     return true;
                 case 0:
-                    if (body.Length is 1)
-                        return false;
-
                     body = body[1..];
                     goto Retry;
                 case var i:
@@ -853,8 +859,11 @@ readonly
         )
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(One), "typeof(TStrategy) == typeof(One)");
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ref var single = ref MemoryMarshal.GetReference(separator);
+#else
+            var single = separator[0];
+#endif
         Retry:
 
             if (body.IsEmpty)
