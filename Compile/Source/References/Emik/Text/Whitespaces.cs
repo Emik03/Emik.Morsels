@@ -22,6 +22,7 @@ static partial class Whitespaces
     /// <summary>All unicode characters that appear to be whitespace.</summary>
     public const string Combined = $"{Unicode}{Related}";
 #if NET8_0_OR_GREATER
+#pragma warning disable IDISP004
     /// <inheritdoc cref="Breaking"/>
     public static SearchValues<char> BreakingSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
         SearchValues.Create(Breaking);
@@ -45,37 +46,38 @@ static partial class Whitespaces
         SearchValues.Create(Combined);
 
     /// <inheritdoc cref="Breaking"/>
-    public static OnceMemoryManager<SearchValues<char>> BreakingSearchMemoryManager
+    public static ReadOnlyMemory<SearchValues<char>> BreakingSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new(BreakingSearch);
+        new OnceMemoryManager<SearchValues<char>>(BreakingSearch).Memory;
 
     /// <inheritdoc cref="NonBreaking"/>
-    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearchMemoryManager
+    public static ReadOnlyMemory<SearchValues<char>> NonBreakingSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } = new(NonBreakingSearch);
+    } = new OnceMemoryManager<SearchValues<char>>(NonBreakingSearch).Memory;
 
     /// <inheritdoc cref="Related"/>
-    public static OnceMemoryManager<SearchValues<char>> RelatedSearchMemoryManager
+    public static ReadOnlyMemory<SearchValues<char>> RelatedSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new(RelatedSearch);
+        new OnceMemoryManager<SearchValues<char>>(RelatedSearch).Memory;
 
     /// <inheritdoc cref="Unicode"/>
-    public static OnceMemoryManager<SearchValues<char>> UnicodeSearchMemoryManager
+    public static ReadOnlyMemory<SearchValues<char>> UnicodeSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new(UnicodeSearch);
+        new OnceMemoryManager<SearchValues<char>>(UnicodeSearch).Memory;
 
     /// <inheritdoc cref="Combined"/>
-    public static OnceMemoryManager<SearchValues<char>> CombinedSearchMemoryManager
+    public static ReadOnlyMemory<SearchValues<char>> CombinedSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new(CombinedSearch);
+        new OnceMemoryManager<SearchValues<char>>(CombinedSearch).Memory;
+#pragma warning restore IDISP004
 #endif
 }
