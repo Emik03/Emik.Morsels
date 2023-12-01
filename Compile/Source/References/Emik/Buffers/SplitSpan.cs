@@ -42,6 +42,10 @@ static partial class SplitSpanFactory
 #else
         where TBody : IEquatable<TBody>?
 #endif
+#if !NET7_0_OR_GREATER
+        where TLeftSeparator : IEquatable<TLeftSeparator>?
+        where TRightSeparator : IEquatable<TRightSeparator>?
+#endif
     {
         if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
             return !e2.MoveNext();
@@ -78,6 +82,10 @@ static partial class SplitSpanFactory
         where T : unmanaged, IEquatable<T>?
 #else
         where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TLeftSeparator : IEquatable<TLeftSeparator>?
+        where TRightSeparator : IEquatable<TRightSeparator>?
 #endif
     {
         var e1 = left.GetEnumerator();
@@ -185,6 +193,9 @@ static partial class SplitSpanFactory
     /// <returns>The list containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static List<string> ToList<TSeparator, TStrategy>(this SplitSpan<char, TSeparator, TStrategy> split)
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
     {
         List<string> ret = [];
 
@@ -207,6 +218,9 @@ static partial class SplitSpanFactory
 #else
         where TBody : IEquatable<TBody>?
 #endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
     {
         List<TBody[]> ret = [];
 
@@ -228,6 +242,10 @@ static partial class SplitSpanFactory
         where TBody : unmanaged, IEquatable<TBody>?
 #else
         where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TLeftSeparator : IEquatable<TLeftSeparator>?
+        where TRightSeparator : IEquatable<TRightSeparator>?
 #endif
     {
         Unsafe.SkipInit(out ret);
@@ -268,6 +286,10 @@ static partial class SplitSpanFactory
         ref bool ret
     )
         where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+        where TLeftSeparator : IEquatable<TLeftSeparator>?
+        where TRightSeparator : IEquatable<TRightSeparator>?
+#endif
     {
         if (!reader1.SequenceEqual(reader2))
         {
@@ -338,7 +360,7 @@ static partial class SplitSpanFactory
 #if NET8_0_OR_GREATER
         new(span, new(Whitespaces.BreakingSearch));
 #else
-        new(span, Whitespaces.Breaking.AsSpan(), true);
+        new(span, Whitespaces.Breaking.AsSpan());
 #endif
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
@@ -383,7 +405,7 @@ static partial class SplitSpanFactory
 #if NET8_0_OR_GREATER
         new(span, new(Whitespaces.UnicodeSearch));
 #else
-        new(span, To<SplitSpan<char>.Any>.From(Whitespaces.Unicode.AsSpan()));
+        new(span, Whitespaces.Unicode.AsSpan());
 #endif
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
@@ -427,6 +449,9 @@ readonly
     where T : unmanaged, IEquatable<T>?
 #else
     where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+    where TSeparator : IEquatable<TSeparator>?
 #endif
 {
     /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
