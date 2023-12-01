@@ -734,37 +734,6 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool MoveNextOne(
-            scoped ref ReadOnlySpan<TBody> body,
-            scoped ReadOnlySpan<TBody> separator,
-            scoped ref ReadOnlySpan<TBody> current
-        )
-        {
-            System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(One), "typeof(TStrategy) == typeof(One)");
-
-            ref var single = ref MemoryMarshal.GetReference(separator);
-        Retry:
-
-            if (body.IsEmpty)
-                return false;
-
-            switch (body.IndexOf(single))
-            {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
             scoped ref ReadOnlySpan<TBody> body,
             scoped ReadOnlySpan<TBody> separator,
@@ -851,5 +820,35 @@ readonly
             }
         }
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool MoveNextOne(
+            scoped ref ReadOnlySpan<TBody> body,
+            scoped ReadOnlySpan<TBody> separator,
+            scoped ref ReadOnlySpan<TBody> current
+        )
+        {
+            System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(One), "typeof(TStrategy) == typeof(One)");
+
+            ref var single = ref MemoryMarshal.GetReference(separator);
+        Retry:
+
+            if (body.IsEmpty)
+                return false;
+
+            switch (body.IndexOf(single))
+            {
+                case -1:
+                    current = body;
+                    body = default;
+                    return true;
+                case 0:
+                    body = body[1..];
+                    goto Retry;
+                case var i:
+                    current = body[..i++];
+                    body = body[i..];
+                    return true;
+            }
+        }
     }
 }
