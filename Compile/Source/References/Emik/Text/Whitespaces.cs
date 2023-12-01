@@ -43,5 +43,39 @@ static partial class Whitespaces
     /// <inheritdoc cref="Combined"/>
     public static SearchValues<char> CombinedSearch { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
         SearchValues.Create(Combined);
+
+    /// <inheritdoc cref="Breaking"/>
+    public static OnceMemoryManager<SearchValues<char>> BreakingSearchMemoryManager
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(BreakingSearch);
+
+    /// <inheritdoc cref="NonBreaking"/>
+    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearchMemoryManager
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } = new(NonBreakingSearch);
+
+    /// <inheritdoc cref="Related"/>
+    public static OnceMemoryManager<SearchValues<char>> RelatedSearchMemoryManager
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(RelatedSearch);
+
+    /// <inheritdoc cref="Unicode"/>
+    public static OnceMemoryManager<SearchValues<char>> UnicodeSearchMemoryManager
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(UnicodeSearch);
+
+    /// <inheritdoc cref="Combined"/>
+    public static OnceMemoryManager<SearchValues<char>> CombinedSearchMemoryManager
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(CombinedSearch);
 #endif
 }
