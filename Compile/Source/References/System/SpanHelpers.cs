@@ -314,7 +314,7 @@ static partial class SpanHelpers
         T* value,
         int valueLength
     )
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         if (valueLength is 0)
             return -1;
