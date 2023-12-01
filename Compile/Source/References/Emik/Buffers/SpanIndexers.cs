@@ -51,7 +51,7 @@ static partial class SpanIndexers
         head = span[0];
         tail = span[1..];
     }
-#if NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOfAny<T>(this Span<T> span, ReadOnlySpan<T> values)
