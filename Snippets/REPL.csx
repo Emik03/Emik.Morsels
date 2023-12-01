@@ -7526,19 +7526,25 @@ public
             /// Gets a value indicating whether the conversion between types
             /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
             /// </summary>
-            public static unsafe bool Supported { get; } = typeof(TTo) == typeof(TFrom) ||
+            public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+                typeof(TTo) == typeof(TFrom) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
                 IsReinterpretable(typeof(TFrom), typeof(TTo));
 
             /// <summary>
             /// Gets the error that occurs when converting between types would cause undefined behavior.
             /// </summary>
-            public static NotSupportedException Error =>
-                new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
+            public static NotSupportedException Error
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+                get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
+            }
 
+            [Pure]
             static bool IsReinterpretable(Type first, Type second) =>
                 first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
 
+            [Pure]
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
         }
 
@@ -7555,6 +7561,7 @@ public
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
 
@@ -7569,6 +7576,7 @@ public
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
         /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
 #pragma warning restore 8500, RCS1158
@@ -10000,11 +10008,11 @@ readonly
                     body = default;
                     return true;
                 case 0:
-                    body = body[separator.Length..];
+                    body = UnsafelyAdvance(body, separator.Length);
                     goto Retry;
                 case var i:
-                    current = body[..i];
-                    body = body[(i + separator.Length)..];
+                    current = UnsafelyTake(body, i);
+                    body = UnsafelyAdvance(body, i + separator.Length);
                     return true;
             }
         }
@@ -10018,27 +10026,26 @@ readonly
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
-        Retry:
 
             if (body.IsEmpty)
                 return false;
-
 #if NET7_0_OR_GREATER
-            switch (body.IndexOfAny(separator))
+            if (body.IndexOfAnyExcept(separator) is not (not -1 and var offset))
+                return false;
+
+            if ((body = UnsafelyAdvance(body, offset)).IndexOfAny(separator) is not -1 and var length)
             {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
+            }
+            else
+            {
+                current = body;
+                body = default;
             }
 #else
+        Retry:
+
             foreach (var next in separator)
                 switch (body.IndexOf(next))
                 {
@@ -10054,8 +10061,8 @@ readonly
 
             current = body;
             body = default;
-            return true;
 #endif
+            return true;
         }
 
 #if NET8_0_OR_GREATER
@@ -10070,25 +10077,21 @@ readonly
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
             ref var single = ref MemoryMarshal.GetReference(separator);
 
-        Retry:
-
-            if (body.IsEmpty)
+            if (body.IsEmpty || body.IndexOfAnyExcept(single) is not (not -1 and var offset))
                 return false;
 
-            switch (body.IndexOfAny(single))
+            if ((body = UnsafelyAdvance(body, offset)).IndexOfAny(single) is not -1 and var length)
             {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i];
-                    body = body[(i + 1)..];
-                    return true;
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
             }
+            else
+            {
+                current = body;
+                body = default;
+            }
+
+            return true;
         }
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
@@ -10104,26 +10107,63 @@ readonly
 #else
             var single = separator[0];
 #endif
+#if !NET7_0_OR_GREATER
         Retry:
+#endif
 
             if (body.IsEmpty)
                 return false;
+#if NET7_0_OR_GREATER
+            if (body.IndexOfAnyExcept(single) is not (not -1 and var offset))
+                return false;
 
+            if ((body = UnsafelyAdvance(body, offset)).IndexOf(single) is not -1 and var length)
+            {
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
+            }
+            else
+            {
+                current = body;
+                body = default;
+            }
+#else
             switch (body.IndexOf(single))
             {
                 case -1:
                     current = body;
                     body = default;
-                    return true;
+                    break;
                 case 0:
                     body = body[1..];
                     goto Retry;
                 case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
+                    current = UnsafelyTake(body, i);
+                    body = UnsafelyAdvance(body, i + 1);
+                    break;
             }
+#endif
+            return true;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
+        static ReadOnlySpan<TBody> UnsafelyAdvance(ReadOnlySpan<TBody> body, int start) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            MemoryMarshal.CreateReadOnlySpan(
+                ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
+                body.Length - start
+            );
+#else
+            body[offset..];
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
+        static ReadOnlySpan<TBody> UnsafelyTake(ReadOnlySpan<TBody> body, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(body), end);
+#else
+            body[..length];
+#endif
     }
 }
 

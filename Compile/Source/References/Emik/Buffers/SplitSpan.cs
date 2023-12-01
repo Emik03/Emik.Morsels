@@ -775,11 +775,11 @@ readonly
                     body = default;
                     return true;
                 case 0:
-                    body = body[separator.Length..];
+                    body = UnsafelyAdvance(body, separator.Length);
                     goto Retry;
                 case var i:
-                    current = body[..i];
-                    body = body[(i + separator.Length)..];
+                    current = UnsafelyTake(body, i);
+                    body = UnsafelyAdvance(body, i + separator.Length);
                     return true;
             }
         }
@@ -793,27 +793,26 @@ readonly
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
-        Retry:
 
             if (body.IsEmpty)
                 return false;
-
 #if NET7_0_OR_GREATER
-            switch (body.IndexOfAny(separator))
+            if (body.IndexOfAnyExcept(separator) is not (not -1 and var offset))
+                return false;
+
+            if ((body = UnsafelyAdvance(body, offset)).IndexOfAny(separator) is not -1 and var length)
             {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
+            }
+            else
+            {
+                current = body;
+                body = default;
             }
 #else
+        Retry:
+
             foreach (var next in separator)
                 switch (body.IndexOf(next))
                 {
@@ -829,8 +828,8 @@ readonly
 
             current = body;
             body = default;
-            return true;
 #endif
+            return true;
         }
 
 #if NET8_0_OR_GREATER
@@ -845,25 +844,21 @@ readonly
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
             ref var single = ref MemoryMarshal.GetReference(separator);
 
-        Retry:
-
-            if (body.IsEmpty)
+            if (body.IsEmpty || body.IndexOfAnyExcept(single) is not (not -1 and var offset))
                 return false;
 
-            switch (body.IndexOfAny(single))
+            if ((body = UnsafelyAdvance(body, offset)).IndexOfAny(single) is not -1 and var length)
             {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i];
-                    body = body[(i + 1)..];
-                    return true;
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
             }
+            else
+            {
+                current = body;
+                body = default;
+            }
+
+            return true;
         }
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
@@ -879,25 +874,62 @@ readonly
 #else
             var single = separator[0];
 #endif
+#if !NET7_0_OR_GREATER
         Retry:
+#endif
 
             if (body.IsEmpty)
                 return false;
+#if NET7_0_OR_GREATER
+            if (body.IndexOfAnyExcept(single) is not (not -1 and var offset))
+                return false;
 
+            if ((body = UnsafelyAdvance(body, offset)).IndexOf(single) is not -1 and var length)
+            {
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
+            }
+            else
+            {
+                current = body;
+                body = default;
+            }
+#else
             switch (body.IndexOf(single))
             {
                 case -1:
                     current = body;
                     body = default;
-                    return true;
+                    break;
                 case 0:
                     body = body[1..];
                     goto Retry;
                 case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
+                    current = UnsafelyTake(body, i);
+                    body = UnsafelyAdvance(body, i + 1);
+                    break;
             }
+#endif
+            return true;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
+        static ReadOnlySpan<TBody> UnsafelyAdvance(ReadOnlySpan<TBody> body, int start) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            MemoryMarshal.CreateReadOnlySpan(
+                ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
+                body.Length - start
+            );
+#else
+            body[offset..];
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
+        static ReadOnlySpan<TBody> UnsafelyTake(ReadOnlySpan<TBody> body, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(body), end);
+#else
+            body[..length];
+#endif
     }
 }
