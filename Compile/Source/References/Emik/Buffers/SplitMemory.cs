@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 namespace Emik.Morsels;
 #pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
 using static Span;
@@ -503,7 +503,6 @@ readonly
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             0 switch
             {
                 _ when _separator.IsEmpty => _body,
@@ -521,9 +520,6 @@ readonly
                 _ when typeof(TStrategy) == typeof(MatchOne) => LastOne(_body, To<TBody>.From(_separator.Span)),
                 _ => throw SplitSpan<TBody, TSeparator, TStrategy>.Error,
             };
-#else
-            LastSlow();
-#endif
     }
 
     /// <inheritdoc />
@@ -665,7 +661,6 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator<ReadOnlyMemory<TBody>> IEnumerable<ReadOnlyMemory<TBody>>.GetEnumerator() => GetEnumerator();
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlyMemory<TBody> LastAll(ReadOnlyMemory<TBody> body, scoped ReadOnlySpan<TBody> separator)
     {
@@ -708,7 +703,6 @@ readonly
         ref var single = ref MemoryMarshal.GetReference(separator);
         return body.Span.LastIndexOf(single) is not -1 and var i ? body.Slice(i, 1) : default;
     }
-#endif
 
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
@@ -947,11 +941,7 @@ readonly
         )
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchOne), "TStrategy is MatchOne");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ref var single = ref MemoryMarshal.GetReference(separator);
-#else
-            var single = separator[0];
-#endif
         Retry:
 
             if (body.IsEmpty)
@@ -974,3 +964,4 @@ readonly
         }
     }
 }
+#endif
