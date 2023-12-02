@@ -8,6 +8,17 @@ namespace System.Runtime.CompilerServices;
 /// </summary>
 static partial class RuntimeHelpers
 {
+    /// <summary>Gets the byte offset, from the start of the <see cref="string"/> to the first character.</summary>
+    /// <remarks><para>
+    /// Compilers use this property for unsafe, but efficient, pointer operations on the characters in a managed string.
+    /// Compilers should pin the string against movement by the garbage collector before use. Note that common language
+    /// runtime strings are immutable; that is, their contents can be read but not changed.
+    /// </para></remarks>
+    public static unsafe int OffsetToStringData
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => sizeof(nint) + 4;
+    }
+
     /// <summary>Slices the specified array using the specified range.</summary>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
     /// <param name="array">The array to slice.</param>
