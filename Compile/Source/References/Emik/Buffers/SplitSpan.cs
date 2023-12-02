@@ -755,10 +755,10 @@ readonly
             body.Length - start
         );
 #else
-            body[offset..];
+            body[start..];
 #endif
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Inline]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), UsedImplicitly]
     static ReadOnlySpan<TBody> UnsafelySlice(ReadOnlySpan<TBody> body, int offset, int length) =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), offset), length);
@@ -771,7 +771,7 @@ readonly
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(body), end);
 #else
-        body[..length];
+        body[..end];
 #endif
 
     /// <summary>Gets the last element.</summary>
