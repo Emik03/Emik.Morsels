@@ -10135,14 +10135,20 @@ readonly
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
-
+#if NET7_0_OR_GREATER
             if (body.IsEmpty)
                 return false;
-#if NET7_0_OR_GREATER
-            if (body.IndexOfAnyExcept(separator) is not (not -1 and var offset))
-                return false;
 
-            if ((body = UnsafelyAdvance(body, offset)).IndexOfAny(separator) is not -1 and var length)
+            switch (body.IndexOfAnyExcept(separator))
+            {
+                case -1: return false;
+                case 0: break;
+                case var offset:
+                    body = UnsafelyAdvance(body, offset);
+                    break;
+            }
+
+            if (body.IndexOfAny(separator) is not -1 and var length)
             {
                 current = UnsafelyTake(body, length);
                 body = UnsafelyAdvance(body, length + 1);
@@ -10154,6 +10160,8 @@ readonly
             }
 #else
         Retry:
+            if (body.IsEmpty)
+                return false;
 
             foreach (var next in separator)
                 switch (body.IndexOf(next))
@@ -10186,10 +10194,19 @@ readonly
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
             ref var single = ref MemoryMarshal.GetReference(separator);
 
-            if (body.IsEmpty || body.IndexOfAnyExcept(single) is not (not -1 and var offset))
+            if (body.IsEmpty)
                 return false;
 
-            if ((body = UnsafelyAdvance(body, offset)).IndexOfAny(single) is not -1 and var length)
+            switch (body.IndexOfAnyExcept(single))
+            {
+                case -1: return false;
+                case 0: break;
+                case var offset:
+                    body = UnsafelyAdvance(body, offset);
+                    break;
+            }
+
+            if (body.IndexOfAny(single) is not -1 and var length)
             {
                 current = UnsafelyTake(body, length);
                 body = UnsafelyAdvance(body, length + 1);
