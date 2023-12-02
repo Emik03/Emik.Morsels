@@ -2,10 +2,9 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
-#pragma warning disable IDE0056
+#pragma warning disable IDE0056, SA1137
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+// ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
 static partial class SpanIndexers
 {
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
@@ -79,15 +78,15 @@ static partial class SpanIndexers
         where T : IEquatable<T>?
 #endif
     {
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var searchSpace = searchSpace.Pointer;
-        var value = values.Pointer;
-#else
 #pragma warning disable 8500
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        var searchSpace = (T*)span.Pointer;
+        var value = (T*)values.Pointer;
+#else
         fixed (T* searchSpace = span)
         fixed (T* value = values)
-#pragma warning restore 8500
 #endif
+#pragma warning restore 8500
             return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
     }
 #endif
