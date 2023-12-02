@@ -10160,8 +10160,11 @@ readonly
             }
 #else
         Retry:
+
             if (body.IsEmpty)
                 return false;
+
+            var min = int.MaxValue;
 
             foreach (var next in separator)
                 switch (body.IndexOf(next))
@@ -10170,14 +10173,23 @@ readonly
                     case 0:
                         body = body[1..];
                         goto Retry;
-                    case var i:
-                        current = body[..i++];
-                        body = body[i..];
-                        return true;
+                    case var i when i < min:
+                        min = i;
+                        continue;
                 }
 
-            current = body;
-            body = default;
+            if (min is int.MaxValue)
+            {
+                current = body;
+                body = default;
+            }
+            else
+            {
+#pragma warning disable S3949
+                current = body[..min++];
+                body = body[min..];
+#pragma warning restore S3949
+            }
 #endif
             return true;
         }
@@ -12676,27 +12688,37 @@ readonly
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
+#if NET7_0_OR_GREATER
+            if (body.IsEmpty)
+                return false;
+
+            switch (body.Span.IndexOfAnyExcept(separator))
+            {
+                case -1: return false;
+                case 0: break;
+                case var offset:
+                    body = body[offset..];
+                    break;
+            }
+
+            if (body.Span.IndexOfAny(separator) is not -1 and var length)
+            {
+                current = body[..length++];
+                body = body[length..];
+            }
+            else
+            {
+                current = body;
+                body = default;
+            }
+#else
         Retry:
 
             if (body.IsEmpty)
                 return false;
 
-#if NET7_0_OR_GREATER
-            switch (body.Span.IndexOfAny(separator))
-            {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
-            }
-#else
+            var min = int.MaxValue;
+
             foreach (var next in separator)
                 switch (body.Span.IndexOf(next))
                 {
@@ -12704,16 +12726,25 @@ readonly
                     case 0:
                         body = body[1..];
                         goto Retry;
-                    case var i:
-                        current = body[..i++];
-                        body = body[i..];
-                        return true;
+                    case var i when i < min:
+                        min = i;
+                        continue;
                 }
 
-            current = body;
-            body = default;
-            return true;
+            if (min is int.MaxValue)
+            {
+                current = body;
+                body = default;
+            }
+            else
+            {
+#pragma warning disable S3949
+                current = body[..min++];
+                body = body[min..];
+#pragma warning restore S3949
+            }
 #endif
+            return true;
         }
 
 #if NET8_0_OR_GREATER
@@ -12728,25 +12759,30 @@ readonly
             System.Diagnostics.Debug.Assert(!separator.IsEmpty, "separator is non-empty");
             ref var single = ref MemoryMarshal.GetReference(separator);
 
-        Retry:
-
             if (body.IsEmpty)
                 return false;
 
-            switch (body.Span.IndexOfAny(single))
+            switch (body.Span.IndexOfAnyExcept(single))
             {
-                case -1:
-                    current = body;
-                    body = default;
-                    return true;
-                case 0:
-                    body = body[1..];
-                    goto Retry;
-                case var i:
-                    current = body[..i++];
-                    body = body[i..];
-                    return true;
+                case -1: return false;
+                case 0: break;
+                case var offset:
+                    body = body[offset..];
+                    break;
             }
+
+            if (body.Span.IndexOfAny(single) is not -1 and var length)
+            {
+                current = body[..length++];
+                body = body[length..];
+            }
+            else
+            {
+                current = body;
+                body = default;
+            }
+
+            return true;
         }
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
