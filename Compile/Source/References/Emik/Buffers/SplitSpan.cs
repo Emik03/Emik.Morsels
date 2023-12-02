@@ -928,8 +928,11 @@ readonly
             }
 #else
         Retry:
+
             if (body.IsEmpty)
                 return false;
+
+            var min = int.MaxValue;
 
             foreach (var next in separator)
                 switch (body.IndexOf(next))
@@ -938,14 +941,23 @@ readonly
                     case 0:
                         body = body[1..];
                         goto Retry;
-                    case var i:
-                        current = body[..i++];
-                        body = body[i..];
-                        return true;
+                    case var i when i < min:
+                        min = i;
+                        continue;
                 }
 
-            current = body;
-            body = default;
+            if (min is int.MaxValue)
+            {
+                current = body;
+                body = default;
+            }
+            else
+            {
+#pragma warning disable S3949
+                current = body[..min++];
+                body = body[min..];
+#pragma warning restore S3949
+            }
 #endif
             return true;
         }
