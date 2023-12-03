@@ -650,6 +650,40 @@ readonly
 #endif
         };
 #endif
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static ReadOnlySpan<T> UnsafelyAdvance(ReadOnlySpan<T> body, int start) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
+            body.Length - start
+        );
+#else
+            body[start..];
+#endif
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), UsedImplicitly]
+    static ReadOnlySpan<T> UnsafelySlice(ReadOnlySpan<T> body, int offset, int length) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), offset), length);
+#else
+        body.Slice(offset, length);
+#endif
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), UsedImplicitly]
+    static ReadOnlySpan<T> UnsafelyRange(ReadOnlySpan<T> body, int start, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), end - start);
+#else
+        body[start..end];
+#endif
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static ReadOnlySpan<T> UnsafelyTake(ReadOnlySpan<T> body, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(body), end);
+#else
+        body[..end];
+#endif
 
     /// <summary>Represents the enumeration object that views <see cref="SplitSpan{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
@@ -757,7 +791,7 @@ readonly
                 out var start
             ))
                 if (start != _end)
-                    return (Current = body[start.._end]) is var _;
+                    return (Current = UnsafelyRange(body, start, _end)) is var _;
 
             return false;
         }
@@ -785,7 +819,7 @@ readonly
             start = end is -1 ? ++end : end += length;
 
             while (end <= bodyLength)
-                switch (body[end..].IndexOf(separator))
+                switch (UnsafelyAdvance(body, end).IndexOf(separator))
                 {
                     case -1:
                         end = bodyLength;
@@ -818,15 +852,15 @@ readonly
                 return false;
 #if NET8_0_OR_GREATER
             if (search.ToAddress() is not 1) // ReSharper disable once NullableWarningSuppressionIsUsed
-                return body[end..].IndexOfAnyExcept(search!) is not -1 and var startSearch &&
+                return UnsafelyAdvance(body, end).IndexOfAnyExcept(search!) is not -1 and var startSearch &&
                     (start = end += startSearch) is var _ && // ReSharper disable once NullableWarningSuppressionIsUsed
-                    body[end..].IndexOfAny(search!) is var endSearch &&
+                    UnsafelyAdvance(body, end).IndexOfAny(search!) is var endSearch &&
                     (end = endSearch is -1 ? body.Length : end + endSearch) is var _;
 #endif
 #if NET7_0_OR_GREATER
-            return body[end..].IndexOfAnyExcept(separator) is not -1 and var startSeparator &&
+            return UnsafelyAdvance(body, end).IndexOfAnyExcept(separator) is not -1 and var startSeparator &&
                 (start = end += startSeparator) is var _ &&
-                body[end..].IndexOfAny(separator) is var endSeparator &&
+                UnsafelyAdvance(body, end).IndexOfAny(separator) is var endSeparator &&
                 (end = endSeparator is -1 ? body.Length : end + endSeparator) is var _;
 #else
             start = end;
@@ -840,7 +874,7 @@ readonly
             var min = int.MaxValue;
 
             foreach (var next in separator)
-                switch (body[end..].IndexOf(next))
+                switch (UnsafelyAdvance(body, end).IndexOf(next))
                 {
                     case -1: continue;
                     case 0: goto Increment;
