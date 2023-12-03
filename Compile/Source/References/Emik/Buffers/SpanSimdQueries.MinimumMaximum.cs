@@ -19,7 +19,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Maximum>(enumerable.Memory.Span);
+            MinMax<T, SMax>(enumerable.Memory.Span);
 
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -28,7 +28,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Maximum>(enumerable.Span);
+            MinMax<T, SMax>(enumerable.Span);
 #endif
 
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
@@ -40,7 +40,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Maximum>(enumerable);
+            MinMax<T, SMax>(enumerable);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,7 +49,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Maximum>(enumerable.Span);
+            MinMax<T, SMax>(enumerable.Span);
 #endif
 
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
@@ -61,7 +61,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Maximum>(enumerable);
+            MinMax<T, SMax>(enumerable);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,7 +70,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Minimum>(enumerable.Memory.Span);
+            MinMax<T, SMin>(enumerable.Memory.Span);
 
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -79,7 +79,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Minimum>(enumerable.Span);
+            MinMax<T, SMin>(enumerable.Span);
 #endif
 
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
@@ -91,7 +91,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Minimum>(enumerable);
+            MinMax<T, SMin>(enumerable);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -100,7 +100,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Minimum>(enumerable.Span);
+            MinMax<T, SMin>(enumerable.Span);
 #endif
 
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
@@ -112,7 +112,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, Minimum>(enumerable);
+            MinMax<T, SMin>(enumerable);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -124,7 +124,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Maximum>(enumerable.Memory.Span, keySelector);
+            MinMax<T, TResult, SMax>(enumerable.Memory.Span, keySelector);
 
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -136,7 +136,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
+            MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
 
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
@@ -151,7 +151,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Maximum>(enumerable, keySelector);
+            MinMax<T, TResult, SMax>(enumerable, keySelector);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -163,7 +163,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Maximum>(enumerable.Span, keySelector);
+            MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
 
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
@@ -178,7 +178,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Maximum>(enumerable, keySelector);
+            MinMax<T, TResult, SMax>(enumerable, keySelector);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -190,7 +190,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Minimum>(enumerable.Memory.Span, keySelector);
+            MinMax<T, TResult, SMin>(enumerable.Memory.Span, keySelector);
 
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -202,7 +202,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
+            MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
 
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
@@ -217,7 +217,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Minimum>(enumerable, keySelector);
+            MinMax<T, TResult, SMin>(enumerable, keySelector);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -229,7 +229,7 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Minimum>(enumerable.Span, keySelector);
+            MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
 
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
@@ -244,36 +244,36 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
         =>
-            MinMax<T, TResult, Minimum>(enumerable, keySelector);
+            MinMax<T, TResult, SMin>(enumerable, keySelector);
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Compare<T, TMinMax>(T l, T r) =>
-        typeof(TMinMax) switch
+    static bool Compare<T, TS>(T l, T r) =>
+        0 switch
         {
-            var x when x == typeof(Maximum) && typeof(T) == typeof(byte) => (byte)(object)l! > (byte)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(byte) => (byte)(object)l! < (byte)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(double) => (double)(object)l! > (double)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(double) => (double)(object)l! < (double)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(float) => (float)(object)l! > (float)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(float) => (float)(object)l! < (float)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(int) => (int)(object)l! > (int)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(int) => (int)(object)l! < (int)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(nint) => (nint)(object)l! > (nint)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(nint) => (nint)(object)l! < (nint)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(nuint) => (nuint)(object)l! > (nuint)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(nuint) => (nuint)(object)l! < (nuint)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! > (sbyte)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! < (sbyte)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(short) => (short)(object)l! > (short)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(short) => (short)(object)l! < (short)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(uint) => (uint)(object)l! > (uint)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(uint) => (uint)(object)l! < (uint)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(ulong) => (ulong)(object)l! > (ulong)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(ulong) => (ulong)(object)l! < (ulong)(object)r!,
-            var x when x == typeof(Maximum) && typeof(T) == typeof(ushort) => (ushort)(object)l! > (ushort)(object)r!,
-            var x when x == typeof(Minimum) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
-            var x when x == typeof(Maximum) => Comparer<T>.Default.Compare(l, r) > 0,
-            var x when x == typeof(Minimum) => Comparer<T>.Default.Compare(l, r) < 0,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(byte) => (byte)(object)l! > (byte)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(byte) => (byte)(object)l! < (byte)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(double) => (double)(object)l! > (double)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(double) => (double)(object)l! < (double)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(float) => (float)(object)l! > (float)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(float) => (float)(object)l! < (float)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(int) => (int)(object)l! > (int)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(int) => (int)(object)l! < (int)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(nint) => (nint)(object)l! > (nint)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(nint) => (nint)(object)l! < (nint)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(nuint) => (nuint)(object)l! > (nuint)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(nuint) => (nuint)(object)l! < (nuint)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! > (sbyte)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(sbyte) => (sbyte)(object)l! < (sbyte)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(short) => (short)(object)l! > (short)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(short) => (short)(object)l! < (short)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(uint) => (uint)(object)l! > (uint)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(uint) => (uint)(object)l! < (uint)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(ulong) => (ulong)(object)l! > (ulong)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(ulong) => (ulong)(object)l! < (ulong)(object)r!,
+            _ when typeof(TS) == typeof(SMax) && typeof(T) == typeof(ushort) => (ushort)(object)l! > (ushort)(object)r!,
+            _ when typeof(TS) == typeof(SMin) && typeof(T) == typeof(ushort) => (ushort)(object)l! < (ushort)(object)r!,
+            _ when typeof(TS) == typeof(SMax) => Comparer<T>.Default.Compare(l, r) > 0,
+            _ when typeof(TS) == typeof(SMin) => Comparer<T>.Default.Compare(l, r) < 0,
             _ => throw Unreachable,
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
@@ -293,7 +293,7 @@ static partial class SpanSimdQueries
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static T MinMax<T, TMinMax>(this ReadOnlySpan<T> span)
+    static T MinMax<T, TS>(this ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #elif !NET8_0_OR_GREATER
@@ -319,7 +319,7 @@ static partial class SpanSimdQueries
             value = span[0];
 
             for (var i = 1; i < span.Length; i++)
-                if (Compare<T, TMinMax>(span[i], value))
+                if (Compare<T, TS>(span[i], value))
                     value = span[i];
 
             return value;
@@ -333,27 +333,27 @@ static partial class SpanSimdQueries
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
             current = ref Unsafe.Add(ref current, Vector<T>.Count)!)
-            best = typeof(TMinMax) switch
+            best = 0 switch
             {
-                var x when x == typeof(Maximum) => Vector.Max(best, LoadUnsafe(current)),
-                var x when x == typeof(Minimum) => Vector.Min(best, LoadUnsafe(current)),
+                _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(current)),
+                _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(current)),
                 _ => throw Unreachable,
             };
 
-        best = typeof(TMinMax) switch
+        best = 0 switch
         {
-            var x when x == typeof(Maximum) => Vector.Max(best, LoadUnsafe(lastVectorStart)),
-            var x when x == typeof(Minimum) => Vector.Min(best, LoadUnsafe(lastVectorStart)),
+            _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(lastVectorStart)),
+            _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(lastVectorStart)),
             _ => throw Unreachable,
         };
 
         value = best[0];
 
         for (var i = 1; i < Vector<T>.Count; i++)
-            if (typeof(TMinMax) switch
+            if (0 switch
             {
-                var x when x == typeof(Maximum) => Compare<T, TMinMax>(best[i], value),
-                var x when x == typeof(Minimum) => Compare<T, TMinMax>(best[i], value),
+                _ when typeof(TS) == typeof(SMax) => Compare<T, TS>(best[i], value),
+                _ when typeof(TS) == typeof(SMin) => Compare<T, TS>(best[i], value),
                 _ => throw Unreachable,
             })
                 value = best[i];
@@ -363,7 +363,7 @@ static partial class SpanSimdQueries
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    static T MinMax<T, TResult, TMinMax>(
+    static T MinMax<T, TResult, TS>(
         this scoped ReadOnlySpan<T> enumerable,
         [InstantHandle, RequireStaticDelegate] Converter<T, TResult> converter
     )
@@ -379,10 +379,10 @@ static partial class SpanSimdQueries
 
         for (var i = 1; i < enumerable.Length; i++)
             if (converter(enumerable[i]) is var next &&
-                typeof(TMinMax) switch
+                0 switch
                 {
-                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, bestKey),
-                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, bestKey),
+                    _ when typeof(TS) == typeof(SMax) => Compare<TResult, TS>(next, bestKey),
+                    _ when typeof(TS) == typeof(SMin) => Compare<TResult, TS>(next, bestKey),
                     _ => throw Unreachable,
                 })
             {
@@ -397,10 +397,10 @@ static partial class SpanSimdQueries
 
         for (; Unsafe.IsAddressLessThan(ref current, ref last); current = ref Unsafe.Add(ref current, 1)!)
             if (converter(current) is var next &&
-                typeof(TMinMax) switch
+                0 switch
                 {
-                    var x when x == typeof(Maximum) => Compare<TResult, TMinMax>(next, bestKey),
-                    var x when x == typeof(Minimum) => Compare<TResult, TMinMax>(next, bestKey),
+                    _ when typeof(TS) == typeof(SMax) => Compare<TResult, TS>(next, bestKey),
+                    _ when typeof(TS) == typeof(SMin) => Compare<TResult, TS>(next, bestKey),
                     _ => throw Unreachable,
                 })
             {
@@ -411,7 +411,7 @@ static partial class SpanSimdQueries
         return bestValue;
     }
 
-    struct Minimum;
+    struct SMin;
 
-    struct Maximum;
+    struct SMax;
 }

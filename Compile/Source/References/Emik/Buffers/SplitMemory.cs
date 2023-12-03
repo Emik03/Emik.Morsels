@@ -792,16 +792,19 @@ readonly
             scoped in ReadOnlySpan<TSeparator> separator,
             ref ReadOnlyMemory<TBody> current
         ) =>
-            typeof(TStrategy) switch
+            0 switch
             {
                 _ when separator.IsEmpty => !body.IsEmpty && current.IsEmpty && (current = body) is var _,
-                var x when x == typeof(MatchAll) => MoveNextAll(ref body, To<TBody>.From(separator), ref current),
+                _ when typeof(TStrategy) == typeof(MatchAll) =>
+                    MoveNextAll(ref body, To<TBody>.From(separator), ref current),
 #if NET8_0_OR_GREATER
-                var x when typeof(TSeparator) == typeof(SearchValues<TBody>) && x == typeof(MatchAny) =>
+                _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(ref body, To<SearchValues<TBody>>.From(separator), ref current),
 #endif
-                var x when x == typeof(MatchAny) => MoveNextAny(ref body, To<TBody>.From(separator), ref current),
-                var x when x == typeof(MatchOne) => MoveNextOne(ref body, To<TBody>.From(separator), ref current),
+                _ when typeof(TStrategy) == typeof(MatchAny) =>
+                    MoveNextAny(ref body, To<TBody>.From(separator), ref current),
+                _ when typeof(TStrategy) == typeof(MatchOne) =>
+                    MoveNextOne(ref body, To<TBody>.From(separator), ref current),
                 _ => throw SplitSpan<TBody, TSeparator, TStrategy>.Error,
             };
 

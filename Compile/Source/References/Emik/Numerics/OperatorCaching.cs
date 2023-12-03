@@ -59,19 +59,19 @@ static partial class OperatorCaching
     /// <returns>The sum of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Adder<T>(T l, T r) =>
-        typeof(T) switch
+        0 switch
         {
-            var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! + (byte)(object)r!),
-            var x when x == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
-            var x when x == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
-            var x when x == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
-            var x when x == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
-            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
-            var x when x == typeof(sbyte) => (T)(object)(sbyte)((sbyte)(object)l! + (sbyte)(object)r!),
-            var x when x == typeof(short) => (T)(object)(short)((short)(object)l! + (short)(object)r!),
-            var x when x == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
-            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
-            var x when x == typeof(ushort) => (T)(object)(ushort)((ushort)(object)l! + (ushort)(object)r!),
+            _ when typeof(T) == typeof(byte) => (T)(object)(byte)((byte)(object)l! + (byte)(object)r!),
+            _ when typeof(T) == typeof(double) => (T)(object)((double)(object)l! + (double)(object)r!),
+            _ when typeof(T) == typeof(float) => (T)(object)((float)(object)l! + (float)(object)r!),
+            _ when typeof(T) == typeof(int) => (T)(object)((int)(object)l! + (int)(object)r!),
+            _ when typeof(T) == typeof(nint) => (T)(object)((nint)(object)l! + (nint)(object)r!),
+            _ when typeof(T) == typeof(nuint) => (T)(object)((nuint)(object)l! + (nuint)(object)r!),
+            _ when typeof(T) == typeof(sbyte) => (T)(object)(sbyte)((sbyte)(object)l! + (sbyte)(object)r!),
+            _ when typeof(T) == typeof(short) => (T)(object)(short)((short)(object)l! + (short)(object)r!),
+            _ when typeof(T) == typeof(uint) => (T)(object)((uint)(object)l! + (uint)(object)r!),
+            _ when typeof(T) == typeof(ulong) => (T)(object)((ulong)(object)l! + (ulong)(object)r!),
+            _ when typeof(T) == typeof(ushort) => (T)(object)(ushort)((ushort)(object)l! + (ushort)(object)r!),
             _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Adder(l, r),
             _ => Fail<T>(),
         };
@@ -84,19 +84,19 @@ static partial class OperatorCaching
     /// <returns>The quotient of the parameters <paramref name="l"/> and <paramref name="r"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Divider<T>(T l, int r) =>
-        typeof(T) switch
+        0 switch
         {
-            var x when x == typeof(byte) => (T)(object)(byte)((byte)(object)l! / r),
-            var x when x == typeof(double) => (T)(object)((double)(object)l! / r),
-            var x when x == typeof(float) => (T)(object)((float)(object)l! / r),
-            var x when x == typeof(int) => (T)(object)((int)(object)l! / r),
-            var x when x == typeof(nint) => (T)(object)((nint)(object)l! / r),
-            var x when x == typeof(nuint) => (T)(object)((nuint)(object)l! / (nuint)r),
-            var x when x == typeof(sbyte) => (T)(object)(sbyte)((sbyte)(object)l! / r),
-            var x when x == typeof(short) => (T)(object)(short)((short)(object)l! / r),
-            var x when x == typeof(uint) => (T)(object)((uint)(object)l! / r),
-            var x when x == typeof(ulong) => (T)(object)((ulong)(object)l! / (ulong)r),
-            var x when x == typeof(ushort) => (T)(object)(ushort)((ushort)(object)l! / r),
+            _ when typeof(T) == typeof(byte) => (T)(object)(byte)((byte)(object)l! / r),
+            _ when typeof(T) == typeof(double) => (T)(object)((double)(object)l! / r),
+            _ when typeof(T) == typeof(float) => (T)(object)((float)(object)l! / r),
+            _ when typeof(T) == typeof(int) => (T)(object)((int)(object)l! / r),
+            _ when typeof(T) == typeof(nint) => (T)(object)((nint)(object)l! / r),
+            _ when typeof(T) == typeof(nuint) => (T)(object)((nuint)(object)l! / (nuint)r),
+            _ when typeof(T) == typeof(sbyte) => (T)(object)(sbyte)((sbyte)(object)l! / r),
+            _ when typeof(T) == typeof(short) => (T)(object)(short)((short)(object)l! / r),
+            _ when typeof(T) == typeof(uint) => (T)(object)((uint)(object)l! / r),
+            _ when typeof(T) == typeof(ulong) => (T)(object)((ulong)(object)l! / (ulong)r),
+            _ when typeof(T) == typeof(ushort) => (T)(object)(ushort)((ushort)(object)l! / r),
             _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Divider(l, r),
             _ => Fail<T>(),
         };
