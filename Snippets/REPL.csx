@@ -9260,17 +9260,7 @@ public
         public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
 
-    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TLeftSeparator">The type of separator for the left-hand side.</typeparam>
-    /// <typeparam name="TLeftStrategy">The strategy for splitting elements for the left-hand side.</typeparam>
-    /// <typeparam name="TRightSeparator">The type of separator for the right-hand side.</typeparam>
-    /// <typeparam name="TRightStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
+    /// <inheritdoc cref="SplitSpanFactory.ConcatEqual{TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool ConcatEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
         this scoped in SplitMemory<TBody, TLeftSeparator, TLeftStrategy> left,
@@ -9281,33 +9271,10 @@ public
         where TLeftSeparator : IEquatable<TLeftSeparator>?
         where TRightSeparator : IEquatable<TRightSeparator>?
 #endif
-    {
-        if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
-            return !e2.MoveNext();
+        =>
+            left.SplitSpan.ConcatEqual(right.SplitSpan);
 
-        if (!e2.MoveNext())
-            return false;
-
-        ReadOnlyMemory<TBody>
-            reader1 = e1.Current,
-            reader2 = e2.Current;
-
-        while (true)
-            if (Next(ref reader1, ref reader2, ref e1, ref e2, out var ret))
-                return ret;
-    }
-
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TLeftSeparator">The type of separator for the left-hand side.</typeparam>
-    /// <typeparam name="TLeftStrategy">The strategy for splitting elements for the left-hand side.</typeparam>
-    /// <typeparam name="TRightSeparator">The type of separator for the right-hand side.</typeparam>
-    /// <typeparam name="TRightStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
+    /// <inheritdoc cref="SplitSpanFactory.SequenceEqual{TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
         this scoped in SplitMemory<TBody, TLeftSeparator, TLeftStrategy> left,
@@ -9318,22 +9285,10 @@ public
         where TLeftSeparator : IEquatable<TLeftSeparator>?
         where TRightSeparator : IEquatable<TRightSeparator>?
 #endif
-    {
-        var e1 = left.GetEnumerator();
-        var e2 = right.GetEnumerator();
+        =>
+            left.SplitSpan.SequenceEqual(right.SplitSpan);
 
-        while (e1.MoveNext())
-            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
-                return false;
-
-        return !e2.MoveNext();
-    }
-
-    /// <summary>Copies the values to a new <see cref="string"/> <see cref="Array"/>.</summary>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The <see cref="string"/> <see cref="Array"/> containing the copied values of this instance.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.ToStringArray{TSeparator, TStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static string[] ToStringArray<TSeparator, TStrategy>(
         this scoped in SplitMemory<char, TSeparator, TStrategy> split
@@ -9344,11 +9299,7 @@ public
         =>
             split.SplitSpan.ToStringArray();
 
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAny> SplitAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
@@ -9360,11 +9311,7 @@ public
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)span).SplitAny(separator);
 
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAll> SplitAll<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
@@ -9433,12 +9380,7 @@ public
         return ret.View.ToArray();
     }
 
-    /// <summary>Copies the values to a flattened array.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The flattened array containing the copied values of this instance.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.ToArray{TBody, TSeparator, TStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TBody[] ToArray<TBody, TSeparator, TStrategy>(
         this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
@@ -9450,12 +9392,7 @@ public
         =>
             split.SplitSpan.ToArray();
 
-    /// <summary>Copies the values to a new nested array.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The nested array containing the copied values of this instance.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.ToArrays{TBody, TSeparator, TStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TBody[][] ToArrays<TBody, TSeparator, TStrategy>(
         this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
@@ -9467,86 +9404,6 @@ public
         =>
             split.SplitSpan.ToArrays();
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Next<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        ref ReadOnlyMemory<TBody> reader1,
-        ref ReadOnlyMemory<TBody> reader2,
-        ref SplitMemory<TBody, TLeftSeparator, TLeftStrategy>.Enumerator e1,
-        ref SplitMemory<TBody, TRightSeparator, TRightStrategy>.Enumerator e2,
-        out bool ret
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-    {
-        Unsafe.SkipInit(out ret);
-
-        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
-            return SameLength(ref reader1, ref reader2, ref e1, ref e2, ref ret);
-
-        if (length1 < length2)
-        {
-            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
-            {
-                ret = false;
-                return true;
-            }
-
-            reader1 = e1.Current;
-            reader2 = reader2[length1..];
-            return false;
-        }
-
-        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = reader1[length2..];
-        reader2 = e2.Current;
-        return false;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool SameLength<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        ref ReadOnlyMemory<TBody> reader1,
-        ref ReadOnlyMemory<TBody> reader2,
-        ref SplitMemory<TBody, TLeftSeparator, TLeftStrategy>.Enumerator e1,
-        ref SplitMemory<TBody, TRightSeparator, TRightStrategy>.Enumerator e2,
-        ref bool ret
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-    {
-        if (!reader1.SequenceEqual(reader2))
-        {
-            ret = false;
-            return true;
-        }
-
-        if (!e1.MoveNext())
-        {
-            ret = !e2.MoveNext();
-            return true;
-        }
-
-        if (!e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = e1.Current;
-        reader2 = e2.Current;
-        return false;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAny> SplitAny(this string span, string separator) =>
@@ -9578,10 +9435,7 @@ public
         MatchAny> SplitLines(this string span) =>
         span.AsMemory().SplitLines();
 
-    /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.SplitSpanLines"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -9623,10 +9477,7 @@ public
         MatchAny> SplitWhitespace(this string span) =>
         span.AsMemory().SplitWhitespace();
 
-    /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.SplitSpanWhitespace"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -9651,7 +9502,7 @@ public
 #endif
         MatchAny> SplitWhitespace(this Memory<char> span) =>
         ((ReadOnlyMemory<char>)span).SplitWhitespace();
-#endif
+
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9710,14 +9561,14 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }
 
-    /// <summary>Gets the first element.</summary>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.First"/>
     public readonly ReadOnlyMemory<TBody> First
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
 
-    /// <summary>Gets the last element.</summary>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Last"/>
     public readonly ReadOnlyMemory<TBody> Last
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9730,7 +9581,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
     }
 
-    /// <summary>Gets the single element.</summary>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Single"/>
     public readonly ReadOnlyMemory<TBody> Single
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9743,9 +9594,27 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(_body.Span, _separator.Span);
     }
 
-    /// <summary>Gets the specified index.</summary>
-    /// <param name="index">The index to get.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
+    public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+
+            var e = GetEnumerator();
+
+            for (var i = 0; i <= index; i++)
+                if (!e.MoveNext())
+                    return default;
+
+            return e.Current;
+        }
+    }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9772,10 +9641,7 @@ readonly
         }
     }
 
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are equal.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(
         SplitMemory<TBody, TSeparator, TStrategy> left,
@@ -9783,10 +9649,7 @@ readonly
     ) =>
         left.Equals(right);
 
-    /// <summary>Determines whether both splits are not equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are not equal.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(
         SplitMemory<TBody, TSeparator, TStrategy> left,
@@ -9794,9 +9657,7 @@ readonly
     ) =>
         !left.Equals(right);
 
-    /// <summary>Separates the head from the tail of this <see cref="SplitMemory{T, TSeparator, TStrategy}"/>.</summary>
-    /// <param name="head">The first element of this enumeration.</param>
-    /// <param name="tail">The rest of this enumeration.</param>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
     {
@@ -9835,8 +9696,7 @@ readonly
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
 
-    /// <summary>Computes the length.</summary>
-    /// <returns>The length.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public int Count()
     {
@@ -9873,11 +9733,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator<ReadOnlyMemory<TBody>> IEnumerable<ReadOnlyMemory<TBody>>.GetEnumerator() => GetEnumerator();
 
-    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.RefAccumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
@@ -9892,11 +9748,7 @@ readonly
         return accumulator;
     }
 
-    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
@@ -9962,41 +9814,30 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
 
-        /// <inheritdoc cref="IEnumerator{T}.Current"/>
+        /// <inheritdoc />
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
 
-        /// <summary>Performs one step of an enumeration over the provided spans.</summary>
-        /// <param name="sep">The separator span.</param>
-        /// <param name="body">The span that contains the current state of the enumeration.</param>
-        /// <param name="current">The current span.</param>
-        /// <returns>
-        /// <see langword="true"/> if a step was able to be performed successfully;
-        /// <see langword="false"/> if the end of the collection is reached.
-        /// </returns>
+        /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNext(
+        public static bool Move(
             scoped in ReadOnlyMemory<TSeparator> sep,
             scoped ref ReadOnlyMemory<TBody> body,
             out ReadOnlyMemory<TBody> current
         )
         {
             var b = body.Span;
-            var ret = SplitSpan<TBody, TSeparator, TStrategy>.Enumerator.MoveNext(sep.Span, ref b, out var c);
+            var ret = SplitSpan<TBody, TSeparator, TStrategy>.Enumerator.Move(sep.Span, ref b, out var c);
             current = Convert(body, c);
             body = Convert(body, b);
             return ret;
         }
 
-        /// <summary>Advances the enumerator to the next element of the collection.</summary>
-        /// <returns>
-        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
-        /// <see langword="false"/> if the enumerator has passed the end of the collection.
-        /// </returns>
+        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
+        public bool MoveNext() => Move(_separator, ref _body, out _current);
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10051,14 +9892,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
 
-        /// <summary>Performs one step of an enumeration over the provided spans.</summary>
-        /// <param name="sep">The separator span.</param>
-        /// <param name="body">The span that contains the current state of the enumeration.</param>
-        /// <param name="current">The current span.</param>
-        /// <returns>
-        /// <see langword="true"/> if a step was able to be performed successfully;
-        /// <see langword="false"/> if the end of the collection is reached.
-        /// </returns>
+        /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool MoveNext(
             scoped in ReadOnlyMemory<TSeparator> sep,
@@ -10073,11 +9907,7 @@ readonly
             return ret;
         }
 
-        /// <summary>Advances the enumerator to the next element of the collection.</summary>
-        /// <returns>
-        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
-        /// <see langword="false"/> if the enumerator has passed the end of the collection.
-        /// </returns>
+        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
 
@@ -12548,7 +12378,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNext(
+        public static bool Move(
             scoped in ReadOnlySpan<TSeparator> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
@@ -12572,7 +12402,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
+        public bool MoveNext() => Move(_separator, ref _body, out _current);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
