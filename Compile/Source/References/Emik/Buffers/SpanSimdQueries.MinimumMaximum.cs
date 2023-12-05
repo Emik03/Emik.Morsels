@@ -246,7 +246,7 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
 
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Compare<T, TS>(T l, T r) =>
         0 switch
         {

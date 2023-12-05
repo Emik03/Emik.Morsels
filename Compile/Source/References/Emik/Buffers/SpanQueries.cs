@@ -12,7 +12,7 @@ static partial class SpanQueries
     /// <summary>Determines whether the type is a numeric primitive.</summary>
     /// <typeparam name="T">The type to test.</typeparam>
     /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNumericPrimitive<T>() =>
         typeof(T) == typeof(byte) ||
         typeof(T) == typeof(double) ||

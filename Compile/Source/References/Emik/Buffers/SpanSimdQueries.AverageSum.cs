@@ -346,7 +346,7 @@ static partial class SpanSimdQueries
         );
     }
 
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T UnderlyingSum<T>(this in ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
         {
@@ -363,7 +363,7 @@ static partial class SpanSimdQueries
             _ => throw Unreachable,
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
 #pragma warning restore MA0051
