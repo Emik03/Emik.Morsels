@@ -109,7 +109,7 @@ static partial class Peeks
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable 8500
-        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped in ReadOnlySpan<char> next)
         {
             var trimmed = next.Trim();
 
@@ -271,7 +271,7 @@ static partial class Peeks
     {
         // ReSharper disable ExplicitCallerInfoArgument
         _ = value
-           .ToList()
+           .ToArrays()
            .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
 
         // ReSharper restore ExplicitCallerInfoArgument
