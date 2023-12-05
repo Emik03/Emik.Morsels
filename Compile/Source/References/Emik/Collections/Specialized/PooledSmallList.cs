@@ -11,6 +11,7 @@ using FieldInfo = System.Reflection.FieldInfo;
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
+[CollectionBuilder(typeof(SmallFactory), nameof(SmallFactory.Create))]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if !NO_REF_STRUCTS
 ref
@@ -29,9 +30,15 @@ ref
     T[]? _rental;
 
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public PooledSmallList()
+        : this([]) { }
+
+    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList(int capacity)
         : this([]) =>
         _view = _rental = Rent(capacity);
