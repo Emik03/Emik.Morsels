@@ -52,13 +52,6 @@ static partial class SmallFactory
     /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
-
-    /// <summary>Converts the buffer into an expandable buffer.</summary>
-    /// <typeparam name="T">The type of span.</typeparam>
-    /// <param name="span">The span.</param>
-    /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> Create<T>(ReadOnlySpan<T> span) => default(PooledSmallList<T>).Append(span);
 #endif
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>

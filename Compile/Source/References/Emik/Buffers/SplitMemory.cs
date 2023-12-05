@@ -192,7 +192,7 @@ static partial class SplitMemoryFactory
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        PooledSmallList<ReadOnlyMemory<TBody>> ret = [];
+        PooledSmallList<ReadOnlyMemory<TBody>> ret = default;
 
         foreach (var next in split)
             ret.Append(next);

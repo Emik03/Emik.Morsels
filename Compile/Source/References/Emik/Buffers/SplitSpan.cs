@@ -112,7 +112,7 @@ static partial class SplitSpanFactory
 #endif
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        PooledSmallList<string> ret = [];
+        PooledSmallList<string> ret = default;
 
         foreach (var next in split)
             ret.Append(next.ToString());
@@ -242,7 +242,7 @@ static partial class SplitSpanFactory
 #endif
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        PooledSmallList<TBody> ret = [];
+        PooledSmallList<TBody> ret = default;
 
         foreach (var next in split)
             ret.Append(next);
@@ -279,7 +279,7 @@ static partial class SplitSpanFactory
 #endif
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        PooledSmallList<TBody[]> ret = [];
+        PooledSmallList<TBody[]> ret = default;
 
         foreach (var next in split)
             ret.Append(next.ToArray());
