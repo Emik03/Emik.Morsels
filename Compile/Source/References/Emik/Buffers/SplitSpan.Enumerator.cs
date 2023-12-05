@@ -62,7 +62,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNext(
+        public static bool Move(
             scoped in ReadOnlySpan<TSeparator> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
@@ -86,7 +86,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
+        public bool MoveNext() => Move(_separator, ref _body, out _current);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
