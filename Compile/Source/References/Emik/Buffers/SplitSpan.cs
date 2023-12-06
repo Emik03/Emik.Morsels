@@ -777,6 +777,32 @@ readonly
 #endif
         };
 #endif
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static ReadOnlySpan<T> UnsafelyAdvance(ReadOnlySpan<T> body, int start) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
+            body.Length - start
+        );
+#else
+            body[start..];
+#endif
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), UsedImplicitly]
+    static ReadOnlySpan<T> UnsafelySlice(ReadOnlySpan<T> body, int offset, int length) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), offset), length);
+#else
+        body.Slice(offset, length);
+#endif
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), UsedImplicitly]
+    static ReadOnlySpan<T> UnsafelyRange(ReadOnlySpan<T> body, int start, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), end - start);
+#else
+        body[start..end];
+#endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlySpan<TBody> UnsafelyAdvance(ReadOnlySpan<TBody> body, int start) =>
