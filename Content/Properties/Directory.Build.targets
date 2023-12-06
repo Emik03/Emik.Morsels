@@ -168,7 +168,7 @@
         <NoTests>true</NoTests>
         <FileVersion>4.4.2</FileVersion>
         <Nullable>annotations</Nullable>
-        <NoWarn>$(NoWarn);419;NX0001;NX0003</NoWarn>
+        <NoWarn>$(NoWarn);419;NX0001;NX0002;NX0003</NoWarn>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
             <Weavers>
