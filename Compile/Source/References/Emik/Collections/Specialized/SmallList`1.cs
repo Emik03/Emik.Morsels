@@ -638,7 +638,7 @@ partial struct SmallList<T> :
         unchecked
         {
             const int Prime = 397;
-            var hashCode = 0;
+            var hashCode = Prime;
 
             switch (Count)
             {

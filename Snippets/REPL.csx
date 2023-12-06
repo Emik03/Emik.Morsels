@@ -11304,18 +11304,15 @@ public partial struct Two<T>(T left, T right) :
     [Pure]
     public override int GetHashCode()
     {
-        unchecked
-        {
-            var hashCode = 0;
+        var hashCode = 2;
 
-            if (First is not null)
-                hashCode = EqualityComparer<T>.Default.GetHashCode(First);
+        if (First is not null)
+            hashCode ^= EqualityComparer<T>.Default.GetHashCode(First);
 
-            if (Second is not null)
-                hashCode ^= EqualityComparer<T>.Default.GetHashCode(Second);
+        if (Second is not null)
+            hashCode ^= EqualityComparer<T>.Default.GetHashCode(Second);
 
-            return hashCode;
-        }
+        return hashCode;
     }
 }
 
@@ -18576,7 +18573,7 @@ public partial struct SmallList<T> :
         unchecked
         {
             const int Prime = 397;
-            var hashCode = 0;
+            var hashCode = Prime;
 
             switch (Count)
             {
