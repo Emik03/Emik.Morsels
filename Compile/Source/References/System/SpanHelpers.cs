@@ -300,4 +300,51 @@ static partial class SpanHelpers
     Found7:
         return (int)(index + 7);
     }
+
+    /// <summary>Gets the index of where the any of the items exist in the buffer.</summary>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="searchSpace">The buffer to compare from.</param>
+    /// <param name="searchSpaceLength">The buffer's length.</param>
+    /// <param name="value">The items to compare to.</param>
+    /// <param name="valueLength">The items' length.</param>
+    /// <returns>The index in which <paramref name="searchSpace"/> has any of <paramref name="value"/>.</returns>
+    public static unsafe int IndexOfAny<T>(
+        T* searchSpace,
+        int searchSpaceLength,
+        T* value,
+        int valueLength
+    )
+        where T : IEquatable<T>?
+    {
+        if (valueLength is 0)
+            return -1;
+
+        if (typeof(T).IsValueType)
+            for (var i = 0; i < searchSpaceLength; i++)
+            {
+                var other = searchSpace[i];
+
+                for (var j = 0; j < valueLength; j++)
+                    if (value[j].Equals(other))
+                        return i;
+            }
+        else
+            for (var i = 0; i < searchSpaceLength; i++)
+            {
+                var obj = searchSpace[i];
+
+                if (obj is not null)
+                    for (var j = 0; j < valueLength; j++)
+                    {
+                        if (obj.Equals(value[j]))
+                            return i;
+                    }
+                else
+                    for (var j = 0; j < valueLength; j++)
+                        if (value[j] is null)
+                            return i;
+            }
+
+        return -1;
+    }
 }

@@ -1,328 +1,369 @@
-// <copyright file="SplitMemory.cs" company="Emik">
-// Copyright (c) Emik. This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
-// </copyright>
+// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace InvertIf RedundantExtendsListEntry RedundantUsingDirective StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 namespace Emik.Morsels;
-#pragma warning disable 8500, 8618, IDE0044, IDE0250, MA0048, MA0071, MA0102, SA1114, SA1137
+#pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
 using static Span;
+using static SplitMemoryFactory;
+using static SplitSpanFactory;
 
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER || ROSLYN
-/// <summary>Methods to split memories into multiple memories.</summary>
+/// <summary>Methods to split spans into multiple spans.</summary>
+#pragma warning disable MA0048
 static partial class SplitMemoryFactory
+#pragma warning restore MA0048
 {
-    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
-    /// <typeparam name="T">The type of <see cref="SplitMemory{T}"/>.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEqual<T>(this SplitMemory<T> left, SplitMemory<T> right)
-        where T : IEquatable<T>?
+    /// <summary>
+    /// Defines the values for <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> without a compile-time strategy.
+    /// </summary>
+    /// <typeparam name="TBody">The type of element from the span.</typeparam>
+    /// <typeparam name="TSeparator">The type of separator.</typeparam>
+    public interface ISplitMemory<TBody, TSeparator> : IEnumerable<ReadOnlyMemory<TBody>>
     {
-        if (left == right)
-            return true;
+        /// <summary>Gets the body.</summary>
+        public ReadOnlyMemory<TBody> Body { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
-        if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
-            return !e2.MoveNext();
-
-        if (!e2.MoveNext())
-            return false;
-
-        ReadOnlyMemory<T>
-            reader1 = e1.Current,
-            reader2 = e2.Current;
-
-        while (true)
-            if (Next(ref reader1, ref reader2, ref e1, ref e2, out var ret))
-                return ret;
+        /// <summary>Gets the separator.</summary>
+        public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
 
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <typeparam name="T">The type of <see cref="SplitMemory{T}"/>.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
+    /// <inheritdoc cref="SplitSpanFactory.ConcatEqual{TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this SplitMemory<T> left, SplitMemory<T> right)
-        where T : IEquatable<T>?
-    {
-        if (left == right)
-            return true;
+    public static bool ConcatEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
+        this scoped in SplitMemory<TBody, TLeftSeparator, TLeftStrategy> left,
+        scoped in SplitMemory<TBody, TRightSeparator, TRightStrategy> right
+    )
+        where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+        where TLeftSeparator : IEquatable<TLeftSeparator>?
+        where TRightSeparator : IEquatable<TRightSeparator>?
+#endif
+        =>
+            left.SplitSpan.ConcatEqual(right.SplitSpan);
 
-        var e1 = left.GetEnumerator();
-        var e2 = right.GetEnumerator();
-
-        while (e1.MoveNext())
-            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
-                return false;
-
-        return !e2.MoveNext();
-    }
-
-    /// <summary>Splits a memory by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the memory.</typeparam>
-    /// <param name="memory">The memory to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.SequenceEqual{TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T> SplitAny<T>(this ReadOnlyMemory<T> memory, ReadOnlyMemory<T> separator)
+    public static bool SequenceEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
+        this scoped in SplitMemory<TBody, TLeftSeparator, TLeftStrategy> left,
+        scoped in SplitMemory<TBody, TRightSeparator, TRightStrategy> right
+    )
+        where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+        where TLeftSeparator : IEquatable<TLeftSeparator>?
+        where TRightSeparator : IEquatable<TRightSeparator>?
+#endif
+        =>
+            left.SplitSpan.SequenceEqual(right.SplitSpan);
+
+    /// <inheritdoc cref="SplitSpanFactory.ToStringArray{TSeparator, TStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static string[] ToStringArray<TSeparator, TStrategy>(
+        this scoped in SplitMemory<char, TSeparator, TStrategy> split
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            split.SplitSpan.ToStringArray();
+
+    /// <inheritdoc cref="SplitSpanFactory.SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<T, T, MatchAny> SplitAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
-        new(memory, separator, true);
+        new(span, separator);
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T> SplitAny<T>(this Memory<T> memory, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAny> SplitAny<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
-        ((ReadOnlyMemory<T>)memory).SplitAny(separator);
+        ((ReadOnlyMemory<T>)span).SplitAny(separator);
 
-    /// <summary>Splits a memory by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the memory.</typeparam>
-    /// <param name="memory">The memory to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
+    /// <inheritdoc cref="SplitSpanFactory.SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T> SplitAll<T>(this ReadOnlyMemory<T> memory, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAll> SplitAll<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
-        new(memory, separator, false);
+        new(span, separator);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T> SplitAll<T>(this Memory<T> memory, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAll> SplitAll<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
-        ((ReadOnlyMemory<T>)memory).SplitAll(separator);
+        ((ReadOnlyMemory<T>)span).SplitAll(separator);
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T> SplitOn<T>(this ReadOnlyMemory<T> memory, SearchValues<T> separator)
+    public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
+        this ReadOnlyMemory<T> span,
+        in OnceMemoryManager<SearchValues<T>> separator
+    )
         where T : IEquatable<T> =>
-        new(memory, separator);
+        new(span, separator.Memory);
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T> SplitOn<T>(this Memory<T> memory, SearchValues<T> separator)
+    public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
+        this Memory<T> span,
+        OnceMemoryManager<SearchValues<T>> separator
+    )
         where T : IEquatable<T> =>
-        ((ReadOnlyMemory<T>)memory).SplitOn(separator);
+        ((ReadOnlyMemory<T>)span).SplitOn(separator);
+#endif
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, in OnceMemoryManager<T> separator)
+        where T : IEquatable<T> =>
+        new(span, separator.Memory);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, in OnceMemoryManager<T> separator)
+        where T : IEquatable<T> =>
+        ((ReadOnlyMemory<T>)span).SplitOn(separator);
 #endif
 
-    /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
+    /// <summary>Copies the values to a new <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/>.</summary>
+    /// <typeparam name="TBody">The type of element from the span.</typeparam>
+    /// <typeparam name="TSeparator">The type of separator.</typeparam>
+    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
     /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The list containing the copied values of this instance.</returns>
+    /// <returns>
+    /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<string> ToList(this SplitMemory<char> split) => [..split.Select(next => next.ToString())];
-
-    /// <summary>Copies the values to a new <see cref="List{T}"/>.</summary>
-    /// <typeparam name="T">The type of element from the memory.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The list containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static List<T[]> ToList<T>(this SplitMemory<T> split)
-        where T : IEquatable<T>? =>
-        [..split.Select(next => next.ToArray())];
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Next<T>(
-        ref ReadOnlyMemory<T> reader1,
-        ref ReadOnlyMemory<T> reader2,
-        ref SplitMemory<T>.Enumerator e1,
-        ref SplitMemory<T>.Enumerator e2,
-        out bool ret
+    public static ReadOnlyMemory<TBody>[] ToArrayMemories<TBody, TSeparator, TStrategy>(
+        this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
     )
-        where T : IEquatable<T>?
+        where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
     {
-        Unsafe.SkipInit(out ret);
+        PooledSmallList<ReadOnlyMemory<TBody>> ret = default;
 
-        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
-            return SameLength(ref reader1, ref reader2, ref e1, ref e2, ref ret);
+        foreach (var next in split)
+            ret.Append(next);
 
-        if (length1 < length2)
-        {
-            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
-            {
-                ret = false;
-                return true;
-            }
-
-            reader1 = e1.Current;
-            reader2 = reader2[length1..];
-            return false;
-        }
-
-        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = reader1[length2..];
-        reader2 = e2.Current;
-        return false;
+        return ret.View.ToArray();
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool SameLength<T>(
-        ref ReadOnlyMemory<T> reader1,
-        ref ReadOnlyMemory<T> reader2,
-        ref SplitMemory<T>.Enumerator e1,
-        ref SplitMemory<T>.Enumerator e2,
-        ref bool ret
+    /// <inheritdoc cref="SplitSpanFactory.ToArray{TBody, TSeparator, TStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static TBody[] ToArray<TBody, TSeparator, TStrategy>(
+        this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
     )
-        where T : IEquatable<T>?
-    {
-        if (!reader1.SequenceEqual(reader2))
-        {
-            ret = false;
-            return true;
-        }
+        where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            split.SplitSpan.ToArray();
 
-        if (!e1.MoveNext())
-        {
-            ret = !e2.MoveNext();
-            return true;
-        }
-
-        if (!e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = e1.Current;
-        reader2 = e2.Current;
-        return false;
-    }
+    /// <inheritdoc cref="SplitSpanFactory.ToArrays{TBody, TSeparator, TStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static TBody[][] ToArrays<TBody, TSeparator, TStrategy>(
+        this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
+    )
+        where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            split.SplitSpan.ToArrays();
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitAny(this string memory, string separator) =>
-        memory.AsMemory().SplitAny(separator.AsMemory());
+    public static SplitMemory<char, char, MatchAny> SplitAny(this string span, string separator) =>
+        span.AsMemory().SplitAny(separator.AsMemory());
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitAny(this string memory, ReadOnlyMemory<char> separator) =>
-        memory.AsMemory().SplitAny(separator);
+    public static SplitMemory<char, char, MatchAny> SplitAny(this string span, ReadOnlyMemory<char> separator) =>
+        span.AsMemory().SplitAny(separator);
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitAll(this string memory, string separator) =>
-        memory.AsMemory().SplitAll(separator.AsMemory());
+    public static SplitMemory<char, char, MatchAll> SplitAll(this string span, string separator) =>
+        span.AsMemory().SplitAll(separator.AsMemory());
 
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitAll(this string memory, ReadOnlyMemory<char> separator) =>
-        memory.AsMemory().SplitAll(separator);
+    public static SplitMemory<char, char, MatchAll> SplitAll(this string span, ReadOnlyMemory<char> separator) =>
+        span.AsMemory().SplitAll(separator);
 
     /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitLines(this string memory) => memory.AsMemory().SplitLines();
-
-    /// <summary>Splits a memory by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Whitespaces.Breaking"/>.</para></remarks>
-    /// <param name="memory">The memory to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitLines(this ReadOnlyMemory<char> memory) =>
+    public static SplitMemory<char,
 #if NET8_0_OR_GREATER
-        new(memory, Whitespaces.BreakingSearch);
+        SearchValues<char>,
 #else
-        new(memory, Whitespaces.Breaking.AsMemory(), true);
+        char,
+#endif
+        MatchAny> SplitLines(this string span) =>
+        span.AsMemory().SplitLines();
+
+    /// <inheritdoc cref="SplitSpanFactory.SplitSpanLines"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, Whitespaces.BreakingSearchMemory);
+#else
+        new(span, Whitespaces.Breaking.AsMemory());
 #endif
 
     /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitLines(this Memory<char> memory) => ((ReadOnlyMemory<char>)memory).SplitLines();
+    public static SplitMemory<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitLines(this Memory<char> span) =>
+        ((ReadOnlyMemory<char>)span).SplitLines();
+
+    // /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    // [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    // public static SplitMemory<char, char, One> SplitOn(this string span, in char separator) =>
+    //     span.AsMemory().SplitOn(separator);
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitWhitespace(this string span) =>
+        span.AsMemory().SplitWhitespace();
+
+    /// <inheritdoc cref="SplitSpanFactory.SplitSpanWhitespace"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, Whitespaces.UnicodeSearchMemory);
+#else
+        new(span, Whitespaces.Unicode.AsMemory());
+#endif
+
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitWhitespace(this Memory<char> span) =>
+        ((ReadOnlyMemory<char>)span).SplitWhitespace();
+
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitOn(this string memory, SearchValues<char> separator) =>
-        memory.AsMemory().SplitOn(separator);
+    public static SplitMemory<char, SearchValues<char>, MatchAny> SplitOn(
+        this string span,
+        in OnceMemoryManager<SearchValues<char>> separator
+    ) =>
+        span.AsMemory().SplitOn(separator);
 #endif
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitWhitespace(this string memory) => memory.AsMemory().SplitWhitespace();
-
-    /// <summary>Splits a memory by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Whitespaces.Unicode"/>.</para></remarks>
-    /// <param name="memory">The memory to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="memory"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitWhitespace(this ReadOnlyMemory<char> memory) =>
-#if NET8_0_OR_GREATER
-        new(memory, Whitespaces.UnicodeSearch);
-#else
-        new(memory, Whitespaces.Unicode.AsMemory(), true);
-#endif
-
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char> SplitWhitespace(this Memory<char> memory) =>
-        ((ReadOnlyMemory<char>)memory).SplitWhitespace();
 }
 
 /// <summary>Represents a split entry.</summary>
-/// <typeparam name="T">The type of element from the memory.</typeparam>
+/// <typeparam name="TBody">The type of element from the span.</typeparam>
+/// <typeparam name="TSeparator">The type of separator.</typeparam>
+/// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
 [StructLayout(LayoutKind.Auto)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if CSHARPREPL
 public
 #endif
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct SplitMemory<T> : IEquatable<SplitMemory<T>>, IEnumerable<ReadOnlyMemory<T>>
-    where T : IEquatable<T>?
+    partial struct SplitMemory<TBody, TSeparator, TStrategy>(
+        ReadOnlyMemory<TBody> body,
+        ReadOnlyMemory<TSeparator> separator
+    ) : IEquatable<object>,
+    IEquatable<ISplitMemory<TBody, TSeparator>>,
+    IEquatable<SplitMemory<TBody, TSeparator, TStrategy>>,
+    ISplitMemory<TBody, TSeparator>
+    where TBody : IEquatable<TBody>?
+#if !NET7_0_OR_GREATER
+    where TSeparator : IEquatable<TSeparator>?
+#endif
 {
-#if NET8_0_OR_GREATER
-    readonly SearchValues<T>? _search;
-#else
-    readonly bool _isAny;
-#endif
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator}"/>
+    public delegate TAccumulator RefAccumulator<TAccumulator>(
+        TAccumulator accumulator,
+        scoped in ReadOnlyMemory<TBody> next
+    );
 
-    /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
-    /// <param name="body">The line to split.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitMemory(ReadOnlyMemory<T> body) => Body = body;
+    readonly ReadOnlyMemory<TBody> _body = body;
 
-    /// <summary>Initializes a new instance of the <see cref="SplitMemory{T}"/> struct.</summary>
-    /// <param name="body">The line to split.</param>
-    /// <param name="separator">The characters for separation.</param>
-    /// <param name="isAny">When <see langword="true"/>, treat separator as a big pattern match.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitMemory(ReadOnlyMemory<T> body, ReadOnlyMemory<T> separator, bool isAny)
-    {
-        Body = body;
-        Separator = separator;
-#if NET8_0_OR_GREATER
-        if (isAny)
-            UnsafelySetNullishTo(out _search, 1);
-#else
-        _isAny = isAny;
-#endif
-    }
-#if NET8_0_OR_GREATER
+    readonly ReadOnlyMemory<TSeparator> _separator = separator;
+
     /// <summary>
-    /// Initializes a new instance of the <see cref="SplitMemory{T}"/> struct
-    /// where <see cref="IsAny"/> is <see langword="true"/>.
+    /// Initializes a new instance of the <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> struct.
     /// </summary>
-    /// <remarks><para>This constructor is only available starting from .NET 8.0 or later.</para></remarks>
     /// <param name="body">The line to split.</param>
-    /// <param name="separator">The characters for separation.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitMemory(ReadOnlyMemory<T> body, SearchValues<T> separator)
-    {
-        Body = body;
-        _search = separator;
-    }
-#endif
+    public SplitMemory(ReadOnlyMemory<TBody> body)
+        : this(body, default) { }
 
-    /// <summary>Gets the specified index.</summary>
-    /// <param name="index">The index to get.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
-    public ReadOnlyMemory<T> this[[NonNegativeValue] int index]
+    /// <inheritdoc />
+    public readonly ReadOnlyMemory<TBody> Body
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+    }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.First"/>
+    public readonly ReadOnlyMemory<TBody> First
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+    }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Last"/>
+    public readonly ReadOnlyMemory<TBody> Last
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
+    }
+
+    /// <inheritdoc />
+    public readonly ReadOnlyMemory<TSeparator> Separator
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+    }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Single"/>
+    public readonly ReadOnlyMemory<TBody> Single
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+    }
+
+    /// <summary>Gets itself as <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/>.</summary>
+    public readonly SplitSpan<TBody, TSeparator, TStrategy> SplitSpan
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(_body.Span, _separator.Span);
+    }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
+    public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
@@ -341,79 +382,52 @@ readonly
         }
     }
 
-    /// <summary>Gets the empty split memory.</summary>
-    public static SplitMemory<T> Empty
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
-    }
-
-    /// <summary>
-    /// Gets a value indicating whether it should split based on any character in <see cref="Separator"/>,
-    /// or if all of them match.
-    /// </summary>
-#if NET8_0_OR_GREATER
-    [MemberNotNullWhen(true, nameof(_search))]
-#endif
-    public bool IsAny
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
+    public readonly ReadOnlyMemory<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get =>
-#if NET8_0_OR_GREATER
-            _search is not null
-#else
-            _isAny
-#endif
-        ||
-            Separator.Length is 1;
+        get
+        {
+            if (index.Value is var value && !index.IsFromEnd)
+            {
+                var forwards = GetEnumerator();
+
+                for (var i = 0; i <= value; i++)
+                    if (!forwards.MoveNext())
+                        return default;
+
+                return forwards.Current;
+            }
+
+            var backwards = GetReversedEnumerator();
+
+            for (var i = 0; i <= value; i++)
+                if (!backwards.MoveNext())
+                    return default;
+
+            return backwards.Current;
+        }
     }
 
-    /// <summary>Gets the line.</summary>
-    public ReadOnlyMemory<T> Body
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
-    }
-
-    /// <summary>Gets the separator.</summary>
-    public ReadOnlyMemory<T> Separator
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] init;
-    }
-
-    /// <summary>Gets a <see cref="SplitSpan{T}"/> from the memory region.</summary>
-    public SplitSpan<T> SplitSpan
-    {
-        // ReSharper disable once NullableWarningSuppressionIsUsed
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get =>
-#if NET8_0_OR_GREATER
-            _search.ToAddress() > 1
-                ? new(Body.Span, _search!)
-                :
-#endif
-                new(Body.Span, Separator.Span, IsAny);
-    }
-
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are equal.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(SplitMemory<T> left, SplitMemory<T> right) => left.Equals(right);
+    public static bool operator ==(
+        SplitMemory<TBody, TSeparator, TStrategy> left,
+        SplitMemory<TBody, TSeparator, TStrategy> right
+    ) =>
+        left.Equals(right);
 
-    /// <summary>Determines whether both splits are not equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are not equal.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(SplitMemory<T> left, SplitMemory<T> right) => !left.Equals(right);
+    public static bool operator !=(
+        SplitMemory<TBody, TSeparator, TStrategy> left,
+        SplitMemory<TBody, TSeparator, TStrategy> right
+    ) =>
+        !left.Equals(right);
 
-    /// <summary>Separates the head from the tail of this <see cref="SplitMemory{T}"/>.</summary>
-    /// <param name="head">The first element of this enumeration.</param>
-    /// <param name="tail">The rest of this enumeration.</param>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out ReadOnlyMemory<T> head, out SplitMemory<T> tail)
+    public void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
         {
@@ -423,28 +437,34 @@ readonly
         }
 
         head = e.Current;
-        tail = this with { Body = Body[e.Index..] };
+        tail = new(e.Body, _separator);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object? obj) => false;
+    public override bool Equals(object? obj) => Equals(obj as ISplitMemory<TBody, TSeparator>);
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
-    // ReSharper disable NullableWarningSuppressionIsUsed
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(SplitMemory<T> other) =>
-#if NET8_0_OR_GREATER
-        _search == other._search &&
-#endif // ReSharper disable once ArrangeRedundantParentheses
-#pragma warning disable SA1119, RCS1032
-        (Body.IsEmpty && other.Body.IsEmpty ||
-        Separator.IsEmpty && other.Separator.IsEmpty && Body.SequenceEqual(other.Body) ||
-        IsAny == other.IsAny && Separator.SequenceEqual(other.Separator) && Body.SequenceEqual(other.Body));
-#pragma warning restore SA1119, RCS1032
+    public bool Equals(ISplitMemory<TBody, TSeparator>? other) =>
+        other?.GetType() == typeof(SplitMemory<TBody, TSeparator, TStrategy>) &&
+        _body.Span.SequenceEqual(other.Body.Span) &&
+        _separator.Span.SequenceEqual(To<TSeparator>.From(other.Separator.Span));
 
-    /// <summary>Computes the length.</summary>
-    /// <returns>The length.</returns>
+    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool Equals(SplitMemory<TBody, TSeparator, TStrategy> other) =>
+        _body.Span.SequenceEqual(other._body.Span) &&
+        _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
+
+    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public bool Equals<TOtherStrategy>(scoped in SplitMemory<TBody, TSeparator, TOtherStrategy> other) =>
+        typeof(TStrategy) == typeof(TOtherStrategy) &&
+        _body.Span.SequenceEqual(other._body.Span) &&
+        _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public int Count()
     {
@@ -459,157 +479,213 @@ readonly
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override int GetHashCode() => unchecked(IsAny.GetHashCode() * 127);
+    public override int GetHashCode() => unchecked(typeof(SplitMemory<TBody, TSeparator, TStrategy>).GetHashCode() * 7);
 
     /// <inheritdoc />
-    public override string ToString() =>
-        typeof(T) == typeof(char)
-            ? Aggregate(new(), StringBuilderAccumulator()).ToString()
-            : this.ToList().Stringify(3, true);
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public override string ToString() => SplitSpan.ToString();
 
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Enumerator GetEnumerator() => new(this);
 
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    IEnumerator<ReadOnlyMemory<T>> IEnumerable<ReadOnlyMemory<T>>.GetEnumerator() => GetEnumerator();
+    public ReversedEnumerator GetReversedEnumerator() => new(this);
 
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    /// <summary>Gets the first element.</summary>
-    /// <returns>The first memory from this instance.</returns>
+    /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlyMemory<T> First() => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+    IEnumerator<ReadOnlyMemory<TBody>> IEnumerable<ReadOnlyMemory<TBody>>.GetEnumerator() => GetEnumerator();
 
-    /// <summary>Gets the last element.</summary>
-    /// <returns>The last memory from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlyMemory<T> Last()
-#if NET8_0_OR_GREATER
-        =>
-            _search.ToAddress() switch
-            {
-                0 => Body.Span.LastIndexOf(Separator.Span),
-                1 => Body.Span.LastIndexOfAny(Separator.Span),
-                _ => Body.Span.LastIndexOfAny(_search!),
-            } is not -1 and var index
-                ? Body[index..]
-                : default;
-#else
-        =>
-            (IsAny ? Body.Span.LastIndexOfAny(Separator.Span) : Body.Span.LastIndexOf(Separator.Span))
-            is not -1 and var i
-                ? Body[i..]
-                : default;
-#endif
-
-    /// <summary>Gets the single element.</summary>
-    /// <returns>The single memory from this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReadOnlyMemory<T> Single() =>
-        GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
-
-    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
+    /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.RefAccumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
-        [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<T>, TAccumulator> func
+        [InstantHandle, RequireStaticDelegate] RefAccumulator<TAccumulator> func
     )
     {
         var accumulator = seed;
 
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
             accumulator = func(accumulator, next);
 
         return accumulator;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe Func<StringBuilder, ReadOnlyMemory<T>, StringBuilder> StringBuilderAccumulator() =>
-        static (builder, memory) => builder.Append(Unsafe.As<ReadOnlyMemory<T>, ReadOnlyMemory<char>>(ref memory));
-
-    /// <summary>Represents the enumeration object that views <see cref="SplitMemory{T}"/>.</summary>
-    [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator(SplitMemory<T> split) : IEnumerator<ReadOnlyMemory<T>>
+    /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public TAccumulator Aggregate<TAccumulator>(
+        TAccumulator seed,
+        [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<TBody>, TAccumulator> func
+    )
     {
-        [ValueRange(-1, int.MaxValue)]
-        int _end = -1;
+        var accumulator = seed;
 
-        /// <summary>Gets the current index.</summary>
-        public readonly int Index
+        foreach (var next in this)
+            accumulator = func(accumulator, next);
+
+        return accumulator;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static ReadOnlyMemory<T> Convert<T>(in ReadOnlyMemory<T> memory, scoped in ReadOnlySpan<T> span) =>
+        Unsafe.IsNullRef(ref MemoryMarshal.GetReference(span))
+            ? default
+            : memory.Slice(
+                (int)Unsafe.ByteOffset(
+                    ref MemoryMarshal.GetReference(memory.Span),
+                    ref MemoryMarshal.GetReference(span)
+                ) /
+                Unsafe.SizeOf<T>(),
+                span.Length
+            );
+
+    /// <summary>
+    /// Represents the enumeration object that views <see cref="SplitMemory{T, TSeparator, TStrategy}"/>.
+    /// </summary>
+    [StructLayout(LayoutKind.Auto)]
+    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public partial struct Enumerator(ReadOnlyMemory<TBody> body, ReadOnlyMemory<TSeparator> separator)
+        : IEnumerator<ReadOnlyMemory<TBody>>
+    {
+        readonly ReadOnlyMemory<TSeparator> _separator = separator;
+
+        readonly ReadOnlyMemory<TBody> _original = body;
+
+        ReadOnlyMemory<TBody> _body = body, _current;
+
+        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
+        /// <param name="body">The body.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Enumerator(ReadOnlyMemory<TBody> body)
+            : this(body, default) { }
+
+        /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
+        /// <param name="split">The enumerable to enumerate.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Enumerator(SplitMemory<TBody, TSeparator, TStrategy> split)
+            : this(split._body, split._separator) { }
+
+        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Body"/>
+        public readonly ReadOnlyMemory<TBody> Body
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)] get => _end;
-        }
-
-        /// <inheritdoc cref="IEnumerator{T}.Current"/>
-        public ReadOnlyMemory<T> Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; }
-
-        /// <summary>Gets the enumerable used to create this instance.</summary>
-        public readonly SplitMemory<T> Enumerable
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => split;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
         }
 
         /// <inheritdoc />
         readonly object IEnumerator.Current
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
 
-        /// <summary>
-        /// Sets the enumerator to its initial position, which is before the first element in the collection.
-        /// </summary>
+        /// <inheritdoc />
+        public readonly ReadOnlyMemory<TBody> Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset() => _end = -1;
+        public static bool Move(
+            scoped in ReadOnlyMemory<TSeparator> sep,
+            scoped ref ReadOnlyMemory<TBody> body,
+            out ReadOnlyMemory<TBody> current
+        )
+        {
+            var b = body.Span;
+            var ret = SplitSpan<TBody, TSeparator, TStrategy>.Enumerator.Move(sep.Span, ref b, out var c);
+            current = Convert(body, c);
+            body = Convert(body, b);
+            return ret;
+        }
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext() => Move(_separator, ref _body, out _current);
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly void IDisposable.Dispose() { }
 
-        /// <summary>Advances the enumerator to the next element of the collection.</summary>
-        /// <returns>
-        /// <see langword="true"/> if the enumerator was successfully advanced to the next element;
-        /// <see langword="false"/> if the enumerator has passed the end of the collection.
-        /// </returns>
+        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext()
+        void IEnumerator.Reset() => _body = _original;
+    }
+
+    /// <summary>
+    /// Represents the enumeration object that views <see cref="SplitMemory{T, TSeparator, TStrategy}"/>.
+    /// </summary>
+    [StructLayout(LayoutKind.Auto)]
+    [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public partial struct ReversedEnumerator(ReadOnlyMemory<TBody> body, ReadOnlyMemory<TSeparator> separator)
+        : IEnumerator<ReadOnlyMemory<TBody>>
+    {
+        readonly ReadOnlyMemory<TBody> _original = body;
+
+        readonly ReadOnlyMemory<TSeparator> _separator = separator;
+
+        ReadOnlyMemory<TBody> _body = body, _current;
+
+        /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
+        /// <param name="body">The body.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReversedEnumerator(ReadOnlyMemory<TBody> body)
+            : this(body, default) { }
+
+        /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
+        /// <param name="split">The enumerable to enumerate.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReversedEnumerator(SplitMemory<TBody, TSeparator, TStrategy> split)
+            : this(split._body, split._separator) { }
+
+        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Body"/>
+        public readonly ReadOnlyMemory<TBody> Body
         {
-            var body = split.Body;
-            var separator = split.Separator;
-#if NET8_0_OR_GREATER
-            var search = split._search;
-#endif
-            if (separator.IsEmpty
-#if NET8_0_OR_GREATER
-              &&
-                search.ToAddress() is 0 or 1
-#endif
-            )
-                return !body.IsEmpty && Current.IsEmpty && (Current = body) is var _;
-
-            while (SplitSpan<T>.Enumerator.Step(
-                split.IsAny,
-#if NET8_0_OR_GREATER
-                search,
-#endif
-                body.Span,
-                separator.Span,
-                ref _end,
-                out var start
-            ))
-                if (start != _end)
-                    return (Current = body[start.._end]) is var _;
-
-            return false;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
         }
+
+        /// <inheritdoc />
+        readonly object IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
+        public readonly ReadOnlyMemory<TBody> Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool MoveNext(
+            scoped in ReadOnlyMemory<TSeparator> sep,
+            scoped ref ReadOnlyMemory<TBody> body,
+            out ReadOnlyMemory<TBody> current
+        )
+        {
+            var b = body.Span;
+            var ret = SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.MoveNext(sep.Span, ref b, out var c);
+            current = Convert(body, c);
+            body = Convert(body, b);
+            return ret;
+        }
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void IDisposable.Dispose() { }
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void IEnumerator.Reset() => _body = _original;
     }
 }
 #endif

@@ -127,8 +127,10 @@ sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
     int Find(T item)
     {
-        for (var i = 0; i < Count; i++)
-            if (EqualityComparer<T>.Default.Equals(this[i], item))
+        var count = list.Count - 1;
+
+        for (var i = 0; i < count; i++)
+            if (EqualityComparer<T>.Default.Equals(list[i + 1], item))
                 return i;
 
         return -1;

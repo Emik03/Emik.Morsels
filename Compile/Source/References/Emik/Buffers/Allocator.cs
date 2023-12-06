@@ -10,30 +10,33 @@ static partial class Allocator
 {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Raw{T}(T)" />
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe byte[] Raw<T>(scoped PooledSmallList<T> value) =>
         [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.AsRef<byte>(&value), sizeof(PooledSmallList<T>))];
 #endif
 
     /// <inheritdoc cref="Raw{T}(T)" />
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe byte[] Raw<T>(scoped Span<T> value) =>
         [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(Span<T>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe byte[] Raw<T>(scoped SplitSpan<T> value)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe byte[] Raw<TBody, TSeparator, TStrategy>(scoped SplitSpan<TBody, TSeparator, TStrategy> value)
 #if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>?
+        where TBody : unmanaged, IEquatable<TBody>?
 #else
-        where T : IEquatable<T>?
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
 #endif
         =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<T>))];
+            [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(SplitSpan<TBody, TSeparator, TStrategy>))];
 
     /// <inheritdoc cref="Raw{T}(T)" />
 #pragma warning restore 1574
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe byte[] Raw<T>(scoped ReadOnlySpan<T> value) =>
        [.. MemoryMarshal.CreateReadOnlySpan(ref *(byte*)&value, sizeof(ReadOnlySpan<T>))];
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
@@ -41,7 +44,7 @@ static partial class Allocator
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static byte[] Raw<T>(T value) =>
         [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref value), Unsafe.SizeOf<T>())];
 #endif

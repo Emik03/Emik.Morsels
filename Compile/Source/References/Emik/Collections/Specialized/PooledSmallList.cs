@@ -6,11 +6,24 @@ namespace Emik.Morsels;
 // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
 using FieldInfo = System.Reflection.FieldInfo;
 
-#pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+/// <summary>Provides the method needed for collection expressions in <see cref="PooledSmallList{T}"/>.</summary>
+#pragma warning disable MA0048, SA1600
+static class PooledSmallListBuilder
+#pragma warning restore MA0048, SA1600
+{
+    /// <summary>Converts the buffer into an expandable buffer.</summary>
+    /// <typeparam name="T">The type of span.</typeparam>
+    /// <param name="span">The span.</param>
+    /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static PooledSmallList<T> From<T>(ReadOnlySpan<T> span) => default(PooledSmallList<T>).Append(span);
+}
+#pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 /// <param name="view">The view to hold as the initial value.</param>
+[CollectionBuilder(typeof(PooledSmallListBuilder), nameof(From))]
 [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if !NO_REF_STRUCTS
 ref
@@ -29,9 +42,15 @@ ref
     T[]? _rental;
 
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public PooledSmallList()
+        : this([]) { }
+
+    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList(int capacity)
         : this([]) =>
         _view = _rental = Rent(capacity);

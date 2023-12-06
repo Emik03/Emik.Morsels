@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent
+// ReSharper disable BadPreprocessorIndent ConvertToStaticClass
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -8,6 +8,77 @@ namespace Emik.Morsels;
 /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
 static partial class Span
 {
+    /// <summary>Provides reinterpret span methods.</summary>
+    /// <typeparam name="TTo">The type to convert to.</typeparam>
+    public static class To<TTo>
+    {
+#pragma warning disable 8500, RCS1158
+        /// <summary>
+        /// Encapsulates the functionality to determine if a conversion is supported between two types.
+        /// </summary>
+        /// <typeparam name="TFrom">The type to convert from.</typeparam>
+        public static class Is<TFrom>
+        {
+            /// <summary>
+            /// Gets a value indicating whether the conversion between types
+            /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
+            /// </summary>
+            public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+                typeof(TTo) == typeof(TFrom) ||
+                sizeof(TFrom) >= sizeof(TTo) &&
+                IsReinterpretable(typeof(TFrom), typeof(TTo));
+
+            /// <summary>
+            /// Gets the error that occurs when converting between types would cause undefined behavior.
+            /// </summary>
+            public static NotSupportedException Error
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+                get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
+            }
+
+            [Pure]
+            static bool IsReinterpretable(Type first, Type second) =>
+                first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
+
+            [Pure]
+            static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
+        }
+
+        /// <summary>
+        /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
+        /// to a <see cref="ReadOnlySpan{T}"/> of type <see cref="TTo"/>.
+        /// </summary>
+        /// <typeparam name="TFrom">The type to convert from.</typeparam>
+        /// <param name="source">The <see cref="ReadOnlySpan{T}"/> to convert from.</param>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when <see cref="Is{TFrom}.Supported"/> is <see langword="false"/>.
+        /// </exception>
+        /// <returns>
+        /// The reinterpretation of the parameter <paramref name="source"/> from its original
+        /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
+
+        /// <summary>
+        /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
+        /// to a <see cref="Span{T}"/> of type <see cref="TTo"/>.
+        /// </summary>
+        /// <typeparam name="TFrom">The type to convert from.</typeparam>
+        /// <param name="source">The <see cref="Span{T}"/> to convert from.</param>
+        /// <exception cref="NotSupportedException">Thrown when conversion between the types TFrom and TTo is not supported.</exception>
+        /// <returns>
+        /// The reinterpretation of the parameter <paramref name="source"/> from its original
+        /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
+#pragma warning restore 8500, RCS1158
+    }
+
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <param name="span">The allocated span.</param>

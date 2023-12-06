@@ -2,10 +2,9 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
-#pragma warning disable IDE0056
+#pragma warning disable IDE0056, SA1137
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+// ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
 static partial class SpanIndexers
 {
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
@@ -51,6 +50,46 @@ static partial class SpanIndexers
         head = span[0];
         tail = span[1..];
     }
+#if !NET7_0_OR_GREATER
+    /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOfAny<T>(this Span<T> span, ReadOnlySpan<T> values)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).IndexOfAny(values);
+
+    /// <summary>
+    /// Searches for the first index of any of the specified values similar
+    /// to calling IndexOf several times with the logical OR operator.
+    /// </summary>
+    /// <typeparam name="T">The type of the span and values.</typeparam>
+    /// <param name="span">The span to search.</param>
+    /// <param name="values">The set of values to search for.</param>
+    /// <returns>The first index of the occurrence of any of the values in the span. If not found, returns -1.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+#pragma warning disable 8500
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        var searchSpace = (T*)span.Pointer;
+        var value = (T*)values.Pointer;
+#else
+        fixed (T* searchSpace = span)
+        fixed (T* value = values)
+#endif
+#pragma warning restore 8500
+            return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
+    }
+#endif
 
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>

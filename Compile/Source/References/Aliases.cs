@@ -65,7 +65,6 @@ global using Debug = System.Diagnostics.Debug;
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
 #elif NET40_OR_GREATER
 global using PureAttribute = ms::System.Diagnostics.Contracts.PureAttribute;
-global using Range = System.Range;
 #else
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 #endif

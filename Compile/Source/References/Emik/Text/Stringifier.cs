@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #pragma warning disable 1696, SA1137, SA1216
 #if WAWA
 namespace Wawa.Modules;
@@ -601,7 +601,7 @@ static partial class Stringifier
         length;
 
     [Inline, Pure]
-    static int Mod(this in int i) => Math.Abs(i) / 10 % 10 is 1 ? 0 : Math.Abs(i) % 10;
+    static int Mod(this int i) => Math.Abs(i) / 10 % 10 is 1 ? 0 : Math.Abs(i) % 10;
 
     [MustUseReturnValue]
     static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>

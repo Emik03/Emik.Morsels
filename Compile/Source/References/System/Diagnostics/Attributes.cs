@@ -347,6 +347,32 @@ namespace System.Diagnostics.CodeAnalysis
 
 namespace System.Runtime.CompilerServices
 {
+#if !NET8_0_OR_GREATER
+    /// <summary>
+    /// Initialize the attribute to refer to the <paramref name="methodName"/>
+    /// method on the <paramref name="builderType"/> type.
+    /// </summary>
+    /// <param name="builderType">The type of the builder to use to construct the collection.</param>
+    /// <param name="methodName">The name of the method on the builder to use to construct the collection.</param>
+    /// <remarks><para>
+    /// <paramref name="methodName"/> must refer to a static method that accepts a single parameter of
+    /// type <see cref="ReadOnlySpan{T}"/> and returns an instance of the collection being built containing
+    /// a copy of the data from that span.  In future releases of .NET, additional patterns may be supported.
+    /// </para></remarks>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, Inherited = false)]
+    sealed class CollectionBuilderAttribute(Type builderType, string methodName) : Attribute
+    {
+        /// <summary>Gets the type of the builder to use to construct the collection.</summary>
+        public Type BuilderType => builderType;
+
+        /// <summary>Gets the name of the method on the builder to use to construct the collection.</summary>
+        /// <remarks><para>
+        /// This should match the metadata name of the target method.
+        /// For example, this might be ".ctor" if targeting the type's constructor.
+        /// </para></remarks>
+        public string MethodName => methodName;
+    }
+#endif
 #if !NET5_0_OR_GREATER
     /// <summary>
     /// Reserved to be used by the compiler for tracking metadata.
