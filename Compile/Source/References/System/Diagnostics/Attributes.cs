@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective
-#pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1114, SA1216, SA1402, SA1403, SA1649
+#pragma warning disable CA1019, GlobalUsingsAnalyzer, MA0047, MA0048, SA1114, SA1204, SA1216, SA1402, SA1403, SA1649
 #if !NET35
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
@@ -356,8 +356,8 @@ namespace System.Runtime.CompilerServices
     /// <param name="methodName">The name of the method on the builder to use to construct the collection.</param>
     /// <remarks><para>
     /// <paramref name="methodName"/> must refer to a static method that accepts a single parameter of
-    /// type <see cref="ReadOnlySpan{T}"/> and returns an instance of the collection being built containing
-    /// a copy of the data from that span.  In future releases of .NET, additional patterns may be supported.
+    /// type <c>ReadOnlySpan&lt;T&gt;</c> and returns an instance of the collection being built containing
+    /// a copy of the data from that span. In future releases of .NET, additional patterns may be supported.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface, Inherited = false)]
     sealed class CollectionBuilderAttribute(Type builderType, string methodName) : Attribute
