@@ -92,6 +92,7 @@ sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>
     [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
     public override string? ToString() => list.ToString();
 
+    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    int Mod(int index) => Count is var i && i is not 0 ? (index % i + i) % i : throw CannotBeEmpty;
+    int Mod(int index) => Count is not 0 and var i ? index.Mod(i) : throw CannotBeEmpty;
 }

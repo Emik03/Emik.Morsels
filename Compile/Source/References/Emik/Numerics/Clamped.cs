@@ -69,31 +69,7 @@ static partial class Clamped
 #else
         sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 #endif
-#if !NET7_0_OR_GREATER
-    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
-    /// <param name="number">The number to clip.</param>
-    /// <param name="min">If specified, the smallest number to return.</param>
-    /// <param name="max">If specified, the greatest number to return.</param>
-    /// <returns>
-    /// The parameter <paramref name="min"/> if <paramref name="number"/> is smaller than <paramref name="min"/>,
-    /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
-    /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
-    /// </returns>
-    [Pure]
-    public static int Clamp(this int number, int? min = null, int? max = null) =>
-        (min ?? number) is var small &&
-        (max ?? number) is var big &&
-        number <= small ? small :
-        number >= big ? big : number;
-
-    /// <inheritdoc cref="Clamp(int, int?, int?)"/>
-    [Pure]
-    public static float Clamp(this float number, float? min = null, float? max = null) =>
-        (min ?? number) is var small &&
-        (max ?? number) is var big &&
-        number <= small ? small :
-        number >= big ? big : number;
-#else
+#if NET7_0_OR_GREATER
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <typeparam name="T">The type of numeric value for comparisons.</typeparam>
     /// <param name="number">The number to clip.</param>
@@ -104,7 +80,7 @@ static partial class Clamped
     /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
     /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
     /// </returns>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Clamp<T>(this T number, T? min = null, T? max = null)
         where T : class, IComparisonOperators<T, T, bool> =>
         (min ?? number) is var small &&
@@ -113,12 +89,67 @@ static partial class Clamped
         number >= big ? big : number;
 
     /// <inheritdoc cref="Clamp{T}(T, T?, T?)"/>
-    [Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Clamp<T>(this T number, T? min = null, T? max = null)
         where T : struct, IComparisonOperators<T, T, bool> =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
+
+    /// <summary>
+    /// Calculates the least nonnegative remainder of <paramref name="number"/> <c>%</c> <paramref name="radix"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// Implementation based on <a href="https://doc.rust-lang.org/src/core/num/int_macros.rs.html#2190">Rust's</a>.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of numeric value.</typeparam>
+    /// <param name="number">The number to calculate the remainder of.</param>
+    /// <param name="radix">The radix to use.</param>
+    /// <returns>The result of the Euclidean division algorithm.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T Mod<T>(this T number, T radix)
+        where T : IComparisonOperators<T, T, bool>, IModulusOperators<T, T, T>, INumberBase<T> =>
+        number % radix is var r && r < T.Zero ? unchecked(r + radix) : r;
+#else
+    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <param name="number">The number to clip.</param>
+    /// <param name="min">If specified, the smallest number to return.</param>
+    /// <param name="max">If specified, the greatest number to return.</param>
+    /// <returns>
+    /// The parameter <paramref name="min"/> if <paramref name="number"/> is smaller than <paramref name="min"/>,
+    /// otherwise, the parameter <paramref name="max"/> if <paramref name="number"/> is greater than
+    /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Clamp(this int number, int? min = null, int? max = null) =>
+        (min ?? number) is var small &&
+        (max ?? number) is var big &&
+        number <= small ? small :
+        number >= big ? big : number;
+
+    /// <inheritdoc cref="Clamp(int, int?, int?)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static float Clamp(this float number, float? min = null, float? max = null) =>
+        (min ?? number) is var small &&
+        (max ?? number) is var big &&
+        number <= small ? small :
+        number >= big ? big : number;
+
+    /// <summary>
+    /// Calculates the least nonnegative remainder of <paramref name="number"/> <c>%</c> <paramref name="radix"/>.
+    /// </summary>
+    /// <remarks><para>
+    /// Implementation based on <a href="https://doc.rust-lang.org/src/core/num/int_macros.rs.html#2190">Rust's</a>.
+    /// </para></remarks>
+    /// <param name="number">The number to calculate the remainder of.</param>
+    /// <param name="radix">The radix to use.</param>
+    /// <returns>The result of the Euclidean division algorithm.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Mod(this int number, int radix) => number % radix is var r && r < 0 ? unchecked(r + radix) : r;
+
+    /// <inheritdoc cref="Mod(int, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static float Mod(this float number, float radix) => number % radix is var r && r < 0 ? r + radix : r;
 #endif
 }
