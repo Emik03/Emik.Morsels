@@ -88,6 +88,61 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
 
+        /// <summary>
+        /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
+        /// </summary>
+        /// <typeparam name="TOtherSeparator">The type of separator used in the other sequence.</typeparam>
+        /// <typeparam name="TOtherStrategy">The strategy used for splitting the other sequence.</typeparam>
+        /// <param name="other">The enumerator for the other sequence.</param>
+        /// <param name="reader">The <see cref="ReadOnlySpan{T}"/> representing this sequence.</param>
+        /// <param name="otherReader">The <see cref="ReadOnlySpan{T}"/> representing the other sequence.</param>
+        /// <param name="ret">
+        /// Output parameter indicating if the sequences are equal.
+        /// Note that this value is undefined if <see langword="false"/> is returned.
+        /// </param>
+        /// <returns>
+        /// The value <see langword="true"/> if enumeration should be stopped; otherwise, <see langword="false"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool EqualityMoveNext<TOtherSeparator, TOtherStrategy>(
+            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            ref ReadOnlySpan<TBody> reader,
+            ref ReadOnlySpan<TBody> otherReader,
+            out bool ret
+        )
+#if !NET7_0_OR_GREATER
+            where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        {
+            Unsafe.SkipInit(out ret);
+
+            if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
+                return SameLength(ref other, ref reader, ref otherReader, ref ret);
+
+            if (length < otherLength)
+            {
+                if (!reader.SequenceEqual(otherReader[..length]) || !MoveNext())
+                {
+                    ret = false;
+                    return true;
+                }
+
+                reader = Current;
+                otherReader = otherReader[length..];
+                return false;
+            }
+
+            if (!UnsafelyTake(reader, otherLength).SequenceEqual(otherReader) || !other.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader = UnsafelyTake(reader, otherLength);
+            otherReader = other.Current;
+            return false;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
             scoped in ReadOnlySpan<TBody> sep,
@@ -287,6 +342,40 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return true;
             }
 #endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool SameLength<TOtherSeparator, TOtherStrategy>(
+            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            ref ReadOnlySpan<TBody> reader,
+            ref ReadOnlySpan<TBody> otherReader,
+            ref bool ret
+        )
+#if !NET7_0_OR_GREATER
+            where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        {
+            if (!reader.SequenceEqual(otherReader))
+            {
+                ret = false;
+                return true;
+            }
+
+            if (!MoveNext())
+            {
+                ret = !other.MoveNext();
+                return true;
+            }
+
+            if (!other.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader = Current;
+            otherReader = other.Current;
+            return false;
         }
     }
 }

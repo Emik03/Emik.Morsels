@@ -9243,6 +9243,7 @@ public
 
 
 
+
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 
@@ -9259,45 +9260,6 @@ public
         /// <summary>Gets the separator.</summary>
         public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
-
-    /// <inheritdoc cref="SplitSpanFactory.ConcatEqual{TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        this scoped in SplitMemory<TBody, TLeftSeparator, TLeftStrategy> left,
-        scoped in SplitMemory<TBody, TRightSeparator, TRightStrategy> right
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-        =>
-            left.SplitSpan.ConcatEqual(right.SplitSpan);
-
-    /// <inheritdoc cref="SplitSpanFactory.SequenceEqual{TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        this scoped in SplitMemory<TBody, TLeftSeparator, TLeftStrategy> left,
-        scoped in SplitMemory<TBody, TRightSeparator, TRightStrategy> right
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-        =>
-            left.SplitSpan.SequenceEqual(right.SplitSpan);
-
-    /// <inheritdoc cref="SplitSpanFactory.ToStringArray{TSeparator, TStrategy}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static string[] ToStringArray<TSeparator, TStrategy>(
-        this scoped in SplitMemory<char, TSeparator, TStrategy> split
-    )
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            split.SplitSpan.ToStringArray();
 
     /// <inheritdoc cref="SplitSpanFactory.SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9354,55 +9316,6 @@ public
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)span).SplitOn(separator);
 #endif
-
-    /// <summary>Copies the values to a new <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/>.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>
-    /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlyMemory<TBody>[] ToArrayMemories<TBody, TSeparator, TStrategy>(
-        this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        PooledSmallList<ReadOnlyMemory<TBody>> ret = default;
-
-        foreach (var next in split)
-            ret.Append(next);
-
-        return ret.View.ToArray();
-    }
-
-    /// <inheritdoc cref="SplitSpanFactory.ToArray{TBody, TSeparator, TStrategy}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TBody[] ToArray<TBody, TSeparator, TStrategy>(
-        this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            split.SplitSpan.ToArray();
-
-    /// <inheritdoc cref="SplitSpanFactory.ToArrays{TBody, TSeparator, TStrategy}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TBody[][] ToArrays<TBody, TSeparator, TStrategy>(
-        this scoped in SplitMemory<TBody, TSeparator, TStrategy> split
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            split.SplitSpan.ToArrays();
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9659,7 +9572,7 @@ readonly
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
+    public readonly void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
         {
@@ -9674,31 +9587,76 @@ readonly
 
     /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object? obj) => Equals(obj as ISplitMemory<TBody, TSeparator>);
+    public readonly override bool Equals(object? obj) =>
+        obj is SplitMemory<TBody, TSeparator, TStrategy> other && Equals(other);
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(ISplitMemory<TBody, TSeparator>? other) =>
+    public readonly bool Equals(ISplitMemory<TBody, TSeparator>? other) =>
         other?.GetType() == typeof(SplitMemory<TBody, TSeparator, TStrategy>) &&
         _body.Span.SequenceEqual(other.Body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other.Separator.Span));
 
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            ConcatEqual(in other);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        scoped in SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            SplitSpan.ConcatEqual(other.SplitSpan);
+
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals(SplitMemory<TBody, TSeparator, TStrategy> other) =>
+    public readonly bool Equals(SplitMemory<TBody, TSeparator, TStrategy> other) =>
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals<TOtherStrategy>(scoped in SplitMemory<TBody, TSeparator, TOtherStrategy> other) =>
+    public readonly bool Equals<TOtherStrategy>(scoped in SplitMemory<TBody, TSeparator, TOtherStrategy> other) =>
         typeof(TStrategy) == typeof(TOtherStrategy) &&
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
 
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            ConcatEqual(in other);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        scoped in SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            SplitSpan.SequenceEqual(other.SplitSpan);
+
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int Count()
+    public readonly int Count()
     {
         var e = GetEnumerator();
         var count = 0;
@@ -9711,19 +9669,82 @@ readonly
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override int GetHashCode() => unchecked(typeof(SplitMemory<TBody, TSeparator, TStrategy>).GetHashCode() * 7);
+    public readonly override int GetHashCode() =>
+        unchecked(typeof(SplitMemory<TBody, TSeparator, TStrategy>).GetHashCode() * 7);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override string ToString() => SplitSpan.ToString();
+    public readonly override string ToString() => SplitSpan.ToString();
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToString(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(ReadOnlyMemory<TBody> divider) => ToString(divider.Span);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToString(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(scoped in ReadOnlyMemory<TBody> divider) => ToString(divider.Span);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToString(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(ReadOnlySpan<TBody> divider) => SplitSpan.ToString(divider);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToString(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(scoped in ReadOnlySpan<TBody> divider) => SplitSpan.ToString(divider);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToStringArray"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string[] ToStringArray() => SplitSpan.ToStringArray();
+
+    /// <summary>Copies the values to a new <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/>.</summary>
+    /// <returns>
+    /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories()
+    {
+        using var ret = New4<ReadOnlyMemory<TBody>>();
+
+        foreach (var next in this)
+            ret.Append(next);
+
+        return ret.View.ToArray();
+    }
+
+    /// <summary>Copies the values to a new <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/>.</summary>
+    /// <param name="divider">The separator between each element.</param>
+    /// <returns>
+    /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories(ReadOnlyMemory<TBody> divider) =>
+        ToArrayMemories(in divider);
+
+    /// <inheritdoc cref="ToArrayMemories(ReadOnlyMemory{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories(scoped in ReadOnlyMemory<TBody> divider)
+    {
+        using var ret = New4<ReadOnlyMemory<TBody>>();
+        var e = GetEnumerator();
+
+        if (e.MoveNext())
+            ret.Append(e.Current);
+        else
+            return [];
+
+        while (e.MoveNext())
+            ret.Append(divider).Append(e.Current);
+
+        return ret.View.ToArray();
+    }
 
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public Enumerator GetEnumerator() => new(this);
+    public readonly Enumerator GetEnumerator() => new(this);
 
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public ReversedEnumerator GetReversedEnumerator() => new(this);
+    public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9735,7 +9756,7 @@ readonly
 
     /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.RefAccumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
+    public readonly TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] RefAccumulator<TAccumulator> func
     )
@@ -9750,7 +9771,7 @@ readonly
 
     /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
+    public readonly TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<TBody>, TAccumulator> func
     )
@@ -9762,6 +9783,30 @@ readonly
 
         return accumulator;
     }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray()"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray() => SplitSpan.ToArray();
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray(ReadOnlyMemory<TBody> divider) => ToArray(divider.Span);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray(scoped in ReadOnlyMemory<TBody> divider) => ToArray(divider.Span);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray(ReadOnlySpan<TBody> divider) => SplitSpan.ToArray(divider);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray(scoped in ReadOnlySpan<TBody> divider) => SplitSpan.ToArray(divider);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArrays"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[][] ToArrays() => SplitSpan.ToArrays();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static ReadOnlyMemory<T> Convert<T>(in ReadOnlyMemory<T> memory, scoped in ReadOnlySpan<T> span) =>
@@ -11474,6 +11519,7 @@ public partial struct Two<T>(T left, T right) :
 
 
 
+
 /// <summary>Methods to split spans into multiple spans.</summary>
 #pragma warning disable MA0048
 
@@ -11485,113 +11531,6 @@ public partial struct Two<T>(T left, T right) :
 
     /// <summary>The type that indicates to match exactly one element.</summary>
     public struct MatchOne;
-
-    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TLeftSeparator">The type of separator for the left-hand side.</typeparam>
-    /// <typeparam name="TLeftStrategy">The strategy for splitting elements for the left-hand side.</typeparam>
-    /// <typeparam name="TRightSeparator">The type of separator for the right-hand side.</typeparam>
-    /// <typeparam name="TRightStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool ConcatEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        this scoped in SplitSpan<TBody, TLeftSeparator, TLeftStrategy> left,
-        scoped in SplitSpan<TBody, TRightSeparator, TRightStrategy> right
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>?
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-    {
-        if (left.GetEnumerator() is var e1 && right.GetEnumerator() is var e2 && !e1.MoveNext())
-            return !e2.MoveNext();
-
-        if (!e2.MoveNext())
-            return false;
-
-        ReadOnlySpan<TBody>
-            reader1 = e1.Current,
-            reader2 = e2.Current;
-
-        while (true)
-            if (Next(ref reader1, ref reader2, ref e1, ref e2, out var ret))
-                return ret;
-    }
-
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TLeftSeparator">The type of separator for the left-hand side.</typeparam>
-    /// <typeparam name="TLeftStrategy">The strategy for splitting elements for the left-hand side.</typeparam>
-    /// <typeparam name="TRightSeparator">The type of separator for the right-hand side.</typeparam>
-    /// <typeparam name="TRightStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        this scoped in SplitSpan<TBody, TLeftSeparator, TLeftStrategy> left,
-        scoped in SplitSpan<TBody, TRightSeparator, TRightStrategy> right
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>?
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-    {
-        var e1 = left.GetEnumerator();
-        var e2 = right.GetEnumerator();
-
-        while (e1.MoveNext())
-            if (!(e2.MoveNext() && e1.Current.SequenceEqual(e2.Current)))
-                return false;
-
-        return !e2.MoveNext();
-    }
-
-    /// <summary>Copies the values to a new <see cref="string"/> <see cref="Array"/>.</summary>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The <see cref="string"/> <see cref="Array"/> containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static string[] ToStringArray<TSeparator, TStrategy>(
-        this scoped in SplitSpan<char, TSeparator, TStrategy> split
-    )
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        PooledSmallList<string> ret = default;
-
-        foreach (var next in split)
-            ret.Append(next.ToString());
-
-        return ret.View.ToArray();
-#else
-        List<string> ret = [];
-
-        foreach (var next in split)
-            ret.Add(next.ToString());
-
-        return ret.ToArray();
-#endif
-    }
 
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
@@ -11686,163 +11625,6 @@ public partial struct Two<T>(T left, T right) :
         =>
             ((ReadOnlySpan<T>)span).SplitOn(separator);
 #endif
-
-    /// <summary>Copies the values to a new flattened array.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The array containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TBody[] ToArray<TBody, TSeparator, TStrategy>(
-        this scoped in SplitSpan<TBody, TSeparator, TStrategy> split
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        PooledSmallList<TBody> ret = default;
-
-        foreach (var next in split)
-            ret.Append(next);
-
-        return ret.View.ToArray();
-#else
-        List<TBody> ret = [];
-
-        foreach (var next in split)
-            foreach (var element in next)
-                ret.Add(element);
-
-        return ret.ToArray();
-#endif
-    }
-
-    /// <summary>Copies the values to a new nested array.</summary>
-    /// <typeparam name="TBody">The type of element from the span.</typeparam>
-    /// <typeparam name="TSeparator">The type of separator.</typeparam>
-    /// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-    /// <param name="split">The instance to get the list from.</param>
-    /// <returns>The nested array containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TBody[][] ToArrays<TBody, TSeparator, TStrategy>(
-        this scoped in SplitSpan<TBody, TSeparator, TStrategy> split
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        PooledSmallList<TBody[]> ret = default;
-
-        foreach (var next in split)
-            ret.Append(next.ToArray());
-
-        return ret.View.ToArray();
-#else
-        List<TBody[]> ret = [];
-
-        foreach (var next in split)
-            ret.Add(next.ToArray());
-
-        return ret.ToArray();
-#endif
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool Next<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        ref ReadOnlySpan<TBody> reader1,
-        ref ReadOnlySpan<TBody> reader2,
-        ref SplitSpan<TBody, TLeftSeparator, TLeftStrategy>.Enumerator e1,
-        ref SplitSpan<TBody, TRightSeparator, TRightStrategy>.Enumerator e2,
-        out bool ret
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>?
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-    {
-        Unsafe.SkipInit(out ret);
-
-        if (reader1.Length is var length1 && reader2.Length is var length2 && length1 == length2)
-            return SameLength(ref reader1, ref reader2, ref e1, ref e2, ref ret);
-
-        if (length1 < length2)
-        {
-            if (!reader1.SequenceEqual(reader2[..length1]) || !e1.MoveNext())
-            {
-                ret = false;
-                return true;
-            }
-
-            reader1 = e1.Current;
-            reader2 = reader2[length1..];
-            return false;
-        }
-
-        if (!reader1[..length2].SequenceEqual(reader2) || !e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = reader1[length2..];
-        reader2 = e2.Current;
-        return false;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool SameLength<TBody, TLeftSeparator, TLeftStrategy, TRightSeparator, TRightStrategy>(
-        ref ReadOnlySpan<TBody> reader1,
-        ref ReadOnlySpan<TBody> reader2,
-        ref SplitSpan<TBody, TLeftSeparator, TLeftStrategy>.Enumerator e1,
-        ref SplitSpan<TBody, TRightSeparator, TRightStrategy>.Enumerator e2,
-        ref bool ret
-    )
-        where TBody : IEquatable<TBody>?
-#if !NET7_0_OR_GREATER
-        where TLeftSeparator : IEquatable<TLeftSeparator>?
-        where TRightSeparator : IEquatable<TRightSeparator>?
-#endif
-    {
-        if (!reader1.SequenceEqual(reader2))
-        {
-            ret = false;
-            return true;
-        }
-
-        if (!e1.MoveNext())
-        {
-            ret = !e2.MoveNext();
-            return true;
-        }
-
-        if (!e2.MoveNext())
-        {
-            ret = false;
-            return true;
-        }
-
-        reader1 = e1.Current;
-        reader2 = e2.Current;
-        return false;
-    }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -12125,7 +11907,7 @@ readonly
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out ReadOnlySpan<TBody> head, out SplitSpan<TBody, TSeparator, TStrategy> tail)
+    public readonly void Deconstruct(out ReadOnlySpan<TBody> head, out SplitSpan<TBody, TSeparator, TStrategy> tail)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
         {
@@ -12138,21 +11920,76 @@ readonly
         tail = new(e.Body, _separator);
     }
 
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
+    /// <param name="other">The other side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        scoped in SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
+            return !otherE.MoveNext();
+
+        if (!otherE.MoveNext())
+            return false;
+
+        ReadOnlySpan<TBody>
+            reader = e.Current,
+            otherReader = otherE.Current;
+
+        while (true)
+            if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
+                return ret;
+    }
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object? obj) => false;
+    public readonly override bool Equals(object? obj) => false;
 
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public bool Equals<TOtherStrategy>(scoped in SplitSpan<TBody, TSeparator, TOtherStrategy> other) =>
+    public readonly bool Equals<TOtherStrategy>(scoped in SplitSpan<TBody, TSeparator, TOtherStrategy> other) =>
         typeof(TStrategy) == typeof(TOtherStrategy) &&
         _body.SequenceEqual(other._body) &&
         _separator.SequenceEqual(To<TSeparator>.From(other._separator));
 
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
+    /// <param name="other">The side to compare to.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        scoped in SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        var e = GetEnumerator();
+        var eOther = other.GetEnumerator();
+
+        while (e.MoveNext())
+            if (!(eOther.MoveNext() && e.Current.SequenceEqual(eOther.Current)))
+                return false;
+
+        return !eOther.MoveNext();
+    }
+
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public int Count()
+    public readonly int Count()
     {
         var e = GetEnumerator();
         var count = 0;
@@ -12165,18 +12002,91 @@ readonly
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
+    public readonly override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override string ToString() =>
+    public readonly override string ToString() =>
         typeof(TBody) == typeof(char)
             ? Aggregate(new(), StringBuilderAccumulator()).ToString()
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            : this.ToArrays().Stringify(3, true);
+            : ToArrays().Stringify(3, true);
 #else
             : throw new NotSupportedException();
 #endif
+
+    /// <summary>
+    /// Converts the elements of the collection to a <see cref="string"/> representation,
+    /// using the specified divider between elements.
+    /// </summary>
+    /// <param name="divider">The divider to insert between elements.</param>
+    /// <returns>A <see cref="string"/> representation of the collection.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(ReadOnlySpan<TBody> divider) => ToString(in divider);
+
+    /// <inheritdoc cref="ToString(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(scoped in ReadOnlySpan<TBody> divider)
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = New4<TBody>();
+
+        var e = GetEnumerator();
+
+        if (e.MoveNext())
+            ret.Append(e.Current);
+        else
+            return "";
+
+        while (e.MoveNext())
+            ret.Append(divider).Append(e.Current);
+
+        return ret.View.ToString();
+#else
+        List<TBody> ret = [];
+
+        var e = GetEnumerator();
+
+        if (!e.MoveNext())
+            return "";
+
+        foreach (var next in e.Current)
+            ret.Add(next);
+
+        while (e.MoveNext())
+        {
+            foreach (var next in divider)
+                ret.Add(next);
+
+            foreach (var next in e.Current)
+                ret.Add(next);
+        }
+
+        return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
+#endif
+    }
+
+    /// <summary>Copies the values to a new <see cref="string"/> <see cref="Array"/>.</summary>
+    /// <returns>The <see cref="string"/> <see cref="Array"/> containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string[] ToStringArray()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = New4<string>();
+
+        foreach (var next in this)
+            ret.Append(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
+
+        return ret.View.ToArray();
+#else
+        List<string> ret = [];
+
+        foreach (var next in this)
+            ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
+
+        return [.. ret];
+#endif
+    }
 
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
@@ -12184,7 +12094,7 @@ readonly
     /// <param name="func">An accumulator function to be invoked on each element.</param>
     /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
+    public readonly TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
     )
@@ -12199,7 +12109,7 @@ readonly
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Aggregate{TAccumulator}(TAccumulator, Accumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TAccumulator Aggregate<TAccumulator>(
+    public readonly TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] RefAccumulator<TAccumulator> func
     )
@@ -12210,6 +12120,98 @@ readonly
             accumulator = func(accumulator, next);
 
         return accumulator;
+    }
+
+    /// <summary>Copies the values to a new flattened array.</summary>
+    /// <returns>The array containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = New4<TBody>();
+
+        foreach (var next in this)
+            ret.Append(next);
+
+        return ret.View.ToArray();
+#else
+        List<TBody> ret = [];
+
+        foreach (var next in this)
+            foreach (var element in next)
+                ret.Add(element);
+
+        return [.. ret];
+#endif
+    }
+
+    /// <summary>Copies the values to a new flattened array.</summary>
+    /// <param name="divider">The separator between each element.</param>
+    /// <returns>The array containing the copied values of this instance.</returns>
+    public readonly TBody[] ToArray(ReadOnlySpan<TBody> divider) => ToArray(in divider);
+
+    /// <inheritdoc cref="ToArray(ReadOnlySpan{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray(scoped in ReadOnlySpan<TBody> divider)
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = New4<TBody>();
+
+        var e = GetEnumerator();
+
+        if (e.MoveNext())
+            ret.Append(e.Current);
+        else
+            return [];
+
+        while (e.MoveNext())
+            ret.Append(divider).Append(e.Current);
+
+        return ret.View.ToArray();
+#else
+        List<TBody> ret = [];
+
+        var e = GetEnumerator();
+
+        if (!e.MoveNext())
+            return [];
+
+        foreach (var next in e.Current)
+            ret.Add(next);
+
+        while (e.MoveNext())
+        {
+            foreach (var next in divider)
+                ret.Add(next);
+
+            foreach (var next in e.Current)
+                ret.Add(next);
+        }
+
+        return [.. ret];
+#endif
+    }
+
+    /// <summary>Copies the values to a new nested array.</summary>
+    /// <returns>The nested array containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[][] ToArrays()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = New4<TBody[]>();
+
+        foreach (var next in this)
+            ret.Append(next.ToArray());
+
+        return ret.View.ToArray();
+#else
+        List<TBody[]> ret = [];
+
+        foreach (var next in this)
+            ret.Add(next.ToArray());
+
+        return [.. ret];
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
@@ -12402,6 +12404,61 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
+
+        /// <summary>
+        /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
+        /// </summary>
+        /// <typeparam name="TOtherSeparator">The type of separator used in the other sequence.</typeparam>
+        /// <typeparam name="TOtherStrategy">The strategy used for splitting the other sequence.</typeparam>
+        /// <param name="other">The enumerator for the other sequence.</param>
+        /// <param name="reader">The <see cref="ReadOnlySpan{T}"/> representing this sequence.</param>
+        /// <param name="otherReader">The <see cref="ReadOnlySpan{T}"/> representing the other sequence.</param>
+        /// <param name="ret">
+        /// Output parameter indicating if the sequences are equal.
+        /// Note that this value is undefined if <see langword="false"/> is returned.
+        /// </param>
+        /// <returns>
+        /// The value <see langword="true"/> if enumeration should be stopped; otherwise, <see langword="false"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool EqualityMoveNext<TOtherSeparator, TOtherStrategy>(
+            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            ref ReadOnlySpan<TBody> reader,
+            ref ReadOnlySpan<TBody> otherReader,
+            out bool ret
+        )
+#if !NET7_0_OR_GREATER
+            where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        {
+            Unsafe.SkipInit(out ret);
+
+            if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
+                return SameLength(ref other, ref reader, ref otherReader, ref ret);
+
+            if (length < otherLength)
+            {
+                if (!reader.SequenceEqual(otherReader[..length]) || !MoveNext())
+                {
+                    ret = false;
+                    return true;
+                }
+
+                reader = Current;
+                otherReader = otherReader[length..];
+                return false;
+            }
+
+            if (!UnsafelyTake(reader, otherLength).SequenceEqual(otherReader) || !other.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader = UnsafelyTake(reader, otherLength);
+            otherReader = other.Current;
+            return false;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
@@ -12602,6 +12659,40 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return true;
             }
 #endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool SameLength<TOtherSeparator, TOtherStrategy>(
+            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            ref ReadOnlySpan<TBody> reader,
+            ref ReadOnlySpan<TBody> otherReader,
+            ref bool ret
+        )
+#if !NET7_0_OR_GREATER
+            where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        {
+            if (!reader.SequenceEqual(otherReader))
+            {
+                ret = false;
+                return true;
+            }
+
+            if (!MoveNext())
+            {
+                ret = !other.MoveNext();
+                return true;
+            }
+
+            if (!other.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader = Current;
+            otherReader = other.Current;
+            return false;
         }
     }
 }
