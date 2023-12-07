@@ -4939,7 +4939,9 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// Calculates the least nonnegative remainder of <paramref name="number"/> <c>%</c> <paramref name="radix"/>.
     /// </summary>
     /// <remarks><para>
-    /// Implementation based on <a href="https://doc.rust-lang.org/src/core/num/int_macros.rs.html#2190">Rust's</a>.
+    /// Implementation based on <a href="https://doc.rust-lang.org/src/core/num/int_macros.rs.html#2190">
+    /// Rust standard library (core)'s rem_euclid function
+    /// </a>.
     /// </para></remarks>
     /// <param name="number">The number to calculate the remainder of.</param>
     /// <param name="radix">The radix to use.</param>
