@@ -9858,7 +9858,10 @@ readonly
         ret.Append(e.Current);
 
         while (e.MoveNext())
-            ret.Append(divider).Append(e.Current);
+        {
+            ret.Append(divider);
+            ret.Append(e.Current);
+        }
 
         return ret.View.ToArray();
     }
@@ -12158,7 +12161,10 @@ readonly
         ret.Append(e.Current);
 
         while (e.MoveNext())
-            ret.Append(divider).Append(e.Current);
+        {
+            ret.Append(divider);
+            ret.Append(e.Current);
+        }
 
         return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
 #else
@@ -12281,7 +12287,10 @@ readonly
         ret.Append(e.Current);
 
         while (e.MoveNext())
-            ret.Append(divider).Append(e.Current);
+        {
+            ret.Append(divider);
+            ret.Append(e.Current);
+        }
 
         return ret.View.ToArray();
 #else

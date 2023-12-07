@@ -499,7 +499,10 @@ readonly
         ret.Append(e.Current);
 
         while (e.MoveNext())
-            ret.Append(divider).Append(e.Current);
+        {
+            ret.Append(divider);
+            ret.Append(e.Current);
+        }
 
         return ret.View.ToArray();
     }
