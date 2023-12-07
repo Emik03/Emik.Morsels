@@ -492,13 +492,11 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReadOnlyMemory<TBody>[] ToArrayMemories(scoped in ReadOnlyMemory<TBody> divider)
     {
-        using var ret = New4<ReadOnlyMemory<TBody>>();
-        var e = GetEnumerator();
-
-        if (e.MoveNext())
-            ret.Append(e.Current);
-        else
+        if (GetEnumerator() is var e && !e.MoveNext())
             return [];
+
+        using var ret = New4<ReadOnlyMemory<TBody>>();
+        ret.Append(e.Current);
 
         while (e.MoveNext())
             ret.Append(divider).Append(e.Current);

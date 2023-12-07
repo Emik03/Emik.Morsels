@@ -9851,13 +9851,11 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReadOnlyMemory<TBody>[] ToArrayMemories(scoped in ReadOnlyMemory<TBody> divider)
     {
-        using var ret = New4<ReadOnlyMemory<TBody>>();
-        var e = GetEnumerator();
-
-        if (e.MoveNext())
-            ret.Append(e.Current);
-        else
+        if (GetEnumerator() is var e && !e.MoveNext())
             return [];
+
+        using var ret = New4<ReadOnlyMemory<TBody>>();
+        ret.Append(e.Current);
 
         while (e.MoveNext())
             ret.Append(divider).Append(e.Current);
@@ -12153,26 +12151,23 @@ readonly
     public readonly string ToString(scoped in ReadOnlySpan<TBody> divider)
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = New4<TBody>();
-
-        var e = GetEnumerator();
-
-        if (e.MoveNext())
-            ret.Append(e.Current);
-        else
+        if (GetEnumerator() is var e && !e.MoveNext())
             return "";
+
+        using var ret = New4<TBody>();
+        ret.Append(e.Current);
 
         while (e.MoveNext())
             ret.Append(divider).Append(e.Current);
 
-        return ret.View.ToString();
+        return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
 #else
-        List<TBody> ret = [];
-
         var e = GetEnumerator();
 
         if (!e.MoveNext())
             return "";
+
+        List<TBody> ret = [];
 
         foreach (var next in e.Current)
             ret.Add(next);
@@ -12279,26 +12274,21 @@ readonly
     public readonly TBody[] ToArray(scoped in ReadOnlySpan<TBody> divider)
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = New4<TBody>();
-
-        var e = GetEnumerator();
-
-        if (e.MoveNext())
-            ret.Append(e.Current);
-        else
+        if (GetEnumerator() is var e && !e.MoveNext())
             return [];
+
+        using var ret = New4<TBody>();
+        ret.Append(e.Current);
 
         while (e.MoveNext())
             ret.Append(divider).Append(e.Current);
 
         return ret.View.ToArray();
 #else
-        List<TBody> ret = [];
-
-        var e = GetEnumerator();
-
-        if (!e.MoveNext())
+        if (GetEnumerator() is var e && !e.MoveNext())
             return [];
+
+        List<TBody> ret = [];
 
         foreach (var next in e.Current)
             ret.Add(next);
