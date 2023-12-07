@@ -250,7 +250,7 @@ ref
 
         var replacement = Rent(collection.Length);
         _view.CopyTo(replacement);
-        collection.CopyTo(_view[_length..]);
+        collection.CopyTo(replacement.AsSpan()[_length..]);
         _length += collection.Length;
         Swap(replacement);
         return this;
@@ -296,14 +296,14 @@ ref
         if (HasRoom(collection.Length))
         {
             View.CopyTo(_view[collection.Length..]);
-            collection.CopyTo(_view);
             _length += collection.Length;
+            collection.CopyTo(_view);
             return this;
         }
 
         var replacement = Rent(collection.Length);
         _view.CopyTo(replacement.AsSpan()[collection.Length..]);
-        collection.CopyTo(_view);
+        collection.CopyTo(replacement);
         _length += collection.Length;
         Swap(replacement);
         return this;
