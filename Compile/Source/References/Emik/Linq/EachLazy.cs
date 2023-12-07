@@ -11,7 +11,9 @@ static partial class EachLazy
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
@@ -24,7 +26,9 @@ static partial class EachLazy
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -43,7 +47,9 @@ static partial class EachLazy
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
@@ -56,7 +62,9 @@ static partial class EachLazy
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>

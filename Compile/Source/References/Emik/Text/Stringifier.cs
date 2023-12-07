@@ -148,6 +148,10 @@ static partial class Stringifier
     public static string Prettify(this string s) => Prettify(s, separator: ",;");
 
     /// <summary>Creates the prettified form of the string.</summary>
+    /// <remarks><para>
+    /// The functionality is based on
+    /// <a href="https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7">this gist by kodo-pp</a>.
+    /// </para></remarks>
     /// <param name="s">The string to prettify.</param>
     /// <param name="start">The characters considered to be starting blocks.</param>
     /// <param name="end">The characters considered to be ending blocks.</param>
@@ -163,7 +167,6 @@ static partial class Stringifier
     )
 #pragma warning disable CA1508
     {
-        // Inspired by https://gist.github.com/kodo-pp/89cefb17a8772cd9fd7b875d94fd29c7.
         var seen = false;
         var nest = 0;
         StringBuilder sb = new();

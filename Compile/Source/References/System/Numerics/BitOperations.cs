@@ -85,6 +85,12 @@ static partial class BitOperations
     }
 
     /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <remarks><para>
+    /// The fallback implementation is based on
+    /// <a href="https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2">
+    /// Bit Twiddling Hacks by Sean Eron Anderson
+    /// </a>.
+    /// </para></remarks>
     /// <param name="value">The value.</param>
     /// <returns>
     /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
@@ -93,7 +99,6 @@ static partial class BitOperations
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static uint RoundUpToPowerOf2(uint value)
     {
-        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
         --value;
         value |= value >> 1;
         value |= value >> 2;
@@ -103,16 +108,10 @@ static partial class BitOperations
         return value + 1;
     }
 
-    /// <summary>Round the given integral value up to a power of 2.</summary>
-    /// <param name="value">The value.</param>
-    /// <returns>
-    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
-    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
-    /// </returns>
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ulong RoundUpToPowerOf2(ulong value)
     {
-        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
         --value;
         value |= value >> 1;
         value |= value >> 2;
@@ -123,12 +122,7 @@ static partial class BitOperations
         return value + 1;
     }
 
-    /// <summary>Round the given integral value up to a power of 2.</summary>
-    /// <param name="value">The value.</param>
-    /// <returns>
-    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
-    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
-    /// </returns>
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe nuint RoundUpToPowerOf2(nuint value) =>
         sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);

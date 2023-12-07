@@ -17,15 +17,16 @@ static partial class SmallList
     /// And the Lord did grin, and the people did feast upon the lambs and sloths and carp and anchovies and orangutans
     /// and breakfast cereals and fruit bats and large chu...
     /// </para><para>
-    /// And the Lord spake, saying, "First shalt thou recreate the <c>smallvec</c> (https://crates.io/crates/smallvec)
-    /// crate. Then, shalt thou keep three inline. No more. No less. Three shalt be the number thou shalt keep inline,
-    /// and the number to keep inline shalt be three. Four shalt thou not keep inline, nor either keep inline thou two,
-    /// excepting that thou then proceed to three. Five is right out. Once the number three,  being the third number,
-    /// be reached, then, lobbest thou thy <see cref="SmallList{T}"/> towards thy heap, who, being slow and
-    /// cache-naughty in My sight, shall snuff it.".
+    /// And the Lord spake, saying, "First shalt thou recreate the
+    /// <a href="https://crates.io/crates/smallvec"><c>smallvec</c></a> crate. Then, shalt thou keep three inline. No
+    /// more. No less. Three shalt be the number thou shalt keep inline, and the number to keep inline shalt be three.
+    /// Four shalt thou not keep inline, nor either keep inline thou two, excepting that thou then proceed to three.
+    /// Five is right out. Once the number three,  being the third number, be reached, then, lobbest thou thy
+    /// <see cref="SmallList{T}"/> towards thy heap, who, being slow and cache-naughty in My sight, shall snuff it.".
     /// </para><para>
-    /// (Source: https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373).
-    /// </para></remarks>
+    /// <a href="https://github.com/rhaiscript/rhai/blob/ca18cdd7f47f8ae8bd6e2b7a950ad4815d62f026/src/lib.rs#L373">
+    /// (Adapted from Rhai)
+    /// </a></para></remarks>
 #pragma warning disable RCS1158
     public const int InlinedLength = 3;
 #pragma warning restore RCS1158

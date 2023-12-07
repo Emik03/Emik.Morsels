@@ -10,7 +10,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
@@ -27,7 +29,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="action">The action for each loop.</param>
     /// <returns>The parameter <paramref name="upper"/>.</returns>
@@ -44,7 +48,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
@@ -67,7 +73,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
@@ -90,7 +98,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
@@ -112,7 +122,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -137,7 +149,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     /// <param name="action">The action to do on each item in <paramref name="iterable"/>.</param>
@@ -160,7 +174,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -187,7 +203,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
     /// <param name="dictionary">The collection of items to go through one-by-one.</param>
@@ -209,7 +227,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
@@ -234,7 +254,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
     /// <param name="dictionary">The collection of items to go through one-by-one.</param>
@@ -258,7 +280,9 @@ static partial class Each
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-foreach-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
@@ -285,7 +309,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <param name="num">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
@@ -302,7 +328,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
@@ -315,7 +343,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TResult">The type of iterator.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="func">The function for each loop.</param>
@@ -331,7 +361,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="TResult">The type of iterator.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="func">The function for each loop.</param>
@@ -348,7 +380,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="upper">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
@@ -382,7 +416,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
@@ -403,7 +439,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <typeparam name="TResult">The type of iterator.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
@@ -427,7 +465,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <typeparam name="TResult">The type of iterator.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
@@ -454,7 +494,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="action">The action for each loop.</param>
@@ -473,7 +515,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
     /// <param name="action">The action for each loop.</param>
@@ -492,7 +536,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>
@@ -517,7 +563,9 @@ static partial class Each
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
     /// <param name="upper">The length to reach to in the for loop.</param>

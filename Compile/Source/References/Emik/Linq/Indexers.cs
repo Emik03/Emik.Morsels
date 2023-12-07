@@ -12,7 +12,9 @@ static partial class Indexers
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <param name="index">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
@@ -22,7 +24,9 @@ static partial class Indexers
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
     /// </summary>
-    /// <remarks><para>https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement.</para></remarks>
+    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
+    /// See here for more information.
+    /// </a></para></remarks>
     /// <param name="range">The range of numbers to iterate over in the <see langword="for"/> loop.</param>
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]

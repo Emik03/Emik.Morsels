@@ -7,6 +7,12 @@ namespace Emik.Morsels;
 static partial class Clamped
 {
     /// <summary>Round the given integral value up to a power of 2.</summary>
+    /// <remarks><para>
+    /// The fallback implementation is based on
+    /// <a href="https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2">
+    /// Bit Twiddling Hacks by Sean Eron Anderson
+    /// </a>.
+    /// </para></remarks>
     /// <param name="value">The value.</param>
     /// <returns>
     /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
@@ -19,7 +25,6 @@ static partial class Clamped
             BitOperations.RoundUpToPowerOf2(value);
 #else
     {
-        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
         --value;
         value |= value >> 1;
         value |= value >> 2;
@@ -30,12 +35,7 @@ static partial class Clamped
     }
 #endif
 
-    /// <summary>Round the given integral value up to a power of 2.</summary>
-    /// <param name="value">The value.</param>
-    /// <returns>
-    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
-    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
-    /// </returns>
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this ulong value)
 #if NET6_0_OR_GREATER
@@ -43,7 +43,6 @@ static partial class Clamped
             BitOperations.RoundUpToPowerOf2(value);
 #else
     {
-        // Based on https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
         --value;
         value |= value >> 1;
         value |= value >> 2;
@@ -55,12 +54,7 @@ static partial class Clamped
     }
 #endif
 
-    /// <summary>Round the given integral value up to a power of 2.</summary>
-    /// <param name="value">The value.</param>
-    /// <returns>
-    /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
-    /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
-    /// </returns>
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
@@ -101,7 +95,9 @@ static partial class Clamped
     /// Calculates the least nonnegative remainder of <paramref name="number"/> <c>%</c> <paramref name="radix"/>.
     /// </summary>
     /// <remarks><para>
-    /// Implementation based on <a href="https://doc.rust-lang.org/src/core/num/int_macros.rs.html#2190">Rust's</a>.
+    /// Implementation based on <a href="https://doc.rust-lang.org/src/core/num/int_macros.rs.html#2190">
+    /// Rust standard library (core)'s rem_euclid function
+    /// </a>.
     /// </para></remarks>
     /// <typeparam name="T">The type of numeric value.</typeparam>
     /// <param name="number">The number to calculate the remainder of.</param>

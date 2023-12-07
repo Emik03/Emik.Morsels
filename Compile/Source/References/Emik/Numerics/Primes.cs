@@ -4,7 +4,9 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 #if !NETFRAMEWORK || NET40_OR_GREATER
-/// <summary>Efficient prime operations by GordonBGood: https://stackoverflow.com/a/9700790/18052726.</summary>
+/// <summary>
+/// Efficient prime operations by <a href="https://stackoverflow.com/a/9700790/18052726">GordonBGood</a>.
+/// </summary>
 sealed class Primes : IEnumerable<ulong>
 {
     /// <summary>

@@ -476,8 +476,10 @@ namespace System.Runtime.CompilerServices
     /// The method's effective accessibility must be <see langword="internal"/> or <see langword="public"/>.
     /// </description></item>
     /// </list><para>
-    /// For more information, see
-    /// https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer.
+    /// For more information, see the
+    /// <a href="https://github.com/dotnet/runtime/blob/main/docs/design/specs/Ecma-335-Augments.md#module-initializer">
+    /// ECMA specification
+    /// </a>.
     /// </para></remarks>
     [AttributeUsage(AttributeTargets.Method, Inherited = false)]
     sealed partial class ModuleInitializerAttribute : Attribute;
@@ -700,10 +702,12 @@ namespace System.Text.RegularExpressions
         /// </param>
         /// <remarks><para>
         /// For a list of predefined culture names on Windows systems, see the Language tag column in the
-        /// list of language/region names supported by Windows
-        /// (https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c).
-        /// Culture names follow the standard defined by BCP 47 (https://tools.ietf.org/html/bcp47). In addition,
-        /// starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
+        /// list of language/region names supported by
+        /// <a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c">
+        /// Windows
+        /// </a>.
+        /// Culture names follow the standard defined by <a href="https://tools.ietf.org/html/bcp47">BCP 47</a>.
+        /// In addition, starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
         /// </para><para>
         /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
         /// </para></remarks>
@@ -749,11 +753,13 @@ namespace System.Text.RegularExpressions
         /// <paramref name="cultureName"/> is not case-sensitive.
         /// </param>
         /// <remarks><para>
-        /// For a list of predefined culture names on Windows systems, see the Language tag column in the list of
-        /// language/region names supported by Windows
-        /// (https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c).
-        /// Culture names follow the standard defined by BCP 47 (https://tools.ietf.org/html/bcp47). In addition,
-        /// starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
+        /// For a list of predefined culture names on Windows systems, see the Language tag column in the
+        /// list of language/region names supported by
+        /// <a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-lcid/a9eac961-e77d-41a6-90a5-ce1a8b0cdb9c">
+        /// Windows
+        /// </a>.
+        /// Culture names follow the standard defined by <a href="https://tools.ietf.org/html/bcp47">BCP 47</a>.
+        /// In addition, starting with Windows 10, <paramref name="cultureName"/> can be any valid BCP-47 language tag.
         /// </para><para>
         /// If <paramref name="cultureName"/> is <see cref="string.Empty"/>, the invariant culture will be used.
         /// </para></remarks>
