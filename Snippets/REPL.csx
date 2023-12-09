@@ -15938,6 +15938,11 @@ readonly
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindRest(T* ptr)
         {
+            // This check is normally unreachable, however it protects against out-of-bounds
+            // reads if this enumerator instance was created through unsafe means.
+            if (Index != sizeof(T) / sizeof(nuint))
+                return false;
+
             for (; (Mask & LastRest()) is not 0; Mask <<= 1)
                 if (IsNonZero(ptr))
                     return true;
