@@ -451,6 +451,11 @@ readonly
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindNativelySized(T* ptr)
         {
+            // This check is normally unreachable, however it protects against out-of-bounds
+            // reads if this enumerator instance was created through unsafe means.
+            if (Index < 0)
+                return false;
+
             for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
                 for (; Mask is not 0; Mask <<= 1)
                     if (IsNonZero(ptr))
