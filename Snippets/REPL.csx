@@ -10210,6 +10210,7 @@ readonly
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
         /// <inheritdoc />
@@ -10222,6 +10223,13 @@ readonly
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Separator"/>
+        public readonly ReadOnlyMemory<TSeparator> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
@@ -10282,6 +10290,7 @@ readonly
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
         /// <inheritdoc />
@@ -10294,6 +10303,13 @@ readonly
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Separator"/>
+        public readonly ReadOnlyMemory<TSeparator> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
@@ -12716,12 +12732,20 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         public readonly ReadOnlySpan<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
         /// <inheritdoc cref="IEnumerator.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitSpan{T, TSeparator, TStrategy}.Separator"/>
+        public readonly ReadOnlySpan<TSeparator> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>
@@ -13098,12 +13122,20 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         public readonly ReadOnlySpan<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
         /// <inheritdoc cref="IEnumerator.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitSpan{T, TSeparator, TStrategy}.Separator"/>
+        public readonly ReadOnlySpan<TSeparator> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>

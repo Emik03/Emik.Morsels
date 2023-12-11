@@ -618,6 +618,7 @@ readonly
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
         /// <inheritdoc />
@@ -630,6 +631,13 @@ readonly
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Separator"/>
+        public readonly ReadOnlyMemory<TSeparator> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
@@ -690,6 +698,7 @@ readonly
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
         /// <inheritdoc />
@@ -702,6 +711,13 @@ readonly
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
+        }
+
+        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Separator"/>
+        public readonly ReadOnlyMemory<TSeparator> Separator
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
