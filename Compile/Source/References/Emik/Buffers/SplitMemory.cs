@@ -582,11 +582,9 @@ readonly
         Unsafe.IsNullRef(ref MemoryMarshal.GetReference(span))
             ? default
             : memory.Slice(
-                (int)Unsafe.ByteOffset(
-                    ref MemoryMarshal.GetReference(memory.Span),
-                    ref MemoryMarshal.GetReference(span)
-                ) /
-                Unsafe.SizeOf<T>(),
+                (int)(Unsafe
+                       .ByteOffset(ref MemoryMarshal.GetReference(memory.Span), ref MemoryMarshal.GetReference(span)) /
+                    (nint)(uint)Unsafe.SizeOf<T>()),
                 span.Length
             );
 
