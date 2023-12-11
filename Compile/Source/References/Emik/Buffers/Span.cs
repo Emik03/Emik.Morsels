@@ -23,10 +23,15 @@ static partial class Span
             /// Gets a value indicating whether the conversion between types
             /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
             /// </summary>
+            // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
                 typeof(TTo) == typeof(TFrom) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
                 IsReinterpretable(typeof(TFrom), typeof(TTo));
+#else
+                typeof(TTo) == typeof(TFrom);
+#endif
 
             /// <summary>
             /// Gets the error that occurs when converting between types would cause undefined behavior.
@@ -36,13 +41,14 @@ static partial class Span
                 [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
                 get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
             }
-
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
             static bool IsReinterpretable(Type first, Type second) =>
                 first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
 
             [Pure]
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
+#endif
         }
 
         /// <summary>

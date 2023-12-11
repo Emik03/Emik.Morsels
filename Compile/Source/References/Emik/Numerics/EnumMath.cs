@@ -60,7 +60,7 @@ static partial class EnumMath
         };
 #else
         typeof(T) == typeof(Enum)
-            ? value.GetType().GetEnumUnderlyingType() switch
+            ? GetUnderlyingType(value.GetType()) switch
             {
                 var x when x == typeof(byte) => (byte)(object)value,
                 var x when x == typeof(sbyte) => (sbyte)(object)value,

@@ -97,9 +97,29 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAll), "TStrategy is MatchAll");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
-        Retry:
 
+            if (sep.Length < body.Length)
+            {
+                current = default;
+                return false;
+            }
+
+        Retry:
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             switch (body.LastIndexOf(sep))
+#else
+            int lower = 0, upper = body.Length - sep.Length;
+
+            for (; lower < upper; lower++)
+                if (UnsafelyTake(UnsafelyAdvance(body, lower), sep.Length).SequenceEqual(sep))
+                    break;
+
+            if (lower == upper)
+                lower = -1;
+
+            // The worst way to suppress warnings about inlining variables.
+            switch (+lower)
+#endif
             {
                 case -1:
                     current = body;

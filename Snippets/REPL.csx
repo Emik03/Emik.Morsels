@@ -5013,7 +5013,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         };
 #else
         typeof(T) == typeof(Enum)
-            ? value.GetType().GetEnumUnderlyingType() switch
+            ? GetUnderlyingType(value.GetType()) switch
             {
                 var x when x == typeof(byte) => (byte)(object)value,
                 var x when x == typeof(sbyte) => (sbyte)(object)value,
@@ -6056,7 +6056,7 @@ public sealed class Primes : IEnumerable<ulong>
 
         // Copy pre-culled lower base primes.
         for (var i = 0u; i < b.Length; nlwi += s_pageRange, i += s_pageSize)
-            s_masterCopy.CopyTo(b, i);
+            s_masterCopy.CopyTo(b, (int)i);
 
         for (uint i = 0, pd = 0;; i++)
         {
@@ -7653,10 +7653,15 @@ public
             /// Gets a value indicating whether the conversion between types
             /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
             /// </summary>
+            // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
                 typeof(TTo) == typeof(TFrom) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
                 IsReinterpretable(typeof(TFrom), typeof(TTo));
+#else
+                typeof(TTo) == typeof(TFrom);
+#endif
 
             /// <summary>
             /// Gets the error that occurs when converting between types would cause undefined behavior.
@@ -7666,13 +7671,14 @@ public
                 [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
                 get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
             }
-
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
             static bool IsReinterpretable(Type first, Type second) =>
                 first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
 
             [Pure]
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
+#endif
         }
 
         /// <summary>
@@ -12919,9 +12925,29 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAll), "TStrategy is MatchAll");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
-        Retry:
 
+            if (sep.Length < body.Length)
+            {
+                current = default;
+                return false;
+            }
+
+        Retry:
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             switch (body.LastIndexOf(sep))
+#else
+            int lower = 0, upper = body.Length - sep.Length;
+
+            for (; lower < upper; lower++)
+                if (UnsafelyTake(UnsafelyAdvance(body, lower), sep.Length).SequenceEqual(sep))
+                    break;
+
+            if (lower == upper)
+                lower = -1;
+
+            // The worst way to suppress warnings about inlining variables.
+            switch (+lower)
+#endif
             {
                 case -1:
                     current = body;
@@ -13396,9 +13422,11 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
 
-    const string DebugFile = "/tmp/morsels.log";
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+    static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if DEBUG
-    static Peeks() => File.Create(DebugFile).Dispose();
+    static Peeks() => File.Create(s_debugFile).Dispose();
+#endif
 #endif
 
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
@@ -13432,13 +13460,15 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #pragma warning restore CS1574
     public static void Shout(string message)
     {
-        // ReSharper disable once InvocationIsSkipped
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
         Trace.WriteLine(message);
 #endif
-        if (File.Exists(DebugFile))
-            File.AppendAllText(DebugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+        if (File.Exists(s_debugFile))
+            File.AppendAllText(s_debugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
+#endif
     }
 
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>

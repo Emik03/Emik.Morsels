@@ -96,5 +96,39 @@ static partial class MemoryExtensions
 #endif
         =>
             ((ReadOnlySpan<T>)span).IndexOf(value);
+
+    /// <summary>
+    /// Searches for the specified value and returns the index of its last occurrence.
+    /// If not found, returns -1. Values are compared using <see cref="IEquatable{T}.Equals(T)"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of span and value.</typeparam>
+    /// <param name="span">The span to search.</param>
+    /// <param name="value">The value to search for.</param>
+    /// <returns>The index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int LastIndexOf<T>(this ReadOnlySpan<T> span, T value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (value?.Equals(span[i]) ?? span[i] is null)
+                return i;
+
+        return -1;
+    }
+
+    /// <inheritdoc cref="LastIndexOf{T}(ReadOnlySpan{T}, T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int LastIndexOf<T>(this Span<T> span, T value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).IndexOf(value);
 }
 #endif

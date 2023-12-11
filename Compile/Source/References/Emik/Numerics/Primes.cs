@@ -534,7 +534,7 @@ sealed class Primes : IEnumerable<ulong>
 
         // Copy pre-culled lower base primes.
         for (var i = 0u; i < b.Length; nlwi += s_pageRange, i += s_pageSize)
-            s_masterCopy.CopyTo(b, i);
+            s_masterCopy.CopyTo(b, (int)i);
 
         for (uint i = 0, pd = 0;; i++)
         {

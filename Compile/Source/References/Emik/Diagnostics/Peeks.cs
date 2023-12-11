@@ -9,9 +9,11 @@ namespace Emik.Morsels;
 static partial class Peeks
 #pragma warning restore MA0048
 {
-    const string DebugFile = "/tmp/morsels.log";
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+    static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if DEBUG
-    static Peeks() => File.Create(DebugFile).Dispose();
+    static Peeks() => File.Create(s_debugFile).Dispose();
+#endif
 #endif
 
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
@@ -45,13 +47,15 @@ static partial class Peeks
 #pragma warning restore CS1574
     public static void Shout(string message)
     {
-        // ReSharper disable once InvocationIsSkipped
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
         Trace.WriteLine(message);
 #endif
-        if (File.Exists(DebugFile))
-            File.AppendAllText(DebugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
+#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
+        if (File.Exists(s_debugFile))
+            File.AppendAllText(s_debugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
+#endif
     }
 
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>

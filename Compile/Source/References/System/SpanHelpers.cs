@@ -318,7 +318,7 @@ static partial class SpanHelpers
     {
         if (valueLength is 0)
             return -1;
-
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         if (typeof(T).IsValueType)
             for (var i = 0; i < searchSpaceLength; i++)
             {
@@ -329,7 +329,10 @@ static partial class SpanHelpers
                         return i;
             }
         else
+#endif // ReSharper disable once BadPreprocessorIndent
+#pragma warning disable S2681, SA1137
             for (var i = 0; i < searchSpaceLength; i++)
+#pragma warning restore S2681, SA1137
             {
                 var obj = searchSpace[i];
 
