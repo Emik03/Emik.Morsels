@@ -125,7 +125,7 @@ static partial class SplitMemoryFactory
 #endif
         MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, Whitespaces.BreakingSearchMemory);
+        new(span, Whitespaces.BreakingSearch.Memory);
 #else
         new(span, Whitespaces.Breaking.AsMemory());
 #endif
@@ -167,7 +167,7 @@ static partial class SplitMemoryFactory
 #endif
         MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, Whitespaces.UnicodeSearchMemory);
+        new(span, Whitespaces.UnicodeSearch.Memory);
 #else
         new(span, Whitespaces.Unicode.AsMemory());
 #endif

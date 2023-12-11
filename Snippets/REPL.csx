@@ -7468,38 +7468,38 @@ public
 #if NET8_0_OR_GREATER
 #pragma warning disable IDISP004
     /// <inheritdoc cref="Breaking"/>
-    public static ReadOnlyMemory<SearchValues<char>> BreakingSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> BreakingSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new OnceMemoryManager<SearchValues<char>>(SearchValues.Create(Breaking)).Memory;
+        new(SearchValues.Create(Breaking));
 
     /// <inheritdoc cref="NonBreaking"/>
-    public static ReadOnlyMemory<SearchValues<char>> NonBreakingSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } = new OnceMemoryManager<SearchValues<char>>(SearchValues.Create(NonBreaking)).Memory;
+    } = new(SearchValues.Create(NonBreaking));
 
     /// <inheritdoc cref="Related"/>
-    public static ReadOnlyMemory<SearchValues<char>> RelatedSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> RelatedSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new OnceMemoryManager<SearchValues<char>>(SearchValues.Create(Related)).Memory;
+        new(SearchValues.Create(Related));
 
     /// <inheritdoc cref="Unicode"/>
-    public static ReadOnlyMemory<SearchValues<char>> UnicodeSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> UnicodeSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new OnceMemoryManager<SearchValues<char>>(SearchValues.Create(Unicode)).Memory;
+        new(SearchValues.Create(Unicode));
 
     /// <inheritdoc cref="Combined"/>
-    public static ReadOnlyMemory<SearchValues<char>> CombinedSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> CombinedSearchMemory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
-        new OnceMemoryManager<SearchValues<char>>(SearchValues.Create(Combined)).Memory;
+        new(SearchValues.Create(Combined));
 #pragma warning restore IDISP004
 #endif
 
@@ -9491,7 +9491,7 @@ public
 #endif
         MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, BreakingSearchMemory);
+        new(span, BreakingSearch.Memory);
 #else
         new(span, Breaking.AsMemory());
 #endif
@@ -9533,7 +9533,7 @@ public
 #endif
         MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, UnicodeSearchMemory);
+        new(span, UnicodeSearch.Memory);
 #else
         new(span, Unicode.AsMemory());
 #endif
@@ -11801,7 +11801,7 @@ public partial struct Two<T>(T left, T right) :
 #endif
         MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, BreakingSearchMemory.Span);
+        new(span, BreakingSearch.Memory.Span);
 #else
         new(span, Breaking.AsSpan());
 #endif
@@ -11846,7 +11846,7 @@ public partial struct Two<T>(T left, T right) :
 #endif
         MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, UnicodeSearchMemory.Span);
+        new(span, UnicodeSearch.Memory.Span);
 #else
         new(span, Unicode.AsSpan());
 #endif

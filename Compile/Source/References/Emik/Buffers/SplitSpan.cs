@@ -160,7 +160,7 @@ static partial class SplitSpanFactory
 #endif
         MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, Whitespaces.BreakingSearchMemory.Span);
+        new(span, Whitespaces.BreakingSearch.Memory.Span);
 #else
         new(span, Whitespaces.Breaking.AsSpan());
 #endif
@@ -205,7 +205,7 @@ static partial class SplitSpanFactory
 #endif
         MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
-        new(span, Whitespaces.UnicodeSearchMemory.Span);
+        new(span, Whitespaces.UnicodeSearch.Memory.Span);
 #else
         new(span, Whitespaces.Unicode.AsSpan());
 #endif
