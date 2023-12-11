@@ -7475,13 +7475,13 @@ public
         new(SearchValues.Create(Breaking));
 
     /// <inheritdoc cref="NonBreaking"/>
-    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } = new(SearchValues.Create(NonBreaking));
 
     /// <inheritdoc cref="Related"/>
-    public static OnceMemoryManager<SearchValues<char>> RelatedSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> RelatedSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
@@ -7495,7 +7495,7 @@ public
         new(SearchValues.Create(Unicode));
 
     /// <inheritdoc cref="Combined"/>
-    public static OnceMemoryManager<SearchValues<char>> CombinedSearchMemory
+    public static OnceMemoryManager<SearchValues<char>> CombinedSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
