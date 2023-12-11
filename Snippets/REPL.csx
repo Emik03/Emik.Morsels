@@ -7666,6 +7666,24 @@ public
     public static T? Parse<T>(this ReadOnlySpan<char> s, out bool success) =>
         FindTryParseFor<T>.WithCharSpan(s, out success);
 
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryParse<T>(this string s)
+        where T : struct =>
+        Parse<T>(s, out var success) is var value && success ? value : null;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryParse<T>(this ReadOnlySpan<byte> s)
+        where T : struct =>
+        Parse<T>(s, out var success) is var value && success ? value : null;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryParse<T>(this ReadOnlySpan<char> s)
+        where T : struct =>
+        Parse<T>(s, out var success) is var value && success ? value : null;
+
     static class FindTryParseFor<T>
     {
         [Pure]
