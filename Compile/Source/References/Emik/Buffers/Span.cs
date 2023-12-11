@@ -362,6 +362,51 @@ static partial class Span
         }
     }
 #endif
+#if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
+    /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
+    /// <param name="value">The reference to the target item to get the index for.</param>
+    /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ref T value)
+#pragma warning disable 8500
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        =>
+            Unsafe.ByteOffset(ref MemoryMarshal.GetReference(span), ref value) is var byteOffset &&
+            byteOffset / (nint)(uint)sizeof(T) is var elementOffset &&
+            (nuint)elementOffset < (uint)span.Length
+                ? (int)elementOffset
+                : -1;
+#else
+    {
+        fixed (T* ptr = &value)
+            return (nint)((T*)span.Pointer - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
+                ? (int)elementOffset
+                : -1;
+    }
+#endif
+#pragma warning restore 8500
+    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int IndexOf<T>(this Span<T> origin, ref T target) => ((ReadOnlySpan<T>)origin).IndexOf(ref target);
+#endif
+
+    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
+    public static unsafe int OffsetOf<T>(this in ReadOnlySpan<T> origin, in ReadOnlySpan<T> target) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        origin.IndexOf(ref MemoryMarshal.GetReference(target));
+#else
+#pragma warning disable 8500
+        origin.IndexOf(ref *(T*)target.Pointer);
+#pragma warning restore 8500
+#endif
+
+    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int OffsetOf<T>(this in Span<T> origin, in ReadOnlySpan<T> target) =>
+        ((ReadOnlySpan<T>)origin).OffsetOf(target);
 
     /// <summary>Gets the reference that whose address is within the null range.</summary>
     /// <remarks><para>
