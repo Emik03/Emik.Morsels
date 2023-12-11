@@ -9431,7 +9431,7 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this Memory<T> span,
-        OnceMemoryManager<SearchValues<T>> separator
+        in OnceMemoryManager<SearchValues<T>> separator
     )
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)span).SplitOn(separator);
