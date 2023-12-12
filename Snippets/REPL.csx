@@ -9650,7 +9650,7 @@ public
         var span = source.Span;
 
         for (var i = 0; i < source.Length; i++)
-            if (predicate(span[i]))
+            if (!predicate(span[i]))
                 return source[..i];
 
         return source;
@@ -9668,7 +9668,7 @@ public
 #endif
     {
         for (var i = 0; i < source.Length; i++)
-            if (predicate(source[i]))
+            if (!predicate(source[i]))
                 return source[..i];
 
         return source;
@@ -9684,7 +9684,7 @@ public
         var span = source.Span;
 
         for (var i = 0; i < source.Length; i++)
-            if (predicate(span[i]))
+            if (!predicate(span[i]))
                 return source[..i];
 
         return source;
@@ -9702,7 +9702,7 @@ public
 #endif
     {
         for (var i = 0; i < source.Length; i++)
-            if (predicate(source[i]))
+            if (!predicate(source[i]))
                 return source[..i];
 
         return source;
