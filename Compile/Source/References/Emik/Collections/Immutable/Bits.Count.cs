@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable IDE0250
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
 /// <inheritdoc cref="Bits{T}"/>
@@ -14,7 +14,7 @@ readonly
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe T this[int index]
+    public unsafe T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
@@ -25,7 +25,7 @@ readonly
     }
 
     /// <inheritdoc cref="IList{T}.this"/>
-    T IList<T>.this[int index]
+    T IList<T>.this[[NonNegativeValue] int index]
     {
         [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => this[index];
@@ -44,10 +44,64 @@ readonly
         }
     }
 
+#pragma warning disable MA0051 // ReSharper disable CognitiveComplexity
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
+    static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
+    {
+        for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
+            if (BitOperations.PopCount(*(nuint*)ptr) is var i && i <= x)
+                x -= i;
+            else
+                break;
+
+        for (; sizeof(T) % sizeof(nuint) >= sizeof(ulong) && ptr <= upper - sizeof(ulong); ptr += sizeof(ulong))
+            if (BitOperations.PopCount(*(ulong*)ptr) is var i && i <= x)
+                x -= i;
+            else
+                break;
+
+        for (; sizeof(T) % sizeof(ulong) >= sizeof(uint) && ptr <= upper - sizeof(uint); ptr += sizeof(uint))
+            if (BitOperations.PopCount(*(uint*)ptr) is var i && i <= x)
+                x -= i;
+            else
+                break;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe byte Find(ref byte* ptr, in byte* upper, int x)
+    {
+        for (; ptr < upper; ptr++)
+        {
+            if ((*ptr & 1) is not 0 && x-- is 0)
+                return 1;
+
+            if ((*ptr & 1 << 1) is not 0 && x-- is 0)
+                return 1 << 1;
+
+            if ((*ptr & 1 << 2) is not 0 && x-- is 0)
+                return 1 << 2;
+
+            if ((*ptr & 1 << 3) is not 0 && x-- is 0)
+                return 1 << 3;
+
+            if ((*ptr & 1 << 4) is not 0 && x-- is 0)
+                return 1 << 4;
+
+            if ((*ptr & 1 << 5) is not 0 && x-- is 0)
+                return 1 << 5;
+
+            if ((*ptr & 1 << 6) is not 0 && x-- is 0)
+                return 1 << 6;
+
+            if ((*ptr & 1 << 7) is not 0 && x-- is 0)
+                return 1 << 7;
+        }
+
+        return 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe int PopCount(T* value)
-#pragma warning restore MA0051
     {
         var ptr = (nuint*)value++;
         var sum = 0;
@@ -140,23 +194,6 @@ readonly
         return sum + PopCountRemainder((byte*)ptr);
     }
 
-    // ReSharper disable UnusedParameter.Local
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe int PopCountRemainder(byte* remainder) =>
-        BitOperations.PopCount(
-            (sizeof(T) % sizeof(nuint)) switch
-            {
-                1 => *remainder,
-                2 => *(ushort*)remainder,
-                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
-                4 => *(uint*)remainder,
-                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
-                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
-                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
-                _ => throw new ArgumentOutOfRangeException(nameof(remainder), (nuint)remainder, null),
-            }
-        );
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
     static unsafe int TrailingZeroCount(nuint value)
 #if NET7_0_OR_GREATER
@@ -215,38 +252,41 @@ readonly
 #endif
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static unsafe T Nth(T* p, int index)
-#pragma warning restore MA0051
+    static unsafe int PopCountRemainder(byte* remainder) =>
+        BitOperations.PopCount(
+            (sizeof(T) % sizeof(ulong)) switch
+            {
+                1 => *remainder,
+                2 => *(ushort*)remainder,
+                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
+                4 => *(uint*)remainder,
+                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
+                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
+                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
+                _ => throw new InvalidOperationException("sizeof(T) is assumed to be within [1, 7]."),
+            }
+        );
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Create(T* p, byte* ptr, byte i)
+    {
+        T t = default;
+        ((byte*)&t)[ptr - (byte*)p] = i;
+        return t;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Nth(T* p, [NonNegativeValue] int index)
     {
         var x = index;
-        var ptr = (nuint*)p;
+        var ptr = (byte*)p;
+        var upper = (byte*)(p + 1);
 
-        for (; ptr < p + 1 && x > 0; ptr++)
-            if (BitOperations.PopCount(*ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
+        if (sizeof(T) >= sizeof(uint))
+            MovePopCount(ref ptr, upper, ref x);
 
-        for (; ptr < (byte*)p + sizeof(T) && x > 0; ptr = (nuint*)((byte*)ptr + 1))
-            if (BitOperations.PopCount(*(byte*)ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
-
-        var last = *(byte*)ptr;
-
-        for (var i = 0; i < BitsInByte; i++)
-            if ((last & 1 << i) is not 0)
-                if (x is 0)
-                {
-                    T t = default;
-                    ((byte*)&t)[(byte*)ptr - (byte*)p] = (byte)(1 << i);
-                    return t;
-                }
-                else
-                    x--;
-
-        throw new ArgumentOutOfRangeException(nameof(index), index, null);
+        return Find(ref ptr, upper, x) is not 0 and var i
+            ? Create(p, ptr, i)
+            : throw new ArgumentOutOfRangeException(nameof(index), index, null);
     }
 }
