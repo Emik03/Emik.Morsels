@@ -847,33 +847,41 @@ static partial class Stringifier
     static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
     {
         var iterator = dictionary.GetEnumerator();
-        StringBuilder builder = new();
 
-        if (iterator.MoveNext())
-            builder.AppendKeyValuePair(
-                Stringify(iterator.Key, depth, useQuotes),
-                Stringify(iterator.Value, depth, useQuotes)
-            );
-
-        var i = 0;
-
-        while (iterator.MoveNext())
+        try
         {
-            if (checked(++i) >= MaxIteration)
-            {
-                builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
-                break;
-            }
+            StringBuilder builder = new();
 
-            builder
-               .Append(Separator)
-               .AppendKeyValuePair(
+            if (iterator.MoveNext())
+                builder.AppendKeyValuePair(
                     Stringify(iterator.Key, depth, useQuotes),
                     Stringify(iterator.Value, depth, useQuotes)
                 );
-        }
 
-        return builder;
+            var i = 0;
+
+            while (iterator.MoveNext())
+            {
+                if (checked(++i) >= MaxIteration)
+                {
+                    builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
+                    break;
+                }
+
+                builder
+                   .Append(Separator)
+                   .AppendKeyValuePair(
+                        Stringify(iterator.Key, depth, useQuotes),
+                        Stringify(iterator.Value, depth, useQuotes)
+                    );
+            }
+
+            return builder;
+        }
+        finally
+        {
+            (iterator as IDisposable)?.Dispose();
+        }
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
