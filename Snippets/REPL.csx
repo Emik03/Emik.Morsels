@@ -7336,33 +7336,41 @@ public
     static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
     {
         var iterator = dictionary.GetEnumerator();
-        StringBuilder builder = new();
 
-        if (iterator.MoveNext())
-            builder.AppendKeyValuePair(
-                Stringify(iterator.Key, depth, useQuotes),
-                Stringify(iterator.Value, depth, useQuotes)
-            );
-
-        var i = 0;
-
-        while (iterator.MoveNext())
+        try
         {
-            if (checked(++i) >= MaxIteration)
-            {
-                builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
-                break;
-            }
+            StringBuilder builder = new();
 
-            builder
-               .Append(Separator)
-               .AppendKeyValuePair(
+            if (iterator.MoveNext())
+                builder.AppendKeyValuePair(
                     Stringify(iterator.Key, depth, useQuotes),
                     Stringify(iterator.Value, depth, useQuotes)
                 );
-        }
 
-        return builder;
+            var i = 0;
+
+            while (iterator.MoveNext())
+            {
+                if (checked(++i) >= MaxIteration)
+                {
+                    builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
+                    break;
+                }
+
+                builder
+                   .Append(Separator)
+                   .AppendKeyValuePair(
+                        Stringify(iterator.Key, depth, useQuotes),
+                        Stringify(iterator.Value, depth, useQuotes)
+                    );
+            }
+
+            return builder;
+        }
+        finally
+        {
+            (iterator as IDisposable)?.Dispose();
+        }
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -7863,6 +7871,10 @@ public
 #endif
         }
 
+        /// <summary>Gets a value indicating whether the type is unmanaged.</summary>
+        public static bool Unmanagable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            typeof(TTo).IsUnmanaged();
+
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
         /// to a <see cref="ReadOnlySpan{T}"/> of type <see cref="TTo"/>.
@@ -8174,6 +8186,7 @@ public
         }
     }
 #endif
+#pragma warning disable 1574, 1580, 1581, 1584
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
     public static unsafe int OffsetOf<T>(this in ReadOnlySpan<T> origin, in ReadOnlySpan<T> target) =>
@@ -8189,7 +8202,7 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this in Span<T> origin, in ReadOnlySpan<T> target) =>
         ((ReadOnlySpan<T>)origin).OffsetOf(target);
-
+#pragma warning restore 1574, 1580, 1581, 1584
     /// <summary>Gets the reference that whose address is within the null range.</summary>
     /// <remarks><para>
     /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
@@ -19691,6 +19704,8 @@ public partial struct SmallList<T> :
 // ReSharper disable once CheckNamespace
 
 
+
+
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
 
@@ -19737,6 +19752,34 @@ public partial struct SmallList<T> :
     /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
+
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="it">The length of the buffer.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe PooledSmallList<T> Alloc<T>(this in int it)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static Span<T> Stack(int it)
+        {
+            var ptr = stackalloc byte[it];
+            return new(ptr, it);
+        }
+
+        return it switch
+        {
+            <= 0 => default, // No allocation
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span to point to deallocated stack memory.
+            _ when InBytes<T>(it) is <= StackallocSize and var i && To<T>.Unmanagable => Stack(i), // Stack allocation
+#endif
+            _ => it.AsPooledSmallList<T>(), // Heap allocation
+        };
+    }
 #endif
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>

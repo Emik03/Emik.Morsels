@@ -4,6 +4,8 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+using static Span;
+
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class SmallFactory
@@ -52,6 +54,34 @@ static partial class SmallFactory
     /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
+
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="it">The length of the buffer.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe PooledSmallList<T> Alloc<T>(this in int it)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static Span<T> Stack(int it)
+        {
+            var ptr = stackalloc byte[it];
+            return new(ptr, it);
+        }
+
+        return it switch
+        {
+            <= 0 => default, // No allocation
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span to point to deallocated stack memory.
+            _ when InBytes<T>(it) is <= StackallocSize and var i && To<T>.Unmanagable => Stack(i), // Stack allocation
+#endif
+            _ => it.AsPooledSmallList<T>(), // Heap allocation
+        };
+    }
 #endif
 
     /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
