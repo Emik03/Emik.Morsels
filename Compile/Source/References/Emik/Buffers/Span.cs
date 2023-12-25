@@ -51,6 +51,10 @@ static partial class Span
 #endif
         }
 
+        /// <summary>Gets a value indicating whether the type is unmanaged.</summary>
+        public static bool Unmanagable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            typeof(TTo).IsUnmanaged();
+
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
         /// to a <see cref="ReadOnlySpan{T}"/> of type <see cref="TTo"/>.
@@ -362,6 +366,7 @@ static partial class Span
         }
     }
 #endif
+#pragma warning disable 1574, 1580, 1581, 1584
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
     public static unsafe int OffsetOf<T>(this in ReadOnlySpan<T> origin, in ReadOnlySpan<T> target) =>
@@ -377,7 +382,7 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this in Span<T> origin, in ReadOnlySpan<T> target) =>
         ((ReadOnlySpan<T>)origin).OffsetOf(target);
-
+#pragma warning restore 1574, 1580, 1581, 1584
     /// <summary>Gets the reference that whose address is within the null range.</summary>
     /// <remarks><para>
     /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
