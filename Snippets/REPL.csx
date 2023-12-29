@@ -6760,7 +6760,9 @@ public
     /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
     [Pure]
     public static string UnfoldedFullName(this Type? type) =>
-        type is { Namespace: var name and not "" and not null } ? $"{name}.{UnfoldedName(type)}" : UnfoldedName(type);
+        type is null ? Null :
+        s_unfoldedNames.TryGetValue(type, out var val) ? val :
+        s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.FullName)}";
 #endif
 
     /// <summary>Gets the type name, with its generics extended.</summary>
@@ -6775,7 +6777,7 @@ public
     ) =>
         type is null ? Null :
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
-        s_unfoldedNames[type] = $"{type.UnfoldedName(new())}";
+        s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.Name)}";
 #endif
 
     /// <summary>Converts a number to an ordinal.</summary>
@@ -7383,12 +7385,12 @@ public
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static StringBuilder UnfoldedName(this Type? type, StringBuilder builder)
+    static StringBuilder UnfoldedName(this Type? type, StringBuilder builder, Converter<Type, string?> naming)
     {
         StringBuilder Append(Type x)
         {
             builder.Append(',').Append(' ');
-            return x.UnfoldedName(builder);
+            return x.UnfoldedName(builder, naming);
         }
 
         if (type is null)
@@ -7400,15 +7402,13 @@ public
         if (type.GetElementType() is { } underlying)
             return UnfoldedElementName(type, builder, underlying);
 
-        var name = type.Name;
-
-        if (!type.IsGenericType)
+        if ((naming(type) ?? "") is var name && !type.IsGenericType)
             return builder.Append(name);
 
-        var len = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
+        var length = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
         var types = type.GetGenericArguments();
 
-        types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, len).Append('<'));
+        types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, length).Append('<'), naming);
         types.Skip(1).Select(Append).Enumerate();
 
         return builder.Append('>');
