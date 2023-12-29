@@ -6577,11 +6577,8 @@ public
     static readonly MethodInfo // ReSharper disable NullableWarningSuppressionIsUsed
         s_boolStringify = ((Func<bool, int, bool, string>)Stringify).Method,
         s_combine = ((Func<string, string, string>)string.Concat).Method,
-        s_readPointer = s_boolStringify.DeclaringType
-            !.GetMethod(nameof(ReadPointer), BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
-           .GetGenericMethodDefinition(),
-        s_readReference = s_boolStringify.DeclaringType
-            !.GetMethod(nameof(ReadReference), BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
+        s_readPointer = s_boolStringify.DeclaringType!
+           .GetMethod(nameof(ReadPointer), BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
            .GetGenericMethodDefinition(),
         s_stringify = s_boolStringify.GetGenericMethodDefinition();
 #endif // ReSharper restore NullableWarningSuppressionIsUsed
@@ -7288,19 +7285,25 @@ public
     {
         var type = selector(info);
         var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
+        Expression exAcc = MakeMemberAccess(exInstance, info);
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (type.IsByRefLike)
-            return Call(s_combine, exConstant, Call(exInstance, s_toString));
+        if (type.IsByRef || type.IsByRefLike)
+#else
+        if (type.IsByRef)
 #endif
-        Expression exMember = MakeMemberAccess(exInstance, info);
-
-        while (type.IsByRef || type.IsPointer)
-            exMember = Call( // ReSharper disable once NullableWarningSuppressionIsUsed
-                (type.IsByRef ? s_readReference : s_readPointer).MakeGenericMethod(type = type.GetElementType()!),
-                exMember
+            return Call(
+                s_combine,
+                exConstant,
+                type.GetMethod(nameof(ToString), Type.EmptyTypes) is { } method
+                    ? Expression.Call(exAcc, method)
+                    : Expression.Constant(exAcc.Type.UnfoldedName())
             );
 
-        Expression exCall = Call(s_stringify.MakeGenericMethod(type), exMember, exDepth, s_exTrue);
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        while (type.IsPointer && (type = type.GetElementType()!) is var _)
+            exAcc = Call(s_readPointer.MakeGenericMethod(type), exAcc);
+
+        Expression exCall = Call(s_stringify.MakeGenericMethod(type), exAcc, exDepth, s_exTrue);
 #if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
         var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
         Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
@@ -7430,12 +7433,6 @@ public
 #endif
 #pragma warning disable 8500
     static unsafe T? ReadPointer<T>(T* ptr) => (nuint)ptr >= 1 << 11 ? *ptr : default;
-
-    static unsafe T? ReadReference<T>(ref T reference)
-    {
-        fixed (T* ptr = &reference)
-            return ReadPointer(ptr);
-    }
 #pragma warning restore 8500
 #if !NETFRAMEWORK || NET40_OR_GREATER
     sealed class FakeComparer(int depth) : IComparer, IEqualityComparer
