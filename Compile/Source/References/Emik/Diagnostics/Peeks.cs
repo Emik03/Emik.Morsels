@@ -111,20 +111,6 @@ static partial class Peeks
             Indent = "\n        ",
             Of = $"{Indent}of ";
 
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-#pragma warning disable 8500
-        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped in ReadOnlySpan<char> next)
-        {
-            var trimmed = next.Trim();
-
-            fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, trimmed.Length).Append(' ');
-
-            return accumulator;
-        }
-#pragma warning restore 8500
-#endif
-
         if (!(filter ?? (_ => true))(value))
             return value;
 
@@ -139,20 +125,8 @@ static partial class Peeks
             var x => Stringifier.Stringify(x),
         };
 
-        var location = shouldLogExpression
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            ? expression?.Collapse().SplitSpanLines().Aggregate(new StringBuilder(Of), Accumulator)
-#else
-            ? expression
-              ?.Collapse()
-               .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-               .Select(x => x.Trim())
-               .Prepend(Of)
-               .Conjoin("")
-#endif
-            : default;
-
-        var log = $"{stringified}{location}{Indent}at {member} in {Path.GetFileName(path)}:line {line}";
+        var logExpression = shouldLogExpression ? expression.CollapseToSingleLine(Of) : "";
+        var log = $"{stringified}{logExpression}{Indent}at {member} in {path.FileName()}:line {line}";
         logger(log);
         return value;
     }

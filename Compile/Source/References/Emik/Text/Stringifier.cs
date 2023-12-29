@@ -39,6 +39,7 @@ static partial class Stringifier
         Null = "null",
         SecondOrd = "nd",
         Separator = ", ",
+        Slashes = @"/\",
         ThirdOrd = "rd",
         True = "true",
         Unsupported = $"!<{nameof(NotSupportedException)}>",
@@ -92,9 +93,11 @@ static partial class Stringifier
            .GetMethod(nameof(ReadPointer), BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
            .GetGenericMethodDefinition(),
         s_stringify = s_boolStringify.GetGenericMethodDefinition();
-#endif // ReSharper restore NullableWarningSuppressionIsUsed
-    static readonly MethodInfo s_toString = ((Func<string?>)s_hasMethods.ToString).Method;
+#endif
 #if !WAWA
+#if NET8_0_OR_GREATER
+    static readonly OnceMemoryManager<SearchValues<char>> s_slashes = new(SearchValues.Create(Slashes));
+#endif
 #pragma warning disable MA0110, SYSLIB1045
     static readonly Regex
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
@@ -135,6 +138,36 @@ static partial class Stringifier
         return s_quotes.Replace(s, "\"…\"");
     }
 
+    /// <summary>Collapses the <see cref="string"/> to a single line.</summary>
+    /// <param name="expression">The <see cref="string"/> to collapse.</param>
+    /// <param name="prefix">The prefix to use.</param>
+    /// <returns>The collapsed <see cref="string"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(expression))]
+    public static string? CollapseToSingleLine(this string? expression, string? prefix = null)
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped in ReadOnlySpan<char> next)
+        {
+            var trimmed = next.Trim();
+
+            fixed (char* ptr = &trimmed[0])
+                accumulator.Append(ptr, trimmed.Length).Append(' ');
+
+            return accumulator;
+        }
+
+        return expression?.Collapse().SplitSpanLines().Aggregate(new StringBuilder(prefix), Accumulator).ToString();
+#else
+        return expression
+          ?.Collapse()
+           .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+           .Select(x => x.Trim())
+           .Prepend(prefix)
+           .Conjoin("");
+#endif
+    }
+
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="one">The string for the value 1 or -1.</param>
@@ -145,6 +178,33 @@ static partial class Stringifier
         i is not 1 and not -1 && Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length) is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
+
+    /// <summary>Extracts the file name from the path.</summary>
+    /// <remarks><para>
+    /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
+    /// </para></remarks>
+    /// <param name="path">The path to extract the file name from.</param>
+    /// <returns>The file name.</returns>
+    [Pure]
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+    [return: NotNullIfNotNull(nameof(path))]
+#endif
+    public static
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        ReadOnlyMemory<char>
+#else
+        string?
+#endif
+        FileName(this string? path) =>
+        path is null
+            ? default
+#if NET8_0_OR_GREATER
+            : path.SplitOn(s_slashes).Last;
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            : path.SplitAny(Slashes.AsMemory()).Last;
+#else
+            : Path.GetFileName(path);
+#endif
 
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
