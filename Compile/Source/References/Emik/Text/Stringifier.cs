@@ -911,7 +911,7 @@ static partial class Stringifier
             return builder.Append(val);
 
         if (type.GetElementType() is { } underlying)
-            return UnfoldedElementName(type, builder, underlying);
+            return UnfoldedElementName(type, builder, naming, underlying);
 
         if ((naming(type) ?? "") is var name && !type.IsGenericType)
             return builder.Append(name);
@@ -925,13 +925,17 @@ static partial class Stringifier
         return builder.Append('>');
     }
 
-    static StringBuilder UnfoldedElementName(Type type, StringBuilder builder, Type underlying)
+    static StringBuilder UnfoldedElementName(
+        Type type,
+        StringBuilder builder,
+        Converter<Type, string?> naming,
+        Type underlying
+    )
     {
         if (type.IsByRef)
-            builder.Append('r').Append('e').Append('f').Append(' ');
+            builder.Append("ref ");
 
-        var underlyingName = UnfoldedName(underlying);
-        builder.Append(underlyingName);
+        builder.Append(UnfoldedName(underlying, new(), naming));
 
         if (type.IsArray)
             builder.Append('[').Append(']');
