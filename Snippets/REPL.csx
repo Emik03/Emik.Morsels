@@ -7653,6 +7653,29 @@ public
         return builder.Remove(startIndex, length);
     }
 
+    /// <inheritdoc cref="string.Trim()"/>
+    public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
+
+    /// <inheritdoc cref="string.TrimEnd()"/>
+    public static StringBuilder TrimEnd(this StringBuilder builder)
+    {
+        for (var i = builder.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(builder[i]))
+                return builder.Remove(i + 1, builder.Length - i - 1);
+
+        return builder.Remove(0, builder.Length);
+    }
+
+    /// <inheritdoc cref="string.TrimStart()"/>
+    public static StringBuilder TrimStart(this StringBuilder builder)
+    {
+        for (var i = 0; i < builder.Length; i++)
+            if (!char.IsWhiteSpace(builder[i]))
+                return builder.Remove(0, i);
+
+        return builder.Remove(0, builder.Length);
+    }
+
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
