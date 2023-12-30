@@ -56,14 +56,8 @@ static partial class Peeks
         {
             var (builder, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(new()), Accumulator.Next);
 
-            var descriptor = new DiagnosticDescriptor(
-                nameof(DiagnosticSink),
-                nameof(DiagnosticSink),
-                $"{builder}",
-                nameof(DiagnosticSink),
-                ToDiagnosticSeverity(logEvent.Level),
-                true
-            );
+            DiagnosticDescriptor descriptor =
+                new(DD, $"{s_guid}", $"{builder}", DD, ToDiagnosticSeverity(logEvent.Level), true);
 
             var properties = logEvent.Properties.Select(x => x.Value);
             var (first, rest) = Flatten(properties).OfType<ScalarValue>().Select(x => x.Value).OfType<Location>();
@@ -98,7 +92,11 @@ static partial class Peeks
             };
     }
 
+    const string DD = nameof(DiagnosticDescriptor);
+
     static readonly DiagnosticSink s_diagnosticSink = new();
+
+    static readonly Guid s_guid = Guid.NewGuid();
 #endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
@@ -133,14 +131,7 @@ static partial class Peeks
 
     /// <summary>Gets the dummy diagnostic.</summary>
     [Pure]
-    public static DiagnosticDescriptor Dummy { get; } = new(
-        nameof(DiagnosticSink),
-        $"{Guid.NewGuid()}",
-        "",
-        nameof(DiagnosticSink),
-        DiagnosticSeverity.Error,
-        true
-    );
+    public static DiagnosticDescriptor Dummy { get; } = new(DD, $"{s_guid}", "", DD, DiagnosticSeverity.Error, true);
 #endif
 #pragma warning disable CS1574
     /// <summary>
