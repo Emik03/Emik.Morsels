@@ -130,6 +130,17 @@ static partial class Peeks
     /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
     [Pure]
     public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
+
+    /// <summary>Gets the dummy diagnostic.</summary>
+    [Pure]
+    public static DiagnosticDescriptor Dummy { get; } = new(
+        nameof(DiagnosticSink),
+        nameof(DiagnosticSink),
+        "",
+        nameof(DiagnosticSink),
+        DiagnosticSeverity.Error,
+        true
+    );
 #endif
 #pragma warning disable CS1574
     /// <summary>
