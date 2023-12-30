@@ -1048,7 +1048,7 @@ static partial class Peeks
     {
         static void EnsureLoggerIsInitialized()
         {
-            const char Eval = '\u211B';
+            const char Eval = '\u211b';
 
             // ReSharper disable once RedundantNameQualifier
             if (Log.Logger != Serilog.Core.Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
@@ -1072,7 +1072,7 @@ static partial class Peeks
 #else
                .WriteTo.File(log)
 #endif
-               .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
+               .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(log, "clef"))
                .CreateLogger();
         }
 
