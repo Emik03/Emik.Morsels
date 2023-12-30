@@ -16,7 +16,7 @@ static partial class Peeks
         /// <summary>Contains the state of the <see cref="Accumulator"/>.</summary>
         /// <param name="Builder">The resulting <see cref="string"/>.</param>
         /// <param name="List">The list of property names.</param>
-        public record Accumulator(StringBuilder Builder, SmallList<string> List = default)
+        public sealed record Accumulator(StringBuilder Builder, SmallList<string> List = default)
         {
             int _index;
 
