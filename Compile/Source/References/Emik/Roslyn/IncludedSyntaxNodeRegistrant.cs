@@ -476,8 +476,13 @@ static partial class IncludedSyntaxNodeRegistrant
         where TSyntaxNode : SyntaxNode =>
         context =>
         {
-            if (!context.IsExcludedFromAnalysis() && context.Node is TSyntaxNode node)
-                action(context, node);
+            if (context.Node is not TSyntaxNode node || context.IsExcludedFromAnalysis())
+                return;
+
+            action(context, node);
+#if !RELEASE
+            context.Drain();
+#endif
         };
 
     [Pure]
