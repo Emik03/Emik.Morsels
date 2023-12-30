@@ -92,7 +92,9 @@ static partial class Peeks
             };
     }
 
-    const string DD = nameof(DiagnosticDescriptor);
+    const string
+        Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a",
+        DD = nameof(DiagnosticDescriptor);
 
     static readonly DiagnosticSink s_diagnosticSink = new();
 
@@ -1060,9 +1062,11 @@ static partial class Peeks
 #else
                .WriteTo.Console()
 #endif
-               .WriteTo.File(Path.ChangeExtension(path, "log"))
+               .WriteTo.File(new JsonFormatter(), Path.ChangeExtension(path, "log"))
                .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
                .CreateLogger();
+
+            Log.Information(Clear);
         }
 
         EnsureLoggerIsInitialized();

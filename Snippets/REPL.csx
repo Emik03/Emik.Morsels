@@ -15117,7 +15117,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #else
                .WriteTo.Console()
 #endif
-               .WriteTo.File(Path.ChangeExtension(path, "log"))
+               .WriteTo.File(new JsonFormatter(), Path.ChangeExtension(path, "log"))
                .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
                .CreateLogger();
         }
