@@ -1062,7 +1062,7 @@ static partial class Peeks
 #else
                .WriteTo.Console()
 #endif
-               .WriteTo.File(new JsonFormatter(), Path.ChangeExtension(path, "log"))
+               .WriteTo.File(Path.ChangeExtension(path, "log"))
                .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
                .CreateLogger();
 
@@ -1091,9 +1091,9 @@ static partial class Peeks
             else
                 Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})]\n{@Value}", f, name, line, e, x);
         else if (f is { Length: 0 })
-            Log.Write(level, "[{@Member}:{@Line}, {@Expression}]\n{@Type} {$Value}", name, line, e, t, x);
+            Log.Write(level, "[{@Member}:{@Line}, {@Expression}]\n{@Type} {@Value}", name, line, e, t, x);
         else
-            Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}]\n{@Type} {$Value}", f, name, line, e, t, x);
+            Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}]\n{@Type} {@Value}", f, name, line, e, t, x);
 
         return value;
     }
