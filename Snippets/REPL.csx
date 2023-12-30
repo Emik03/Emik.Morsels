@@ -3044,7 +3044,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier
+        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
         return *(T*)&c;
@@ -3211,7 +3211,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
-    [LinqTunnel, Pure] // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
+    [LinqTunnel, Pure] // ReSharper disable once NotDisposedResource ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
     public static IEnumerable<object?> AsGenericEnumerable(this Array array) => array.GetEnumerator().AsEnumerable();
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside an <see cref="IEnumerable{T}"/>.</summary>
@@ -3409,7 +3409,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
-        // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsReturned
+        // ReSharper disable once NotDisposedResourceIsReturned ObjectProducedWithMustDisposeAnnotatedMethodIsReturned
         var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
 
         falsy.For(x => x.Dispose());
@@ -6705,7 +6705,7 @@ public
     /// <param name="path">The path to extract the file name from.</param>
     /// <returns>The file name.</returns>
     [Pure]
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+#if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
     [return: NotNullIfNotNull(nameof(path))]
 #endif
     public static
@@ -14023,6 +14023,97 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
 
+#if ROSLYN // ReSharper disable once RedundantExtendsListEntry
+    /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
+    public sealed partial class DiagnosticSink : ILogEventSink
+    {
+        /// <summary>Contains the state of the <see cref="Accumulator"/>.</summary>
+        /// <param name="Builder">The resulting <see cref="string"/>.</param>
+        /// <param name="List">The list of property names.</param>
+        public record Accumulator(StringBuilder Builder, SmallList<string> List = default)
+        {
+            int _index;
+
+            /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
+            /// <param name="accumulator">The accumulator.</param>
+            /// <param name="token">The token to process.</param>
+            /// <returns>The parameter <paramref name="accumulator"/>.</returns>
+            public static Accumulator Next(Accumulator accumulator, MessageTemplateToken token) =>
+                accumulator.Next(token);
+
+            /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
+            /// <param name="token">The token to process.</param>
+            /// <returns>Itself.</returns>
+            public Accumulator Next(MessageTemplateToken token)
+            {
+                if (token is TextToken { Text: var text })
+                {
+                    Builder.Append(text);
+                    return this;
+                }
+
+                if (token is not PropertyToken property)
+                    throw Unreachable;
+
+                Builder.Append('{').Append(_index++).Append('}');
+                List.Add(property.PropertyName);
+                return this;
+            }
+        }
+
+        /// <summary>Gets the logged diagnostics.</summary>
+        [Pure]
+        public ConcurrentQueue<Diagnostic> UnreportedDiagnostics { get; } = [];
+
+        /// <inheritdoc />
+        public void Emit(LogEvent logEvent)
+        {
+            var (builder, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(new()), Accumulator.Next);
+
+            var descriptor = new DiagnosticDescriptor(
+                nameof(DiagnosticSink),
+                nameof(DiagnosticSink),
+                $"{builder}",
+                nameof(DiagnosticSink),
+                ToDiagnosticSeverity(logEvent.Level),
+                true
+            );
+
+            var properties = logEvent.Properties.Select(x => x.Value);
+            var (first, rest) = Flatten(properties).OfType<ScalarValue>().Select(x => x.Value).OfType<Location>();
+            var args = list.Select(x => (object)logEvent.Properties[x]).ToArray();
+            var diagnostic = Diagnostic.Create(descriptor, first, rest, args);
+
+            UnreportedDiagnostics.Enqueue(diagnostic);
+        }
+
+        static IEnumerable<LogEventPropertyValue> Flatten(IEnumerable<LogEventPropertyValue> values) =>
+            values.SelectMany(
+                x => x switch
+                {
+                    ScalarValue v => v.Yield(),
+                    SequenceValue v => Flatten(v.Elements),
+                    DictionaryValue v => v.Elements.SelectMany(x => Flatten([x.Key, x.Value])),
+                    StructureValue v => Flatten(v.Properties.Select(x => x.Value)),
+                    _ => [],
+                }
+            );
+
+        static DiagnosticSeverity ToDiagnosticSeverity(LogEventLevel level) =>
+            level switch
+            {
+                LogEventLevel.Debug => DiagnosticSeverity.Hidden,
+                LogEventLevel.Error => DiagnosticSeverity.Error,
+                LogEventLevel.Fatal => DiagnosticSeverity.Error,
+                LogEventLevel.Information => DiagnosticSeverity.Info,
+                LogEventLevel.Verbose => DiagnosticSeverity.Hidden,
+                LogEventLevel.Warning => DiagnosticSeverity.Warning,
+                _ => throw Unreachable,
+            };
+    }
+
+    static readonly DiagnosticSink s_diagnosticSink = new();
+#endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if DEBUG
@@ -14048,6 +14139,11 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+#endif
+#if ROSLYN
+    /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
+    [Pure]
+    public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
 #endif
 #pragma warning disable CS1574
     /// <summary>
@@ -14964,13 +15060,18 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         {
             const char Eval = '\u211B';
 
-            if (Log.Logger != Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
+            // ReSharper disable once RedundantNameQualifier
+            if (Log.Logger != Serilog.Core.Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
                 return;
 
             var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
 
             Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
+#if ROSLYN
+               .WriteTo.Sink(s_diagnosticSink)
+#else
                .WriteTo.Console()
+#endif
                .WriteTo.File(Path.ChangeExtension(path, "log"))
                .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
                .CreateLogger();
@@ -15301,8 +15402,10 @@ public abstract class FixedGenerator(
         new T().Name;
 
     /// <inheritdoc />
+#pragma warning disable CA1033
     void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
         context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}\n"));
+#pragma warning restore CA1033
 }
 #endif
 

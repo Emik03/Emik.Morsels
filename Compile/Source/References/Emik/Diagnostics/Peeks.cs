@@ -3,9 +3,6 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#if ROSLYN
-using Aggregate = (StringBuilder Builder, SmallList<string> List, int Index);
-#endif
 
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
@@ -16,6 +13,40 @@ static partial class Peeks
     /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
     public sealed partial class DiagnosticSink : ILogEventSink
     {
+        /// <summary>Contains the state of the <see cref="Accumulator"/>.</summary>
+        /// <param name="Builder">The resulting <see cref="string"/>.</param>
+        /// <param name="List">The list of property names.</param>
+        public record Accumulator(StringBuilder Builder, SmallList<string> List = default)
+        {
+            int _index;
+
+            /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
+            /// <param name="accumulator">The accumulator.</param>
+            /// <param name="token">The token to process.</param>
+            /// <returns>The parameter <paramref name="accumulator"/>.</returns>
+            public static Accumulator Next(Accumulator accumulator, MessageTemplateToken token) =>
+                accumulator.Next(token);
+
+            /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
+            /// <param name="token">The token to process.</param>
+            /// <returns>Itself.</returns>
+            public Accumulator Next(MessageTemplateToken token)
+            {
+                if (token is TextToken { Text: var text })
+                {
+                    Builder.Append(text);
+                    return this;
+                }
+
+                if (token is not PropertyToken property)
+                    throw Unreachable;
+
+                Builder.Append('{').Append(_index++).Append('}');
+                List.Add(property.PropertyName);
+                return this;
+            }
+        }
+
         /// <summary>Gets the logged diagnostics.</summary>
         [Pure]
         public ConcurrentQueue<Diagnostic> UnreportedDiagnostics { get; } = [];
@@ -23,10 +54,7 @@ static partial class Peeks
         /// <inheritdoc />
         public void Emit(LogEvent logEvent)
         {
-            var (builder, list, _) = logEvent.MessageTemplate.Tokens.Aggregate(
-                (Builder: new StringBuilder(), default(SmallList<string>), 0),
-                Next
-            );
+            var (builder, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(new()), Accumulator.Next);
 
             var descriptor = new DiagnosticDescriptor(
                 nameof(DiagnosticSink),
@@ -68,22 +96,6 @@ static partial class Peeks
                 LogEventLevel.Warning => DiagnosticSeverity.Warning,
                 _ => throw Unreachable,
             };
-
-        static Aggregate Next(Aggregate x, MessageTemplateToken token)
-        {
-            if (token is TextToken { Text: var text })
-            {
-                x.Builder.Append(text);
-                return x;
-            }
-
-            if (token is not PropertyToken property)
-                throw Unreachable;
-
-            x.Builder.Append('{').Append(x.Index++).Append('}');
-            x.List.Add(property.PropertyName);
-            return x;
-        }
     }
 
     static readonly DiagnosticSink s_diagnosticSink = new();
