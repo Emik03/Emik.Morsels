@@ -972,11 +972,11 @@ static partial class Peeks
         var x = (map ?? (x => x))(value);
 
         if (typeof(T) == typeof(string) || typeof(T).IsPrimitive || value is ICustomAttributeProvider)
-            if (f.IsEmpty)
+            if (f is { Length: 0 })
                 Log.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
             else
                 Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
-        else if (f.IsEmpty)
+        else if (f is { Length: 0 })
             Log.Write(level, "[{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", name, line, e, t, x);
         else
             Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", f, name, line, e, t, x);
