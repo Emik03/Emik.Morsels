@@ -109,7 +109,7 @@ static partial class Conditionals
     /// <returns>The parameter <paramref name="that"/>.</returns>
     [AssertionMethod]
     public static bool IsFalse(
-        [AssertionCondition(AssertionConditionType.IS_FALSE)] this bool that,
+        [AssertionCondition(AssertionConditionType.IS_FALSE), DoesNotReturnIf(true)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
         that ? throw new UnreachableException(exThat) : false;
@@ -133,7 +133,7 @@ static partial class Conditionals
     /// <returns>The parameter <paramref name="that"/>.</returns>
     [AssertionMethod]
     public static bool IsTrue(
-        [AssertionCondition(AssertionConditionType.IS_TRUE)] this bool that,
+        [AssertionCondition(AssertionConditionType.IS_TRUE), DoesNotReturnIf(false)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
         that ? true : throw new UnreachableException(exThat);
