@@ -520,7 +520,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <returns>The parameter <paramref name="that"/>.</returns>
     [AssertionMethod]
     public static bool IsFalse(
-        [AssertionCondition(AssertionConditionType.IS_FALSE)] this bool that,
+        [AssertionCondition(AssertionConditionType.IS_FALSE), DoesNotReturnIf(true)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
         that ? throw new UnreachableException(exThat) : false;
@@ -544,7 +544,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <returns>The parameter <paramref name="that"/>.</returns>
     [AssertionMethod]
     public static bool IsTrue(
-        [AssertionCondition(AssertionConditionType.IS_TRUE)] this bool that,
+        [AssertionCondition(AssertionConditionType.IS_TRUE), DoesNotReturnIf(false)] this bool that,
         [CallerArgumentExpression(nameof(that))] string? exThat = null
     ) =>
         that ? true : throw new UnreachableException(exThat);
@@ -15103,58 +15103,112 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         LogEventLevel level
     )
     {
-        static void EnsureLoggerIsInitialized()
-        {
-            const char Eval = '\u211b';
-
-            // ReSharper disable once RedundantNameQualifier
-            if (Log.Logger != Serilog.Core.Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
-                return;
-
-            var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
-            var log = $"{path}.log";
-#if ROSLYN
-#pragma warning disable CA2000, IDISP001
-            StreamWriter writer = new(log);
-#pragma warning restore CA2000, IDISP001
-            writer.WriteLine(Clear);
-            Console.SetOut(writer);
-#else
-            File.WriteAllText(log, Clear);
-#endif
-            Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
-               .WriteTo.Console(applyThemeToRedirectedOutput: true)
-#if ROSLYN
-               .WriteTo.Sink(s_diagnosticSink)
-#else
-               .WriteTo.File(log)
-#endif
-               .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(log, "clef"))
-               .CreateLogger();
-        }
-
         EnsureLoggerIsInitialized();
 
         if (!Log.IsEnabled(level))
             return value;
 
         var f = path.FileName();
-        var x = (map ?? (x => x))(value);
+        var isFileEmpty = f is { Length: 0 };
 
-        x = x switch
+        var x = (map ?? (x => x))(value) switch
         {
             IStructuralComparable y => y.ToList(),
             IStructuralEquatable y => y.ToList(),
-            _ => x,
+            var y => y,
         };
 
-        if (f is { Length: 0 })
-            Log.Write(level, "[{@Member}:{@Line} ({@Expression})]\n{@Value}", name, line, e, x);
+        if (TryWriteSerialized(e, name, line, level, f, x, isFileEmpty))
+            return value;
+
+        if (isFileEmpty)
+            Log.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
         else
-            Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})]\n{@Value}", f, name, line, e, x);
+            Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 
         return value;
     }
+
+    static bool TryWriteSerialized<T>(
+        string? e,
+        string? name,
+        int line,
+        LogEventLevel level,
+        T f,
+        object? x,
+        bool isFileEmpty
+    )
+    {
+        const int Limit = ushort.MaxValue;
+
+        var timestamp = DateTimeOffset.Now;
+        MessageTemplate? template;
+        IEnumerable<LogEventProperty>? properties;
+
+        // We're attempting to serialize the value, however the problem is that it can be unwieldy in length.
+        if (isFileEmpty)
+        {
+            if (!Log.BindMessageTemplate( // ReSharper disable StructuredMessageTemplateProblem
+                "[{@Member}:{@Line} ({@Expression})] {@Value}",
+                [name, line, e, x],
+                out template,
+                out properties
+            ))
+                throw Unreachable;
+        }
+        else if (!Log.BindMessageTemplate(
+            "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}",
+            [f, name, line, e, x], // ReSharper restore StructuredMessageTemplateProblem
+            out template,
+            out properties
+        ))
+            throw Unreachable;
+
+        var collection = properties.ToCollectionLazily();
+        var dict = collection.ToDictionary(x => x.Name, x => x.Value, StringComparer.Ordinal);
+
+        StringBuilder builder = new();
+        using StringWriter writer = new(builder);
+        template.Render(dict, writer);
+
+        if (builder.Length >= Limit)
+            return false;
+
+        Log.Write(new(timestamp, level, null, template, collection));
+        return true;
+    }
+
+    static void EnsureLoggerIsInitialized()
+    {
+        const char Eval = '\u211b';
+
+        // ReSharper disable once RedundantNameQualifier
+        if (Log.Logger != Serilog.Core.Logger.None ||
+            typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
+            return;
+
+        var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
+        var log = $"{path}.log";
+#if ROSLYN
+#pragma warning disable CA2000, IDISP001
+        StreamWriter writer = new(log);
+#pragma warning restore CA2000, IDISP001
+        writer.WriteLine(Clear);
+        Console.SetOut(writer);
+#else
+            File.WriteAllText(log, Clear);
+#endif
+        Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
+           .WriteTo.Console(applyThemeToRedirectedOutput: true)
+#if ROSLYN
+           .WriteTo.Sink(s_diagnosticSink)
+#else
+               .WriteTo.File(log)
+#endif
+           .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(log, "clef"))
+           .CreateLogger();
+    }
+
 #endif
 #else
     /// <summary>Quick and dirty debugging function.</summary>
