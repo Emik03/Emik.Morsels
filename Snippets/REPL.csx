@@ -14148,14 +14148,15 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ => throw Unreachable,
             };
     }
-
+#endif
+    const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
+#if ROSLYN
     const string DD = nameof(DiagnosticDescriptor);
 
     static readonly DiagnosticSink s_diagnosticSink = new();
 
     static readonly Guid s_guid = Guid.NewGuid();
 #endif
-    const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if DEBUG
