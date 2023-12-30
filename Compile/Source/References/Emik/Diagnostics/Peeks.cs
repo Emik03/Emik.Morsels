@@ -3,12 +3,89 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
+#if ROSLYN
+using Aggregate = (StringBuilder Builder, SmallList<string> List, int Index);
+#endif
 
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
 static partial class Peeks
 #pragma warning restore MA0048
 {
+#if ROSLYN // ReSharper disable once RedundantExtendsListEntry
+    /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
+    public sealed partial class DiagnosticSink : ILogEventSink
+    {
+        /// <summary>Gets the logged diagnostics.</summary>
+        [Pure]
+        public static Stack<Diagnostic> Diagnostics { get; } = new();
+
+        /// <inheritdoc />
+        public void Emit(LogEvent logEvent)
+        {
+            var (builder, list, _) = logEvent.MessageTemplate.Tokens.Aggregate(
+                (Builder: new StringBuilder(), default(SmallList<string>), 0),
+                Next
+            );
+
+            var descriptor = new DiagnosticDescriptor(
+                nameof(DiagnosticSink),
+                nameof(DiagnosticSink),
+                $"{builder}",
+                nameof(DiagnosticSink),
+                ToDiagnosticSeverity(logEvent.Level),
+                true
+            );
+
+            var properties = logEvent.Properties.Select(x => x.Value);
+            var (first, rest) = Flatten(properties).OfType<ScalarValue>().Select(x => x.Value).OfType<Location>();
+            var args = list.Select(x => (object)logEvent.Properties[x]).ToArray();
+            var diagnostic = Diagnostic.Create(descriptor, first, rest, args);
+
+            Diagnostics.Push(diagnostic);
+        }
+
+        static IEnumerable<LogEventPropertyValue> Flatten(IEnumerable<LogEventPropertyValue> values) =>
+            values.SelectMany(
+                x => x switch
+                {
+                    ScalarValue v => v.Yield(),
+                    SequenceValue v => Flatten(v.Elements),
+                    DictionaryValue v => v.Elements.SelectMany(x => Flatten([x.Key, x.Value])),
+                    StructureValue v => Flatten(v.Properties.Select(x => x.Value)),
+                    _ => [],
+                }
+            );
+
+        static DiagnosticSeverity ToDiagnosticSeverity(LogEventLevel level) =>
+            level switch
+            {
+                LogEventLevel.Debug => DiagnosticSeverity.Hidden,
+                LogEventLevel.Error => DiagnosticSeverity.Error,
+                LogEventLevel.Fatal => DiagnosticSeverity.Error,
+                LogEventLevel.Information => DiagnosticSeverity.Info,
+                LogEventLevel.Verbose => DiagnosticSeverity.Hidden,
+                LogEventLevel.Warning => DiagnosticSeverity.Warning,
+                _ => throw Unreachable,
+            };
+
+        static Aggregate Next(Aggregate x, MessageTemplateToken token)
+        {
+            if (token is TextToken { Text: var text })
+            {
+                x.Builder.Append(text);
+                return x;
+            }
+
+            if (token is not PropertyToken property)
+                throw Unreachable;
+
+            x.Builder.Append('{').Append(x.Index++).Append('}');
+            x.List.Add(property.PropertyName);
+            return x;
+        }
+    }
+#endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if DEBUG
@@ -956,7 +1033,11 @@ static partial class Peeks
             var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
 
             Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
+#if ROSLYN
+               .WriteTo.Sink(new DiagnosticSink())
+#else
                .WriteTo.Console()
+#endif
                .WriteTo.File(Path.ChangeExtension(path, "log"))
                .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
                .CreateLogger();

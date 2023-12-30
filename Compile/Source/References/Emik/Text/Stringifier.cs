@@ -186,7 +186,7 @@ static partial class Stringifier
     /// <param name="path">The path to extract the file name from.</param>
     /// <returns>The file name.</returns>
     [Pure]
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+#if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
     [return: NotNullIfNotNull(nameof(path))]
 #endif
     public static
