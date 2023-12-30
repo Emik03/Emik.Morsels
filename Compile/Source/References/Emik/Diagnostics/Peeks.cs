@@ -1071,18 +1071,25 @@ static partial class Peeks
             return value;
 
         var f = path.FileName();
-        var t = value?.GetType() ?? typeof(T);
         var x = (map ?? (x => x))(value);
+        var t = x?.GetType() ?? typeof(T);
+
+        x = x switch
+        {
+            IStructuralComparable y => y.ToList(),
+            IStructuralEquatable y => y.ToList(),
+            _ => x,
+        };
 
         if (typeof(T) == typeof(string) || typeof(T).IsPrimitive || value is ICustomAttributeProvider)
             if (f is { Length: 0 })
-                Log.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+                Log.Write(level, "[{@Member}:{@Line} ({@Expression})]\n{@Value}", name, line, e, x);
             else
-                Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
+                Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})]\n{@Value}", f, name, line, e, x);
         else if (f is { Length: 0 })
-            Log.Write(level, "[{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", name, line, e, t, x);
+            Log.Write(level, "[{@Member}:{@Line}, {@Expression}]\n{@Type} {$Value}", name, line, e, t, x);
         else
-            Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", f, name, line, e, t, x);
+            Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}]\n{@Type} {$Value}", f, name, line, e, t, x);
 
         return value;
     }
