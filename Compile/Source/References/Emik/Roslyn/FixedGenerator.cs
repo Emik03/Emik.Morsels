@@ -54,7 +54,9 @@ public abstract class FixedGenerator(
         new T().Name;
 
     /// <inheritdoc />
+#pragma warning disable CA1033
     void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
         context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}\n"));
+#pragma warning restore CA1033
 }
 #endif
