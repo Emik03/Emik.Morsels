@@ -6709,7 +6709,7 @@ public
     [return: NotNullIfNotNull(nameof(path))]
 #endif
     public static
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         ReadOnlyMemory<char>
 #else
         string?
@@ -6719,7 +6719,7 @@ public
             ? default
 #if NET8_0_OR_GREATER
             : path.SplitOn(s_slashes).Last;
-#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             : path.SplitAny(Slashes.AsMemory()).Last;
 #else
             : Path.GetFileName(path);
@@ -9939,10 +9939,10 @@ public
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf NotDisposedResource RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 
-#pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
+#pragma warning disable 8618, 9193, CA1823, IDE0250, IDE0251, MA0071, MA0102, RCS1158, SA1137
 
 
 
@@ -12978,7 +12978,7 @@ readonly
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
@@ -14986,11 +14986,11 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         var x = (map ?? (x => x))(value);
 
         if (typeof(T) == typeof(string) || typeof(T).IsPrimitive || value is ICustomAttributeProvider)
-            if (f.IsEmpty)
+            if (f is { Length: 0 })
                 Log.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
             else
                 Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
-        else if (f.IsEmpty)
+        else if (f is { Length: 0 })
             Log.Write(level, "[{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", name, line, e, t, x);
         else
             Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", f, name, line, e, t, x);

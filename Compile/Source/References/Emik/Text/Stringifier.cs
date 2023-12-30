@@ -190,7 +190,7 @@ static partial class Stringifier
     [return: NotNullIfNotNull(nameof(path))]
 #endif
     public static
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         ReadOnlyMemory<char>
 #else
         string?
@@ -200,7 +200,7 @@ static partial class Stringifier
             ? default
 #if NET8_0_OR_GREATER
             : path.SplitOn(s_slashes).Last;
-#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             : path.SplitAny(Slashes.AsMemory()).Last;
 #else
             : Path.GetFileName(path);
