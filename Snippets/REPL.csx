@@ -182,6 +182,36 @@ global using Emik.Results;
 global using Emik.Results.Extensions;
 global using FastGenericNew;
 global using JetBrains.Annotations;
+global using Serilog;
+global using Serilog.Capturing;
+global using Serilog.Configuration;
+global using Serilog.Context;
+global using Serilog.Core;
+global using Serilog.Core.Enrichers;
+global using Serilog.Core.Filters;
+global using Serilog.Core.Pipeline;
+global using Serilog.Core.Sinks;
+global using Serilog.Data;
+global using Serilog.Debugging;
+global using Serilog.Events;
+global using Serilog.Filters;
+global using Serilog.Formatting;
+global using Serilog.Formatting.Compact;
+global using Serilog.Formatting.Display;
+global using Serilog.Formatting.Json;
+global using Serilog.Parsing;
+global using Serilog.Policies;
+global using Serilog.Rendering;
+global using Serilog.Settings;
+global using Serilog.Settings.KeyValuePairs;
+global using Serilog.Sinks;
+global using Serilog.Sinks.File;
+global using Serilog.Sinks.SystemConsole;
+global using Serilog.Sinks.SystemConsole.Formatting;
+global using Serilog.Sinks.SystemConsole.Output;
+global using Serilog.Sinks.SystemConsole.Platform;
+global using Serilog.Sinks.SystemConsole.Rendering;
+global using Serilog.Sinks.SystemConsole.Themes;
 global using TextCopy;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
@@ -14059,7 +14089,916 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// </exception>
     // ReSharper disable once InvokeAsExtensionMethod
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
+#if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if RELEASE && !CSHARPREPL
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
+    /// <typeparam name="T">The type of the value to write.</typeparam>
+    /// <param name="x">The value to write.</param>
+    /// <param name="map">When specified, overrides the value that is logged.</param>
+    /// <returns>The parameter <paramref name="x"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Debug<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
 
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Debug<T>(
+        this Span<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static PooledSmallList<T> Debug<T>(
+        this PooledSmallList<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> x,
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> Debug<T>(
+        this ReadOnlySpan<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Error<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Error<T>(
+        this Span<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static PooledSmallList<T> Error<T>(
+        this PooledSmallList<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> x,
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> Error<T>(
+        this ReadOnlySpan<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Fatal<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Fatal<T>(
+        this Span<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static PooledSmallList<T> Fatal<T>(
+        this PooledSmallList<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> x,
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> Fatal<T>(
+        this ReadOnlySpan<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Info<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Info<T>(this Span<T> x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static PooledSmallList<T> Info<T>(
+        this PooledSmallList<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> x,
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> Info<T>(
+        this ReadOnlySpan<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Verbose<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Verbose<T>(this Span<T> x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static PooledSmallList<T> Verbose<T>(
+        this PooledSmallList<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> x,
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> Verbose<T>(
+        this ReadOnlySpan<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Warn<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Warn<T>(this Span<T> x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static PooledSmallList<T> Warn<T>(
+        this PooledSmallList<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> x,
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+        =>
+            x;
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ReadOnlySpan<T> Warn<T>(
+        this ReadOnlySpan<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            x;
+#else
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
+    /// <typeparam name="T">The type of the value to write.</typeparam>
+    /// <param name="x">The value to write.</param>
+    /// <param name="map">When specified, overrides the value that is logged.</param>
+    /// <param name="e">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
+    /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
+    /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
+    /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
+    /// <returns>The parameter <paramref name="x"/>.</returns>
+    public static T Debug<T>(
+        this T x,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [CallerArgumentExpression(nameof(x))] string? e = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    ) =>
+        Do(x, map, e, path, name, line, LogEventLevel.Debug);
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static Span<T> Debug<T>(
+        this Span<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Debug);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static PooledSmallList<T> Debug<T>(
+        this PooledSmallList<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Debug);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> value,
+        [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+    {
+        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Debug);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static ReadOnlySpan<T> Debug<T>(
+        this ReadOnlySpan<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Debug);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
+    public static T Error<T>(
+        this T value,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    ) =>
+        Do(value, map, expression, path, name, line, LogEventLevel.Error);
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static Span<T> Error<T>(
+        this Span<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Error);
+        return value;
+    }
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static PooledSmallList<T> Error<T>(
+        this PooledSmallList<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Error);
+        return value;
+    }
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> value,
+        [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+    {
+        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Error);
+        return value;
+    }
+
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static ReadOnlySpan<T> Error<T>(
+        this ReadOnlySpan<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Error);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
+    public static T Fatal<T>(
+        this T value,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    ) =>
+        Do(value, map, expression, path, name, line, LogEventLevel.Fatal);
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static Span<T> Fatal<T>(
+        this Span<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Fatal);
+        return value;
+    }
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static PooledSmallList<T> Fatal<T>(
+        this PooledSmallList<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Fatal);
+        return value;
+    }
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> value,
+        [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+    {
+        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Fatal);
+        return value;
+    }
+
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static ReadOnlySpan<T> Fatal<T>(
+        this ReadOnlySpan<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Fatal);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
+    public static T Info<T>(
+        this T value,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    ) =>
+        Do(value, map, expression, path, name, line, LogEventLevel.Information);
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static Span<T> Info<T>(
+        this Span<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Information);
+        return value;
+    }
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static PooledSmallList<T> Info<T>(
+        this PooledSmallList<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Information);
+        return value;
+    }
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> value,
+        [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+    {
+        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Information);
+        return value;
+    }
+
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static ReadOnlySpan<T> Info<T>(
+        this ReadOnlySpan<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Information);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
+    public static T Verbose<T>(
+        this T value,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    ) =>
+        Do(value, map, expression, path, name, line, LogEventLevel.Verbose);
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static Span<T> Verbose<T>(
+        this Span<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Verbose);
+        return value;
+    }
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static PooledSmallList<T> Verbose<T>(
+        this PooledSmallList<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Verbose);
+        return value;
+    }
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> value,
+        [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+    {
+        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Verbose);
+        return value;
+    }
+
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static ReadOnlySpan<T> Verbose<T>(
+        this ReadOnlySpan<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Verbose);
+        return value;
+    }
+
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
+    public static T Warn<T>(
+        this T value,
+        [InstantHandle] Converter<T, object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    ) =>
+        Do(value, map, expression, path, name, line, LogEventLevel.Warning);
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static Span<T> Warn<T>(
+        this Span<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Warning);
+        return value;
+    }
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static PooledSmallList<T> Warn<T>(
+        this PooledSmallList<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Warning);
+        return value;
+    }
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
+        this SplitSpan<TBody, TSeparator, TStrategy> value,
+        [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where TBody : unmanaged, IEquatable<TBody>
+#else
+        where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+#endif
+    {
+        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Warning);
+        return value;
+    }
+
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    public static ReadOnlySpan<T> Warn<T>(
+        this ReadOnlySpan<T> value,
+        [InstantHandle] Converter<T[], object?>? map = null,
+        [CallerArgumentExpression(nameof(value))] string? expression = "",
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = default
+    )
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Warning);
+        return value;
+    }
+
+    static T Do<T>(
+        T value,
+        [InstantHandle] Converter<T, object?>? map,
+        string? e,
+        string? path,
+        string? name,
+        int line,
+        LogEventLevel level
+    )
+    {
+        static void EnsureLoggerIsInitialized()
+        {
+            const char Eval = '\u211B';
+
+            if (Log.Logger != Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
+                return;
+
+            var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
+
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
+               .WriteTo.Console()
+               .WriteTo.File(Path.ChangeExtension(path, "log"))
+               .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
+               .CreateLogger();
+        }
+
+        EnsureLoggerIsInitialized();
+
+        if (!Log.IsEnabled(level))
+            return value;
+
+        var f = path.FileName();
+        var t = value?.GetType() ?? typeof(T);
+        var x = (map ?? (x => x))(value);
+
+        if (typeof(T) == typeof(string) || typeof(T).IsPrimitive || value is ICustomAttributeProvider)
+            if (f.IsEmpty)
+                Log.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+            else
+                Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
+        else if (f.IsEmpty)
+            Log.Write(level, "[{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", name, line, e, t, x);
+        else
+            Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}] {@Type} {$Value}", f, name, line, e, t, x);
+
+        return value;
+    }
+#endif
+#else
     /// <summary>Quick and dirty debugging function.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The value to stringify and return.</param>
@@ -14265,6 +15204,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         // ReSharper restore ExplicitCallerInfoArgument
         return value;
     }
+#endif
 #endif
 
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
