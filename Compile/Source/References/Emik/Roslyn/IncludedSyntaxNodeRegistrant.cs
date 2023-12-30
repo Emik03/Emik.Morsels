@@ -20,6 +20,14 @@ static partial class IncludedSyntaxNodeRegistrant
     public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
         context.AddSource(generated.HintName, generated.Source);
 
+    /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
+    /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
+    public static void Drain(this in SyntaxNodeAnalysisContext context)
+    {
+        while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
+            context.ReportDiagnostic(diagnostic);
+    }
+
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
     /// <param name="node">The passed in node to test.</param>

@@ -14144,6 +14144,17 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
     [Pure]
     public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
+
+    /// <summary>Gets the dummy diagnostic.</summary>
+    [Pure]
+    public static DiagnosticDescriptor Dummy { get; } = new(
+        nameof(DiagnosticSink),
+        nameof(DiagnosticSink),
+        "",
+        nameof(DiagnosticSink),
+        DiagnosticSeverity.Error,
+        true
+    );
 #endif
 #pragma warning disable CS1574
     /// <summary>
@@ -15428,6 +15439,14 @@ public abstract class FixedGenerator(
     /// <param name="generated">The tuple containing the hint name and source.</param>
     public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
         context.AddSource(generated.HintName, generated.Source);
+
+    /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
+    /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
+    public static void Drain(this in SyntaxNodeAnalysisContext context)
+    {
+        while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
+            context.ReportDiagnostic(diagnostic);
+    }
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
