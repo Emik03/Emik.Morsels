@@ -14,10 +14,10 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -36,9 +36,9 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -58,9 +58,9 @@
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -77,9 +77,9 @@
                 <Virtuosity/>
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -96,10 +96,10 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -117,9 +117,9 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -138,9 +138,9 @@
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -156,9 +156,9 @@
                 <Virtuosity/>
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -182,10 +182,10 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
