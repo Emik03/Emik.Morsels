@@ -27,7 +27,7 @@ static partial class EnumeratorToEnumerable
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
-    [LinqTunnel, Pure] // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
+    [LinqTunnel, Pure] // ReSharper disable once NotDisposedResource ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
     public static IEnumerable<object?> AsGenericEnumerable(this Array array) => array.GetEnumerator().AsEnumerable();
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside an <see cref="IEnumerable{T}"/>.</summary>
