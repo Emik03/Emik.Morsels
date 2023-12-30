@@ -17,7 +17,7 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -38,7 +38,7 @@
                 <Caseless StringComparison="Ordinal"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -60,7 +60,7 @@
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -79,7 +79,7 @@
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -99,7 +99,7 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -119,7 +119,7 @@
                 <Caseless StringComparison="Ordinal"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -140,7 +140,7 @@
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -158,7 +158,7 @@
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -185,7 +185,7 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="^(?:CommunityToolkit)|(?:Serilog)(?:(?!\.)|\..)"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs"/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
