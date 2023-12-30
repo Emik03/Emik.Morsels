@@ -1034,7 +1034,8 @@ static partial class Peeks
         {
             const char Eval = '\u211B';
 
-            if (Log.Logger != Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
+            // ReSharper disable once RedundantNameQualifier
+            if (Log.Logger != Serilog.Core.Logger.None || typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
                 return;
 
             var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
