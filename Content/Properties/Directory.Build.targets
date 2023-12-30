@@ -14,7 +14,7 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
@@ -36,7 +36,7 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Absence/>
             </Weavers>
@@ -58,7 +58,7 @@
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Absence/>
             </Weavers>
@@ -77,7 +77,7 @@
                 <Virtuosity/>
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Absence/>
             </Weavers>
@@ -96,7 +96,7 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
@@ -117,7 +117,7 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Absence/>
             </Weavers>
@@ -138,7 +138,7 @@
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
                 <ConfigureAwait ContinueOnCapturedContext="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Absence/>
             </Weavers>
@@ -156,7 +156,7 @@
                 <Virtuosity/>
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Absence/>
             </Weavers>
@@ -182,7 +182,7 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
-                <ILMerge IncludeAssemblies="CommunityToolkit"/>
+                <ILMerge IncludeAssemblies="CommunityToolkit|Serilog|Serilog.Sinks.Console|Serilog.Formatting.CompactSerilog.Sinks.File"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
