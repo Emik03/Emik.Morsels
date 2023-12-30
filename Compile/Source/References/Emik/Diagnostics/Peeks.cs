@@ -18,7 +18,7 @@ static partial class Peeks
     {
         /// <summary>Gets the logged diagnostics.</summary>
         [Pure]
-        public static Stack<Diagnostic> Diagnostics { get; } = new();
+        public ConcurrentQueue<Diagnostic> UnreportedDiagnostics { get; } = [];
 
         /// <inheritdoc />
         public void Emit(LogEvent logEvent)
@@ -42,7 +42,7 @@ static partial class Peeks
             var args = list.Select(x => (object)logEvent.Properties[x]).ToArray();
             var diagnostic = Diagnostic.Create(descriptor, first, rest, args);
 
-            Diagnostics.Push(diagnostic);
+            UnreportedDiagnostics.Enqueue(diagnostic);
         }
 
         static IEnumerable<LogEventPropertyValue> Flatten(IEnumerable<LogEventPropertyValue> values) =>
@@ -85,6 +85,8 @@ static partial class Peeks
             return x;
         }
     }
+
+    static readonly DiagnosticSink s_diagnosticSink = new();
 #endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
@@ -111,6 +113,11 @@ static partial class Peeks
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+#endif
+#if ROSLYN
+    /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
+    [Pure]
+    public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
 #endif
 #pragma warning disable CS1574
     /// <summary>
@@ -1034,7 +1041,7 @@ static partial class Peeks
 
             Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
 #if ROSLYN
-               .WriteTo.Sink(new DiagnosticSink())
+               .WriteTo.Sink(s_diagnosticSink)
 #else
                .WriteTo.Console()
 #endif
