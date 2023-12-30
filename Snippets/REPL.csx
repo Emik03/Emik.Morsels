@@ -15112,7 +15112,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 return;
 
             var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
-            var log = Path.ChangeExtension(path, "log");
+            var log = $"{path}.log";
 #if ROSLYN
 #pragma warning disable CA2000, IDISP001
             StreamWriter writer = new(log);
