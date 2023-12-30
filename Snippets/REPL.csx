@@ -14155,6 +14155,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
     static readonly Guid s_guid = Guid.NewGuid();
 #endif
+    const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if DEBUG
@@ -15110,14 +15111,23 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 return;
 
             var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
-
+            var log = Path.ChangeExtension(path, "log");
+#if ROSLYN
+#pragma warning disable CA2000, IDISP001
+            StreamWriter writer = new(log);
+#pragma warning restore CA2000, IDISP001
+            writer.WriteLine(Clear);
+            Console.SetOut(writer);
+#else
+            File.WriteAllText(log, Clear);
+#endif
             Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
+               .WriteTo.Console(applyThemeToRedirectedOutput: true)
 #if ROSLYN
                .WriteTo.Sink(s_diagnosticSink)
 #else
-               .WriteTo.Console()
+               .WriteTo.File(log)
 #endif
-               .WriteTo.File(new JsonFormatter(), Path.ChangeExtension(path, "log"))
                .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(path, "clef"))
                .CreateLogger();
         }
@@ -15129,7 +15139,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         var f = path.FileName();
         var x = (map ?? (x => x))(value);
-        var t = x?.GetType() ?? typeof(T);
 
         x = x switch
         {
@@ -15138,15 +15147,10 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             _ => x,
         };
 
-        if (typeof(T) == typeof(string) || typeof(T).IsPrimitive || value is ICustomAttributeProvider)
-            if (f is { Length: 0 })
-                Log.Write(level, "[{@Member}:{@Line} ({@Expression})]\n{@Value}", name, line, e, x);
-            else
-                Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})]\n{@Value}", f, name, line, e, x);
-        else if (f is { Length: 0 })
-            Log.Write(level, "[{@Member}:{@Line}, {@Expression}]\n{@Type} {$Value}", name, line, e, t, x);
+        if (f is { Length: 0 })
+            Log.Write(level, "[{@Member}:{@Line} ({@Expression})]\n{@Value}", name, line, e, x);
         else
-            Log.Write(level, "[{$File}.{@Member}:{@Line}, {@Expression}]\n{@Type} {$Value}", f, name, line, e, t, x);
+            Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})]\n{@Value}", f, name, line, e, x);
 
         return value;
     }
