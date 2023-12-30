@@ -14149,7 +14149,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [Pure]
     public static DiagnosticDescriptor Dummy { get; } = new(
         nameof(DiagnosticSink),
-        nameof(DiagnosticSink),
+        $"{Guid.NewGuid()}",
         "",
         nameof(DiagnosticSink),
         DiagnosticSeverity.Error,
