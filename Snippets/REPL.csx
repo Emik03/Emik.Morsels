@@ -14187,6 +14187,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     static Peeks() => File.Create(s_debugFile).Dispose();
 #endif
 #endif
+
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
