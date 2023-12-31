@@ -14168,12 +14168,17 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         Path.GetTempPath(),
         typeof(Assert).Assembly.GetName().Name is [not '\u211b', ..] name ? name : "\u211b"
     );
-#if ROSLYN
+
     [UsedImplicitly]
 #pragma warning disable CA1823
-    static readonly TextWriter s_log = File.CreateText($"{s_path}.log").Peek(Console.SetOut);
-#pragma warning restore CA1823
-#endif // ReSharper disable once RedundantNameQualifier
+    static readonly TextWriter s_writer = File.CreateText($"{s_path}.log")
+       .Peek(x => x.Write(Clear))
+#if ROSLYN
+       .Peek(Console.SetOut);
+#else
+       .Peek(x => x.Dispose());
+#endif
+#pragma warning restore CA1823 // ReSharper disable once RedundantNameQualifier
     static readonly Serilog.Core.Logger
         s_clef = new LoggerConfiguration().WriteTo.File($"{s_path}.clef").CreateLogger(),
         s_console = new LoggerConfiguration().WriteTo.Console(applyThemeToRedirectedOutput: true).CreateLogger(),
