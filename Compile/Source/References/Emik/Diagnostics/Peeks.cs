@@ -116,7 +116,7 @@ static partial class Peeks
 #if ROSLYN
        .Peek(Console.SetOut);
 #else
-       .Peek(x => x.Dispose());
+       .Peek(x => x.Close());
 #endif
 #pragma warning restore CA1823 // ReSharper disable once RedundantNameQualifier
     static readonly Serilog.Core.Logger
