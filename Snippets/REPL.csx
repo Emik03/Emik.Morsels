@@ -14180,12 +14180,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
 #pragma warning restore CA1823 // ReSharper disable once RedundantNameQualifier
     static readonly Serilog.Core.Logger
-        s_clef = new LoggerConfiguration().WriteTo.File($"{s_path}.clef").CreateLogger(),
-        s_console = new LoggerConfiguration().WriteTo.Console(applyThemeToRedirectedOutput: true).CreateLogger(),
+        s_clef = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File($"{s_path}.clef").CreateLogger(),
+        s_console = new LoggerConfiguration().MinimumLevel.Verbose()
+           .WriteTo.Console(applyThemeToRedirectedOutput: true)
+           .CreateLogger(),
 #if ROSLYN
-        s_roslyn = new LoggerConfiguration().WriteTo.Sink(s_diagnosticSink).CreateLogger();
+        s_roslyn = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(s_diagnosticSink).CreateLogger();
 #else
-        s_log = new LoggerConfiguration().WriteTo.File($"{s_path}.log").CreateLogger();
+        s_log = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File($"{s_path}.log").CreateLogger();
 #endif
 #endif
 #endif
