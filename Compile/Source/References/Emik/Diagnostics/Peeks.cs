@@ -52,6 +52,14 @@ static partial class Peeks
         [Pure]
         public ConcurrentQueue<Diagnostic> UnreportedDiagnostics { get; } = [];
 
+        /// <summary>Gets or sets the additional locations.</summary>
+        [Pure]
+        public IEnumerable<Location>? AdditionalLocations { get; set; }
+
+        /// <summary>Gets or sets the location.</summary>
+        [Pure]
+        public Location Location { get; set; } = Location.None;
+
         /// <inheritdoc />
         public void Emit(LogEvent logEvent)
         {
@@ -60,25 +68,11 @@ static partial class Peeks
             DiagnosticDescriptor descriptor =
                 new(Name, $"{s_guid}", $"{builder}", Name, ToDiagnosticSeverity(logEvent.Level), true);
 
-            var properties = logEvent.Properties.Select(x => x.Value);
-            var (first, rest) = Flatten(properties).OfType<ScalarValue>().Select(x => x.Value).OfType<Location>();
             var args = list.Select(x => (object)logEvent.Properties[x]).ToArray();
-            var diagnostic = Diagnostic.Create(descriptor, first, rest, args);
+            var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
 
             UnreportedDiagnostics.Enqueue(diagnostic);
         }
-
-        static IEnumerable<LogEventPropertyValue> Flatten(IEnumerable<LogEventPropertyValue> values) =>
-            values.SelectMany(
-                x => x switch
-                {
-                    ScalarValue v => v.Yield(),
-                    SequenceValue v => Flatten(v.Elements),
-                    DictionaryValue v => v.Elements.SelectMany(x => Flatten([x.Key, x.Value])),
-                    StructureValue v => Flatten(v.Properties.Select(x => x.Value)),
-                    _ => [],
-                }
-            );
 
         static DiagnosticSeverity ToDiagnosticSeverity(LogEventLevel level) =>
             level switch
@@ -107,34 +101,27 @@ static partial class Peeks
     static readonly string s_path = Path.Combine(
         Path.GetTempPath(),
         typeof(Assert).Assembly.GetName().Name is [not '\u211b', ..] name ? name : "\u211b"
-    );
+    ); // ReSharper disable once RedundantNameQualifier
 
-    [UsedImplicitly]
-#pragma warning disable CA1823
-    static readonly TextWriter s_writer = File.CreateText($"{s_path}.log")
-       .Peek(x => x.Write(Clear))
-#if ROSLYN
-       .Peek(Console.SetOut);
-#else
-       .Peek(x => x.Close());
-#endif
-#pragma warning restore CA1823 // ReSharper disable once RedundantNameQualifier
     static readonly Serilog.Core.Logger
-        s_clef = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File($"{s_path}.clef").CreateLogger(),
-        s_console = new LoggerConfiguration().MinimumLevel.Verbose()
-           .WriteTo.Console(applyThemeToRedirectedOutput: true)
+        s_clef = new LoggerConfiguration().MinimumLevel.Verbose()
+           .WriteTo.File(new CompactJsonFormatter(), $"{s_path}.clef")
            .CreateLogger(),
 #if ROSLYN
         s_roslyn = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(s_diagnosticSink).CreateLogger();
 #else
-        s_log = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File($"{s_path}.log").CreateLogger();
+        s_console = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Console().CreateLogger();
 #endif
 #endif
 #endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if !RELEASE && !CSHARPREPL
-    static Peeks() => File.Create(s_debugFile).Dispose();
+    static Peeks()
+    {
+        File.Create(s_debugFile).Dispose();
+        File.WriteAllText($"{s_path}.log", Clear);
+    }
 #endif
 #endif
 
@@ -208,6 +195,21 @@ static partial class Peeks
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 #if RELEASE && !CSHARPREPL
+#if ROSLYN
+    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Location Mark(this Location location, [UsedImplicitly] params Location[]? additionalLocations) =>
+        location;
+
+    /// <summary>Marks the location in the next set of lints.</summary>
+    /// <param name="location">The primary location.</param>
+    /// <param name="additionalLocations">Additional locations.</param>
+    /// <returns>The parameter <paramref name="location"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Location Mark(this Location location, [UsedImplicitly] IEnumerable<Location>? additionalLocations) =>
+        location;
+#endif
+
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
@@ -550,6 +552,23 @@ static partial class Peeks
         =>
             x;
 #else
+#if ROSLYN
+    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
+    public static Location Mark(this Location location, params Location[]? additionalLocations) =>
+        Mark(location, (IEnumerable<Location>?)additionalLocations);
+
+    /// <summary>Marks the location in the next set of lints.</summary>
+    /// <param name="location">The primary location.</param>
+    /// <param name="additionalLocations">Additional locations.</param>
+    /// <returns>The parameter <paramref name="location"/>.</returns>
+    public static Location Mark(this Location location, IEnumerable<Location>? additionalLocations)
+    {
+        s_diagnosticSink.Location = location;
+        s_diagnosticSink.AdditionalLocations = additionalLocations;
+        return location;
+    }
+#endif
+
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
@@ -1086,44 +1105,38 @@ static partial class Peeks
         else
             s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 
-        if (value is IEnumerable)
+        if (value is null or IEnumerable)
         {
             if (isFileEmpty)
             {
-                s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
 #if ROSLYN
                 s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
 #else
-                s_log.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+                s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
 #endif
                 return value;
             }
-
-            s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 #if ROSLYN
             s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 #else
-            s_log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
+            s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 #endif
             return value;
         }
 
         if (isFileEmpty)
         {
-            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
 #if ROSLYN
             s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
 #else
-            s_log.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
 #endif
             return value;
         }
-
-        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 #if ROSLYN
         s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 #else
-        s_log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 #endif
         return value;
     }
