@@ -1077,13 +1077,7 @@ static partial class Peeks
     {
         var f = path.FileName();
         var isFileEmpty = f is { Length: 0 };
-
-        var x = (map ?? (x => x))(value) switch
-        {
-            IStructuralComparable y => y.ToList(),
-            IStructuralEquatable y => y.ToList(),
-            var y => y,
-        };
+        var x = Destructure((map ?? (x => x))(value));
 
         if (isFileEmpty)
             s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
@@ -1131,6 +1125,16 @@ static partial class Peeks
 #endif
         return value;
     }
+
+    [Pure]
+    [return: NotNullIfNotNull(nameof(x))]
+    static object? Destructure(object? x) =>
+        x switch
+        {
+            IStructuralComparable y => y.ToList(),
+            IStructuralEquatable y => y.ToList(),
+            _ => x,
+        };
 #endif
 #else
     /// <summary>Quick and dirty debugging function.</summary>
