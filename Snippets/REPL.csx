@@ -14066,6 +14066,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 #pragma warning disable MA0048
 
+#if !RELEASE
 #if ROSLYN // ReSharper disable once RedundantExtendsListEntry
     /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
     public sealed partial class DiagnosticSink : ILogEventSink
@@ -14114,7 +14115,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             var (builder, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(new()), Accumulator.Next);
 
             DiagnosticDescriptor descriptor =
-                new(DD, $"{s_guid}", $"{builder}", DD, ToDiagnosticSeverity(logEvent.Level), true);
+                new(Name, $"{s_guid}", $"{builder}", Name, ToDiagnosticSeverity(logEvent.Level), true);
 
             var properties = logEvent.Properties.Select(x => x.Value);
             var (first, rest) = Flatten(properties).OfType<ScalarValue>().Select(x => x.Value).OfType<Location>();
@@ -14149,21 +14150,43 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             };
     }
 #endif
-    const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
+
+    /// <summary>The escape sequence to clear the screen.</summary>
+    public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
 #if ROSLYN
-    const string DD = nameof(DiagnosticDescriptor);
+    const string Name = nameof(DiagnosticSink);
 
     static readonly DiagnosticSink s_diagnosticSink = new();
 
     static readonly Guid s_guid = Guid.NewGuid();
 #endif
+#if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+    static readonly string s_path = Path.Combine(
+        Path.GetTempPath(),
+        typeof(Assert).Assembly.GetName().Name is [not '\u211b', ..] name ? name : "\u211b"
+    );
+#if ROSLYN
+    [UsedImplicitly]
+#pragma warning disable CA1823
+    static readonly TextWriter s_log = File.CreateText($"{s_path}.log").Peek(Console.SetOut);
+#pragma warning restore CA1823
+#endif
+    static readonly Logger
+        s_clef = new LoggerConfiguration().WriteTo.File($"{s_path}.clef").CreateLogger(),
+        s_console = new LoggerConfiguration().WriteTo.Console(applyThemeToRedirectedOutput: true).CreateLogger(),
+#if ROSLYN
+        s_roslyn = new LoggerConfiguration().WriteTo.Sink(s_diagnosticSink).CreateLogger();
+#else
+        s_log = new LoggerConfiguration().WriteTo.File($"{s_path}.log").CreateLogger();
+#endif
+#endif
+#endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
-#if DEBUG
+#if !RELEASE && !CSHARPREPL
     static Peeks() => File.Create(s_debugFile).Dispose();
 #endif
 #endif
-
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
@@ -14183,14 +14206,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
 #endif
-#if ROSLYN
+#if !RELEASE && ROSLYN
     /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
     [Pure]
     public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
 
     /// <summary>Gets the dummy diagnostic.</summary>
     [Pure]
-    public static DiagnosticDescriptor Dummy { get; } = new(DD, $"{s_guid}", "", DD, DiagnosticSeverity.Error, true);
+    public static DiagnosticDescriptor Bare { get; } = new(Name, $"{s_guid}", "", Name, DiagnosticSeverity.Error, true);
 #endif
 #pragma warning disable CS1574
     /// <summary>
@@ -15103,11 +15126,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         LogEventLevel level
     )
     {
-        EnsureLoggerIsInitialized();
-
-        if (!Log.IsEnabled(level))
-            return value;
-
         var f = path.FileName();
         var isFileEmpty = f is { Length: 0 };
 
@@ -15118,97 +15136,49 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             var y => y,
         };
 
-        if (TryWriteSerialized(e, name, line, level, f, x, isFileEmpty))
+        s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+
+        if (value is IEnumerable)
+        {
+            if (isFileEmpty)
+            {
+                s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+#if ROSLYN
+                s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+#else
+                s_log.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+#endif
+                return value;
+            }
+
+            s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+#if ROSLYN
+            s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+#else
+            s_log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+#endif
             return value;
+        }
 
-        if (isFileEmpty)
-            Log.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
-        else
-            Log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
-
-        return value;
-    }
-
-    static bool TryWriteSerialized<T>(
-        string? e,
-        string? name,
-        int line,
-        LogEventLevel level,
-        T f,
-        object? x,
-        bool isFileEmpty
-    )
-    {
-        const int Limit = ushort.MaxValue;
-
-        var timestamp = DateTimeOffset.Now;
-        MessageTemplate? template;
-        IEnumerable<LogEventProperty>? properties;
-
-        // We're attempting to serialize the value, however the problem is that it can be unwieldy in length.
         if (isFileEmpty)
         {
-            if (!Log.BindMessageTemplate( // ReSharper disable StructuredMessageTemplateProblem
-                "[{@Member}:{@Line} ({@Expression})] {@Value}",
-                [name, line, e, x],
-                out template,
-                out properties
-            ))
-                throw Unreachable;
+            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+#if ROSLYN
+            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+#else
+            s_log.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+#endif
+            return value;
         }
-        else if (!Log.BindMessageTemplate(
-            "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}",
-            [f, name, line, e, x], // ReSharper restore StructuredMessageTemplateProblem
-            out template,
-            out properties
-        ))
-            throw Unreachable;
 
-        var collection = properties.ToCollectionLazily();
-        var dict = collection.ToDictionary(x => x.Name, x => x.Value, StringComparer.Ordinal);
-
-        StringBuilder builder = new();
-        using StringWriter writer = new(builder);
-        template.Render(dict, writer);
-
-        if (builder.Length >= Limit)
-            return false;
-
-        Log.Write(new(timestamp, level, null, template, collection));
-        return true;
-    }
-
-    static void EnsureLoggerIsInitialized()
-    {
-        const char Eval = '\u211b';
-
-        // ReSharper disable once RedundantNameQualifier
-        if (Log.Logger != Serilog.Core.Logger.None ||
-            typeof(Assert).Assembly.GetName().Name is not [var first, ..] name)
-            return;
-
-        var path = Path.Combine(Path.GetTempPath(), first is Eval ? new(Eval, 1) : name);
-        var log = $"{path}.log";
+        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 #if ROSLYN
-#pragma warning disable CA2000, IDISP001
-        StreamWriter writer = new(log);
-#pragma warning restore CA2000, IDISP001
-        writer.WriteLine(Clear);
-        Console.SetOut(writer);
+        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 #else
-            File.WriteAllText(log, Clear);
+        s_log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
 #endif
-        Log.Logger = new LoggerConfiguration().MinimumLevel.Is(LogEventLevel.Verbose)
-           .WriteTo.Console(applyThemeToRedirectedOutput: true)
-#if ROSLYN
-           .WriteTo.Sink(s_diagnosticSink)
-#else
-               .WriteTo.File(log)
-#endif
-           .WriteTo.File(new CompactJsonFormatter(), Path.ChangeExtension(log, "clef"))
-           .CreateLogger();
+        return value;
     }
-
 #endif
 #else
     /// <summary>Quick and dirty debugging function.</summary>
