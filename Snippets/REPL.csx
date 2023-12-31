@@ -15150,20 +15150,20 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         {
             if (isFileEmpty)
             {
-                s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+                s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
 #if ROSLYN
-                s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+                s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
 #else
-                s_log.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+                s_log.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
 #endif
                 return value;
             }
 
-            s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+            s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 #if ROSLYN
-            s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+            s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 #else
-            s_log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+            s_log.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 #endif
             return value;
         }
