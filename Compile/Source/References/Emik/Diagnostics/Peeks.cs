@@ -113,8 +113,8 @@ static partial class Peeks
 #pragma warning disable CA1823
     static readonly TextWriter s_log = File.CreateText($"{s_path}.log").Peek(Console.SetOut);
 #pragma warning restore CA1823
-#endif
-    static readonly Logger
+#endif // ReSharper disable once RedundantNameQualifier
+    static readonly Serilog.Core.Logger
         s_clef = new LoggerConfiguration().WriteTo.File($"{s_path}.clef").CreateLogger(),
         s_console = new LoggerConfiguration().WriteTo.Console(applyThemeToRedirectedOutput: true).CreateLogger(),
 #if ROSLYN
@@ -1080,7 +1080,10 @@ static partial class Peeks
             var y => y,
         };
 
-        s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+        if (isFileEmpty)
+            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+        else
+            s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 
         if (value is IEnumerable)
         {
