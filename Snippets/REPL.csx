@@ -3194,7 +3194,10 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     /// <summary>Collects <see cref="IComparer"/> and <see cref="IEqualityComparer"/> instances.</summary>
     sealed class ComparerCollector : IComparer, IEqualityComparer
     {
-        public List<object?> List { get; } = [];
+        /// <summary>The most common usage is with tuples, in which the maximum capacity is 8.</summary>
+        const int Capacity = 8;
+
+        public List<object?> List { get; } = new(Capacity);
 
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
@@ -14170,8 +14173,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #pragma warning disable CA1823
     static readonly TextWriter s_log = File.CreateText($"{s_path}.log").Peek(Console.SetOut);
 #pragma warning restore CA1823
-#endif
-    static readonly Logger
+#endif // ReSharper disable once RedundantNameQualifier
+    static readonly Serilog.Core.Logger
         s_clef = new LoggerConfiguration().WriteTo.File($"{s_path}.clef").CreateLogger(),
         s_console = new LoggerConfiguration().WriteTo.Console(applyThemeToRedirectedOutput: true).CreateLogger(),
 #if ROSLYN
@@ -15137,7 +15140,10 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             var y => y,
         };
 
-        s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+        if (isFileEmpty)
+            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+        else
+            s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 
         if (value is IEnumerable)
         {

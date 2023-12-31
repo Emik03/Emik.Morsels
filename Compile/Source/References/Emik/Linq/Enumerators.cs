@@ -10,7 +10,10 @@ static partial class EnumeratorToEnumerable
     /// <summary>Collects <see cref="IComparer"/> and <see cref="IEqualityComparer"/> instances.</summary>
     sealed class ComparerCollector : IComparer, IEqualityComparer
     {
-        public List<object?> List { get; } = [];
+        /// <summary>The most common usage is with tuples, in which the maximum capacity is 8.</summary>
+        const int Capacity = 8;
+
+        public List<object?> List { get; } = new(Capacity);
 
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
