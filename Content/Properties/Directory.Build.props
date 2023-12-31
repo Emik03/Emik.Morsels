@@ -7,6 +7,7 @@
         <Company>Emik</Company>
         <Nullable>enable</Nullable>
         <IsPackable>true</IsPackable>
+        <NuGetAudit>true</NuGetAudit>
         <FileVersion>1.0</FileVersion>
         <WarningLevel>4</WarningLevel>
         <AnalysisMode>All</AnalysisMode>
@@ -16,6 +17,7 @@
         <Deterministic>true</Deterministic>
         <IsPublishable>true</IsPublishable>
         <RepositoryType>git</RepositoryType>
+        <IncludeSymbols>true</IncludeSymbols>
         <AnalysisLevel>preview</AnalysisLevel>
         <RollForward>LatestMajor</RollForward>
         <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -27,15 +29,20 @@
         <FastNew_PrettyOutput>true</FastNew_PrettyOutput>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
+        <Features>$(Features);struct;flow-analysis</Features>
+        <OptimizationPreference>speed</OptimizationPreference>
         <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
+        <EnablePackageValidation>true</EnablePackageValidation>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <IncludeOpenAPIAnalyzers>true</IncludeOpenAPIAnalyzers>
         <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <FodyDependsOnTargets>RunConstructorTests</FodyDependsOnTargets>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -44,8 +51,12 @@
         <DefaultDocumentationFileNameFactory>Morsels</DefaultDocumentationFileNameFactory>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../'))=./</PathMap>
         <DefaultDocumentationInvalidCharReplacement>-</DefaultDocumentationInvalidCharReplacement>
+        <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
+        <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+        <ValidateExecutableReferencesMatchSelfContained>true</ValidateExecutableReferencesMatchSelfContained>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
         <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
+        <EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>true</EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
         <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
         <NoWarn>
