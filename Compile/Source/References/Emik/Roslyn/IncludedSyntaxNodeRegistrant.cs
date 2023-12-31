@@ -478,7 +478,9 @@ static partial class IncludedSyntaxNodeRegistrant
         {
             if (context.Node is not TSyntaxNode node || context.IsExcludedFromAnalysis())
                 return;
-
+#if !RELEASE
+            node.GetLocation().Mark();
+#endif
             action(context, node);
 #if !RELEASE
             context.Drain();
