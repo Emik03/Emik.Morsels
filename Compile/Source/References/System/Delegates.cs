@@ -165,5 +165,5 @@ delegate TResult Func<T1, T2, T3, T4, T5, T6, TResult>(T1 arg1, T2 arg2, T3 arg3
 /// <typeparam name="TOutput">The type the input object is to be converted to.</typeparam>
 /// <param name="input">The object to convert.</param>
 /// <returns>The <typeparamref name="TOutput"/> that represents the converted <typeparamref name="TInput"/>.</returns>
-delegate TOutput Converter<TInput, TOutput>(TInput input);
+delegate TOutput Converter<in TInput, out TOutput>(TInput input);
 #endif
