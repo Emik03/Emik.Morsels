@@ -558,8 +558,9 @@ static partial class Peeks
 #else
 #if ROSLYN
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
+#pragma warning disable S3220, S3878
     public static Location Mark(this Location location) => Mark(location, []);
-
+#pragma warning restore S3220, S3878
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     public static Location Mark(this Location location, params Location[]? additionalLocations) =>
         Mark(location, (IEnumerable<Location>?)additionalLocations);

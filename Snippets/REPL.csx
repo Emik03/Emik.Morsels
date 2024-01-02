@@ -14128,7 +14128,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             DiagnosticDescriptor descriptor =
                 new(Name, $"{s_guid}", $"{builder}", Name, ToDiagnosticSeverity(logEvent.Level), true);
 
-            var args = list.Select(x => (object)logEvent.Properties[x]).ToArray();
+            var args = list.Select(x => (object?)logEvent.Properties[x]).ToArray();
             var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
 
             UnreportedDiagnostics.Enqueue(diagnostic);
@@ -14256,6 +14256,10 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 #if RELEASE && !CSHARPREPL
 #if ROSLYN
+    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Location Mark(this Location location) => location;
+
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Location Mark(this Location location, [UsedImplicitly] params Location[]? additionalLocations) =>
@@ -14613,6 +14617,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             x;
 #else
 #if ROSLYN
+    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
+    public static Location Mark(this Location location) => Mark(location, []);
+
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     public static Location Mark(this Location location, params Location[]? additionalLocations) =>
         Mark(location, (IEnumerable<Location>?)additionalLocations);
@@ -15999,7 +16006,9 @@ public abstract class FixedGenerator(
         {
             if (context.Node is not TSyntaxNode node || context.IsExcludedFromAnalysis())
                 return;
-
+#if !RELEASE
+            node.GetLocation().Mark();
+#endif
             action(context, node);
 #if !RELEASE
             context.Drain();
