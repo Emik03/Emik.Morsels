@@ -198,10 +198,6 @@ static partial class Peeks
 #if ROSLYN
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Location Mark(this Location location) => location;
-
-    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Location Mark(this Location location, [UsedImplicitly] params Location[]? additionalLocations) =>
         location;
 
@@ -557,10 +553,6 @@ static partial class Peeks
             x;
 #else
 #if ROSLYN
-    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
-#pragma warning disable S3220, S3878
-    public static Location Mark(this Location location) => Mark(location, []);
-#pragma warning restore S3220, S3878
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     public static Location Mark(this Location location, params Location[]? additionalLocations) =>
         Mark(location, (IEnumerable<Location>?)additionalLocations);
