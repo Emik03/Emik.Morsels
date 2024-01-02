@@ -62,7 +62,7 @@ static partial class Collected
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-#if NETFRAMEWORK && NET40_OR_GREATER
+#if !NET40_OR_GREATER && NETFRAMEWORK
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 #else
         iterable is null ? null : iterable as IList<T> ?? iterable.ToList();

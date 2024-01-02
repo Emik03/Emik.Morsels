@@ -2662,7 +2662,7 @@ public sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IList<T>? ToListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-#if NETFRAMEWORK && NET40_OR_GREATER
+#if !NET40_OR_GREATER && NETFRAMEWORK
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 #else
         iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
@@ -14258,10 +14258,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #if ROSLYN
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Location Mark(this Location location) => location;
-
-    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Location Mark(this Location location, [UsedImplicitly] params Location[]? additionalLocations) =>
         location;
 
@@ -14617,9 +14613,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             x;
 #else
 #if ROSLYN
-    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
-    public static Location Mark(this Location location) => Mark(location, []);
-
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     public static Location Mark(this Location location, params Location[]? additionalLocations) =>
         Mark(location, (IEnumerable<Location>?)additionalLocations);
