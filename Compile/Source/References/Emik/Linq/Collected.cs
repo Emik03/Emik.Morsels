@@ -104,25 +104,6 @@ static partial class Collected
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
 #endif
 
-    /// <summary>Attempts to create a list from an <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item in the <see cref="IEnumerable{T}"/>.</typeparam>
-    /// <typeparam name="TList">The destination type.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to convert.</param>
-    /// <param name="converter">The <see cref="IList{T}"/> to convert it to.</param>
-    /// <returns>
-    /// A <typeparamref name="TList"/> from <paramref name="converter"/>, as long as every element returned
-    /// is not <paramref langword="null"/>, otherwise <paramref langword="default"/>.
-    /// </returns>
-    [MustUseReturnValue]
-    public static TList? Collect<T, TList>(
-        [InstantHandle] this IEnumerable<T?> iterable,
-        [InstantHandle] Converter<IEnumerable<T>, TList> converter
-    )
-        where TList : IList<T> => // ReSharper disable once NullableWarningSuppressionIsUsed
-#pragma warning disable CS8620 // Checked later, technically could cause problems, but most factory methods are fine.
-        (TList?)converter(iterable);
-#pragma warning restore CS8620
-
     /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
     /// <param name="enumerable">The enumerable to encapsulate.</param>
     /// <param name="count">The pre-computed count.</param>
