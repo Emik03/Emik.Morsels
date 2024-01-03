@@ -22886,3 +22886,5 @@ static class Morsels;
 /// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>
 static object None => Emik.Results.Result.None;
 
+CatchFatalExceptions = true;
+
