@@ -32,7 +32,6 @@ static partial class EnumerableTryGetNonEnumeratedCount
         {
             ICollection c => (count = c.Count) is var _,
             ICollection<TSource> c => (count = c.Count) is var _,
-            IReadOnlyCollection<TSource> c => (count = c.Count) is var _,
             _ => !((count = 0) is var _),
         };
 }

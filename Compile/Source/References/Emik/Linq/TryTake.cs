@@ -3,7 +3,7 @@
 // ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 namespace Emik.Morsels;
 
-/// <summary>Extension methods to attempt to grab values from enumerables.</summary>
+/// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
 static partial class TryTake
 {
     /// <summary>Takes the last item lazily, or a fallback value.</summary>
@@ -30,7 +30,7 @@ static partial class TryTake
 
         return last;
     }
-
+#if !(NET20 || NET30)
     /// <summary>Takes the first item, or a fallback value.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -81,6 +81,7 @@ static partial class TryTake
             _ => iterable.EnumerateOr(fallback),
         };
 #pragma warning restore IDE0056
+#endif
 
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
@@ -212,27 +213,8 @@ static partial class TryTake
         };
     }
 #endif
-#if NET5_0_OR_GREATER
-    /// <summary>Tries to extract a span from the source.</summary>
-    /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
-    /// <param name="source">The source to extract the span from.</param>
-    /// <param name="span">The resulting span.</param>
-    /// <returns>Whether the span can be extracted from the parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // fast type checks that don't add a lot of overhead
-    public static bool TryGetSpan<T>(
-        [NoEnumeration, NotNullWhen(true)] this IEnumerable<T>? source,
-        out ReadOnlySpan<T> span
-    )
-        where T : struct =>
-        source switch
-        {
-            T[] provider => (span = provider) is var _,
-            ImmutableArray<T> provider => (span = provider.AsSpan()) is var _,
-            List<T> provider => (span = CollectionsMarshal.AsSpan(provider)) is var _,
-            _ => !((span = default) is var _),
-        };
-#endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once UnusedMember.Local
     static unsafe T Reinterpret<T>(char c)
     {
         // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias

@@ -47,7 +47,7 @@ static partial class Collected
         iterable is null
             ? null
             : iterable as ICollection<T> ??
-            (iterable.TryGetNonEnumeratedCount(out var count)
+            (iterable.TryCount() is { } count
                 ? new Collection<T>(iterable, count)
 #if NETFRAMEWORK && NET40_OR_GREATER
                 : new List<T>(iterable));
