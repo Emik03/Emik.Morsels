@@ -1,9 +1,10 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantNameQualifier RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
 // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+using static Span;
 using FieldInfo = System.Reflection.FieldInfo;
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -22,38 +23,39 @@ static class PooledSmallListBuilder
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
-/// <param name="view">The view to hold as the initial value.</param>
 [CollectionBuilder(typeof(PooledSmallListBuilder), nameof(From))]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if !NO_REF_STRUCTS
 ref
 #endif
-    partial struct PooledSmallList<T>(Span<T> view)
+    partial struct PooledSmallList<T>
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
 {
+    const int Inlined = 0, UnmanagedHeap = 1, ArrayPool = 2;
+
     [NonNegativeValue]
     int _length;
 
-    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
-    Span<T> _view = view;
+    Span<T> _view;
 
     T[]? _rental;
 
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList()
-        : this([]) { }
+    public PooledSmallList() { }
 
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList(int capacity)
-        : this([]) =>
-        _view = _rental = Rent(capacity);
+    public PooledSmallList([NonNegativeValue] int capacity) => MakeRoom(capacity);
+
+    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
+    /// <param name="view">The view to hold as the initial value.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public PooledSmallList(Span<T> view) => _view = view;
 
     /// <inheritdoc cref="Span{T}.Empty"/>
     public static PooledSmallList<T> Empty
@@ -77,6 +79,25 @@ ref
         get => _rental is null;
     }
 
+    /// <summary>Gets a value indicating whether the elements are using the unmanaged heap.</summary>
+    [CLSCompliant(false)]
+    public readonly bool IsUnmanagedHeap
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining),
+         Pure]
+        get => _rental.ToAddress() is UnmanagedHeap;
+    }
+
+    /// <summary>Gets a value indicating whether the elements are inlined.</summary>
+    [CLSCompliant(false)]
+    public readonly bool IsArrayPool
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining),
+         MemberNotNullWhen(true, nameof(_rental), nameof(DangerouslyTransferOwnership)),
+         Pure]
+        get => _rental.ToAddress() >= ArrayPool;
+    }
+
     /// <inheritdoc cref="Span{T}.Length"/>
     public int Length
     {
@@ -88,6 +109,23 @@ ref
             var relativeLength = newLength - _length;
             MakeRoom(relativeLength);
             _length = newLength;
+        }
+    }
+
+    /// <summary>Gets and transfers responsibility of disposing the inner unmanaged array to the caller.</summary>
+    public unsafe nint DangerouslyTransferOwnershipUnmanaged
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining),
+         MustUseReturnValue("Dispose unmanaged array with System.Runtime.InteropServices.Marshal.FreeHGlobal")]
+        get
+        {
+            if (!IsUnmanagedHeap)
+                return 0;
+
+            _length = 0;
+            _view = default;
+            _rental = null;
+            return UnmanagedHeapPointer;
         }
     }
 
@@ -123,17 +161,17 @@ ref
     public readonly T[] ToArrayLazily
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => _rental ?? _view.ToArray();
+        get => IsArrayPool ? _rental : _view.ToArray();
     }
 
     /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
     public T[]? DangerouslyTransferOwnership
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MustUseReturnValue("Dispose array by passing it into System.Memory.ArrayPool<T>.Shared.Return")]
+         MustUseReturnValue("Dispose array with System.Memory.ArrayPool<T>.Shared.Return")]
         get
         {
-            if (IsInlined)
+            if (!IsArrayPool)
                 return null;
 
             var rental = _rental;
@@ -142,6 +180,12 @@ ref
             _rental = null;
             return rental;
         }
+    }
+
+    readonly unsafe nint UnmanagedHeapPointer
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => (nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(_view));
     }
 
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
@@ -201,10 +245,18 @@ ref
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
+    public unsafe void Dispose()
     {
-        if (!IsInlined)
-            ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership);
+        switch (_rental.ToAddress())
+        {
+            case Inlined: break;
+            case UnmanagedHeap:
+                Marshal.FreeHGlobal(DangerouslyTransferOwnershipUnmanaged);
+                break;
+            default:
+                ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership!);
+                break;
+        }
     }
 #pragma warning disable 809, S3877
     /// <inheritdoc />
@@ -230,6 +282,15 @@ ref
             return this;
         }
 
+        if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            _view.CopyTo(unmanaged);
+            unmanaged[_length++] = item;
+            Swap(unmanaged);
+            return this;
+        }
+
         var replacement = Rent(1);
         _view.CopyTo(replacement);
         replacement[_length++] = item;
@@ -245,6 +306,16 @@ ref
         {
             collection.CopyTo(_view[_length..]);
             _length += collection.Length;
+            return this;
+        }
+
+        if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            _view.CopyTo(unmanaged);
+            collection.CopyTo(unmanaged[_length..]);
+            _length += collection.Length;
+            Swap(unmanaged);
             return this;
         }
 
@@ -281,6 +352,16 @@ ref
             return this;
         }
 
+        if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            _view.CopyTo(unmanaged[1..]);
+            unmanaged[0] = item;
+            _length++;
+            Swap(unmanaged);
+            return this;
+        }
+
         var replacement = Rent(1);
         _view.CopyTo(replacement.AsSpan()[1..]);
         replacement[0] = item;
@@ -298,6 +379,16 @@ ref
             View.CopyTo(_view[collection.Length..]);
             _length += collection.Length;
             collection.CopyTo(_view);
+            return this;
+        }
+
+        if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            _view.CopyTo(unmanaged[collection.Length..]);
+            collection.CopyTo(unmanaged);
+            _length += collection.Length;
+            Swap(unmanaged);
             return this;
         }
 
@@ -323,6 +414,14 @@ ref
             return this;
         }
 
+        if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            Copy(offset, item, unmanaged);
+            Swap(unmanaged);
+            return this;
+        }
+
         var replacement = Rent(1);
         Copy(offset, item, replacement);
         Swap(replacement);
@@ -331,16 +430,24 @@ ref
 
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> items)
+    public PooledSmallList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> collection)
     {
-        if (HasRoom(items.Length))
+        if (HasRoom(collection.Length))
         {
-            Copy(index, items, _view);
+            Copy(index, collection, _view);
             return this;
         }
 
-        var replacement = Rent(items.Length);
-        Copy(index, items, replacement);
+        if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            Copy(index, collection, unmanaged);
+            Swap(unmanaged);
+            return this;
+        }
+
+        var replacement = Rent(collection.Length);
+        Copy(index, collection, replacement);
         Swap(replacement);
         return this;
     }
@@ -349,7 +456,8 @@ ref
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
     {
-        MakeRoom(collection);
+        if (collection.TryCount() is { } count)
+            MakeRoom(count);
 
         using var e = collection.GetEnumerator();
 
@@ -413,24 +521,18 @@ ref
     /// <param name="i">The index.</param>
     /// <returns>The element, or default.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ref T Nth([NonNegativeValue] int i)
-    {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (i >= 0 && i < _length)
-            return ref _view[i];
-
-        return ref Unsafe.NullRef<T>();
-    }
+    public readonly ref T Nth([NonNegativeValue] int i) => // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        ref i >= 0 && i < _length ? ref _view[i] : ref Unsafe.NullRef<T>();
 
     /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
     /// <param name="i">The index.</param>
     /// <returns>The element, or default.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ref T Nth(Index i)
-    {
-        var offset = i.GetOffset(_length);
-        return ref Nth(offset);
-    }
+    public readonly ref T Nth(Index i) => ref Nth(i.GetOffset(_length));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe Span<T> Rent([NonNegativeValue] int length, [NonNegativeValue] int bytes) =>
+        new((void*)Marshal.AllocHGlobal(bytes), length);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Copy([NonNegativeValue] int offset, T insertion, scoped Span<T> destination)
@@ -479,10 +581,20 @@ ref
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Swap(T[] replacement)
     {
-        if (!IsInlined)
+        if (IsArrayPool)
             ArrayPool<T>.Shared.Return(_rental);
 
         _view = _rental = replacement;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    unsafe void Swap(Span<T> replacement)
+    {
+        if (IsUnmanagedHeap)
+            Marshal.FreeHGlobal((nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(_view)));
+
+        UnsafelySetNullishTo(out _rental, 1);
+        _view = replacement;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -491,17 +603,41 @@ ref
         if (HasRoom(by))
             return;
 
-        var replacement = Rent(by);
-        View.CopyTo(replacement);
-        Swap(replacement);
+        if (CanAllocateInUnmanagedHeap(by, out var length, out var bytes))
+        {
+            var unmanaged = Rent(length, bytes);
+            View.CopyTo(unmanaged);
+            Swap(unmanaged);
+        }
+        else
+        {
+            var replacement = Rent(by);
+            View.CopyTo(replacement);
+            Swap(replacement);
+        }
+
         _length += by;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void MakeRoom([NoEnumeration] IEnumerable<T> collection)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
     {
-        if (collection.TryGetNonEnumeratedCount(out var count))
-            MakeRoom(count);
+        if (!To<T>.Unmanagable)
+        {
+            length = 0;
+            bytes = 0;
+            return false;
+        }
+
+        length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
+        bytes = length * Unsafe.SizeOf<T>();
+
+        if (length >= 0 && bytes >= 0)
+            return true;
+
+        // Swaps to ArrayPool.
+        Marshal.FreeHGlobal(UnmanagedHeapPointer);
+        return false;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
