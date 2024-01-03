@@ -58,6 +58,7 @@
         <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
         <EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>true</EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
+        <Copyright Condition="$(CopyrightSince) != ''">Copyright © Emik $(CopyrightSince) - $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
         <NoWarn>
             (NoWarn);
@@ -134,7 +135,7 @@
         <AdditionalFiles Include="$(Morsels)/Content/Properties/**" Link="Properties/**"/>
         <Content Include="$(Morsels)/Content/Properties/**" Link="Properties/**" Pack="false"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.csproj'" Include="$(Morsels)/Compile/**/*.cs"/>
-        <None Condition="Exists('Images/icon.png')" Include="Images/icon.png" Link="Images/icon.png" Pack="true" PackagePath="/"/>
+        <None Condition="Exists('Images/icon.png')" Include="Images/icon.png" Link="Images/icon.png" Pack="true" PackagePath="icon.png"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.fsproj'" Include="$(Morsels)/Compile/**/*.fs" Link="Source/Emik.Morsels/*.fs"/>
         <None Include="$([MSBuild]::GetPathOfFileAbove('README.md', '$(MSBuildProjectFullPath)../'))" Link="README.md" Pack="true" PackagePath="/"/>
     </ItemGroup>
