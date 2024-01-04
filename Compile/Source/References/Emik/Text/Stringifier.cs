@@ -749,9 +749,7 @@ static partial class Stringifier
         }
         finally
         {
-#pragma warning disable IDISP007
             (iterator as IDisposable)?.Dispose();
-#pragma warning restore IDISP007
         }
     }
 #if !WAWA

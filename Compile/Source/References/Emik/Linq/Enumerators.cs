@@ -3,7 +3,7 @@
 // ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable MA0048, IDISP005, IDISP007
+#pragma warning disable MA0048, IDISP005
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumeratorToEnumerable
 {

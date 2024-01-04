@@ -156,9 +156,7 @@ sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
         }
 
         /// <inheritdoc />
-#pragma warning disable IDISP007
         public void Dispose() => enumerator.Dispose();
-#pragma warning restore IDISP007
 
         /// <inheritdoc />
         public bool MoveNext()
