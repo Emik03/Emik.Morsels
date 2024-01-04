@@ -4477,7 +4477,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf NotDisposedResource RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 
 #pragma warning disable 8618, 9193, CA1823, IDE0250, IDE0251, MA0071, MA0102, RCS1158, SA1137
@@ -4982,15 +4982,15 @@ readonly
     }
 
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 
     /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
@@ -11119,7 +11119,7 @@ public enum ControlFlow : byte
 // ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
-#pragma warning disable MA0048
+#pragma warning disable MA0048, IDISP005, IDISP007
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 
     /// <summary>Collects <see cref="IComparer"/> and <see cref="IEqualityComparer"/> instances.</summary>
@@ -11151,8 +11151,13 @@ public enum ControlFlow : byte
     /// </summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
-    sealed partial class Enumerable<T>([ProvidesContext] IEnumerator<T> enumerator) : IEnumerable<T>
+    sealed partial class Enumerable<T>([HandlesResourceDisposal, ProvidesContext] IEnumerator<T> enumerator)
+        : IDisposable, IEnumerable<T>
     {
+        /// <inheritdoc />
+        [CollectionAccess(CollectionAccessType.None)]
+        public void Dispose() => enumerator.Dispose();
+
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         public IEnumerator<T> GetEnumerator() => enumerator;
@@ -11160,30 +11165,24 @@ public enum ControlFlow : byte
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-#pragma warning disable SA1643
-        /// <summary>Finalizes an instance of the <see cref="Enumerable{T}"/> class.</summary>
-#pragma warning restore SA1643
-#pragma warning disable MA0055, IDISP007, IDISP023
-        ~Enumerable() => enumerator.Dispose();
-#pragma warning restore MA0055, IDISP007, IDISP023
     }
 
     /// <summary>
     /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
     /// </summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
-    sealed partial class Enumerator([ProvidesContext] IEnumerator enumerator) : IEnumerator<object?>
+    sealed partial class Enumerator([HandlesResourceDisposal, ProvidesContext] IEnumerator enumerator)
+        : IEnumerator<object?>
     {
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         [Pure]
         public object? Current => enumerator.Current;
 
         /// <inheritdoc />
-        public void Reset() => enumerator.Reset();
+        public void Dispose() => (enumerator as IDisposable)?.Dispose();
 
         /// <inheritdoc />
-        public void Dispose() { }
+        public void Reset() => enumerator.Reset();
 
         /// <inheritdoc />
         public bool MoveNext() => enumerator.MoveNext();
@@ -11194,30 +11193,31 @@ public enum ControlFlow : byte
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
     /// </returns>
-    [Pure]
-    public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
+    [MustDisposeResource, Pure]
+    public static IEnumerator<object?> AsGeneric([HandlesResourceDisposal] this IEnumerator enumerator) =>
+        new Enumerator(enumerator);
 
     /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
-    [Pure]
-    public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
-#pragma warning disable CA2000, IDISP004
-        enumerator.AsGeneric().AsEnumerable();
-#pragma warning restore CA2000, IDISP004
-
+    [MustDisposeResource, Pure]
+    public static IEnumerable<object?> AsEnumerable([HandlesResourceDisposal] this IEnumerator enumerator) =>
+#pragma warning disable CA2000
+        AsEnumerable(AsGeneric(enumerator));
+#pragma warning restore CA2000
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
-    [Pure] // ReSharper disable once NotDisposedResource ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
-    public static IEnumerable<object?> AsGenericEnumerable(this Array array) => array.GetEnumerator().AsEnumerable();
+    [MustDisposeResource, Pure]
+    public static IEnumerable<object?> AsGenericEnumerable(this Array array) => AsEnumerable(array.GetEnumerator());
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
-    [Pure]
-    public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) => new Enumerable<T>(enumerator);
+    [MustDisposeResource, Pure]
+    public static IEnumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
+        new Enumerable<T>(enumerator);
 
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
@@ -11598,8 +11598,9 @@ public enum ControlFlow : byte
     [Pure]
     public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
-        // ReSharper disable once NotDisposedResourceIsReturned ObjectProducedWithMustDisposeAnnotatedMethodIsReturned
-        var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
+        var (truthy, falsy) = enumerable
+           .Select([MustDisposeResource](x) => x.GetEnumerator())
+           .SplitBy(x => x.MoveNext());
 
         falsy.For(x => x.Dispose());
 
@@ -13401,12 +13402,12 @@ public sealed class Primes : IEnumerable<ulong>
 
     /// <summary>Gets the enumerator for the primes.</summary>
     /// <returns>The enumerator of the primes.</returns>
-    [Pure]
+    [MustDisposeResource(false), Pure]
     public IEnumerator<ulong> GetEnumerator() => new Enumerator();
 
     /// <summary>Gets the enumerator for the primes.</summary>
     /// <returns>The enumerator of the primes.</returns>
-    [Pure]
+    [MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>Fast buffer segment culling method using a Wheel State Look Up Table.</summary>
@@ -18700,18 +18701,18 @@ readonly
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 #pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Value"/> as <typeparamref name="TResult"/>.</summary>
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
     /// the result is truncated to the left. Otherwise, if the type <typeparamref name="TResult"/>
@@ -18725,7 +18726,7 @@ readonly
     /// var truncation = bits.Coerce<byte>(); // 0b0101_0110
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Value"/> as <typeparamref name="TResult"/>.</returns>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult Coerce<TResult>()
@@ -18745,7 +18746,7 @@ readonly
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
 #pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Value"/> as <typeparamref name="TResult"/>.</summary>
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
     /// the result is truncated to the right. Otherwise, if the type <typeparamref name="TResult"/>
@@ -18759,7 +18760,7 @@ readonly
     /// var truncation = bits.Coerce<byte>(); // 0b0000_1111
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Value"/> as <typeparamref name="TResult"/>.</returns>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult CoerceLeft<TResult>()
@@ -19153,15 +19154,15 @@ readonly
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource(false), Pure]
     public Enumerator GetEnumerator() => HasValue ? new(value) : default;
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
@@ -19357,7 +19358,7 @@ readonly
     /// <summary>Returns itself.</summary>
     /// <remarks><para>Used to allow <see langword="foreach"/> to be used on <see cref="Yes{T}"/>.</para></remarks>
     /// <returns>Itself.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
     public Yes<T> GetEnumerator() => this;
 
     /// <inheritdoc />
@@ -19373,11 +19374,11 @@ readonly
     bool IEnumerator.MoveNext() => true;
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 }
 
@@ -21282,12 +21283,12 @@ public partial struct SmallList<T> :
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
     /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
     /// <returns>The backwards enumerator.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetReversedEnumerator() => new(this, true);
 
     /// <summary>Forms a slice out of the current list that begins at a specified index.</summary>
@@ -21474,11 +21475,11 @@ public partial struct SmallList<T> :
 #endif
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -22277,7 +22278,6 @@ abstract partial class Assert(
     [Format("Expected @x to have any items, received an empty collection."), Pure]
     public static bool Any([InstantHandle] IEnumerable x)
     {
-        // ReSharper disable once ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
         var e = x.GetEnumerator();
 
         try

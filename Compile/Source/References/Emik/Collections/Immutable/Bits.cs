@@ -234,18 +234,18 @@ readonly
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetEnumerator() => _value;
 
     /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 #pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Value"/> as <typeparamref name="TResult"/>.</summary>
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
     /// the result is truncated to the left. Otherwise, if the type <typeparamref name="TResult"/>
@@ -259,7 +259,7 @@ readonly
     /// var truncation = bits.Coerce<byte>(); // 0b0101_0110
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Value"/> as <typeparamref name="TResult"/>.</returns>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult Coerce<TResult>()
@@ -279,7 +279,7 @@ readonly
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
 #pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Value"/> as <typeparamref name="TResult"/>.</summary>
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
     /// the result is truncated to the right. Otherwise, if the type <typeparamref name="TResult"/>
@@ -293,7 +293,7 @@ readonly
     /// var truncation = bits.Coerce<byte>(); // 0b0000_1111
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Value"/> as <typeparamref name="TResult"/>.</returns>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult CoerceLeft<TResult>()

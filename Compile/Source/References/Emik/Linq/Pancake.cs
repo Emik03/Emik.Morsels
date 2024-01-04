@@ -47,8 +47,9 @@ static partial class Pancake
     [Pure]
     public static IEnumerable<List<T>> Transpose<T>(this IEnumerable<IEnumerable<T>> enumerable)
     {
-        // ReSharper disable once NotDisposedResourceIsReturned ObjectProducedWithMustDisposeAnnotatedMethodIsReturned
-        var (truthy, falsy) = enumerable.Select(x => x.GetEnumerator()).SplitBy(x => x.MoveNext());
+        var (truthy, falsy) = enumerable
+           .Select([MustDisposeResource](x) => x.GetEnumerator())
+           .SplitBy(x => x.MoveNext());
 
         falsy.For(x => x.Dispose());
 

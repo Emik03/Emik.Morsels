@@ -3,7 +3,7 @@
 // ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable MA0048
+#pragma warning disable MA0048, IDISP005, IDISP007
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumeratorToEnumerable
 {
@@ -36,8 +36,13 @@ static partial class EnumeratorToEnumerable
     /// </summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
-    sealed partial class Enumerable<T>([ProvidesContext] IEnumerator<T> enumerator) : IEnumerable<T>
+    sealed partial class Enumerable<T>([HandlesResourceDisposal, ProvidesContext] IEnumerator<T> enumerator)
+        : IDisposable, IEnumerable<T>
     {
+        /// <inheritdoc />
+        [CollectionAccess(CollectionAccessType.None)]
+        public void Dispose() => enumerator.Dispose();
+
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         public IEnumerator<T> GetEnumerator() => enumerator;
@@ -45,30 +50,24 @@ static partial class EnumeratorToEnumerable
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-#pragma warning disable SA1643
-        /// <summary>Finalizes an instance of the <see cref="Enumerable{T}"/> class.</summary>
-#pragma warning restore SA1643
-#pragma warning disable MA0055, IDISP007, IDISP023
-        ~Enumerable() => enumerator.Dispose();
-#pragma warning restore MA0055, IDISP007, IDISP023
     }
 
     /// <summary>
     /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
     /// </summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
-    sealed partial class Enumerator([ProvidesContext] IEnumerator enumerator) : IEnumerator<object?>
+    sealed partial class Enumerator([HandlesResourceDisposal, ProvidesContext] IEnumerator enumerator)
+        : IEnumerator<object?>
     {
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         [Pure]
         public object? Current => enumerator.Current;
 
         /// <inheritdoc />
-        public void Reset() => enumerator.Reset();
+        public void Dispose() => (enumerator as IDisposable)?.Dispose();
 
         /// <inheritdoc />
-        public void Dispose() { }
+        public void Reset() => enumerator.Reset();
 
         /// <inheritdoc />
         public bool MoveNext() => enumerator.MoveNext();
@@ -79,30 +78,31 @@ static partial class EnumeratorToEnumerable
     /// <returns>
     /// The <see cref="IEnumerator{T}"/> instance that returns the parameter <paramref name="enumerator"/>.
     /// </returns>
-    [Pure]
-    public static IEnumerator<object?> AsGeneric(this IEnumerator enumerator) => new Enumerator(enumerator);
+    [MustDisposeResource, Pure]
+    public static IEnumerator<object?> AsGeneric([HandlesResourceDisposal] this IEnumerator enumerator) =>
+        new Enumerator(enumerator);
 
     /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
-    [Pure]
-    public static IEnumerable<object?> AsEnumerable(this IEnumerator enumerator) =>
-#pragma warning disable CA2000, IDISP004
-        enumerator.AsGeneric().AsEnumerable();
-#pragma warning restore CA2000, IDISP004
-
+    [MustDisposeResource, Pure]
+    public static IEnumerable<object?> AsEnumerable([HandlesResourceDisposal] this IEnumerator enumerator) =>
+#pragma warning disable CA2000
+        AsEnumerable(AsGeneric(enumerator));
+#pragma warning restore CA2000
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
-    [Pure] // ReSharper disable once NotDisposedResource ObjectProducedWithMustDisposeAnnotatedMethodIsNotDisposed
-    public static IEnumerable<object?> AsGenericEnumerable(this Array array) => array.GetEnumerator().AsEnumerable();
+    [MustDisposeResource, Pure]
+    public static IEnumerable<object?> AsGenericEnumerable(this Array array) => AsEnumerable(array.GetEnumerator());
 
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
-    [Pure]
-    public static IEnumerable<T> AsEnumerable<T>(this IEnumerator<T> enumerator) => new Enumerable<T>(enumerator);
+    [MustDisposeResource, Pure]
+    public static IEnumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
+        new Enumerable<T>(enumerator);
 
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>

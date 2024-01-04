@@ -517,12 +517,12 @@ sealed class Primes : IEnumerable<ulong>
 
     /// <summary>Gets the enumerator for the primes.</summary>
     /// <returns>The enumerator of the primes.</returns>
-    [Pure]
+    [MustDisposeResource(false), Pure]
     public IEnumerator<ulong> GetEnumerator() => new Enumerator();
 
     /// <summary>Gets the enumerator for the primes.</summary>
     /// <returns>The enumerator of the primes.</returns>
-    [Pure]
+    [MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>Fast buffer segment culling method using a Wheel State Look Up Table.</summary>

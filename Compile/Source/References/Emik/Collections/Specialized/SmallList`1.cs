@@ -694,12 +694,12 @@ partial struct SmallList<T> :
         };
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
-    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
     /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
     /// <returns>The backwards enumerator.</returns>
-    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetReversedEnumerator() => new(this, true);
 
     /// <summary>Forms a slice out of the current list that begins at a specified index.</summary>
@@ -886,11 +886,11 @@ partial struct SmallList<T> :
 #endif
 
     /// <inheritdoc />
-    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

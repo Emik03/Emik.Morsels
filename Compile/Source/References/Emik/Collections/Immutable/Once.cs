@@ -204,15 +204,15 @@ readonly
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource(false), Pure]
     public Enumerator GetEnumerator() => HasValue ? new(value) : default;
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
+    [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>

@@ -58,7 +58,7 @@ readonly
     /// <summary>Returns itself.</summary>
     /// <remarks><para>Used to allow <see langword="foreach"/> to be used on <see cref="Yes{T}"/>.</para></remarks>
     /// <returns>Itself.</returns>
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MustDisposeResource(false), Pure]
     public Yes<T> GetEnumerator() => this;
 
     /// <inheritdoc />
@@ -74,10 +74,10 @@ readonly
     bool IEnumerator.MoveNext() => true;
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(None), Pure]
+    [CollectionAccess(None), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 }
