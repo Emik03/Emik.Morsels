@@ -291,7 +291,7 @@ ref
             return this;
         }
 
-        var replacement = Rent(1);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement);
         replacement[_length++] = item;
         Swap(replacement);
@@ -319,7 +319,7 @@ ref
             return this;
         }
 
-        var replacement = Rent(collection.Length);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement);
         collection.CopyTo(replacement.AsSpan()[_length..]);
         _length += collection.Length;
@@ -362,7 +362,7 @@ ref
             return this;
         }
 
-        var replacement = Rent(1);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement.AsSpan()[1..]);
         replacement[0] = item;
         _length++;
@@ -392,7 +392,7 @@ ref
             return this;
         }
 
-        var replacement = Rent(collection.Length);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement.AsSpan()[collection.Length..]);
         collection.CopyTo(replacement);
         _length += collection.Length;
@@ -422,7 +422,7 @@ ref
             return this;
         }
 
-        var replacement = Rent(1);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         Copy(offset, item, replacement);
         Swap(replacement);
         return this;
@@ -446,7 +446,7 @@ ref
             return this;
         }
 
-        var replacement = Rent(collection.Length);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         Copy(index, collection, replacement);
         Swap(replacement);
         return this;
@@ -611,7 +611,7 @@ ref
         }
         else
         {
-            var replacement = Rent(by);
+            var replacement = ArrayPool<T>.Shared.Rent(length);
             View.CopyTo(replacement);
             Swap(replacement);
         }
@@ -622,14 +622,14 @@ ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
     {
+        length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
+
         if (!To<T>.Unmanagable)
         {
-            length = 0;
-            bytes = 0;
+            Unsafe.SkipInit(out bytes);
             return false;
         }
 
-        length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
         bytes = length * Unsafe.SizeOf<T>();
 
         if (length >= 0 && bytes >= 0)
@@ -642,14 +642,6 @@ ref
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool HasRoom(int by) => _length + by <= _view.Length;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly T[] Rent([NonNegativeValue] int by)
-    {
-        var sum = unchecked((uint)(_view.Length + by));
-        var length = unchecked((int)sum.RoundUpToPowerOf2());
-        return ArrayPool<T>.Shared.Rent(length);
-    }
 
     /// <summary>Validator of generics representing the continuous buffer over the element type.</summary>
     /// <typeparam name="TRef">The generic representing the continuous buffer over the element type.</typeparam>

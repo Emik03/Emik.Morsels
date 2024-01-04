@@ -15392,66 +15392,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     }
 
 // SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable once CheckNamespace
-
-
-/// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
-    public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
-    public const string NonBreaking =
-        "\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
-
-    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
-    public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
-
-    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
-    public const string Unicode = $"{Breaking}{NonBreaking}";
-
-    /// <summary>All unicode characters that appear to be whitespace.</summary>
-    public const string Combined = $"{Unicode}{Related}";
-#if NET8_0_OR_GREATER
-#pragma warning disable IDISP004
-    /// <inheritdoc cref="Breaking"/>
-    public static OnceMemoryManager<SearchValues<char>> BreakingSearch
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Breaking));
-
-    /// <inheritdoc cref="NonBreaking"/>
-    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearch
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } = new(SearchValues.Create(NonBreaking));
-
-    /// <inheritdoc cref="Related"/>
-    public static OnceMemoryManager<SearchValues<char>> RelatedSearch
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Related));
-
-    /// <inheritdoc cref="Unicode"/>
-    public static OnceMemoryManager<SearchValues<char>> UnicodeSearch
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Unicode));
-
-    /// <inheritdoc cref="Combined"/>
-    public static OnceMemoryManager<SearchValues<char>> CombinedSearch
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Combined));
-#pragma warning restore IDISP004
-#endif
-
-// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #pragma warning disable 1696, SA1137, SA1216
@@ -16484,6 +16424,66 @@ public
         }
     }
 #endif
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
+
+    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
+    public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
+
+    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
+    public const string NonBreaking =
+        "\u0009\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
+
+    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
+    public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
+
+    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
+    public const string Unicode = $"{Breaking}{NonBreaking}";
+
+    /// <summary>All unicode characters that appear to be whitespace.</summary>
+    public const string Combined = $"{Unicode}{Related}";
+#if NET8_0_OR_GREATER
+#pragma warning disable IDISP004
+    /// <inheritdoc cref="Breaking"/>
+    public static OnceMemoryManager<SearchValues<char>> BreakingSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(SearchValues.Create(Breaking));
+
+    /// <inheritdoc cref="NonBreaking"/>
+    public static OnceMemoryManager<SearchValues<char>> NonBreakingSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } = new(SearchValues.Create(NonBreaking));
+
+    /// <inheritdoc cref="Related"/>
+    public static OnceMemoryManager<SearchValues<char>> RelatedSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(SearchValues.Create(Related));
+
+    /// <inheritdoc cref="Unicode"/>
+    public static OnceMemoryManager<SearchValues<char>> UnicodeSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(SearchValues.Create(Unicode));
+
+    /// <inheritdoc cref="Combined"/>
+    public static OnceMemoryManager<SearchValues<char>> CombinedSearch
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+    } =
+        new(SearchValues.Create(Combined));
+#pragma warning restore IDISP004
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -19808,7 +19808,7 @@ public ref
             return this;
         }
 
-        var replacement = Rent(1);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement);
         replacement[_length++] = item;
         Swap(replacement);
@@ -19836,7 +19836,7 @@ public ref
             return this;
         }
 
-        var replacement = Rent(collection.Length);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement);
         collection.CopyTo(replacement.AsSpan()[_length..]);
         _length += collection.Length;
@@ -19879,7 +19879,7 @@ public ref
             return this;
         }
 
-        var replacement = Rent(1);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement.AsSpan()[1..]);
         replacement[0] = item;
         _length++;
@@ -19909,7 +19909,7 @@ public ref
             return this;
         }
 
-        var replacement = Rent(collection.Length);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement.AsSpan()[collection.Length..]);
         collection.CopyTo(replacement);
         _length += collection.Length;
@@ -19939,7 +19939,7 @@ public ref
             return this;
         }
 
-        var replacement = Rent(1);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         Copy(offset, item, replacement);
         Swap(replacement);
         return this;
@@ -19963,7 +19963,7 @@ public ref
             return this;
         }
 
-        var replacement = Rent(collection.Length);
+        var replacement = ArrayPool<T>.Shared.Rent(length);
         Copy(index, collection, replacement);
         Swap(replacement);
         return this;
@@ -20128,7 +20128,7 @@ public ref
         }
         else
         {
-            var replacement = Rent(by);
+            var replacement = ArrayPool<T>.Shared.Rent(length);
             View.CopyTo(replacement);
             Swap(replacement);
         }
@@ -20139,14 +20139,14 @@ public ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
     {
+        length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
+
         if (!To<T>.Unmanagable)
         {
-            length = 0;
-            bytes = 0;
+            Unsafe.SkipInit(out bytes);
             return false;
         }
 
-        length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
         bytes = length * Unsafe.SizeOf<T>();
 
         if (length >= 0 && bytes >= 0)
@@ -20159,14 +20159,6 @@ public ref
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool HasRoom(int by) => _length + by <= _view.Length;
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly T[] Rent([NonNegativeValue] int by)
-    {
-        var sum = unchecked((uint)(_view.Length + by));
-        var length = unchecked((int)sum.RoundUpToPowerOf2());
-        return ArrayPool<T>.Shared.Rent(length);
-    }
 
     /// <summary>Validator of generics representing the continuous buffer over the element type.</summary>
     /// <typeparam name="TRef">The generic representing the continuous buffer over the element type.</typeparam>
