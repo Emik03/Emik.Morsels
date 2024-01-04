@@ -20140,7 +20140,7 @@ public ref
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
+    readonly bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
     {
         if (!To<T>.Unmanagable)
         {
