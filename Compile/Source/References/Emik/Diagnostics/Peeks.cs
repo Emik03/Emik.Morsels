@@ -103,10 +103,14 @@ static partial class Peeks
         typeof(Assert).Assembly.GetName().Name is [not '\u211b', ..] name ? name : "\u211b"
     ); // ReSharper disable once RedundantNameQualifier
 
+    static readonly ITextFormatter s_json =
+#if CSHARPREPL
+        new JsonFormatter();
+#else
+        new CompactJsonFormatter();
+#endif
     static readonly Serilog.Core.Logger
-        s_clef = new LoggerConfiguration().MinimumLevel.Verbose()
-           .WriteTo.File(new CompactJsonFormatter(), $"{s_path}.clef")
-           .CreateLogger(),
+        s_clef = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File(s_json, $"{s_path}.clef").CreateLogger(),
 #if ROSLYN
         s_roslyn = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(s_diagnosticSink).CreateLogger();
 #else
@@ -573,7 +577,7 @@ static partial class Peeks
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
     /// <param name="map">When specified, overrides the value that is logged.</param>
-    /// <param name="e">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
+    /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
     /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
     /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
     /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
@@ -581,12 +585,12 @@ static partial class Peeks
     public static T Debug<T>(
         this T x,
         [InstantHandle] Converter<T, object?>? map = null,
-        [CallerArgumentExpression(nameof(x))] string? e = "",
+        [CallerArgumentExpression(nameof(x))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(x, map, e, path, name, line, LogEventLevel.Debug);
+        Do(x, map, expression, path, name, line, LogEventLevel.Debug);
 
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
     public static Span<T> Debug<T>(
@@ -1089,67 +1093,32 @@ static partial class Peeks
     static T Do<T>(
         T value,
         [InstantHandle] Converter<T, object?>? map,
-        string? e,
+        string? expression,
         string? path,
         string? name,
         int line,
         LogEventLevel level
     )
     {
-        var f = path.FileName();
-        var isFileEmpty = f is { Length: 0 };
-        var x = Destructure((map ?? (x => x))(value));
-
-        if (isFileEmpty)
-            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
-        else
-            s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
-
-        if (x is null or IEnumerable)
+        if ((map ?? (x => x))(value).ToDeconstructed() is var x && path.FileName() is not { Length: 0 } file)
         {
-            if (isFileEmpty)
-            {
+            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #if ROSLYN
-                s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
+            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #else
-                s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, e, x);
-#endif
-                return value;
-            }
-#if ROSLYN
-            s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
-#else
-            s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
+            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #endif
             return value;
         }
 
-        if (isFileEmpty)
-        {
+        s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #if ROSLYN
-            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
+        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #else
-            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {$Value}", name, line, e, x);
-#endif
-            return value;
-        }
-#if ROSLYN
-        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
-#else
-        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {$Value}", f, name, line, e, x);
+        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #endif
         return value;
     }
-
-    [Pure]
-    [return: NotNullIfNotNull(nameof(x))]
-    static object? Destructure(object? x) =>
-        x switch
-        {
-            IStructuralComparable y => y.ToList(),
-            IStructuralEquatable y => y.ToList(),
-            _ => x,
-        };
 #endif
 #else
     /// <summary>Quick and dirty debugging function.</summary>
