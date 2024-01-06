@@ -121,11 +121,7 @@ static partial class Peeks
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if !RELEASE && !CSHARPREPL
-    static Peeks()
-    {
-        File.Create(s_debugFile).Dispose();
-        File.WriteAllText($"{s_path}.log", Clear);
-    }
+    static Peeks() => File.Create(s_debugFile).Dispose();
 #endif
 #endif
 
@@ -1100,7 +1096,7 @@ static partial class Peeks
         LogEventLevel level
     )
     {
-        var x = (map ?? (x => x))(value).ToDeconstructed();
+        var x = (map ?? (x => x))(value).ToDeconstructed(0, 0, 0);
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif

@@ -87,9 +87,8 @@ static partial class EnumeratorToEnumerable
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerable<object?> AsEnumerable([HandlesResourceDisposal] this IEnumerator enumerator) =>
-#pragma warning disable CA2000
         AsEnumerable(AsGeneric(enumerator));
-#pragma warning restore CA2000
+
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>

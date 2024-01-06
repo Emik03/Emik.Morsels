@@ -46,7 +46,11 @@ static partial class Indexers
     /// <param name="enumerable">The enumerable to split.</param>
     /// <param name="head">The first element of the parameter <paramref name="enumerable"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
-    public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
+    public static void Deconstruct<T>(
+        this IEnumerable<T>? enumerable,
+        out T? head,
+        [MustDisposeResource] out IEnumerable<T> tail
+    )
     {
         using var e = enumerable?.GetEnumerator();
 
