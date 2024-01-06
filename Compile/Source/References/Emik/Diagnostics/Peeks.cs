@@ -1105,7 +1105,7 @@ static partial class Peeks
         else
             s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", f, name, line, e, x);
 
-        if (value is null or IEnumerable)
+        if (x is null or IEnumerable)
         {
             if (isFileEmpty)
             {
