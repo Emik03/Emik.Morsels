@@ -77,11 +77,11 @@ static partial class Peeks
         static DiagnosticSeverity ToDiagnosticSeverity(LogEventLevel level) =>
             level switch
             {
-                LogEventLevel.Debug => DiagnosticSeverity.Hidden,
+                LogEventLevel.Debug => DiagnosticSeverity.Info,
                 LogEventLevel.Error => DiagnosticSeverity.Error,
                 LogEventLevel.Fatal => DiagnosticSeverity.Error,
                 LogEventLevel.Information => DiagnosticSeverity.Info,
-                LogEventLevel.Verbose => DiagnosticSeverity.Hidden,
+                LogEventLevel.Verbose => DiagnosticSeverity.Info,
                 LogEventLevel.Warning => DiagnosticSeverity.Warning,
                 _ => throw Unreachable,
             };
@@ -108,7 +108,7 @@ static partial class Peeks
         new JsonFormatter();
 #else
         new CompactJsonFormatter();
-#endif
+#endif // ReSharper disable once RedundantNameQualifier
     static readonly Serilog.Core.Logger
         s_clef = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File(s_json, $"{s_path}.clef").CreateLogger(),
 #if ROSLYN
