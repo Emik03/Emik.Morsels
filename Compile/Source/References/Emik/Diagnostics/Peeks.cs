@@ -1100,11 +1100,15 @@ static partial class Peeks
         LogEventLevel level
     )
     {
-        if ((map ?? (x => x))(value).ToDeconstructed() is var x && path.FileName() is not { Length: 0 } file)
+        var x = (map ?? (x => x))(value).ToDeconstructed();
+#if ROSLYN
+        var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
+#endif
+        if (path.FileName() is not { Length: 0 } file)
         {
             s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #if ROSLYN
-            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
+            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, y);
 #else
             s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #endif
@@ -1113,7 +1117,7 @@ static partial class Peeks
 
         s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #if ROSLYN
-        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
+        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, y);
 #else
         s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #endif

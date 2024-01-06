@@ -9271,11 +9271,15 @@ public partial struct Two<T>(T left, T right) :
         LogEventLevel level
     )
     {
-        if ((map ?? (x => x))(value).ToDeconstructed() is var x && path.FileName() is not { Length: 0 } file)
+        var x = (map ?? (x => x))(value).ToDeconstructed();
+#if ROSLYN
+        var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
+#endif
+        if (path.FileName() is not { Length: 0 } file)
         {
             s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #if ROSLYN
-            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
+            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, y);
 #else
             s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
 #endif
@@ -9284,7 +9288,7 @@ public partial struct Two<T>(T left, T right) :
 
         s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #if ROSLYN
-        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
+        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, y);
 #else
         s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
 #endif
@@ -17040,6 +17044,16 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <inheritdoc />
     [Pure]
     public abstract override string ToString();
+
+    /// <summary>Returns the <see cref="string"/> representation of this instance without newlines.</summary>
+    /// <returns>The <see cref="string"/> representation of this instance.</returns>
+    [Pure]
+    public string ToStringWithoutNewLines() =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        ToString().SplitSpanLines().ToString();
+#else
+        $"{Breaking.Aggregate(new StringBuilder(ToString()), (acc, next) => acc.Replace($"{next}", ""))}";
+#endif
 
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
