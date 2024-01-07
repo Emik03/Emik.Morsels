@@ -574,7 +574,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         switch (value)
         {
-            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection: return value;
+            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection or Exception:
+                return value;
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
@@ -671,7 +672,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),
             string x => ToString(x),
-            null or IConvertible => value,
+            null or IConvertible or Exception => value,
             _ => ToString(value),
         };
 }
