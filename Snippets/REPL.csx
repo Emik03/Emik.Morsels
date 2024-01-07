@@ -8186,11 +8186,22 @@ public partial struct Two<T>(T left, T right) :
     public sealed partial class DiagnosticSink : ILogEventSink
     {
         /// <summary>Contains the state of the <see cref="Accumulator"/>.</summary>
-        /// <param name="Builder">The resulting <see cref="string"/>.</param>
-        /// <param name="List">The list of property names.</param>
-        public sealed record Accumulator(StringBuilder Builder, SmallList<string> List = default)
+        public sealed class Accumulator
         {
+            /// <summary>The maximum number of arguments when called from <see cref="Peeks.Do{T}"/>.</summary>
+            const int UsualMaxCapacity = 5;
+
+            readonly List<string> _list = new(UsualMaxCapacity);
+
+            readonly StringBuilder _builder = new();
+
             int _index;
+
+            /// <summary>Gets the message template.</summary>
+            public string Template => $"{_builder}";
+
+            /// <summary>Gets the list of property names.</summary>
+            public IReadOnlyList<string> Names => _list;
 
             /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
             /// <param name="accumulator">The accumulator.</param>
@@ -8199,6 +8210,12 @@ public partial struct Two<T>(T left, T right) :
             public static Accumulator Next(Accumulator accumulator, MessageTemplateToken token) =>
                 accumulator.Next(token);
 
+            /// <summary>Deconstructs the <see cref="Accumulator"/>.</summary>
+            /// <param name="template">The message template.</param>
+            /// <param name="names">The list of property names. </param>
+            public void Deconstruct(out string template, out IReadOnlyList<string> names) =>
+                (template, names) = (Template, Names);
+
             /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
             /// <param name="token">The token to process.</param>
             /// <returns>Itself.</returns>
@@ -8206,15 +8223,15 @@ public partial struct Two<T>(T left, T right) :
             {
                 if (token is TextToken { Text: var text })
                 {
-                    Builder.Append(text);
+                    _builder.Append(text);
                     return this;
                 }
 
                 if (token is not PropertyToken property)
                     throw Unreachable;
 
-                Builder.Append('{').Append(_index++).Append('}');
-                List.Add(property.PropertyName);
+                _builder.Append('{').Append(_index++).Append('}');
+                _list.Add(property.PropertyName);
                 return this;
             }
         }
@@ -8234,11 +8251,9 @@ public partial struct Two<T>(T left, T right) :
         /// <inheritdoc />
         public void Emit(LogEvent logEvent)
         {
-            var (builder, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(new()), Accumulator.Next);
-
-            DiagnosticDescriptor descriptor =
-                new(Name, $"{s_guid}", $"{builder}", Name, ToDiagnosticSeverity(logEvent.Level), true);
-
+            var (template, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(), Accumulator.Next);
+            var level = ToDiagnosticSeverity(logEvent.Level);
+            DiagnosticDescriptor descriptor = new(Name, $"{s_guid}", template, Name, level, true);
             var args = list.Select(x => (object?)logEvent.Properties[x]).ToArray();
             var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
 
@@ -8258,7 +8273,6 @@ public partial struct Two<T>(T left, T right) :
             };
     }
 #endif
-
     /// <summary>The escape sequence to clear the screen.</summary>
     public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
 #if ROSLYN
@@ -8385,15 +8399,28 @@ public partial struct Two<T>(T left, T right) :
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
     /// <param name="map">When specified, overrides the value that is logged.</param>
+    /// <param name="visit">The maximum number of times to recurse through an enumeration.</param>
+    /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
+    /// <param name="recurse">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <returns>The parameter <paramref name="x"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Debug<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+    public static T Debug<T>(
+        this T x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
+    ) =>
+        x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Debug<T>(
         this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8401,11 +8428,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8413,11 +8443,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -8430,11 +8463,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8442,16 +8478,26 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Error<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+    public static T Error<T>(
+        this T x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    ) =>
+        x;
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Error<T>(
         this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8459,11 +8505,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8471,11 +8520,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -8488,11 +8540,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8500,16 +8555,26 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Fatal<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+    public static T Fatal<T>(
+        this T x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    ) =>
+        x;
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Fatal<T>(
         this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8517,11 +8582,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8529,11 +8597,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -8546,11 +8617,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8558,25 +8632,41 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Info<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+    public static T Info<T>(
+        this T x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    ) =>
+        x;
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Info<T>(this Span<T> x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null)
+    public static Span<T> Info<T>(
+        this Span<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
             x;
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8584,11 +8674,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -8601,11 +8694,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8613,25 +8709,41 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Verbose<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+    public static T Verbose<T>(
+        this T x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    ) =>
+        x;
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Verbose<T>(this Span<T> x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null)
+    public static Span<T> Verbose<T>(
+        this Span<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
             x;
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8639,11 +8751,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -8656,11 +8771,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8668,25 +8786,41 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Warn<T>(this T x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null) => x;
+    public static T Warn<T>(
+        this T x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    ) =>
+        x;
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Warn<T>(this Span<T> x, [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null)
+    public static Span<T> Warn<T>(
+        this Span<T> x,
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
             x;
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8694,11 +8828,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -8711,11 +8848,14 @@ public partial struct Two<T>(T left, T right) :
         =>
             x;
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object})"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Warn<T>(
         this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null
+        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
+        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -8744,6 +8884,9 @@ public partial struct Two<T>(T left, T right) :
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
     /// <param name="map">When specified, overrides the value that is logged.</param>
+    /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
+    /// <param name="stringLength">The maximum length of any given <see cref="string"/>.</param>
+    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
     /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
     /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
@@ -8752,17 +8895,23 @@ public partial struct Two<T>(T left, T right) :
     public static T Debug<T>(
         this T x,
         [InstantHandle] Converter<T, object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(x))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(x, map, expression, path, name, line, LogEventLevel.Debug);
+        Do(x, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8772,14 +8921,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8789,14 +8941,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8811,14 +8966,17 @@ public partial struct Two<T>(T left, T right) :
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8828,26 +8986,32 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
     public static T Error<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, expression, path, name, line, LogEventLevel.Error);
+        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Error<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8857,14 +9021,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8874,14 +9041,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8896,14 +9066,17 @@ public partial struct Two<T>(T left, T right) :
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8913,26 +9086,32 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
     public static T Fatal<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Fatal<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8942,14 +9121,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8959,14 +9141,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8981,14 +9166,17 @@ public partial struct Two<T>(T left, T right) :
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -8998,26 +9186,32 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
     public static T Info<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, expression, path, name, line, LogEventLevel.Information);
+        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Info<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9027,14 +9221,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9044,14 +9241,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9066,14 +9266,17 @@ public partial struct Two<T>(T left, T right) :
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9083,26 +9286,32 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
     public static T Verbose<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Verbose<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9112,14 +9321,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9129,14 +9341,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9151,14 +9366,17 @@ public partial struct Two<T>(T left, T right) :
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9168,26 +9386,32 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
     public static T Warn<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, expression, path, name, line, LogEventLevel.Warning);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Warn<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9197,14 +9421,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Warning);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9214,14 +9441,17 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, expression, path, name, line, LogEventLevel.Warning);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9236,14 +9466,17 @@ public partial struct Two<T>(T left, T right) :
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, expression, path, name, line, LogEventLevel.Warning);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
 
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, string, string, string, int)"/>
+    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Warn<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9253,13 +9486,16 @@ public partial struct Two<T>(T left, T right) :
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, expression, path, name, line, LogEventLevel.Warning);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
 
     static T Do<T>(
         T value,
         [InstantHandle] Converter<T, object?>? map,
+        [NonNegativeValue] int visitLength,
+        [NonNegativeValue] int stringLength,
+        [NonNegativeValue] int recurseLength,
         string? expression,
         string? path,
         string? name,
@@ -9270,7 +9506,7 @@ public partial struct Two<T>(T left, T right) :
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static object? Box(T value) => value;
 
-        var x = (map ?? Box)(value).ToDeconstructed() is var deconstructed &&
+        var x = (map ?? Box)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
@@ -16473,9 +16709,9 @@ public
 
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
-    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
     /// <param name="stringLength">The maximum length of any given <see cref="string"/>.</param>
+    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <returns>
     /// The serializable object: any of <see cref="IntPtr"/>, <see cref="UIntPtr"/>,
     /// <see cref="ISerializable"/>, or <see cref="DeconstructionCollection"/>.
@@ -16484,9 +16720,9 @@ public
     [return: NotNullIfNotNull(nameof(value))]
     public static object? ToDeconstructed(
         this object? value,
-        [NonNegativeValue] int recurseLength = 32,
-        [NonNegativeValue] int visitLength = 64,
-        [NonNegativeValue] int stringLength = 32
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
     {
         if (value is DeconstructionCollection)
@@ -17013,6 +17249,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             return accumulator;
         }
     }
+
+    /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/></summary>
+    public const int
+        DefaultVisitLength = 64,
+        DefaultStringLength = 32,
+        DefaultRecurseLength = 16;
 
     /// <inheritdoc />
     [Pure]
