@@ -23,7 +23,7 @@ static class PooledSmallListBuilder
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
-[CollectionBuilder(typeof(PooledSmallListBuilder), nameof(From))]
+[CollectionBuilder(typeof(PooledSmallListBuilder), nameof(PooledSmallListBuilder.From))]
 #if !NO_REF_STRUCTS
 ref
 #endif
