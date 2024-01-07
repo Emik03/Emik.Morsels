@@ -33,7 +33,7 @@ static partial class DeconstructionCollectionExtensions
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && collection.TryRecurse(i, ref visitLength); i++) { }
 
-        return collection.Simplify().ToSerializable();
+        return collection.Simplify();
     }
 }
 
@@ -49,7 +49,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         /// <inheritdoc />
         [Pure]
-        public override ICollection Inner => _list;
+        public override IList Inner => _list;
 
         /// <inheritdoc />
         [Pure]
@@ -299,7 +299,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         /// <inheritdoc />
         [Pure]
-        public override ICollection Inner => _list;
+        public override IList Inner => _list;
+
+        /// <inheritdoc />
+        [Pure]
+        public override ICollection Serialized =>
+            _list.ToDictionary(x => ToString(x.Key), SerializeValue, new Inequality());
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
@@ -401,7 +406,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (--copy <= 0)
                     return dictionary.Fail();
 
-                dictionary.Add(next.Name, next.GetValue(value, null));
+                var result = GetValueOrException(value, next);
+                dictionary.Add(next.Name, result);
             }
 
             visit = copy;
@@ -462,11 +468,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         /// <inheritdoc />
-        [Pure]
-        public override ICollection ToSerializable() =>
-            _list.ToDictionary(x => ToString(x.Key), SerializeValue, new Inequality());
-
-        /// <inheritdoc />
         [MustUseReturnValue]
         public override IEnumerator GetEnumerator() => ((IDictionary)this).GetEnumerator();
 
@@ -486,8 +487,23 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         [Pure]
+        static object? GetValueOrException(object value, PropertyInfo next)
+        {
+            try
+            {
+                return next.GetValue(value, null);
+            }
+#pragma warning disable CA1031
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                return ex;
+            }
+        }
+
+        [Pure]
         static object? SerializeValue(DictionaryEntry next) =>
-            next.Value is DeconstructionCollection collection ? collection.ToSerializable() : next.Value;
+            next.Value is DeconstructionCollection collection ? collection.Serialized : next.Value;
 
         [Pure]
         static Predicate<DictionaryEntry> Eq(object? key) => x => x.Key.Equals(key);
@@ -516,7 +532,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
     /// <summary>Gets the underlying collection.</summary>
     [Pure]
-    public abstract ICollection Inner { get; }
+    public abstract IList Inner { get; }
+
+    /// <summary>Gets the collection to a serializable collection.</summary>
+    // Unless this is explicitly overriden, assume the type is already serializable.
+    [Pure]
+    public virtual ICollection Serialized => this;
 
     /// <summary>Attempts to truncate the <paramref name="v"/>.</summary>
     /// <param name="v">The <see cref="object"/> to truncate.</param>
@@ -601,12 +622,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();
 
-    /// <summary>Converts the collection to a serializable collection.</summary>
-    /// <returns>The serializable collection.</returns>
-    // Unless this is explicitly overriden, assume the type is already serializable.
-    [Pure]
-    public virtual ICollection ToSerializable() => this;
-
     /// <inheritdoc />
     [MustUseReturnValue]
     public abstract IEnumerator GetEnumerator();
@@ -683,10 +698,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         value switch
         {
             Pointer => ((nuint)Pointer.Unbox(value)).ToHexString(),
-            nint x => x.ToHexString(),
+            DeconstructionCollection x => x.Simplify(),
             nuint x => x.ToHexString(),
+            nint x => x.ToHexString(),
             string x => ToString(x),
-            null or DeconstructionCollection or IConvertible => value,
+            null or IConvertible => value,
             _ => ToString(value),
         };
 }

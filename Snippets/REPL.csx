@@ -8292,11 +8292,7 @@ public partial struct Two<T>(T left, T right) :
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
 #if !RELEASE && !CSHARPREPL
-    static Peeks()
-    {
-        File.Create(s_debugFile).Dispose();
-        File.WriteAllText($"{s_path}.log", Clear);
-    }
+    static Peeks() => File.Create(s_debugFile).Dispose();
 #endif
 #endif
 
@@ -9271,7 +9267,10 @@ public partial struct Two<T>(T left, T right) :
         LogEventLevel level
     )
     {
-        var x = (map ?? (x => x))(value).ToDeconstructed();
+        var x = (map ?? (x => x))(value).ToDeconstructed(1, 64, 1) is var deconstructed &&
+            deconstructed is DeconstructionCollection { Serialized: var serialized }
+                ? serialized
+                : deconstructed;
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif
@@ -11173,9 +11172,8 @@ public enum ControlFlow : byte
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerable<object?> AsEnumerable([HandlesResourceDisposal] this IEnumerator enumerator) =>
-#pragma warning disable CA2000
         AsEnumerable(AsGeneric(enumerator));
-#pragma warning restore CA2000
+
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
@@ -11292,7 +11290,11 @@ public enum ControlFlow : byte
     /// <param name="enumerable">The enumerable to split.</param>
     /// <param name="head">The first element of the parameter <paramref name="enumerable"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="enumerable"/>.</param>
-    public static void Deconstruct<T>(this IEnumerable<T>? enumerable, out T? head, out IEnumerable<T> tail)
+    public static void Deconstruct<T>(
+        this IEnumerable<T>? enumerable,
+        out T? head,
+        [MustDisposeResource] out IEnumerable<T> tail
+    )
     {
         using var e = enumerable?.GetEnumerator();
 
@@ -16492,7 +16494,7 @@ public
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && collection.TryRecurse(i, ref visitLength); i++) { }
 
-        return collection.Simplify().ToSerializable();
+        return collection.Simplify();
     }
 
 /// <summary>Defines the collection responsible for deconstructing.</summary>
@@ -16759,6 +16761,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         [Pure]
         public override ICollection Inner => _list;
 
+        /// <inheritdoc />
+        [Pure]
+        public override ICollection Serialized =>
+            _list.ToDictionary(x => ToString(x.Key), SerializeValue, new Inequality());
+
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -16850,7 +16857,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var next in type.GetProperties())
             {
-                if (next.GetMethod.IsStatic || next.GetMethod.GetParameters() is not [])
+                if (next.GetMethod is { } getter && (getter.IsStatic || next.GetMethod.GetParameters() is not []))
                     continue;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
                 if (next.PropertyType.IsByRefLike)
@@ -16859,7 +16866,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (--copy <= 0)
                     return dictionary.Fail();
 
-                dictionary.Add(next.Name, next.GetValue(value, null));
+                var result = GetValueOrException(value, next);
+                dictionary.Add(next.Name, result);
             }
 
             visit = copy;
@@ -16920,11 +16928,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         /// <inheritdoc />
-        [Pure]
-        public override ICollection ToSerializable() =>
-            _list.ToDictionary(x => ToString(x.Key), SerializeValue, new Inequality());
-
-        /// <inheritdoc />
         [MustUseReturnValue]
         public override IEnumerator GetEnumerator() => ((IDictionary)this).GetEnumerator();
 
@@ -16944,8 +16947,23 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         [Pure]
+        static object? GetValueOrException(object value, PropertyInfo next)
+        {
+            try
+            {
+                return next.GetValue(value, null);
+            }
+#pragma warning disable CA1031
+            catch (Exception ex)
+#pragma warning restore CA1031
+            {
+                return ex;
+            }
+        }
+
+        [Pure]
         static object? SerializeValue(DictionaryEntry next) =>
-            next.Value is DeconstructionCollection collection ? collection.ToSerializable() : next.Value;
+            next.Value is DeconstructionCollection collection ? collection.Serialized : next.Value;
 
         [Pure]
         static Predicate<DictionaryEntry> Eq(object? key) => x => x.Key.Equals(key);
@@ -16975,6 +16993,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Gets the underlying collection.</summary>
     [Pure]
     public abstract ICollection Inner { get; }
+
+    /// <summary>Converts the collection to a serializable collection.</summary>
+    // Unless this is explicitly overriden, assume the type is already serializable.
+    [Pure]
+    public virtual ICollection Serialized => this;
 
     /// <summary>Attempts to truncate the <paramref name="v"/>.</summary>
     /// <param name="v">The <see cref="object"/> to truncate.</param>
@@ -17059,12 +17082,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();
 
-    /// <summary>Converts the collection to a serializable collection.</summary>
-    /// <returns>The serializable collection.</returns>
-    // Unless this is explicitly overriden, assume the type is already serializable.
-    [Pure]
-    public virtual ICollection ToSerializable() => this;
-
     /// <inheritdoc />
     [MustUseReturnValue]
     public abstract IEnumerator GetEnumerator();
@@ -17117,7 +17134,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="layer">The amount of layers of recursion to apply.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
     /// <param name="any">Whether any value was collected.</param>
-    protected static void RecurseNext(object value, int layer, ref int visit, ref bool any)
+    protected static void RecurseNext(object? value, int layer, ref int visit, ref bool any)
     {
         if (value is DeconstructionCollection collection)
             any |= collection.TryRecurse(layer - 1, ref visit);
@@ -17141,10 +17158,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         value switch
         {
             Pointer => ((nuint)Pointer.Unbox(value)).ToHexString(),
-            nint x => x.ToHexString(),
+            DeconstructionCollection x => x.Simplify(),
             nuint x => x.ToHexString(),
+            nint x => x.ToHexString(),
             string x => ToString(x),
-            null or DeconstructionCollection or IConvertible => value,
+            null or IConvertible => value,
             _ => ToString(value),
         };
 }

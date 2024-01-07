@@ -1096,7 +1096,10 @@ static partial class Peeks
         LogEventLevel level
     )
     {
-        var x = (map ?? (x => x))(value).ToDeconstructed(0, 0, 0);
+        var x = (map ?? (x => x))(value).ToDeconstructed(1, 64, 1) is var deconstructed &&
+            deconstructed is DeconstructionCollection { Serialized: var serialized }
+                ? serialized
+                : deconstructed;
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif
