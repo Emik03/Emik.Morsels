@@ -9267,7 +9267,10 @@ public partial struct Two<T>(T left, T right) :
         LogEventLevel level
     )
     {
-        var x = (map ?? (x => x))(value).ToDeconstructed(1, 64, 1) is var deconstructed &&
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static object? Box(T value) => value;
+
+        var x = (map ?? Box)(value).ToDeconstructed() is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
@@ -16462,7 +16465,7 @@ public
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
+// ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantNameQualifier UseSymbolAlias
 
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
@@ -16488,6 +16491,9 @@ public
     {
         if (value is DeconstructionCollection)
             return value;
+
+        if (stringLength <= 0)
+            return "";
 
         var assertion = false;
         var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion);
@@ -16724,21 +16730,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             void IEnumerator.Reset() => _index = -1;
         }
 
-        /// <summary>An equality comparer that always returns <see langword="false"/>.</summary>
-        /// <remarks><para>This class uses a perfect hash function.</para></remarks>
-        sealed class Inequality : IEqualityComparer<string>
-        {
-            int _seed;
-
-            /// <inheritdoc />
-            [Pure]
-            bool IEqualityComparer<string>.Equals(string? x, string? y) => false;
-
-            /// <inheritdoc />
-            [MustUseReturnValue]
-            int IEqualityComparer<string>.GetHashCode(string? obj) => unchecked(_seed++);
-        }
-
         readonly List<DictionaryEntry> _list = [];
 
         /// <inheritdoc />
@@ -16772,7 +16763,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <inheritdoc />
         [Pure]
         public override ICollection Serialized =>
-            _list.ToDictionary(x => ToString(x.Key), SerializeValue, new Inequality());
+            _list.Aggregate(new Dictionary<string, object?>(StringComparer.Ordinal), AddUnique);
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
@@ -16843,12 +16834,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             out DeconstructionDictionary dictionary
         )
         {
-            var type = value.GetType();
             var copy = visit;
             dictionary = new(str);
+            var type = value.GetType();
+            var fields = type.GetFields();
+            var properties = type.GetProperties();
 
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach (var next in type.GetFields())
+            foreach (var next in fields)
             {
                 if (next.IsStatic)
                     continue;
@@ -16859,11 +16852,13 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (--copy <= 0)
                     return dictionary.Fail();
 
-                dictionary.Add(next.Name, next.GetValue(value));
+                var name = Name(next, fields, properties);
+                var result = next.GetValue(value);
+                dictionary.Add(name, result);
             }
 
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
-            foreach (var next in type.GetProperties())
+            foreach (var next in properties)
             {
                 if (next.GetMethod is { } getter && (getter.IsStatic || next.GetMethod.GetParameters() is not []))
                     continue;
@@ -16874,8 +16869,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (--copy <= 0)
                     return dictionary.Fail();
 
-                var result = GetValueOrException(value, next);
-                dictionary.Add(next.Name, result);
+                var name = Name(next, fields, properties);
+                var result = GetValueOrException(value, next, str, ref visit);
+                dictionary.Add(name, result);
             }
 
             visit = copy;
@@ -16954,8 +16950,38 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             return new Enumerator(this);
         }
 
+        [Pure] // ReSharper disable ParameterTypeCanBeEnumerable.Local
+        static string Name(MemberInfo next, FieldInfo[] fields, PropertyInfo[] properties)
+        {
+            // ReSharper restore ParameterTypeCanBeEnumerable.Local
+
+            static string QualifyTypeName(MemberInfo next) => $"{next.DeclaringType?.Name}.{next.Name}";
+
+            // We aren't looking at a member from a base type,
+            // so we can leave it unqualified, similar to how the 'new' keyword works.
+            if (next.DeclaringType == next.ReflectedType)
+                return next.Name;
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var x in fields)
+                if (x != next && x.Name == next.Name)
+                    return QualifyTypeName(next);
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var x in properties)
+                if (x != next && x.Name == next.Name)
+                    return QualifyTypeName(next);
+
+            return next.Name;
+        }
+
         [Pure]
-        static object? GetValueOrException(object value, PropertyInfo next)
+        static object? GetValueOrException(
+            object value,
+            PropertyInfo next,
+            [NonNegativeValue] int str,
+            ref int visit
+        )
         {
             try
             {
@@ -16965,13 +16991,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             catch (Exception ex)
 #pragma warning restore CA1031
             {
-                return ex;
+                return value is not Exception && TryReflectivelyCollect(ex, str, ref visit, out var x) ? x : ex;
             }
         }
-
-        [Pure]
-        static object? SerializeValue(DictionaryEntry next) =>
-            next.Value is DeconstructionCollection collection ? collection.Serialized : next.Value;
 
         [Pure]
         static Predicate<DictionaryEntry> Eq(object? key) => x => x.Key.Equals(key);
@@ -16979,6 +17001,17 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         [Pure]
         int ByKeyString(DictionaryEntry x, DictionaryEntry y) =>
             StringComparer.Ordinal.Compare(ToString(x.Key), ToString(y.Key));
+
+        Dictionary<string, object?> AddUnique(Dictionary<string, object?> accumulator, DictionaryEntry next)
+        {
+            var key = ToString(next.Key);
+
+            while (accumulator.ContainsKey(key))
+                key = $"…{key}";
+
+            accumulator[key] = next.Value;
+            return accumulator;
+        }
     }
 
     /// <inheritdoc />
@@ -17034,7 +17067,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         switch (value)
         {
-            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection or Exception:
+            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection:
                 return value;
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
                 return Ok(dictionary, out any);
@@ -17132,7 +17165,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),
             string x => ToString(x),
-            null or IConvertible or Exception => value,
+            null or IConvertible => value,
             _ => ToString(value),
         };
 }

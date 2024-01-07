@@ -1096,7 +1096,10 @@ static partial class Peeks
         LogEventLevel level
     )
     {
-        var x = (map ?? (x => x))(value).ToDeconstructed(1, 64, 1) is var deconstructed &&
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static object? Box(T value) => value;
+
+        var x = (map ?? Box)(value).ToDeconstructed() is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
