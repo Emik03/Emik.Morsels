@@ -392,7 +392,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var next in type.GetProperties())
             {
-                if (next.GetMethod.IsStatic || next.GetMethod.GetParameters() is not [])
+                if (next.GetMethod is { } getter && (getter.IsStatic || next.GetMethod.GetParameters() is not []))
                     continue;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
                 if (next.PropertyType.IsByRefLike)
@@ -659,7 +659,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="layer">The amount of layers of recursion to apply.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
     /// <param name="any">Whether any value was collected.</param>
-    protected static void RecurseNext(object value, int layer, ref int visit, ref bool any)
+    protected static void RecurseNext(object? value, int layer, ref int visit, ref bool any)
     {
         if (value is DeconstructionCollection collection)
             any |= collection.TryRecurse(layer - 1, ref visit);
