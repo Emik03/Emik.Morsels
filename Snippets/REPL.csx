@@ -16484,7 +16484,7 @@ public
     [return: NotNullIfNotNull(nameof(value))]
     public static object? ToDeconstructed(
         this object? value,
-        [NonNegativeValue] int recurseLength = 128,
+        [NonNegativeValue] int recurseLength = 32,
         [NonNegativeValue] int visitLength = 64,
         [NonNegativeValue] int stringLength = 32
     )

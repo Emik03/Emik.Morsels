@@ -20,9 +20,9 @@ static partial class DeconstructionCollectionExtensions
     [return: NotNullIfNotNull(nameof(value))]
     public static object? ToDeconstructed(
         this object? value,
-        [NonNegativeValue] int recurseLength = 128,
         [NonNegativeValue] int visitLength = 64,
-        [NonNegativeValue] int stringLength = 32
+        [NonNegativeValue] int stringLength = 32,
+        [NonNegativeValue] int recurseLength = 16
     )
     {
         if (value is DeconstructionCollection)
