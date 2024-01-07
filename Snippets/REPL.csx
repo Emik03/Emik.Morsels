@@ -17009,7 +17009,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             while (accumulator.ContainsKey(key))
                 key = $"…{key}";
 
-            accumulator[key] = next.Value;
+            accumulator[key] = next.Value is DeconstructionCollection { Serialized: var x } ? x : next.Value;
             return accumulator;
         }
     }
