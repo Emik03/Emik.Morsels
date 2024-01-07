@@ -9,9 +9,9 @@ static partial class DeconstructionCollectionExtensions
 {
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
-    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
     /// <param name="stringLength">The maximum length of any given <see cref="string"/>.</param>
+    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <returns>
     /// The serializable object: any of <see cref="IntPtr"/>, <see cref="UIntPtr"/>,
     /// <see cref="ISerializable"/>, or <see cref="DeconstructionCollection"/>.
@@ -20,9 +20,9 @@ static partial class DeconstructionCollectionExtensions
     [return: NotNullIfNotNull(nameof(value))]
     public static object? ToDeconstructed(
         this object? value,
-        [NonNegativeValue] int visitLength = 64,
-        [NonNegativeValue] int stringLength = 32,
-        [NonNegativeValue] int recurseLength = 16
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
     {
         if (value is DeconstructionCollection)
@@ -550,6 +550,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             return accumulator;
         }
     }
+
+    /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/></summary>
+    public const int
+        DefaultVisitLength = 64,
+        DefaultStringLength = 32,
+        DefaultRecurseLength = 16;
 
     /// <inheritdoc />
     [Pure]
