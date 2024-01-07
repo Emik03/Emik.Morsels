@@ -16489,8 +16489,16 @@ public
         if (value is DeconstructionCollection)
             return value;
 
-        if (DeconstructionCollection.TryNew(value, stringLength, ref visitLength) is not { } collection)
-            return DeconstructionCollection.TryTruncate(value, stringLength, out var output) ? output : value;
+        var assertion = false;
+        var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion);
+
+        if (next is not DeconstructionCollection collection)
+        {
+            Debug.Assert(!assertion, "!assertion");
+            return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
+        }
+
+        Debug.Assert(assertion, "assertion");
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && collection.TryRecurse(i, ref visitLength); i++) { }
 
@@ -16509,7 +16517,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         /// <inheritdoc />
         [Pure]
-        public override ICollection Inner => _list;
+        public override IList Inner => _list;
 
         /// <inheritdoc />
         [Pure]
@@ -16759,7 +16767,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         /// <inheritdoc />
         [Pure]
-        public override ICollection Inner => _list;
+        public override IList Inner => _list;
 
         /// <inheritdoc />
         [Pure]
@@ -16992,9 +17000,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
     /// <summary>Gets the underlying collection.</summary>
     [Pure]
-    public abstract ICollection Inner { get; }
+    public abstract IList Inner { get; }
 
-    /// <summary>Converts the collection to a serializable collection.</summary>
+    /// <summary>Gets the collection to a serializable collection.</summary>
     // Unless this is explicitly overriden, assume the type is already serializable.
     [Pure]
     public virtual ICollection Serialized => this;
@@ -17010,42 +17018,46 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             ? $"{x[..(str - 1)]}…"
             : x) is not null;
 
-    /// <summary>
-    /// Attempts to create a <see cref="DeconstructionCollection"/> from <paramref name="value"/>.
-    /// </summary>
+    /// <summary>Collects the value however applicable, reverting on failure.</summary>
     /// <param name="value">The complex object to convert.</param>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
-    /// <returns>
-    /// The <see cref="DeconstructionCollection"/> if conversion is possible; <see langword="null"/> otherwise.
-    /// </returns>
-    [Pure]
-    public static DeconstructionCollection? TryNew(object? value, [NonNegativeValue] int str, ref int visit)
+    /// <param name="any">Whether any value was collected.</param>
+    /// <returns>The replacement value.</returns>
+    public static object? CollectNext(object? value, [NonNegativeValue] int str, ref int visit, ref bool any)
     {
+        static object? Ok(object? o, out bool any)
+        {
+            any = true;
+            return o;
+        }
+
         switch (value)
         {
-            case nint or nuint or null or IConvertible or DeconstructionCollection: return null;
-            case IDictionary x:
-                DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary);
-                return dictionary;
-            case IDictionaryEnumerator x:
-                DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionaryEnumerator);
-                return dictionaryEnumerator;
-            case IEnumerable x:
-                DeconstructionList.TryCollect(x, str, ref visit, out var enumerable);
-                return enumerable;
-            case IEnumerator x:
-                DeconstructionList.TryCollect(x, str, ref visit, out var enumerator);
-                return enumerator;
-            case IStructuralComparable x:
-                DeconstructionList.TryCollect(x, str, ref visit, out var comparable);
-                return comparable;
-            case IStructuralEquatable x:
-                DeconstructionList.TryCollect(x, str, ref visit, out var equatable);
-                return equatable;
+            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection: return value;
+            case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
+                return Ok(dictionary, out any);
+            case IDictionary: goto default;
+            case IDictionaryEnumerator x
+                when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionaryEnumerator):
+                return Ok(dictionaryEnumerator, out any);
+            case IDictionaryEnumerator: goto default;
+            case IEnumerable x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerable):
+                return Ok(enumerable, out any);
+            case IEnumerable: goto default;
+            case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator):
+                return Ok(enumerator, out any);
+            case IEnumerator: goto default;
+            case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable):
+                return Ok(comparable, out any);
+            case IStructuralComparable: goto default;
+            case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable):
+                return Ok(equatable, out any);
+            case IStructuralEquatable: goto default;
             default:
-                DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj);
-                return obj;
+                return DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj)
+                    ? Ok(obj, out any)
+                    : value;
         }
     }
 
@@ -17085,49 +17097,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <inheritdoc />
     [MustUseReturnValue]
     public abstract IEnumerator GetEnumerator();
-
-    /// <summary>Collects the value however applicable, reverting on failure.</summary>
-    /// <param name="value">The complex object to convert.</param>
-    /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
-    /// <param name="visit">The maximum number of times to recurse.</param>
-    /// <param name="any">Whether any value was collected.</param>
-    /// <returns>The replacement value.</returns>
-    protected static object? CollectNext(object? value, [NonNegativeValue] int str, ref int visit, ref bool any)
-    {
-        static object? Ok(object? o, out bool any)
-        {
-            any = true;
-            return o;
-        }
-
-        switch (value)
-        {
-            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection: return value;
-            case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
-                return Ok(dictionary, out any);
-            case IDictionary: goto default;
-            case IDictionaryEnumerator x
-                when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionaryEnumerator):
-                return Ok(dictionaryEnumerator, out any);
-            case IDictionaryEnumerator: goto default;
-            case IEnumerable x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerable):
-                return Ok(enumerable, out any);
-            case IEnumerable: goto default;
-            case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator):
-                return Ok(enumerator, out any);
-            case IEnumerator: goto default;
-            case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable):
-                return Ok(comparable, out any);
-            case IStructuralComparable: goto default;
-            case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable):
-                return Ok(equatable, out any);
-            case IStructuralEquatable: goto default;
-            default:
-                return DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj)
-                    ? Ok(obj, out any)
-                    : value;
-        }
-    }
 
     /// <summary>Starts recursion if the value is a collection.</summary>
     /// <param name="value">The complex object to convert.</param>
@@ -20222,7 +20191,7 @@ static class PooledSmallListBuilder
 #pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
-[CollectionBuilder(typeof(PooledSmallListBuilder), nameof(From))]
+[CollectionBuilder(typeof(PooledSmallListBuilder), nameof(PooledSmallListBuilder.From))]
 #if !NO_REF_STRUCTS
 public ref
 #endif
