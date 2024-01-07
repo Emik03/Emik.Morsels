@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace
+// ReSharper disable CheckNamespace EmptyNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
@@ -33,11 +33,11 @@ static partial class DeconstructionCollectionExtensions
 
         if (next is not DeconstructionCollection collection)
         {
-            Debug.Assert(!assertion, "!assertion");
+            System.Diagnostics.Debug.Assert(!assertion, "!assertion");
             return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
         }
 
-        Debug.Assert(assertion, "assertion");
+        System.Diagnostics.Debug.Assert(assertion, "assertion");
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && collection.TryRecurse(i, ref visitLength); i++) { }
 
