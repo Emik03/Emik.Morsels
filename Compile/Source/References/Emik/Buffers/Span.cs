@@ -383,7 +383,7 @@ static partial class Span
     public static int OffsetOf<T>(this in Span<T> origin, in ReadOnlySpan<T> target) =>
         ((ReadOnlySpan<T>)origin).OffsetOf(target);
 #pragma warning restore 1574, 1580, 1581, 1584
-    /// <summary>Gets the reference that whose address is within the null range.</summary>
+    /// <summary>Sets the reference to the address within the null range.</summary>
     /// <remarks><para>
     /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
     /// valid reference will never be within this range. This allows reference types to be a disjoint union of a valid
