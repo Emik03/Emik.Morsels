@@ -502,7 +502,78 @@ static partial class Stringifier
             ? $"{name} {{ {str} }}"
             : name;
     }
+#if NET6_0_OR_GREATER
+    /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="dish">
+    /// The <see cref="DefaultInterpolatedStringHandler"/> to mutate and <see langword="return"/>.
+    /// </param>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>The parameter <paramref name="dish"/>.</returns>
+    public static DefaultInterpolatedStringHandler AppendMany<T>(
+        this ref DefaultInterpolatedStringHandler dish,
+        [InstantHandle] IEnumerable<T> values,
+        char separator
+    )
+    {
+        using var enumerator = values.GetEnumerator();
 
+        if (enumerator.MoveNext())
+            dish.AppendFormatted(enumerator.Current);
+        else
+            return dish;
+
+        while (enumerator.MoveNext())
+        {
+            dish.AppendFormatted(separator);
+            dish.AppendFormatted(enumerator.Current);
+        }
+
+        return dish;
+    }
+
+    /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="dish">
+    /// The <see cref="DefaultInterpolatedStringHandler"/> to mutate and <see langword="return"/>.
+    /// </param>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>The parameter <paramref name="dish"/>.</returns>
+    public static DefaultInterpolatedStringHandler AppendMany<T>(
+        this ref DefaultInterpolatedStringHandler dish,
+        [InstantHandle] IEnumerable<T> values,
+        string separator = Separator
+    )
+    {
+        if (separator is "")
+            switch (values)
+            {
+                case char[] x:
+                    dish.AppendFormatted(x);
+                    return dish;
+                case string x:
+                    dish.AppendFormatted(x);
+                    return dish;
+            }
+
+        using var enumerator = values.GetEnumerator();
+
+        if (enumerator.MoveNext())
+            dish.AppendFormatted(enumerator.Current);
+        else
+            return dish;
+
+        while (enumerator.MoveNext())
+        {
+            dish.AppendLiteral(separator);
+            dish.AppendFormatted(enumerator.Current);
+        }
+
+        return dish;
+    }
+#endif
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
@@ -565,7 +636,6 @@ static partial class Stringifier
 
         return builder;
     }
-
 #if !WAWA
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
