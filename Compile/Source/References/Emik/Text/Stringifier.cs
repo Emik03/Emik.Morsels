@@ -34,6 +34,9 @@ static partial class Stringifier
         EqualityContract = nameof(EqualityContract),
         False = "false",
         FirstOrd = "st",
+#if !NET461_OR_GREATER && !NETSTANDARD2_0_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+        HexCharactersTable = "0123456789ABCDEF",
+#endif
         Invalid = $"!<{nameof(InvalidOperationException)}>",
         KeyValueSeparator = ": ",
         Null = "null",
@@ -51,7 +54,7 @@ static partial class Stringifier
         s_fullyUnmanaged = [],
 #endif
         s_hasMethods = [];
-
+#endif
     static readonly Dictionary<Type, Delegate> s_stringifiers = [];
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
@@ -490,6 +493,41 @@ static partial class Stringifier
             _ => source.StringifyObject(depth - 1),
 #endif
         };
+#if !NET461_OR_GREATER && !NETSTANDARD2_0_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+    /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
+    /// <remarks><para>The implementation is based on
+    /// <a href="https://github.com/CommunityToolkit/dotnet/blob/7b53ae23dfc6a7fb12d0fc058b89b6e948f48448/src/CommunityToolkit.Diagnostics/Extensions/ValueTypeExtensions.cs#L44">
+    /// CommunityToolkit.Diagnostics.ValueTypeExtensions.ToHexString
+    /// </a>.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="value">The value to convert.</param>
+    /// <returns>The hex <see cref="string"/>.</returns>
+    [Pure]
+#if !WAWA
+    public
+#endif
+        static unsafe string ToHexString<T>(this T value)
+        where T : unmanaged
+    {
+        var sizeOfT = sizeof(T);
+        var bufferSize = 2 * sizeOfT + 2;
+        var p = stackalloc char[bufferSize];
+        p[0] = '0';
+        p[1] = 'x';
+
+        fixed (char* rh = HexCharactersTable)
+            for (int i = 0, j = bufferSize - 2; i < sizeOfT; i++, j -= 2)
+            {
+                var b = ((byte*)&value)[i];
+                var low = b & 0x0f;
+                var high = (b & 0xf0) >> 4;
+                p[j + 1] = *(rh + low);
+                p[j] = *(rh + high);
+            }
+
+        return new(p, 0, bufferSize);
+    }
 
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
@@ -953,7 +991,7 @@ static partial class Stringifier
                 exConstant,
                 type.GetMethod(nameof(ToString), Type.EmptyTypes) is { } method
                     ? Expression.Call(exAcc, method)
-                    : Expression.Constant(exAcc.Type.UnfoldedName())
+                    : Expression.Constant(UnfoldedName(exAcc.Type))
             );
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
