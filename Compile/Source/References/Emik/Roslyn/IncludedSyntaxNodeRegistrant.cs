@@ -22,10 +22,13 @@ static partial class IncludedSyntaxNodeRegistrant
 
     /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
     /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Drain(this in SyntaxNodeAnalysisContext context)
     {
+#if !RELEASE && ROSLYN
         while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
             context.ReportDiagnostic(diagnostic);
+#endif
     }
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
