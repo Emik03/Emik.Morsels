@@ -16,9 +16,17 @@ static partial class SpanQueries
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
 
+    /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source, int index) => Range(source.Memory.Span, index);
+
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source) => Range(source.Span);
+
+    /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source, int index) => Range(source.Span, index);
 #endif
 
     /// <summary>Creates the range.</summary>
@@ -42,6 +50,25 @@ static partial class SpanQueries
                 InAscendingOrder<T>.UpTo(length).CopyTo(source);
                 return source;
         }
+    }
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <param name="index">The starting index.</param>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Span<T> source, int index)
+    {
+        if (source.Length is 0)
+            return source;
+
+        if (!IsNumericPrimitive<T>() && !IsSupported<T>())
+            Fail<T>();
+
+        InAscendingOrder<T>.UpTo(index + source.Length)[index..].CopyTo(source);
+        return source;
     }
 
     static class InAscendingOrder<T>
