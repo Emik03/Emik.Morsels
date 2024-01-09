@@ -16088,7 +16088,7 @@ public
         s_fullyUnmanaged = [],
 #endif
         s_hasMethods = [];
-#endif
+
     static readonly Dictionary<Type, Delegate> s_stringifiers = [];
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
@@ -16562,6 +16562,7 @@ public
 
         return new(p, 0, bufferSize);
     }
+#endif
 
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
