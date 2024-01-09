@@ -132,7 +132,7 @@ public
 
         /// <inheritdoc cref="Choices{T}.K"/>
         [NonNegativeValue, Pure]
-        public int K { get; } = k;
+        public int K { get; } = Math.Max(k, 0);
 
         /// <inheritdoc/>
         [Pure]
@@ -198,7 +198,7 @@ public
 
         bool? EarlyReturn()
         {
-            if (N is not { Count: not 0 and var count } || count < K)
+            if (K is 0 || N is not { Count: not 0 and var count } || count < K)
                 return false;
 
             if (K == count)
@@ -245,7 +245,7 @@ public
 
     /// <summary>Gets the number of choices.</summary>
     [CollectionAccess(None), NonNegativeValue, Pure]
-    public int K { get; } = k;
+    public int K { get; } = Math.Max(k, 0);
 
     /// <summary>Gets the list of choices.</summary>
     [CollectionAccess(Read), Pure]
