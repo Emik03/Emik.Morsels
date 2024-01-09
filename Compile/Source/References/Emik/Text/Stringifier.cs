@@ -54,7 +54,7 @@ static partial class Stringifier
         s_fullyUnmanaged = [],
 #endif
         s_hasMethods = [];
-#endif
+
     static readonly Dictionary<Type, Delegate> s_stringifiers = [];
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
@@ -311,7 +311,7 @@ static partial class Stringifier
     /// <summary>Converts a <see cref="Pointer"/> to a <see cref="string"/>.</summary>
     /// <param name="value">The <see cref="Pointer"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="value"/>.</returns>
-    [Pure]
+    [CLSCompliant(false), Pure]
     public static unsafe string ToHexString(
 #if !WAWA
         this
@@ -528,6 +528,7 @@ static partial class Stringifier
 
         return new(p, 0, bufferSize);
     }
+#endif
 
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
