@@ -224,6 +224,7 @@ global using GeneratedSource = (string HintName, string Source);
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
+using static JetBrains.Annotations.CollectionAccessType;
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
 using static System.Linq.Expressions.Expression;
@@ -1865,7 +1866,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public static int OffsetOf<T>(this in Span<T> origin, in ReadOnlySpan<T> target) =>
         ((ReadOnlySpan<T>)origin).OffsetOf(target);
 #pragma warning restore 1574, 1580, 1581, 1584
-    /// <summary>Gets the reference that whose address is within the null range.</summary>
+    /// <summary>Sets the reference to the address within the null range.</summary>
     /// <remarks><para>
     /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
     /// valid reference will never be within this range. This allows reference types to be a disjoint union of a valid
@@ -3070,9 +3071,17 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
 
+    /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this IMemoryOwner<T> source, int index) => Range(source.Memory.Span, index);
+
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source) => Range(source.Span);
+
+    /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Memory<T> source, int index) => Range(source.Span, index);
 #endif
 
     /// <summary>Creates the range.</summary>
@@ -3096,6 +3105,25 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
                 InAscendingOrder<T>.UpTo(length).CopyTo(source);
                 return source;
         }
+    }
+
+    /// <summary>Creates the range.</summary>
+    /// <typeparam name="T">The type of number.</typeparam>
+    /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
+    /// <param name="index">The starting index.</param>
+    /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
+    /// <returns>The parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Span<T> Range<T>(this Span<T> source, int index)
+    {
+        if (source.Length is 0)
+            return source;
+
+        if (!IsNumericPrimitive<T>() && !IsSupported<T>())
+            Fail<T>();
+
+        InAscendingOrder<T>.UpTo(index + source.Length)[index..].CopyTo(source);
+        return source;
     }
 
     static class InAscendingOrder<T>
@@ -12228,6 +12256,393 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable once CheckNamespace
+
+
+// ReSharper disable RedundantReadonlyModifier StructCanBeMadeReadOnly
+
+/// <summary>Provides methods to calculate various binomial coefficients.</summary>
+
+#if NET8_0_OR_GREATER
+    /// <summary>Calculates the binomial coefficient (nCk) (N items, choose k).</summary>
+    /// <remarks><para>
+    /// Implementation based on <a href="https://stackoverflow.com/a/19125294/18052726">Moop's solution</a>.
+    /// </para></remarks>
+    /// <typeparam name="T">The type of the number.</typeparam>
+    /// <param name="n">The number of items.</param>
+    /// <param name="k">The number to choose.</param>
+    /// <returns>
+    /// <math><mrow><mo>(</mo><mfrac linethickness="0"><mi>n</mi><mi>k</mi></mfrac><mo>)</mo></mrow></math>
+    /// </returns>
+    [NonNegativeValue, Pure]
+    public static T Choose<T>(this T n, T k)
+        where T : INumberBase<T>
+    {
+        if (T.IsNegative(n)) // ReSharper disable once TailRecursiveCall
+            return checked(T.IsEvenInteger(k) ? Choose(-n + T.One, k) : -Choose(-n + T.One + T.One, k));
+
+        if (T.IsZero(k) || T.IsNegative(k) || T.IsNegative(n - k))
+            return T.Zero;
+
+        if (n == k)
+            return T.One;
+
+        var c = T.One;
+
+        for (var i = T.One; T.IsPositive(k - i); i++)
+            c = checked(c * n-- / i);
+
+        return c;
+    }
+#else
+    /// <summary>Calculates the binomial coefficient (nCk) (N items, choose k).</summary>
+    /// <remarks><para>
+    /// Implementation based on <a href="https://stackoverflow.com/a/19125294/18052726">Moop's solution</a>.
+    /// </para></remarks>
+    /// <param name="n">The number of items.</param>
+    /// <param name="k">The number to choose.</param>
+    /// <returns>
+    /// <math><mrow><mo>(</mo><mfrac linethickness="0"><mi>n</mi><mi>k</mi></mfrac><mo>)</mo></mrow></math>
+    /// </returns>
+    [NonNegativeValue, Pure]
+    public static int Choose(this int n, int k)
+    {
+        if (n < 0) // ReSharper disable once TailRecursiveCall
+            return checked((k & 1) is 0 ? Choose(-n + 1, k) : -Choose(-n + 2, k));
+
+        if (n < k || k <= 0)
+            return 0;
+
+        if (n == k)
+            return 1;
+
+        var c = 1;
+
+        for (var i = 1; i <= k; i++)
+            c = checked(c * n-- / i);
+
+        return c;
+    }
+
+    /// <inheritdoc cref="Choose(int, int)"/>
+    [NonNegativeValue, Pure]
+    public static long Choose(this long n, long k)
+    {
+        if (n < 0) // ReSharper disable once TailRecursiveCall
+            return checked((k & 1) is 0 ? Choose(-n + 1, k) : -Choose(-n + 2, k));
+
+        if (n < k || k <= 0)
+            return 0;
+
+        if (n == k)
+            return 1;
+
+        long c = 1;
+
+        for (long i = 1; i <= k; i++)
+            c = checked(c * n-- / i);
+
+        return c;
+    }
+#endif
+
+    /// <summary>Calculates the binomial coefficient (nCk) (N items, choose k).</summary>
+    /// <typeparam name="T">The type of items to choose from.</typeparam>
+    /// <param name="n">The items to choose from.</param>
+    /// <param name="k">The amount of items to choose.</param>
+    /// <returns>
+    /// The <see cref="ICollection{T}"/> of <see cref="IList{T}"/> containing the binomial coefficients.
+    /// </returns>
+    [Pure]
+    public static Choices<T> Choose<T>(this IEnumerable<T>? n, int k) => new(n.ToListLazily(), k);
+
+/// <summary>Provides methods to calculate various binomial coefficients.</summary>
+/// <typeparam name="T">The type of element.</typeparam>
+/// <param name="n">The collection to choose from.</param>
+/// <param name="k">The number to choose.</param>
+public
+#if !NO_READONLY_STRUCTS
+    readonly
+#endif
+#pragma warning disable CA1710
+    struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, IEquatable<Choices<T>>
+#pragma warning restore CA1710
+{
+    /// <summary>Provides the enumerator for the <see cref="Choices{T}"/> struct.</summary>
+    /// <param name="n">The collection to choose from.</param>
+    /// <param name="k">The number to choose.</param>
+    public struct Enumerator(IList<T>? n, int k) : IEnumerator<IList<T>>
+    {
+        bool _hasMoved;
+
+        int[] _values = n is not { Count: var count } || count <= k
+            ? []
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            : Reset(ArrayPool<int>.Shared.Rent(k), k);
+#else
+            : Reset(new int[k], k);
+#endif
+
+        /// <inheritdoc cref="Choices{T}.K"/>
+        [NonNegativeValue, Pure]
+        public int K { get; } = k;
+
+        /// <inheritdoc/>
+        [Pure]
+        public IList<T> Current { get; private set; } = [];
+
+        /// <inheritdoc cref="Choices{T}.N"/>
+        [Pure]
+        public readonly IList<T> N { get; } = n ?? [];
+
+        /// <inheritdoc />
+        [Pure]
+        readonly object IEnumerator.Current => Current;
+
+        /// <summary>Resets the provided array to the initial state.</summary>
+        /// <param name="values">The array to fill.</param>
+        /// <param name="k">
+        /// The length of the area to fill, assumed to be at least
+        /// the length of the parameter <paramref name="values"/>.
+        /// </param>
+        /// <returns>The parameter <paramref name="values"/>.</returns>
+        public static int[] Reset(int[] values, int k)
+        {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            values.AsSpan()[..k].Range();
+#else
+            for (var i = 0; i < k; i++)
+                values[i] = i;
+#endif
+            return values;
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            if (_values is null or [])
+                return;
+
+            ArrayPool<int>.Shared.Return(_values);
+            _values = [];
+#endif
+        }
+
+        /// <inheritdoc />
+        public void Reset()
+        {
+            _hasMoved = false;
+            Reset(_values, K);
+        }
+
+        /// <inheritdoc />
+        public bool MoveNext()
+        {
+            if (EarlyReturn() is { } next)
+                return next;
+
+            for (var i = K - 1; i >= 0; i--)
+                if (Found(i))
+                    return true;
+
+            return false;
+        }
+
+        bool? EarlyReturn()
+        {
+            if (N is not { Count: not 0 and var count } || count < K)
+                return false;
+
+            if (K == count)
+                return (Current = N) is var _ && !_hasMoved && (_hasMoved = true);
+
+            if (_hasMoved)
+                return null;
+
+            Copy();
+            _hasMoved = true;
+            return true;
+        }
+
+        void Copy()
+        {
+            Current = new T[K];
+
+            for (var i = 0; i < K; i++)
+                Current[i] = N[_values[i]];
+        }
+
+        bool Found(int found)
+        {
+            if (_values[found] + 1 is var next && next >= N.Count - (K - found - 1))
+                return false;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            _values.AsSpan()[found..].Range(next);
+#else
+            for (var i = found; i < K; i++)
+                _values[i] = next + i - found;
+#endif
+            Copy();
+            return true;
+        }
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    readonly bool ICollection<IList<T>>.IsReadOnly => true;
+
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
+    public int Count => N.Count.Choose(K);
+
+    /// <summary>Gets the number of choices.</summary>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
+    public int K { get; } = k;
+
+    /// <summary>Gets the list of choices.</summary>
+    [CollectionAccess(Read), Pure]
+    public IList<T> N { get; } = n ?? [];
+
+    /// <summary>Gets the first <see cref="K"/> choices.</summary>
+    [CollectionAccess(Read), Pure]
+    public IEnumerable<T> First =>
+        N.Count is var count && count < K ? [] :
+        count == K ? N : N.Take(K);
+
+    /// <summary>Gets the last <see cref="K"/> choices.</summary>
+    [CollectionAccess(Read), Pure]
+    public IEnumerable<T> Last =>
+        N.Count is var count && count < K ? [] :
+        count == K ? N : N.Skip(N.Count - K);
+
+    /// <summary>Determines whether the specified objects are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the specified objects are equal.</returns>
+    public static bool operator ==(Choices<T> left, Choices<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether the specified objects are unequal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the specified objects are unequal.</returns>
+    public static bool operator !=(Choices<T> left, Choices<T> right) => !(left == right);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    void ICollection<IList<T>>.Add(IList<T> item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    void ICollection<IList<T>>.Clear() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(Read)]
+    public void CopyTo(IList<T>[] array, int arrayIndex)
+    {
+        foreach (var next in this)
+            array[arrayIndex++] = next;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public bool Contains(IList<T> item) => IndexOf(item) is not -1;
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) => obj is Choices<T> other && Equals(other);
+
+    /// <inheritdoc />
+    public bool Equals(Choices<T> other) => K == other.K && N.Equals(other.N);
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
+    bool ICollection<IList<T>>.Remove(IList<T> item) => false;
+
+    /// <inheritdoc cref="IList{T}.IndexOf"/>
+    [CollectionAccess(Read), Pure]
+    public int IndexOf(IList<T> item)
+    {
+        if (N.Count == K)
+            return N.Equals(item) ? 0 : -1;
+
+        var i = 0;
+
+        foreach (var next in this)
+            if (next.Equals(item))
+                return i;
+            else
+                i++;
+
+        return -1;
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode() => unchecked(K * 397 ^ N.GetHashCode());
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+#if NET6_0_OR_GREATER
+        var count = Count;
+        DefaultInterpolatedStringHandler str = new(count is 0 ? 2 : count * 4, count);
+        str.AppendLiteral("[");
+#else
+        StringBuilder str = new("[");
+#endif
+        using var e = GetEnumerator();
+
+        if (!e.MoveNext())
+            goto Done;
+#if NET6_0_OR_GREATER
+        str.AppendLiteral("[");
+#else
+        str.Append('[');
+#endif
+        str.AppendMany(e.Current);
+#if NET6_0_OR_GREATER
+        str.AppendLiteral("]");
+#else
+        str.Append(']');
+#endif
+        while (e.MoveNext())
+        {
+#if NET6_0_OR_GREATER
+            str.AppendLiteral(", [");
+#else
+            str.Append(", [");
+#endif
+            str.AppendMany(e.Current);
+#if NET6_0_OR_GREATER
+            str.AppendLiteral("]");
+#else
+            str.Append(']');
+#endif
+        }
+
+    Done:
+#if NET6_0_OR_GREATER
+        str.AppendLiteral("]");
+        return str.ToStringAndClear();
+#else
+        return $"{str.Append(']')}";
+#endif
+    }
+
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
+    [CollectionAccess(Read), Pure]
+    public Enumerator GetEnumerator() => new(N, K);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    IEnumerator<IList<T>> IEnumerable<IList<T>>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
 // ReSharper disable CheckNamespace RedundantUsingDirective
 
 
@@ -14388,10 +14803,13 @@ public ref partial struct ImmutableArrayBuilder<T>
 
     /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
     /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Drain(this in SyntaxNodeAnalysisContext context)
     {
+#if !RELEASE && ROSLYN
         while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
             context.ReportDiagnostic(diagnostic);
+#endif
     }
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
@@ -16106,6 +16524,78 @@ public
             ? $"{name} {{ {str} }}"
             : name;
     }
+#if NET6_0_OR_GREATER
+    /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="dish">
+    /// The <see cref="DefaultInterpolatedStringHandler"/> to mutate and <see langword="return"/>.
+    /// </param>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>The parameter <paramref name="dish"/>.</returns>
+    public static DefaultInterpolatedStringHandler AppendMany<T>(
+        this ref DefaultInterpolatedStringHandler dish,
+        [InstantHandle] IEnumerable<T> values,
+        char separator
+    )
+    {
+        using var enumerator = values.GetEnumerator();
+
+        if (enumerator.MoveNext())
+            dish.AppendFormatted(enumerator.Current);
+        else
+            return dish;
+
+        while (enumerator.MoveNext())
+        {
+            dish.AppendFormatted(separator);
+            dish.AppendFormatted(enumerator.Current);
+        }
+
+        return dish;
+    }
+
+    /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
+    /// <typeparam name="T">The type of each item in the collection.</typeparam>
+    /// <param name="dish">
+    /// The <see cref="DefaultInterpolatedStringHandler"/> to mutate and <see langword="return"/>.
+    /// </param>
+    /// <param name="values">The values to join.</param>
+    /// <param name="separator">The separator between each item.</param>
+    /// <returns>The parameter <paramref name="dish"/>.</returns>
+    public static DefaultInterpolatedStringHandler AppendMany<T>(
+        this ref DefaultInterpolatedStringHandler dish,
+        [InstantHandle] IEnumerable<T> values,
+        string separator = Separator
+    )
+    {
+        if (separator is "")
+            switch (values)
+            {
+                case char[] x:
+                    dish.AppendFormatted(x);
+                    return dish;
+                case string x:
+                    dish.AppendFormatted(x);
+                    return dish;
+            }
+
+        using var enumerator = values.GetEnumerator();
+
+        if (enumerator.MoveNext())
+            dish.AppendFormatted(enumerator.Current);
+        else
+            return dish;
+
+        while (enumerator.MoveNext())
+        {
+            dish.AppendLiteral(separator);
+            dish.AppendFormatted(enumerator.Current);
+        }
+
+        return dish;
+    }
+#endif
 
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
@@ -16169,7 +16659,6 @@ public
 
         return builder;
     }
-
 #if !WAWA
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
