@@ -9541,22 +9541,22 @@ public partial struct Two<T>(T left, T right) :
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif
-        if (path.FileName() is not { Length: 0 } file)
+        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: 0 } file)
         {
-            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
+            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
 #if ROSLYN
-            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, y);
+            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, y);
 #else
-            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
+            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
 #endif
             return value;
         }
 
-        s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
+        s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
 #if ROSLYN
-        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, y);
+        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, y);
 #else
-        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
+        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
 #endif
         return value;
     }
@@ -16227,17 +16227,19 @@ public
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         ReadOnlyMemory<char>
 #else
-        string?
+        string
 #endif
         FileName(this string? path) =>
         path is null
-            ? default
 #if NET8_0_OR_GREATER
+            ? default
             : path.SplitOn(s_slashes).Last;
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            ? default
             : path.SplitAny(Slashes.AsMemory()).Last;
 #else
-            : Path.GetFileName(path);
+            ? ""
+            : Path.GetFileName(path) ?? "";
 #endif
 
     /// <summary>Creates the prettified form of the string.</summary>

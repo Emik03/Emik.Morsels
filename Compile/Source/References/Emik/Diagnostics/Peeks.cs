@@ -1342,22 +1342,22 @@ static partial class Peeks
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif
-        if (path.FileName() is not { Length: 0 } file)
+        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: 0 } file)
         {
-            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
+            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
 #if ROSLYN
-            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, y);
+            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, y);
 #else
-            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, expression, x);
+            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
 #endif
             return value;
         }
 
-        s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
+        s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
 #if ROSLYN
-        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, y);
+        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, y);
 #else
-        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, expression, x);
+        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
 #endif
         return value;
     }
