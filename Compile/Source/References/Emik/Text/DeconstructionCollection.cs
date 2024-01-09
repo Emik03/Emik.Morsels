@@ -462,8 +462,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
-            for (var i = 0; i < Count; i++) // ReSharper disable once NullableWarningSuppressionIsUsed
-                _list[i] = new(SimplifyObject(_list[i].Key)!, SimplifyObject(_list[i].Value));
+            for (var i = 0; i < Count; i++)
+                _list[i] = new(SimplifyObject(_list[i].Key), SimplifyObject(_list[i].Value));
 
             return this;
         }
@@ -610,8 +610,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         switch (value)
         {
-            case nint or nuint or null or DictionaryEntry: return value;
-            case DeconstructionCollection or Pointer or IConvertible or Type or Version: return value;
+            case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
+            case Type x: return x.UnfoldedName();
+            case Pointer x: return x.ToHexString();
+            case Version x: return x.ToShortString();
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
@@ -700,12 +702,13 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="value">The value to simplify.</param>
     /// <returns>The simplified value.</returns>
     [Pure]
-    protected unsafe object? SimplifyObject(object? value) =>
+    [return: NotNullIfNotNull(nameof(value))]
+    protected object? SimplifyObject(object? value) =>
         value switch
         {
-            Pointer => ((nuint)Pointer.Unbox(value)).ToHexString(),
             DeconstructionCollection x => x.Simplify(),
             Version x => x.ToShortString(),
+            Pointer x => x.ToHexString(),
             Type x => x.UnfoldedName(),
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),

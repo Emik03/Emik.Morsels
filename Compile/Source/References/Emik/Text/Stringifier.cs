@@ -305,6 +305,18 @@ static partial class Stringifier
     ) =>
         $"{new StringBuilder().AppendMany(values, separator)}";
 
+    /// <summary>Converts a <see cref="Pointer"/> to a <see cref="string"/>.</summary>
+    /// <param name="value">The <see cref="Pointer"/> to convert.</param>
+    /// <returns>The <see cref="string"/> representation of <paramref name="value"/>.</returns>
+    [Pure]
+    public static unsafe string ToHexString(
+#if !WAWA
+        this
+#endif
+            Pointer? value
+    ) =>
+        (value is null ? 0 : (nuint)Pointer.Unbox(value)).ToHexString();
+
     /// <summary>Gets the short display form of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to convert.</param>
     /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
@@ -438,6 +450,7 @@ static partial class Stringifier
                     ? Conjoin(i.AsBits().Select(x.GetType().Into), BitFlagSeparator)
                     : x)}",
             Type x => UnfoldedName(x),
+            Pointer x => ToHexString(x),
             Version x => ToShortString(x),
 #if KTANE
             Object x => x.name,
