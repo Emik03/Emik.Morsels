@@ -610,7 +610,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         switch (value)
         {
-            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection: return value;
+            case nint or nuint or null or DictionaryEntry: return value;
+            case DeconstructionCollection or Pointer or IConvertible or Type or Version: return value;
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
