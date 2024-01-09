@@ -193,17 +193,19 @@ static partial class Stringifier
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         ReadOnlyMemory<char>
 #else
-        string?
+        string
 #endif
         FileName(this string? path) =>
         path is null
-            ? default
 #if NET8_0_OR_GREATER
+            ? default
             : path.SplitOn(s_slashes).Last;
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            ? default
             : path.SplitAny(Slashes.AsMemory()).Last;
 #else
-            : Path.GetFileName(path);
+            ? ""
+            : Path.GetFileName(path) ?? "";
 #endif
 
     /// <summary>Creates the prettified form of the string.</summary>
