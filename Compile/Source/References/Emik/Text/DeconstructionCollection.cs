@@ -551,11 +551,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
     }
 
-    /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/></summary>
+    /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     public const int
-        DefaultVisitLength = 64,
-        DefaultStringLength = 32,
-        DefaultRecurseLength = 16;
+        DefaultVisitLength = 80,
+        DefaultStringLength = 40,
+        DefaultRecurseLength = 20;
 
     /// <inheritdoc />
     [Pure]
@@ -610,8 +610,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         switch (value)
         {
-            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection:
-                return value;
+            case nint or nuint or null or DictionaryEntry or IConvertible or DeconstructionCollection: return value;
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
@@ -705,6 +704,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             Pointer => ((nuint)Pointer.Unbox(value)).ToHexString(),
             DeconstructionCollection x => x.Simplify(),
+            Version x => x.ToShortString(),
+            Type x => x.UnfoldedName(),
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),
             string x => ToString(x),
