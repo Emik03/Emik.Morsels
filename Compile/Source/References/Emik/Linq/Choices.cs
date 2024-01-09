@@ -107,6 +107,7 @@ static partial class Choices
 /// <typeparam name="T">The type of element.</typeparam>
 /// <param name="n">The collection to choose from.</param>
 /// <param name="k">The number to choose.</param>
+[StructLayout(LayoutKind.Auto)]
 public
 #if !NO_READONLY_STRUCTS
     readonly
@@ -118,17 +119,16 @@ public
     /// <summary>Provides the enumerator for the <see cref="Choices{T}"/> struct.</summary>
     /// <param name="n">The collection to choose from.</param>
     /// <param name="k">The number to choose.</param>
+    [StructLayout(LayoutKind.Auto)]
     public struct Enumerator(IList<T>? n, int k) : IEnumerator<IList<T>>
     {
-        bool _hasMoved;
-
-        int[] _values = n is not { Count: var count } || count <= k
-            ? []
+        bool
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            : Reset(ArrayPool<int>.Shared.Rent(k), k);
-#else
-            : Reset(new int[k], k);
+            _hasDisposed,
 #endif
+            _hasMoved;
+
+        int[] _values = Rent(n, k);
 
         /// <inheritdoc cref="Choices{T}.K"/>
         [NonNegativeValue, Pure]
@@ -168,10 +168,11 @@ public
         public void Dispose()
         {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            if (_values is null or [])
+            if (_hasDisposed || _values is null or [])
                 return;
 
             ArrayPool<int>.Shared.Return(_values);
+            _hasDisposed = true;
             _values = [];
 #endif
         }
@@ -180,7 +181,7 @@ public
         public void Reset()
         {
             _hasMoved = false;
-            Reset(_values, K);
+            Reset(_values ??= new int[K], K);
         }
 
         /// <inheritdoc />
@@ -196,6 +197,39 @@ public
             return false;
         }
 
+        [Pure]
+        static int[] Rent(IList<T>? n, int k) =>
+            n is not { Count: not 0 and var count } || count <= k
+                ? []
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+                : Reset(ArrayPool<int>.Shared.Rent(k), k);
+#else
+                : Reset(new int[k], k);
+#endif
+        void Copy()
+        {
+            Current = new T[K];
+
+            for (var i = 0; i < K; i++)
+                Current[i] = N[_values[i]];
+        }
+
+        [MustUseReturnValue]
+        bool Found(int found)
+        {
+            if (_values[found] + 1 is var next && next >= N.Count - (K - found - 1))
+                return false;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            _values.AsSpan()[found..].Range(next);
+#else
+            for (var i = found; i < K; i++)
+                _values[i] = next + i - found;
+#endif
+            Copy();
+            return true;
+        }
+
+        [MustUseReturnValue]
         bool? EarlyReturn()
         {
             if (K is 0 || N is not { Count: not 0 and var count } || count < K)
@@ -209,28 +243,6 @@ public
 
             Copy();
             _hasMoved = true;
-            return true;
-        }
-
-        void Copy()
-        {
-            Current = new T[K];
-
-            for (var i = 0; i < K; i++)
-                Current[i] = N[_values[i]];
-        }
-
-        bool Found(int found)
-        {
-            if (_values[found] + 1 is var next && next >= N.Count - (K - found - 1))
-                return false;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            _values.AsSpan()[found..].Range(next);
-#else
-            for (var i = found; i < K; i++)
-                _values[i] = next + i - found;
-#endif
-            Copy();
             return true;
         }
     }
