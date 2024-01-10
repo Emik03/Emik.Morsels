@@ -1,5 +1,5 @@
 <Project>
-    <!-- All of the directories that are system-dependant. -->
+    <!-- All of the directories that are system-dependent. -->
     <PropertyGroup>
         <!--
         Specifies the location of the game Keep Talking and Nobody Explodes, for use in referencing the internal code.
