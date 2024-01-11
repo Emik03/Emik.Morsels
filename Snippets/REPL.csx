@@ -4777,7 +4777,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(_body.Span, _separator.Span);
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Item(int)"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -4797,7 +4797,7 @@ readonly
         }
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Item(Index)"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -18183,7 +18183,7 @@ public enum KeyMods : ushort
 [NoStructuralTyping]
 public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
     {
@@ -18277,7 +18277,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 [NoStructuralTyping]
 public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T this[int index]
     {
@@ -18371,7 +18371,7 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
 [NoStructuralTyping]
 public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T? this[int index]
     {
@@ -18665,7 +18665,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     }
 #endif
 
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     public IList<T> this[[NonNegativeValue] int index]
     {
         [Pure] get => new Slice(this, index);
@@ -18769,7 +18769,7 @@ readonly
 #endif
     partial struct Bits<T>
 {
-    /// <inheritdoc cref="IList{T}.Item(int)"/>
+    /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(CollectionAccessType.Read)]
     public unsafe T this[[NonNegativeValue] int index]
     {
@@ -18781,7 +18781,7 @@ readonly
         }
     }
 
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     T IList<T>.this[[NonNegativeValue] int index]
     {
         [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -20527,7 +20527,7 @@ readonly
     [CollectionAccess(Read), ProvidesContext, Pure]
     public T Current => value;
 
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     T IList<T>.this[int _]
     {
@@ -20535,7 +20535,7 @@ readonly
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
 
-    /// <inheritdoc cref="IList{T}.Item(int)"/>
+    /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(Read), Pure]
     T IReadOnlyList<T>.this[int _] => value;
 
@@ -20742,7 +20742,7 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
     [CollectionAccess(Read), Pure]
     public int Count => list.Count;
 
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     [Pure]
     public T this[int index]
     {
@@ -20916,7 +20916,7 @@ readonly
 public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     [CollectionAccess(Read), Pure]
     public T this[int index]
     {
@@ -21209,20 +21209,20 @@ public ref
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View.Slice(start, length));
     }
 
-    /// <inheritdoc cref="Span{T}.Item"/>
+    /// <inheritdoc cref="Span{T}.this"/>
     public readonly Span<T> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View[range];
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View[range]);
     }
 
-    /// <inheritdoc cref="Span{T}.Item"/>
+    /// <inheritdoc cref="Span{T}.this"/>
     public readonly ref T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
     }
 
-    /// <inheritdoc cref="Span{T}.Item"/>
+    /// <inheritdoc cref="Span{T}.this"/>
     public readonly ref T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
@@ -22258,7 +22258,7 @@ public partial struct SmallList<T> :
         }
     }
 
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -23236,7 +23236,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.Item" />
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
     public T this[bool key]
     {

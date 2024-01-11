@@ -184,7 +184,7 @@ partial struct SmallList<T> :
         }
     }
 
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

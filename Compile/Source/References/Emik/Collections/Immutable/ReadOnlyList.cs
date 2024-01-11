@@ -39,7 +39,7 @@ sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>
     [CollectionAccess(Read), Pure]
     public int Count => list.Count;
 
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     [Pure]
     public T this[int index]
     {

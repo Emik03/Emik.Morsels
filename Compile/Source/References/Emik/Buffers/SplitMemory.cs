@@ -275,7 +275,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(_body.Span, _separator.Span);
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Item(int)"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -295,7 +295,7 @@ readonly
         }
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Item(Index)"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

@@ -42,7 +42,7 @@ static partial class Headless
 sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    /// <inheritdoc cref="IList{T}.Item" />
+    /// <inheritdoc cref="IList{T}.this" />
     [CollectionAccess(Read), Pure]
     public T this[int index]
     {

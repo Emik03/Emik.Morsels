@@ -32,7 +32,7 @@ static partial class GuardedFactory
 [NoStructuralTyping]
 sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
-    /// <inheritdoc cref="IList{T}.Item"/>
+    /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     public T? this[int index]
     {
