@@ -2531,7 +2531,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         tail = span[1..];
     }
-#if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NO_SYSTEM_MEMORY
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
@@ -17336,10 +17336,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="list">The resulting <see cref="DeconstructionList"/>.</param>
+        /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
         /// <returns>
-        /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
-        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
+        /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
+        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
@@ -17369,10 +17369,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="enumerable">The enumerator to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="list">The resulting <see cref="DeconstructionList"/>.</param>
+        /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
         /// <returns>
-        /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
-        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
+        /// Whether the parameter <paramref name="enumerable"/> was deconstructed fully and <paramref name="visit"/>
+        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
@@ -17387,10 +17387,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="comparable">The comparable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="list">The resulting <see cref="DeconstructionList"/>.</param>
+        /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
         /// <returns>
-        /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
-        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
+        /// Whether the parameter <paramref name="comparable"/> was deconstructed fully and <paramref name="visit"/>
+        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
@@ -17405,10 +17405,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="equatable">The equatable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="list">The resulting <see cref="DeconstructionList"/>.</param>
+        /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
         /// <returns>
-        /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
-        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
+        /// Whether the parameter <paramref name="equatable"/> was deconstructed fully and <paramref name="visit"/>
+        /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
@@ -17560,9 +17560,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="dictionary">The resulting <see cref="DeconstructionDictionary"/>.</param>
+        /// <param name="dictionary">
+        /// The resulting <see cref="DeconstructionCollection.DeconstructionDictionary"/>.
+        /// </param>
         /// <returns>
-        /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
+        /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
@@ -17593,9 +17595,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="dict">The dictionary to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="dictionary">The resulting <see cref="DeconstructionDictionary"/>.</param>
+        /// <param name="dictionary">
+        /// The resulting <see cref="DeconstructionCollection.DeconstructionDictionary"/>.
+        /// </param>
         /// <returns>
-        /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
+        /// Whether the parameter <paramref name="dict"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
@@ -17611,7 +17615,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="value">The complex object to convert.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
-        /// <param name="dictionary">The resulting <see cref="DeconstructionDictionary"/>.</param>
+        /// <param name="dictionary">
+        /// The resulting <see cref="DeconstructionCollection.DeconstructionDictionary"/>.
+        /// </param>
         /// <returns>
         /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
@@ -17673,7 +17679,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public void Add(object? key, object? value) => _list.Add(new(key!, value));
 
-        /// <inheritdoc cref="ICollection.Clear"/>
+        /// <inheritdoc cref="IDictionary.Clear"/>
         public void Clear() => _list.Clear();
 
         /// <inheritdoc />
