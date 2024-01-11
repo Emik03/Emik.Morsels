@@ -22840,6 +22840,46 @@ public partial struct SmallList<T> :
 
         return output;
     }
+
+    /// <summary>Gets the first element of the list that optionally matches the <see cref="Predicate{T}"/>.</summary>
+    /// <param name="predicate">The predicate to use as a filter.</param>
+    /// <returns>The first element of the list that matches the parameter <paramref name="predicate"/>.</returns>
+    public readonly T? FirstOrDefault(Predicate<T>? predicate)
+    {
+        if (predicate is null)
+            return IsEmpty ? default : First;
+
+        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        foreach (var next in this)
+            if (predicate(next))
+                return next;
+
+        return default;
+    }
+
+    /// <summary>Gets the last element of the list that optionally matches the <see cref="Predicate{T}"/>.</summary>
+    /// <param name="predicate">The predicate to use as a filter.</param>
+    /// <returns>The last element of the list that matches the parameter <paramref name="predicate"/>.</returns>
+    public readonly T? LastOrDefault(Predicate<T>? predicate = null)
+    {
+        if (predicate is null)
+            return Count switch
+            {
+                0 => default,
+                1 => First,
+                2 => Second,
+                3 => Third,
+                _ => Rest![Rest.Count - 1],
+            };
+
+        using var e = GetReversedEnumerator();
+
+        while (e.MoveNext())
+            if (predicate(e.Current))
+                return e.Current;
+
+        return default;
+    }
 #if !UNMANAGED_SPAN
     /// <summary>Creates the temporary span to be passed into the function.</summary>
     /// <typeparam name="TResult">The resulting type of the function.</typeparam>
