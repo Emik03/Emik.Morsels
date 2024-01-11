@@ -128,7 +128,7 @@ static partial class StringRemoval
     /// <inheritdoc cref="string.Trim()"/>
     public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
 
-    /// <inheritdoc cref="string.TrimEnd()"/>
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
     public static StringBuilder TrimEnd(this StringBuilder builder)
     {
         for (var i = builder.Length - 1; i >= 0; i--)
@@ -138,7 +138,7 @@ static partial class StringRemoval
         return builder.Remove(0, builder.Length);
     }
 
-    /// <inheritdoc cref="string.TrimStart()"/>
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
     public static StringBuilder TrimStart(this StringBuilder builder)
     {
         for (var i = 0; i < builder.Length; i++)

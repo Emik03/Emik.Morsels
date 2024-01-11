@@ -598,7 +598,7 @@ readonly
         return accumulator;
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Aggregate{TAccumulator}(TAccumulator, Accumulator{TAccumulator})"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public readonly TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,

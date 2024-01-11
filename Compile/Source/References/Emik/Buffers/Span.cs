@@ -21,7 +21,7 @@ static partial class Span
         {
             /// <summary>
             /// Gets a value indicating whether the conversion between types
-            /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
+            /// <typeparamref name="TFrom"/> and <c>TTo</c> in <see cref="To{TTo}"/> is defined.
             /// </summary>
             // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
@@ -57,7 +57,7 @@ static partial class Span
 
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
-        /// to a <see cref="ReadOnlySpan{T}"/> of type <see cref="TTo"/>.
+        /// to a <see cref="ReadOnlySpan{T}"/> of type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="ReadOnlySpan{T}"/> to convert from.</param>
@@ -65,8 +65,8 @@ static partial class Span
         /// Thrown when <see cref="Is{TFrom}.Supported"/> is <see langword="false"/>.
         /// </exception>
         /// <returns>
-        /// The reinterpretation of the parameter <paramref name="source"/> from its original
-        /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
+        /// The reinterpretation of the parameter <paramref name="source"/> from its original type
+        /// <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
@@ -74,14 +74,14 @@ static partial class Span
 
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
-        /// to a <see cref="Span{T}"/> of type <see cref="TTo"/>.
+        /// to a <see cref="Span{T}"/> of type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="Span{T}"/> to convert from.</param>
         /// <exception cref="NotSupportedException">Thrown when conversion between the types TFrom and TTo is not supported.</exception>
         /// <returns>
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
-        /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
+        /// type <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>

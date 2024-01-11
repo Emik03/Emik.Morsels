@@ -31,7 +31,7 @@ static partial class ClippedFactory
 [NoStructuralTyping]
 sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     public T this[int index]
     {

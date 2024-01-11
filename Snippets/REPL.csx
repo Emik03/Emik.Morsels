@@ -1504,7 +1504,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         {
             /// <summary>
             /// Gets a value indicating whether the conversion between types
-            /// <typeparamref name="TFrom"/> and <see cref="TTo"/> is defined.
+            /// <typeparamref name="TFrom"/> and <c>TTo</c> in <see cref="To{TTo}"/> is defined.
             /// </summary>
             // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
@@ -1540,7 +1540,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
-        /// to a <see cref="ReadOnlySpan{T}"/> of type <see cref="TTo"/>.
+        /// to a <see cref="ReadOnlySpan{T}"/> of type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="ReadOnlySpan{T}"/> to convert from.</param>
@@ -1548,8 +1548,8 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         /// Thrown when <see cref="Is{TFrom}.Supported"/> is <see langword="false"/>.
         /// </exception>
         /// <returns>
-        /// The reinterpretation of the parameter <paramref name="source"/> from its original
-        /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
+        /// The reinterpretation of the parameter <paramref name="source"/> from its original type
+        /// <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
@@ -1557,14 +1557,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
-        /// to a <see cref="Span{T}"/> of type <see cref="TTo"/>.
+        /// to a <see cref="Span{T}"/> of type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="Span{T}"/> to convert from.</param>
         /// <exception cref="NotSupportedException">Thrown when conversion between the types TFrom and TTo is not supported.</exception>
         /// <returns>
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
-        /// type <typeparamref name="TFrom"/> to the destination type <see cref="TTo"/>.
+        /// type <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
@@ -4777,7 +4777,7 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(_body.Span, _separator.Span);
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Item(int)"/>
     public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -4797,7 +4797,7 @@ readonly
         }
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Item(Index)"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -6558,7 +6558,7 @@ readonly
         return accumulator;
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Aggregate{TAccumulator}(TAccumulator, Accumulator{TAccumulator})"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public readonly TAccumulator Aggregate<TAccumulator>(
         TAccumulator seed,
@@ -12361,13 +12361,15 @@ public enum ControlFlow : byte
 /// <param name="n">The collection to choose from.</param>
 /// <param name="k">The number to choose.</param>
 [StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
 public
-#if !NO_READONLY_STRUCTS
-    readonly
 #endif
-#pragma warning disable CA1710
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+#pragma warning disable CA1710, IDE0250, SA1137 // ReSharper disable once BadPreprocessorIndent
     struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, IEquatable<Choices<T>>
-#pragma warning restore CA1710
+#pragma warning restore CA1710, IDE0250, SA1137
 {
     /// <summary>Provides the enumerator for the <see cref="Choices{T}"/> struct.</summary>
     /// <param name="n">The collection to choose from.</param>
@@ -12418,17 +12420,19 @@ public
         }
 
         /// <inheritdoc />
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         public void Dispose()
         {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             if (_hasDisposed || _values is null or [])
                 return;
 
             ArrayPool<int>.Shared.Return(_values);
             _hasDisposed = true;
             _values = [];
-#endif
         }
+#else
+        public readonly void Dispose() { }
+#endif
 
         /// <inheritdoc />
         public void Reset()
@@ -12506,7 +12510,7 @@ public
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
-    public int Count => N.Count.Choose(K);
+    public readonly int Count => N.Count.Choose(K);
 
     /// <summary>Gets the number of choices.</summary>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
@@ -12518,13 +12522,13 @@ public
 
     /// <summary>Gets the first <see cref="K"/> choices.</summary>
     [CollectionAccess(Read), Pure]
-    public IEnumerable<T> First =>
+    public readonly IEnumerable<T> First =>
         N.Count is var count && count < K ? [] :
         count == K ? N : N.Take(K);
 
     /// <summary>Gets the last <see cref="K"/> choices.</summary>
     [CollectionAccess(Read), Pure]
-    public IEnumerable<T> Last =>
+    public readonly IEnumerable<T> Last =>
         N.Count is var count && count < K ? [] :
         count == K ? N : N.Skip(N.Count - K);
 
@@ -12542,15 +12546,15 @@ public
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ICollection<IList<T>>.Add(IList<T> item) { }
+    readonly void ICollection<IList<T>>.Add(IList<T> item) { }
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    void ICollection<IList<T>>.Clear() { }
+    readonly void ICollection<IList<T>>.Clear() { }
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
-    public void CopyTo(IList<T>[] array, int arrayIndex)
+    public readonly void CopyTo(IList<T>[] array, int arrayIndex)
     {
         foreach (var next in this)
             array[arrayIndex++] = next;
@@ -12558,21 +12562,21 @@ public
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    public bool Contains(IList<T> item) => IndexOf(item) is not -1;
+    public readonly bool Contains(IList<T> item) => IndexOf(item) is not -1;
 
     /// <inheritdoc />
-    public override bool Equals(object? obj) => obj is Choices<T> other && Equals(other);
+    public readonly override bool Equals(object? obj) => obj is Choices<T> other && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(Choices<T> other) => K == other.K && N.Equals(other.N);
+    public readonly bool Equals(Choices<T> other) => K == other.K && N.Equals(other.N);
 
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    bool ICollection<IList<T>>.Remove(IList<T> item) => false;
+    readonly bool ICollection<IList<T>>.Remove(IList<T> item) => false;
 
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [CollectionAccess(Read), Pure]
-    public int IndexOf(IList<T> item)
+    public readonly int IndexOf(IList<T> item)
     {
         if (N.Count == K)
             return N.Equals(item) ? 0 : -1;
@@ -12589,10 +12593,10 @@ public
     }
 
     /// <inheritdoc />
-    public override int GetHashCode() => unchecked(K * 397 ^ N.GetHashCode());
+    public readonly override int GetHashCode() => unchecked(K * 397 ^ N.GetHashCode());
 
     /// <inheritdoc />
-    public override string ToString()
+    public readonly override string ToString()
     {
 #if NET6_0_OR_GREATER
         var count = Count;
@@ -12642,15 +12646,15 @@ public
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), Pure]
-    public Enumerator GetEnumerator() => new(N, K);
+    public readonly Enumerator GetEnumerator() => new(N, K);
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    IEnumerator<IList<T>> IEnumerable<IList<T>>.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator<IList<T>> IEnumerable<IList<T>>.GetEnumerator() => GetEnumerator();
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
 // SPDX-License-Identifier: MPL-2.0
@@ -16015,7 +16019,7 @@ public ref partial struct ImmutableArrayBuilder<T>
     /// <inheritdoc cref="string.Trim()"/>
     public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
 
-    /// <inheritdoc cref="string.TrimEnd()"/>
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
     public static StringBuilder TrimEnd(this StringBuilder builder)
     {
         for (var i = builder.Length - 1; i >= 0; i--)
@@ -16025,7 +16029,7 @@ public ref partial struct ImmutableArrayBuilder<T>
         return builder.Remove(0, builder.Length);
     }
 
-    /// <inheritdoc cref="string.TrimStart()"/>
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
     public static StringBuilder TrimStart(this StringBuilder builder)
     {
         for (var i = 0; i < builder.Length; i++)
@@ -18179,7 +18183,7 @@ public enum KeyMods : ushort
 [NoStructuralTyping]
 public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     public T this[int index]
     {
@@ -18273,7 +18277,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 [NoStructuralTyping]
 public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     public T this[int index]
     {
@@ -18367,7 +18371,7 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
 [NoStructuralTyping]
 public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     public T? this[int index]
     {
@@ -18661,7 +18665,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
     }
 #endif
 
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     public IList<T> this[[NonNegativeValue] int index]
     {
         [Pure] get => new Slice(this, index);
@@ -18765,7 +18769,7 @@ readonly
 #endif
     partial struct Bits<T>
 {
-    /// <inheritdoc cref="IList{T}.this[int]"/>
+    /// <inheritdoc cref="IList{T}.Item(int)"/>
     [CollectionAccess(CollectionAccessType.Read)]
     public unsafe T this[[NonNegativeValue] int index]
     {
@@ -18777,7 +18781,7 @@ readonly
         }
     }
 
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     T IList<T>.this[[NonNegativeValue] int index]
     {
         [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -20523,7 +20527,7 @@ readonly
     [CollectionAccess(Read), ProvidesContext, Pure]
     public T Current => value;
 
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     T IList<T>.this[int _]
     {
@@ -20531,7 +20535,7 @@ readonly
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
 
-    /// <inheritdoc cref="IList{T}.this[int]"/>
+    /// <inheritdoc cref="IList{T}.Item(int)"/>
     [CollectionAccess(Read), Pure]
     T IReadOnlyList<T>.this[int _] => value;
 
@@ -20738,7 +20742,7 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
     [CollectionAccess(Read), Pure]
     public int Count => list.Count;
 
-    /// <inheritdoc cref="IList{T}.this" />
+    /// <inheritdoc cref="IList{T}.Item" />
     [Pure]
     public T this[int index]
     {
@@ -20912,7 +20916,7 @@ readonly
 public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
 {
-    /// <inheritdoc cref="IList{T}.this" />
+    /// <inheritdoc cref="IList{T}.Item" />
     [CollectionAccess(Read), Pure]
     public T this[int index]
     {
@@ -21205,20 +21209,20 @@ public ref
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View.Slice(start, length));
     }
 
-    /// <inheritdoc cref="Span{T}.this"/>
+    /// <inheritdoc cref="Span{T}.Item"/>
     public readonly Span<T> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View[range];
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View[range]);
     }
 
-    /// <inheritdoc cref="Span{T}.this"/>
+    /// <inheritdoc cref="Span{T}.Item"/>
     public readonly ref T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
     }
 
-    /// <inheritdoc cref="Span{T}.this"/>
+    /// <inheritdoc cref="Span{T}.Item"/>
     public readonly ref T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
@@ -22254,7 +22258,7 @@ public partial struct SmallList<T> :
         }
     }
 
-    /// <inheritdoc cref="IList{T}.this" />
+    /// <inheritdoc cref="IList{T}.Item" />
     public T this[int index]
     {
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -23232,7 +23236,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.Item" />
     [Pure]
     public T this[bool key]
     {

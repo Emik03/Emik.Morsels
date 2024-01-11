@@ -84,7 +84,7 @@ readonly
     [CollectionAccess(Read), ProvidesContext, Pure]
     public T Current => value;
 
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     T IList<T>.this[int _]
     {
@@ -92,7 +92,7 @@ readonly
         [CollectionAccess(None)] set { }
     }
 
-    /// <inheritdoc cref="IList{T}.this[int]"/>
+    /// <inheritdoc cref="IList{T}.Item(int)"/>
     [CollectionAccess(Read), Pure]
     T IReadOnlyList<T>.this[int _] => value;
 

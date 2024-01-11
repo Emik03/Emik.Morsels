@@ -32,7 +32,7 @@ static partial class CircularFactory
 [NoStructuralTyping]
 sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     [Pure]
     public T this[int index]
     {

@@ -180,7 +180,7 @@ sealed partial class Matrix<T> : IList<IList<T>>
     }
 #endif
 
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     public IList<T> this[[NonNegativeValue] int index]
     {
         [Pure] get => new Slice(this, index);

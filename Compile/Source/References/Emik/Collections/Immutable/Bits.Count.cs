@@ -12,7 +12,7 @@ readonly
 #endif
     partial struct Bits<T>
 {
-    /// <inheritdoc cref="IList{T}.this[int]"/>
+    /// <inheritdoc cref="IList{T}.Item(int)"/>
     [CollectionAccess(CollectionAccessType.Read)]
     public unsafe T this[[NonNegativeValue] int index]
     {
@@ -24,7 +24,7 @@ readonly
         }
     }
 
-    /// <inheritdoc cref="IList{T}.this"/>
+    /// <inheritdoc cref="IList{T}.Item"/>
     T IList<T>.this[[NonNegativeValue] int index]
     {
         [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

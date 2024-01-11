@@ -148,7 +148,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
-    /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
+    /// <inheritdoc cref="IDictionary{TKey, TValue}.Item" />
     [Pure]
     public T this[bool key]
     {

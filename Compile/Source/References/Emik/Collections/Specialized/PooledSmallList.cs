@@ -195,20 +195,20 @@ ref
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View.Slice(start, length));
     }
 
-    /// <inheritdoc cref="Span{T}.this"/>
+    /// <inheritdoc cref="Span{T}.Item"/>
     public readonly Span<T> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View[range];
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View[range]);
     }
 
-    /// <inheritdoc cref="Span{T}.this"/>
+    /// <inheritdoc cref="Span{T}.Item"/>
     public readonly ref T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
     }
 
-    /// <inheritdoc cref="Span{T}.this"/>
+    /// <inheritdoc cref="Span{T}.Item"/>
     public readonly ref T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
