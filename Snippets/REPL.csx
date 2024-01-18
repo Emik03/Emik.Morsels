@@ -1487,7 +1487,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 // ReSharper disable BadPreprocessorIndent ConvertToStaticClass
 // ReSharper disable once CheckNamespace
 
-
+#pragma warning disable DOC106
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
 /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
 

@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent ConvertToStaticClass
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable DOC106
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
 /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
 static partial class Span
