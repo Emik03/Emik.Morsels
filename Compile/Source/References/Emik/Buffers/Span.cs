@@ -28,7 +28,7 @@ static partial class Span
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
                 typeof(TTo) == typeof(TFrom) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
-                IsReinterpretable(typeof(TFrom), typeof(TTo));
+                (IsReinterpretable(typeof(TFrom), typeof(TTo)) || Unmanagable && To<TFrom>.Unmanagable);
 #else
                 typeof(TTo) == typeof(TFrom);
 #endif
