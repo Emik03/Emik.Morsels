@@ -465,6 +465,18 @@ static partial class IncludedSyntaxNodeRegistrant
             ? underlying
             : null;
 
+    /// <summary>Gets the <see cref="RefKind"/> of the parameter.</summary>
+    /// <param name="argument">The argument to get the <see cref="RefKind"/> of.</param>
+    /// <returns>The <see cref="RefKind"/> of the parameter <paramref name="argument"/>.</returns>
+    public static RefKind GetRefKind(this ArgumentSyntax? argument) =>
+        argument?.RefKindKeyword.Kind() switch
+        {
+            RefKeyword => RefKind.Ref,
+            OutKeyword => RefKind.Out,
+            InKeyword => RefKind.In,
+            _ => RefKind.None,
+        };
+
     /// <summary>Gets the specified symbol.</summary>
     /// <typeparam name="T">The type of symbol to get.</typeparam>
     /// <param name="context">The context.</param>

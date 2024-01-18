@@ -157,6 +157,19 @@ ref
         }
     }
 
+    /// <summary>Gets the mutable reference to the <see cref="PooledSmallList{T}"/>.</summary>
+    public unsafe ref PooledSmallList<T> AsRef
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+            fixed (PooledSmallList<T>* ptr = &this)
+#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+                return ref *ptr;
+        }
+    }
+
     /// <summary>Gets the inner heap array, or a copy of the inlined array.</summary>
     public readonly T[] ToArrayLazily
     {
