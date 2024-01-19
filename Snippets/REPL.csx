@@ -11805,24 +11805,36 @@ public enum ControlFlow : byte
     public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable) =>
         enumerable.SelectMany(Enumerable.AsEnumerable);
 
-    /// <summary>Flattens the nested collection.</summary>
-    /// <typeparam name="T">The type of collection.</typeparam>
-    /// <param name="enumerable">The collection to flatten.</param>
-    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
+    /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten2<T>(this IEnumerable<IEnumerable<IEnumerable<T>>> enumerable) =>
-        enumerable.SelectMany(Enumerable.AsEnumerable).SelectMany(Enumerable.AsEnumerable);
+        enumerable.Flatten().Flatten();
 
-    /// <summary>Flattens the nested collection.</summary>
-    /// <typeparam name="T">The type of collection.</typeparam>
-    /// <param name="enumerable">The collection to flatten.</param>
-    /// <returns>The flattened collection of the parameter <paramref name="enumerable"/>.</returns>
+    /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten3<T>(this IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>> enumerable) =>
-        enumerable
-           .SelectMany(Enumerable.AsEnumerable)
-           .SelectMany(Enumerable.AsEnumerable)
-           .SelectMany(Enumerable.AsEnumerable);
+        enumerable.Flatten2().Flatten();
+
+    /// <inheritdoc cref="Flatten{T}"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Flatten4<T>(
+        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>> enumerable
+    ) =>
+        enumerable.Flatten2().Flatten2();
+
+    /// <inheritdoc cref="Flatten{T}"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Flatten5<T>(
+        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>> enumerable
+    ) =>
+        enumerable.Flatten4().Flatten();
+
+    /// <inheritdoc cref="Flatten{T}"/>
+    [LinqTunnel, Pure]
+    public static IEnumerable<T> Flatten6<T>(
+        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>>> enumerable
+    ) =>
+        enumerable.Flatten4().Flatten2();
 
     /// <summary>
     /// Flattens the nested collection by taking all the first elements of the enumerations,
