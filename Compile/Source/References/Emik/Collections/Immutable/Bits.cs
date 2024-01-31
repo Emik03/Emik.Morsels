@@ -210,12 +210,11 @@ readonly
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int IndexOf(T item)
     {
-        using var e = new Enumerator(item);
-
-        if (!e.MoveNext() || e.Mask is var mask && e.Index is var index && e.MoveNext())
+        if ((Enumerator)item is var e && !e.MoveNext() ||
+            e.Mask is var mask && e.Index is var index && e.MoveNext())
             return -1;
 
-        using var that = GetEnumerator();
+        var that = ((Enumerator)this);
 
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)

@@ -19069,299 +19069,6 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable IDE0250
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
-
-
-/// <inheritdoc cref="Bits{T}"/>
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>
-{
-    /// <inheritdoc cref="IList{T}.this[int]"/>
-    [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe T this[[NonNegativeValue] int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            fixed (T* ptr = &_value)
-                return Nth(ptr, index);
-        }
-    }
-
-    /// <inheritdoc cref="IList{T}.this"/>
-    T IList<T>.this[[NonNegativeValue] int index]
-    {
-        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => this[index];
-        [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
-    }
-
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe int Count
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            fixed (T* ptr = &_value)
-                return PopCount(ptr);
-        }
-    }
-
-#pragma warning disable MA0051 // ReSharper disable CognitiveComplexity
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
-    {
-        for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
-            if (BitOperations.PopCount(*(nuint*)ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
-
-        for (; sizeof(T) % sizeof(nuint) >= sizeof(ulong) && ptr <= upper - sizeof(ulong); ptr += sizeof(ulong))
-            if (BitOperations.PopCount(*(ulong*)ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
-
-        for (; sizeof(T) % sizeof(ulong) >= sizeof(uint) && ptr <= upper - sizeof(uint); ptr += sizeof(uint))
-            if (BitOperations.PopCount(*(uint*)ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe byte Find(ref byte* ptr, in byte* upper, int x)
-    {
-        for (; ptr < upper; ptr++)
-        {
-            if ((*ptr & 1) is not 0 && x-- is 0)
-                return 1;
-
-            if ((*ptr & 1 << 1) is not 0 && x-- is 0)
-                return 1 << 1;
-
-            if ((*ptr & 1 << 2) is not 0 && x-- is 0)
-                return 1 << 2;
-
-            if ((*ptr & 1 << 3) is not 0 && x-- is 0)
-                return 1 << 3;
-
-            if ((*ptr & 1 << 4) is not 0 && x-- is 0)
-                return 1 << 4;
-
-            if ((*ptr & 1 << 5) is not 0 && x-- is 0)
-                return 1 << 5;
-
-            if ((*ptr & 1 << 6) is not 0 && x-- is 0)
-                return 1 << 6;
-
-            if ((*ptr & 1 << 7) is not 0 && x-- is 0)
-                return 1 << 7;
-        }
-
-        return 0;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe int PopCount(T* value)
-    {
-        var ptr = (nuint*)value++;
-        var sum = 0;
-
-        if (sizeof(T) / (sizeof(nuint) * 16) > 0)
-        {
-            for (; ptr <= (nuint*)value - 16; ptr += 16)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]) +
-                    BitOperations.PopCount(ptr[4]) +
-                    BitOperations.PopCount(ptr[5]) +
-                    BitOperations.PopCount(ptr[6]) +
-                    BitOperations.PopCount(ptr[7]) +
-                    BitOperations.PopCount(ptr[8]) +
-                    BitOperations.PopCount(ptr[9]) +
-                    BitOperations.PopCount(ptr[10]) +
-                    BitOperations.PopCount(ptr[11]) +
-                    BitOperations.PopCount(ptr[12]) +
-                    BitOperations.PopCount(ptr[13]) +
-                    BitOperations.PopCount(ptr[14]) +
-                    BitOperations.PopCount(ptr[15]);
-
-            if (sizeof(T) % sizeof(nuint) * 16 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 16) / (sizeof(nuint) * 8) > 0)
-        {
-            for (; ptr <= (nuint*)value - 8; ptr += 8)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]) +
-                    BitOperations.PopCount(ptr[4]) +
-                    BitOperations.PopCount(ptr[5]) +
-                    BitOperations.PopCount(ptr[6]) +
-                    BitOperations.PopCount(ptr[7]);
-
-            if (sizeof(T) % sizeof(nuint) * 8 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 8) / (sizeof(nuint) * 4) > 0)
-        {
-            for (; ptr <= (nuint*)value - 4; ptr += 4)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]);
-
-            if (sizeof(T) % sizeof(nuint) * 4 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 4) / (sizeof(nuint) * 2) > 0)
-        {
-            for (; ptr <= (nuint*)value - 2; ptr += 2)
-                sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
-
-            if (sizeof(T) % sizeof(nuint) * 2 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
-        {
-            for (; ptr < value; ptr++)
-                sum += BitOperations.PopCount(*ptr);
-
-            if (sizeof(T) % sizeof(nuint) is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return sum;
-
-        if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
-        {
-            for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
-                sum += BitOperations.PopCount(*ptr);
-
-            if (sizeof(T) % sizeof(nuint) is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return sum;
-
-        return sum + PopCountRemainder((byte*)ptr);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe int TrailingZeroCount(nuint value)
-#if NET7_0_OR_GREATER
-        =>
-            BitOperations.TrailingZeroCount(value);
-#else
-    {
-        const int BitsInUInt = BitsInByte * sizeof(uint);
-
-        for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
-            if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
-                return j + i * BitsInUInt;
-
-        return sizeof(nuint) * BitsInByte;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static int Map([ValueRange(0, 1u << 31)] uint value) =>
-        value switch // Always a power of two.
-        {
-            0 => 32,
-            1 << 0 => 0,
-            1 << 1 => 1,
-            1 << 2 => 2,
-            1 << 3 => 3,
-            1 << 4 => 4,
-            1 << 5 => 5,
-            1 << 6 => 6,
-            1 << 7 => 7,
-            1 << 8 => 8,
-            1 << 9 => 9,
-            1 << 10 => 10,
-            1 << 11 => 11,
-            1 << 12 => 12,
-            1 << 13 => 13,
-            1 << 14 => 14,
-            1 << 15 => 15,
-            1 << 16 => 10,
-            1 << 17 => 11,
-            1 << 18 => 12,
-            1 << 19 => 13,
-            1 << 20 => 14,
-            1 << 21 => 15,
-            1 << 22 => 10,
-            1 << 23 => 11,
-            1 << 24 => 12,
-            1 << 25 => 13,
-            1 << 26 => 14,
-            1 << 27 => 15,
-            1 << 28 => 10,
-            1 << 29 => 11,
-            1 << 30 => 12,
-            1u << 31 => 13,
-            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
-        };
-#endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe int PopCountRemainder(byte* remainder) =>
-        BitOperations.PopCount(
-            (sizeof(T) % sizeof(ulong)) switch
-            {
-                1 => *remainder,
-                2 => *(ushort*)remainder,
-                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
-                4 => *(uint*)remainder,
-                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
-                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
-                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
-                _ => throw new InvalidOperationException("sizeof(T) is assumed to be within [1, 7]."),
-            }
-        );
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Create(T* p, byte* ptr, byte i)
-    {
-        T t = default;
-        ((byte*)&t)[ptr - (byte*)p] = i;
-        return t;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Nth(T* p, [NonNegativeValue] int index)
-    {
-        var x = index;
-        var ptr = (byte*)p;
-        var upper = (byte*)(p + 1);
-
-        if (sizeof(T) >= sizeof(uint))
-            MovePopCount(ref ptr, upper, ref x);
-
-        return Find(ref ptr, upper, x) is not 0 and var i
-            ? Create(p, ptr, i)
-            : throw new ArgumentOutOfRangeException(nameof(index), index, null);
-    }
-}
-
-// SPDX-License-Identifier: MPL-2.0
 #pragma warning disable CA1502, MA0051, IDE0250
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 
@@ -20170,21 +19877,56 @@ readonly
 #endif
     partial struct Bits<T>
 {
+    /// <summary>Determines whether the item has only a single bit.</summary>
+    /// <param name="item">The element to test.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="item"/>
+    /// has a single bit set; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsSingle(in T item) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+    	0 switch
+    	{
+    	    _ when typeof(T) == typeof(byte) => BitOperations.IsPow2((byte)(object)item),
+    	    _ when typeof(T) == typeof(sbyte) => BitOperations.IsPow2(unchecked((byte)(sbyte)(object)item)),
+    	    _ when typeof(T) == typeof(short) => BitOperations.IsPow2(unchecked((ushort)(short)(object)item)),
+    	    _ when typeof(T) == typeof(ushort) => BitOperations.IsPow2((ushort)(object)item),
+    	    _ when typeof(T) == typeof(int) => BitOperations.IsPow2(unchecked((uint)(int)(object)item)),
+    	    _ when typeof(T) == typeof(uint) => BitOperations.IsPow2((uint)(object)item),
+    	    _ when typeof(T) == typeof(long) => BitOperations.IsPow2(unchecked((ulong)(long)(object)item)),
+    	    _ when typeof(T) == typeof(ulong) => BitOperations.IsPow2((ulong)(object)item),
+    	    _ when typeof(T) == typeof(nint) => BitOperations.IsPow2(unchecked((nuint)(nint)(object)item)),
+    	    _ when typeof(T) == typeof(nuint) => BitOperations.IsPow2((nuint)(object)item),
+    	    _ when !typeof(T).IsEnum => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
+            _ => (typeof(T) == typeof(Enum) ? item.GetType() : typeof(T)).GetEnumUnderlyingType() switch
+            {
+    	        var x when x == typeof(byte) => BitOperations.IsPow2((byte)(object)item),
+    	        var x when x == typeof(sbyte) => BitOperations.IsPow2(unchecked((byte)(sbyte)(object)item)),
+    	        var x when x == typeof(short) => BitOperations.IsPow2(unchecked((ushort)(short)(object)item)),
+    	        var x when x == typeof(ushort) => BitOperations.IsPow2((ushort)(object)item),
+    	        var x when x == typeof(int) => BitOperations.IsPow2(unchecked((uint)(int)(object)item)),
+    	        var x when x == typeof(uint) => BitOperations.IsPow2((uint)(object)item),
+    	        var x when x == typeof(long) => BitOperations.IsPow2(unchecked((ulong)(long)(object)item)),
+    	        var x when x == typeof(ulong) => BitOperations.IsPow2((ulong)(object)item),
+    	        var x when x == typeof(nint) => BitOperations.IsPow2(unchecked((nuint)(nint)(object)item)),
+    	        var x when x == typeof(nuint) => BitOperations.IsPow2((nuint)(object)item),
+    	        _ => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
+            },
+    	};
+#else
+        (Enumerator)item is var e && e.MoveNext() && !e.MoveNext();
+#endif
+
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Contains(T item)
     {
-        using var that = GetEnumerator();
+    	if (!IsSingle(item))
+            return false;
 
-        while (that.MoveNext())
-        {
-            var current = that.Current;
-
-            if (Eq(current, item))
-                return true;
-        }
-
-        return false;
+        And(_value, ref item);
+        return !EqZero(item);
     }
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
@@ -20265,495 +20007,12 @@ readonly
         T t = default;
 
         foreach (var next in other)
-            if ((Enumerator)next is var e && !e.MoveNext() || e.MoveNext())
-                return false;
-            else
+            if (IsSingle(next))
                 Or(next, ref t);
+            else
+                return false;
 
         return Eq(_value, t);
-    }
-}
-
-// SPDX-License-Identifier: MPL-2.0
-
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry RedundantReadonlyModifier
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
-
-
-
-/// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
-
-    /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Bits<T> AsBits<T>(this T source)
-        where T : unmanaged =>
-        source;
-
-    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseAnd<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
-
-        foreach (var next in source)
-            Bits<T>.And(next, ref t);
-
-        return t;
-    }
-
-    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
-
-        foreach (var next in source)
-            Bits<T>.AndNot(next, ref t);
-
-        return t;
-    }
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
-    /// <summary>Returns the reference that contains the most bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMax<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
-
-    /// <summary>Returns the reference that contains the least bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMin<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
-#endif
-
-    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseOr<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
-
-        foreach (var next in source)
-            Bits<T>.Or(next, ref t);
-
-        return t;
-    }
-
-    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseXor<T>(this IEnumerable<T> source)
-        where T : unmanaged
-    {
-        T t = default;
-
-        foreach (var next in source)
-            Bits<T>.Xor(next, ref t);
-
-        return t;
-    }
-
-/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
-/// <typeparam name="T">The type of the item to yield.</typeparam>
-/// <param name="bits">The item to use.</param>
-[StructLayout(LayoutKind.Auto), NoStructuralTyping]
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
-    where T : unmanaged
-{
-    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
-
-    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
-    readonly T _value = bits;
-
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    bool ICollection<T>.IsReadOnly
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
-    }
-
-    /// <summary>Gets the item to use.</summary>
-    [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
-    public readonly T Current
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
-    }
-
-    /// <summary>Implicitly calls the constructor.</summary>
-    /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
-
-    /// <summary>Implicitly calls the constructor.</summary>
-    /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
-
-    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-    /// <param name="value">The value to call <see cref="Current"/>.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Enumerator([ProvidesContext] Bits<T> value) => value.Current;
-
-    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-    /// <param name="value">The value to call <see cref="Current"/>.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator T(Bits<T> value) => value.Current;
-
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void CopyTo(T[] array, int arrayIndex)
-    {
-        foreach (var next in this)
-            array[arrayIndex++] = next;
-    }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Add(T item) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Clear() { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IList<T>.Insert(int index, T item) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IList<T>.RemoveAt(int index) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool ICollection<T>.Remove(T item) => false;
-
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool ISet<T>.Add(T item) => false;
-
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly int IndexOf(T item)
-    {
-        using var e = new Enumerator(item);
-
-        if (!e.MoveNext() || e.Mask is var mask && e.Index is var index && e.MoveNext())
-            return -1;
-
-        using var that = GetEnumerator();
-
-        for (var i = 0; that.MoveNext(); i++)
-            if (that.Mask == mask && that.Index == index)
-                return i;
-            else if (that.Mask > mask || that.Index > index)
-                return -1;
-
-        return -1;
-    }
-
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
-
-    /// <summary>
-    /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
-    /// </summary>
-    /// <returns>Itself.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    public readonly Enumerator GetEnumerator() => _value;
-
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-#pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
-    /// <remarks><para>
-    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
-    /// the result is truncated to the left. Otherwise, if the type <typeparamref name="TResult"/>
-    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the left.
-    /// </para>
-    /// <example>
-    /// <para>Visual description of how the coercion works:</para>
-    /// <code lang="C#"><![CDATA[
-    /// var bits = ((ushort)0b0101_0110).AsBits(); // 0b0000_1111_0101_0110
-    /// var padding = bits.Coerce<int>(); // 0b0000_0000_0000_0000_0000_1111_0101_0110
-    /// var truncation = bits.Coerce<byte>(); // 0b0101_0110
-    /// ]]></code></example></remarks>
-    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-#pragma warning restore DOC100
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult Coerce<TResult>()
-        where TResult : unmanaged
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Copy(T value)
-        {
-            TResult ret = default;
-            *(T*)(&ret) = value;
-            return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => *(TResult*)(&value);
-
-        return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
-    }
-#pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
-    /// <remarks><para>
-    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
-    /// the result is truncated to the right. Otherwise, if the type <typeparamref name="TResult"/>
-    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the right.
-    /// </para>
-    /// <example>
-    /// <para>Visual description of how the coercion works:</para>
-    /// <code lang="C#"><![CDATA[
-    /// var bits = ((ushort)0b0101_0110).AsBits(); // 0b0000_1111_0101_0110
-    /// var padding = bits.Coerce<int>(); // 0b0000_1111_0101_0110_0000_0000_0000_0000
-    /// var truncation = bits.Coerce<byte>(); // 0b0000_1111
-    /// ]]></code></example></remarks>
-    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-#pragma warning restore DOC100
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult CoerceLeft<TResult>()
-        where TResult : unmanaged
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Copy(T value)
-        {
-            TResult ret = default;
-            ((T*)(&ret + 1))[-1] = value;
-            return ret;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
-
-        return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
-            sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
-    }
-
-    /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
-    /// <param name="value">The item to use.</param>
-    [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator(T value) : IEnumerator<T>
-    {
-        const int Start = -1;
-
-        readonly T _value = value;
-
-        /// <summary>Gets the current mask.</summary>
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public nuint Mask
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
-        }
-
-        /// <summary>Gets the current index.</summary>
-        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public nint Index
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
-        } = Start;
-
-        /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
-        [CollectionAccess(Read)]
-        public readonly Bits<T> AsBits
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
-        }
-
-        /// <summary>Gets the underlying value that is being enumerated.</summary>
-        [CollectionAccess(Read)]
-        public readonly T AsValue
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
-        }
-
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public readonly unsafe T Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get
-            {
-                T t = default;
-                *((nuint*)&t + Index) ^= Mask;
-                return t;
-            }
-        }
-
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        readonly object IEnumerator.Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
-        }
-
-        /// <summary>Implicitly calls the constructor.</summary>
-        /// <param name="value">The value to pass into the constructor.</param>
-        /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator Enumerator(T value) => new(value);
-
-        /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-        /// <param name="value">The value to call <see cref="Current"/>.</param>
-        /// <returns>The value that was passed in to this instance.</returns>
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator T(Enumerator value) => value.Current;
-
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        readonly void IDisposable.Dispose() { }
-
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset()
-        {
-            Index = Start;
-            Mask = 0;
-        }
-
-        /// <inheritdoc />
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe bool MoveNext()
-        {
-            Mask <<= 1;
-
-            if (Mask is 0)
-            {
-                Index++;
-                Mask++;
-            }
-
-            fixed (T* ptr = &_value)
-                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
-                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
-                    return true;
-
-            Index = sizeof(T) / sizeof(nuint);
-            Mask = FalsyMask();
-            return false;
-        }
-
-        /// <inheritdoc />
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public readonly override string ToString()
-        {
-            var that = this;
-            return that.ToRemainingString();
-        }
-
-        /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
-        /// <returns>The <see cref="string"/> result of this instance.</returns>
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-        public unsafe string ToRemainingString()
-        {
-            var ptr = stackalloc char[s_typeSize];
-            new Span<char>(ptr, s_typeSize).Fill('0');
-            var last = ptr + s_typeSize - 1;
-
-            while (MoveNext())
-                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
-
-            return new(ptr, 0, s_typeSize);
-        }
-
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
-
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
-
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindNativelySized(T* ptr)
-        {
-            // This check is normally unreachable, however it protects against out-of-bounds
-            // reads if this enumerator instance was created through unsafe means.
-            if (Index < 0)
-                return false;
-
-            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
-                for (; Mask is not 0; Mask <<= 1)
-                    if (IsNonZero(ptr))
-                        return true;
-
-            return false;
-        }
-
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindRest(T* ptr)
-        {
-            // This check is normally unreachable, however it protects against out-of-bounds
-            // reads if this enumerator instance was created through unsafe means.
-            if (Index != sizeof(T) / sizeof(nuint))
-                return false;
-
-            for (; (Mask & LastRest()) is not 0; Mask <<= 1)
-                if (IsNonZero(ptr))
-                    return true;
-
-            return false;
-        }
-
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
     }
 }
 
@@ -21186,6 +20445,781 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+}
+
+// SPDX-License-Identifier: MPL-2.0
+#pragma warning disable IDE0250
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
+
+
+/// <inheritdoc cref="Bits{T}"/>
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>
+{
+    /// <inheritdoc cref="IList{T}.this[int]"/>
+    [CollectionAccess(CollectionAccessType.Read)]
+    public unsafe T this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            fixed (T* ptr = &_value)
+                return Nth(ptr, index);
+        }
+    }
+
+    /// <inheritdoc cref="IList{T}.this"/>
+    T IList<T>.this[[NonNegativeValue] int index]
+    {
+        [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => this[index];
+        [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
+    }
+
+    /// <inheritdoc cref="ICollection{T}.Count"/>
+    [CollectionAccess(CollectionAccessType.Read)]
+    public unsafe int Count
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            fixed (T* ptr = &_value)
+                return PopCount(ptr);
+        }
+    }
+
+#pragma warning disable MA0051 // ReSharper disable CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
+    {
+        for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
+            if (BitOperations.PopCount(*(nuint*)ptr) is var i && i <= x)
+                x -= i;
+            else
+                break;
+
+        for (; sizeof(T) % sizeof(nuint) >= sizeof(ulong) && ptr <= upper - sizeof(ulong); ptr += sizeof(ulong))
+            if (BitOperations.PopCount(*(ulong*)ptr) is var i && i <= x)
+                x -= i;
+            else
+                break;
+
+        for (; sizeof(T) % sizeof(ulong) >= sizeof(uint) && ptr <= upper - sizeof(uint); ptr += sizeof(uint))
+            if (BitOperations.PopCount(*(uint*)ptr) is var i && i <= x)
+                x -= i;
+            else
+                break;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe byte Find(ref byte* ptr, in byte* upper, int x)
+    {
+        for (; ptr < upper; ptr++)
+        {
+            if ((*ptr & 1) is not 0 && x-- is 0)
+                return 1;
+
+            if ((*ptr & 1 << 1) is not 0 && x-- is 0)
+                return 1 << 1;
+
+            if ((*ptr & 1 << 2) is not 0 && x-- is 0)
+                return 1 << 2;
+
+            if ((*ptr & 1 << 3) is not 0 && x-- is 0)
+                return 1 << 3;
+
+            if ((*ptr & 1 << 4) is not 0 && x-- is 0)
+                return 1 << 4;
+
+            if ((*ptr & 1 << 5) is not 0 && x-- is 0)
+                return 1 << 5;
+
+            if ((*ptr & 1 << 6) is not 0 && x-- is 0)
+                return 1 << 6;
+
+            if ((*ptr & 1 << 7) is not 0 && x-- is 0)
+                return 1 << 7;
+        }
+
+        return 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe int PopCount(T* value)
+    {
+        var ptr = (nuint*)value++;
+        var sum = 0;
+
+        if (sizeof(T) / (sizeof(nuint) * 16) > 0)
+        {
+            for (; ptr <= (nuint*)value - 16; ptr += 16)
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]) +
+                    BitOperations.PopCount(ptr[4]) +
+                    BitOperations.PopCount(ptr[5]) +
+                    BitOperations.PopCount(ptr[6]) +
+                    BitOperations.PopCount(ptr[7]) +
+                    BitOperations.PopCount(ptr[8]) +
+                    BitOperations.PopCount(ptr[9]) +
+                    BitOperations.PopCount(ptr[10]) +
+                    BitOperations.PopCount(ptr[11]) +
+                    BitOperations.PopCount(ptr[12]) +
+                    BitOperations.PopCount(ptr[13]) +
+                    BitOperations.PopCount(ptr[14]) +
+                    BitOperations.PopCount(ptr[15]);
+
+            if (sizeof(T) % sizeof(nuint) * 16 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (sizeof(nuint) * 16) / (sizeof(nuint) * 8) > 0)
+        {
+            for (; ptr <= (nuint*)value - 8; ptr += 8)
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]) +
+                    BitOperations.PopCount(ptr[4]) +
+                    BitOperations.PopCount(ptr[5]) +
+                    BitOperations.PopCount(ptr[6]) +
+                    BitOperations.PopCount(ptr[7]);
+
+            if (sizeof(T) % sizeof(nuint) * 8 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (sizeof(nuint) * 8) / (sizeof(nuint) * 4) > 0)
+        {
+            for (; ptr <= (nuint*)value - 4; ptr += 4)
+                sum += BitOperations.PopCount(*ptr) +
+                    BitOperations.PopCount(ptr[1]) +
+                    BitOperations.PopCount(ptr[2]) +
+                    BitOperations.PopCount(ptr[3]);
+
+            if (sizeof(T) % sizeof(nuint) * 4 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (sizeof(nuint) * 4) / (sizeof(nuint) * 2) > 0)
+        {
+            for (; ptr <= (nuint*)value - 2; ptr += 2)
+                sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
+
+            if (sizeof(T) % sizeof(nuint) * 2 is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
+        {
+            for (; ptr < value; ptr++)
+                sum += BitOperations.PopCount(*ptr);
+
+            if (sizeof(T) % sizeof(nuint) is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % sizeof(nuint) is 0)
+            return sum;
+
+        if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
+        {
+            for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
+                sum += BitOperations.PopCount(*ptr);
+
+            if (sizeof(T) % sizeof(nuint) is 0)
+                return sum;
+        }
+
+        if (sizeof(T) % sizeof(ulong) is 0)
+            return sum;
+
+        return sum + PopCountRemainder((byte*)ptr);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+    static unsafe int TrailingZeroCount(nuint value)
+#if NET7_0_OR_GREATER
+        =>
+            BitOperations.TrailingZeroCount(value);
+#else
+    {
+        const int BitsInUInt = BitsInByte * sizeof(uint);
+
+        for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
+            if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
+                return j + i * BitsInUInt;
+
+        return sizeof(nuint) * BitsInByte;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static int Map([ValueRange(0, 1u << 31)] uint value) =>
+        value switch // Always a power of two.
+        {
+            0 => 32,
+            1 << 0 => 0,
+            1 << 1 => 1,
+            1 << 2 => 2,
+            1 << 3 => 3,
+            1 << 4 => 4,
+            1 << 5 => 5,
+            1 << 6 => 6,
+            1 << 7 => 7,
+            1 << 8 => 8,
+            1 << 9 => 9,
+            1 << 10 => 10,
+            1 << 11 => 11,
+            1 << 12 => 12,
+            1 << 13 => 13,
+            1 << 14 => 14,
+            1 << 15 => 15,
+            1 << 16 => 10,
+            1 << 17 => 11,
+            1 << 18 => 12,
+            1 << 19 => 13,
+            1 << 20 => 14,
+            1 << 21 => 15,
+            1 << 22 => 10,
+            1 << 23 => 11,
+            1 << 24 => 12,
+            1 << 25 => 13,
+            1 << 26 => 14,
+            1 << 27 => 15,
+            1 << 28 => 10,
+            1 << 29 => 11,
+            1 << 30 => 12,
+            1u << 31 => 13,
+            _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
+        };
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static unsafe int PopCountRemainder(byte* remainder) =>
+        BitOperations.PopCount(
+            (sizeof(T) % sizeof(ulong)) switch
+            {
+                1 => *remainder,
+                2 => *(ushort*)remainder,
+                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
+                4 => *(uint*)remainder,
+                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
+                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
+                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
+                _ => throw new InvalidOperationException("sizeof(T) is assumed to be within [1, 7]."),
+            }
+        );
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Create(T* p, byte* ptr, byte i)
+    {
+        T t = default;
+        ((byte*)&t)[ptr - (byte*)p] = i;
+        return t;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T Nth(T* p, [NonNegativeValue] int index)
+    {
+        var x = index;
+        var ptr = (byte*)p;
+        var upper = (byte*)(p + 1);
+
+        if (sizeof(T) >= sizeof(uint))
+            MovePopCount(ref ptr, upper, ref x);
+
+        return Find(ref ptr, upper, x) is not 0 and var i
+            ? Create(p, ptr, i)
+            : throw new ArgumentOutOfRangeException(nameof(index), index, null);
+    }
+}
+
+// SPDX-License-Identifier: MPL-2.0
+
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry RedundantReadonlyModifier
+#pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
+
+
+
+/// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
+
+    /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Bits<T> AsBits<T>(this T source)
+        where T : unmanaged =>
+        source;
+
+    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAnd<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.And(next, ref t);
+
+        return t;
+    }
+
+    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.AndNot(next, ref t);
+
+        return t;
+    }
+#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
+    /// <summary>Returns the reference that contains the most bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMax<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
+
+    /// <summary>Returns the reference that contains the least bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMin<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
+#endif
+
+    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseOr<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.Or(next, ref t);
+
+        return t;
+    }
+
+    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseXor<T>(this IEnumerable<T> source)
+        where T : unmanaged
+    {
+        T t = default;
+
+        foreach (var next in source)
+            Bits<T>.Xor(next, ref t);
+
+        return t;
+    }
+
+/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
+/// <typeparam name="T">The type of the item to yield.</typeparam>
+/// <param name="bits">The item to use.</param>
+[StructLayout(LayoutKind.Auto), NoStructuralTyping]
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
+    where T : unmanaged
+{
+    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
+
+    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
+    readonly T _value = bits;
+
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    bool ICollection<T>.IsReadOnly
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
+    }
+
+    /// <summary>Gets the item to use.</summary>
+    [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
+    public readonly T Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+    }
+
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
+
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
+
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Enumerator([ProvidesContext] Bits<T> value) => value.Current;
+
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator T(Bits<T> value) => value.Current;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly void CopyTo(T[] array, int arrayIndex)
+    {
+        foreach (var next in this)
+            array[arrayIndex++] = next;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Add(T item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Clear() { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IList<T>.Insert(int index, T item) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IList<T>.RemoveAt(int index) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool ICollection<T>.Remove(T item) => false;
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool ISet<T>.Add(T item) => false;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly int IndexOf(T item)
+    {
+        if ((Enumerator)item is var e && !e.MoveNext() ||
+            e.Mask is var mask && e.Index is var index && e.MoveNext())
+            return -1;
+
+        var that = ((Enumerator)this);
+
+        for (var i = 0; that.MoveNext(); i++)
+            if (that.Mask == mask && that.Index == index)
+                return i;
+            else if (that.Mask > mask || that.Index > index)
+                return -1;
+
+        return -1;
+    }
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
+
+    /// <summary>
+    /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
+    /// </summary>
+    /// <returns>Itself.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
+    public readonly Enumerator GetEnumerator() => _value;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
+    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+#pragma warning disable DOC100
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
+    /// <remarks><para>
+    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
+    /// the result is truncated to the left. Otherwise, if the type <typeparamref name="TResult"/>
+    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the left.
+    /// </para>
+    /// <example>
+    /// <para>Visual description of how the coercion works:</para>
+    /// <code lang="C#"><![CDATA[
+    /// var bits = ((ushort)0b0101_0110).AsBits(); // 0b0000_1111_0101_0110
+    /// var padding = bits.Coerce<int>(); // 0b0000_0000_0000_0000_0000_1111_0101_0110
+    /// var truncation = bits.Coerce<byte>(); // 0b0101_0110
+    /// ]]></code></example></remarks>
+    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
+#pragma warning restore DOC100
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe TResult Coerce<TResult>()
+        where TResult : unmanaged
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Copy(T value)
+        {
+            TResult ret = default;
+            *(T*)(&ret) = value;
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Read(T value) => *(TResult*)(&value);
+
+        return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
+    }
+#pragma warning disable DOC100
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
+    /// <remarks><para>
+    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
+    /// the result is truncated to the right. Otherwise, if the type <typeparamref name="TResult"/>
+    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the right.
+    /// </para>
+    /// <example>
+    /// <para>Visual description of how the coercion works:</para>
+    /// <code lang="C#"><![CDATA[
+    /// var bits = ((ushort)0b0101_0110).AsBits(); // 0b0000_1111_0101_0110
+    /// var padding = bits.Coerce<int>(); // 0b0000_1111_0101_0110_0000_0000_0000_0000
+    /// var truncation = bits.Coerce<byte>(); // 0b0000_1111
+    /// ]]></code></example></remarks>
+    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
+#pragma warning restore DOC100
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe TResult CoerceLeft<TResult>()
+        where TResult : unmanaged
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Copy(T value)
+        {
+            TResult ret = default;
+            ((T*)(&ret + 1))[-1] = value;
+            return ret;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
+
+        return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
+            sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
+    }
+
+    /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
+    /// <param name="value">The item to use.</param>
+    [StructLayout(LayoutKind.Auto)]
+    public partial struct Enumerator(T value) : IEnumerator<T>
+    {
+        const int Start = -1;
+
+        readonly T _value = value;
+
+        /// <summary>Gets the current mask.</summary>
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        public nuint Mask
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        }
+
+        /// <summary>Gets the current index.</summary>
+        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        public nint Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        } = Start;
+
+        /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
+        [CollectionAccess(Read)]
+        public readonly Bits<T> AsBits
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        }
+
+        /// <summary>Gets the underlying value that is being enumerated.</summary>
+        [CollectionAccess(Read)]
+        public readonly T AsValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        public readonly unsafe T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get
+            {
+                T t = default;
+                *((nuint*)&t + Index) ^= Mask;
+                return t;
+            }
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        readonly object IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
+        }
+
+        /// <summary>Implicitly calls the constructor.</summary>
+        /// <param name="value">The value to pass into the constructor.</param>
+        /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator Enumerator(T value) => new(value);
+
+        /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+        /// <param name="value">The value to call <see cref="Current"/>.</param>
+        /// <returns>The value that was passed in to this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator T(Enumerator value) => value.Current;
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void IDisposable.Dispose() { }
+
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            Index = Start;
+            Mask = 0;
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe bool MoveNext()
+        {
+            Mask <<= 1;
+
+            if (Mask is 0)
+            {
+                Index++;
+                Mask++;
+            }
+
+            fixed (T* ptr = &_value)
+                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
+                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
+                    return true;
+
+            Index = sizeof(T) / sizeof(nuint);
+            Mask = FalsyMask();
+            return false;
+        }
+
+        /// <inheritdoc />
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public readonly override string ToString()
+        {
+            var that = this;
+            return that.ToRemainingString();
+        }
+
+        /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
+        /// <returns>The <see cref="string"/> result of this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+        public unsafe string ToRemainingString()
+        {
+            var ptr = stackalloc char[s_typeSize];
+            new Span<char>(ptr, s_typeSize).Fill('0');
+            var last = ptr + s_typeSize - 1;
+
+            while (MoveNext())
+                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
+
+            return new(ptr, 0, s_typeSize);
+        }
+
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
+
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
+
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindNativelySized(T* ptr)
+        {
+            // This check is normally unreachable, however it protects against out-of-bounds
+            // reads if this enumerator instance was created through unsafe means.
+            if (Index < 0)
+                return false;
+
+            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
+                for (; Mask is not 0; Mask <<= 1)
+                    if (IsNonZero(ptr))
+                        return true;
+
+            return false;
+        }
+
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindRest(T* ptr)
+        {
+            // This check is normally unreachable, however it protects against out-of-bounds
+            // reads if this enumerator instance was created through unsafe means.
+            if (Index != sizeof(T) / sizeof(nuint))
+                return false;
+
+            for (; (Mask & LastRest()) is not 0; Mask <<= 1)
+                if (IsNonZero(ptr))
+                    return true;
+
+            return false;
+        }
+
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
+    }
 }
 
 // SPDX-License-Identifier: MPL-2.0
