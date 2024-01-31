@@ -30,9 +30,9 @@ static partial class EnumMath
     public static bool Has<T>(this T left, T right)
         where T : Enum =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        (left.AsInt() & right.AsInt()) == left.AsInt();
+        (left.AsInt() & right.AsInt()) == right.AsInt();
 #else
-        left.Op(right, static (x, y) => (x & y) == x);
+        left.Op(right, static (x, y) => (x & y) == y);
 #endif
 
     /// <summary>Performs a conversion operation.</summary>
