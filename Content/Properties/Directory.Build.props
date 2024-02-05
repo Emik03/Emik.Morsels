@@ -60,7 +60,7 @@
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
         <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
         <NoWarn>
-            (NoWarn);
+            $(NoWarn);
             253;436;809;1701;1702;3019;8002;8632;9192;9195;
             AOT0001;AOT0002;
             ASYNC0004;
