@@ -433,11 +433,11 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-#pragma warning disable SA1114 RCS1163
+#pragma warning disable SA1114, RCS1163
             T? source,
         int depth,
         bool useQuotes = false
-#pragma warning restore SA1114 RCS1163
+#pragma warning restore SA1114, RCS1163
     ) =>
         source switch
         {
