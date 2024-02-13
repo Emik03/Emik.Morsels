@@ -19922,7 +19922,7 @@ readonly
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Contains(T item)
     {
-    	if (!IsSingle(item))
+        if (!IsSingle(item))
             return false;
 
         And(_value, ref item);
