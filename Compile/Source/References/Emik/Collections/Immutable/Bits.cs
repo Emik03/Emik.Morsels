@@ -268,7 +268,7 @@ readonly
         static TResult Copy(T value)
         {
             TResult ret = default;
-            *(T*)(&ret) = value;
+            *(T*)&ret = value;
             return ret;
         }
 
