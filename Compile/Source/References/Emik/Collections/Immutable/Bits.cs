@@ -214,7 +214,7 @@ readonly
             e.Mask is var mask && e.Index is var index && e.MoveNext())
             return -1;
 
-        var that = ((Enumerator)this);
+        var that = (Enumerator)this;
 
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
@@ -273,7 +273,7 @@ readonly
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => *(TResult*)(&value);
+        static TResult Read(T value) => *(TResult*)&value;
 
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
