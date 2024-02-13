@@ -391,7 +391,9 @@ static partial class Stringifier
             string source,
         string separator
     ) => // ReSharper disable once RedundantCast
+#pragma warning disable IDE0004
         source.Split((char[])[..separator], StringSplitOptions.RemoveEmptyEntries);
+#pragma warning restore IDE0004
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
