@@ -17526,7 +17526,9 @@ public
             string source,
         string separator
     ) => // ReSharper disable once RedundantCast
+#pragma warning disable IDE0004
         source.Split((char[])[..separator], StringSplitOptions.RemoveEmptyEntries);
+#pragma warning restore IDE0004
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -20953,7 +20955,7 @@ readonly
             e.Mask is var mask && e.Index is var index && e.MoveNext())
             return -1;
 
-        var that = ((Enumerator)this);
+        var that = (Enumerator)this;
 
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
@@ -21007,12 +21009,12 @@ readonly
         static TResult Copy(T value)
         {
             TResult ret = default;
-            *(T*)(&ret) = value;
+            *(T*)&ret = value;
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => *(TResult*)(&value);
+        static TResult Read(T value) => *(TResult*)&value;
 
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
