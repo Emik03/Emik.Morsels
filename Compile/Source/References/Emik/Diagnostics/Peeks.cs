@@ -102,6 +102,7 @@ static partial class Peeks
             };
     }
 #endif
+
     /// <summary>The escape sequence to clear the screen.</summary>
     public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
 #if ROSLYN
@@ -1342,7 +1343,7 @@ static partial class Peeks
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif
-        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: 0 } file)
+        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: not 0 } file)
         {
             s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
 #if ROSLYN

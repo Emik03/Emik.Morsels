@@ -8301,6 +8301,7 @@ public partial struct Two<T>(T left, T right) :
             };
     }
 #endif
+
     /// <summary>The escape sequence to clear the screen.</summary>
     public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
 #if ROSLYN
@@ -9541,7 +9542,7 @@ public partial struct Two<T>(T left, T right) :
 #if ROSLYN
         var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
 #endif
-        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: 0 } file)
+        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: not 0 } file)
         {
             s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
 #if ROSLYN
@@ -17367,7 +17368,11 @@ public
             return accumulator;
         }
 
-        return expression?.Collapse().SplitSpanLines().Aggregate(new StringBuilder(prefix), Accumulator).ToString();
+        return expression?.Collapse()
+           .SplitSpanLines()
+           .Aggregate(new StringBuilder(prefix), Accumulator)
+           .Trim()
+           .ToString();
 #else
         return expression
           ?.Collapse()
@@ -17409,13 +17414,13 @@ public
         path is null
 #if NET8_0_OR_GREATER
             ? default
-            : path.SplitOn(s_slashes).Last;
+            : path.SplitOn(s_slashes).Last.Trim();
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitAny(Slashes.AsMemory()).Last;
+            : path.SplitAny(Slashes.AsMemory()).Last.Trim();
 #else
             ? ""
-            : Path.GetFileName(path) ?? "";
+            : Path.GetFileName(path).Trim() ?? "";
 #endif
 
     /// <summary>Creates the prettified form of the string.</summary>
