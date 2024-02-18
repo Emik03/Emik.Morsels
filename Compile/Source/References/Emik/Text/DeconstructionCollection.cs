@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantNameQualifier UseSymbolAlias
+// ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 namespace Emik.Morsels;
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+#if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
 #pragma warning disable 9107, MA0048
 static partial class DeconstructionCollectionExtensions
@@ -31,20 +31,23 @@ static partial class DeconstructionCollectionExtensions
         if (stringLength <= 0)
             return "";
 
+        HashSet<object?> seen = new(DeconstructionCollection.Comparer) { value };
         var assertion = false;
-        var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion);
+        var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion, seen);
 
-        if (next is not DeconstructionCollection collection)
+        if (next is not DeconstructionCollection x)
         {
+            // ReSharper disable once InvocationIsSkipped
             System.Diagnostics.Debug.Assert(!assertion, "!assertion");
             return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
         }
 
+        // ReSharper disable once InvocationIsSkipped
         System.Diagnostics.Debug.Assert(assertion, "assertion");
 
-        for (var i = 0; recurseLength > 0 && i < recurseLength && collection.TryRecurse(i, ref visitLength); i++) { }
+        for (var i = 0; recurseLength > 0 && i < recurseLength && x.TryRecurse(i, ref visitLength, seen); i++) { }
 
-        return collection.Simplify();
+        return x.Simplify();
     }
 }
 
@@ -52,6 +55,33 @@ static partial class DeconstructionCollectionExtensions
 /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
 abstract partial class DeconstructionCollection([NonNegativeValue] int str) : ICollection
 {
+    /// <summary>Represents a comparer for <see cref="DeconstructionCollection"/> recursion checks.</summary>
+    /// <remarks><para>
+    /// All values considered to be scalar values are treated as being always unique even when the exact
+    /// reference is the same. The point of the comparer is to avoid reference cycles, not for equality.
+    /// </para></remarks>
+    sealed partial class DeconstructionComparer : IEqualityComparer<object?>
+    {
+        int _unique = int.MaxValue;
+
+        /// <inheritdoc />
+        [Pure] // ReSharper disable once MemberHidesStaticFromOuterClass
+        public new bool Equals(object? x, object? y) => !IsScalar(x) && !IsScalar(y) && x == y;
+
+        /// <inheritdoc />
+        [Pure]
+        public int GetHashCode(object? obj) => IsScalar(obj) ? unchecked(_unique--) : RuntimeHelpers.GetHashCode(obj);
+
+        /// <summary>Determines whether the value is a scalar.</summary>
+        /// <param name="value">The value to check.</param>
+        /// <returns>
+        /// The value <see langword="true"/> if the value is a scalar; otherwise, <see langword="false"/>.
+        /// </returns>
+        [Pure]
+        static bool IsScalar([NotNullWhen(false)] object? value) =>
+            value is nint or nuint or null or string or IConvertible or Pointer or Type or Version;
+    }
+
     /// <summary>Represents a deep-cloned list.</summary>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
     sealed partial class DeconstructionList([NonNegativeValue] int str) : DeconstructionCollection(str), IList
@@ -83,6 +113,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
         /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
@@ -92,7 +123,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             [HandlesResourceDisposal] IEnumerator enumerator,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionList list
+            out DeconstructionList list,
+            HashSet<object?>? seen = null
         )
         {
             using var _ = enumerator as IDisposable;
@@ -100,7 +132,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             list = new(str);
 
             while (enumerator.MoveNext())
-                if (--copy > 0)
+                if (seen?.Add(enumerator.Current) is false) { }
+                else if (--copy > 0)
                     list.Add(enumerator.Current);
                 else if (!enumerator.MoveNext())
                     break;
@@ -116,6 +149,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
         /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="enumerable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
@@ -125,15 +159,17 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             [InstantHandle] IEnumerable enumerable,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionList list
+            out DeconstructionList list,
+            HashSet<object?>? seen = null
         ) =>
-            TryCollect(enumerable.GetEnumerator(), str, ref visit, out list);
+            TryCollect(enumerable.GetEnumerator(), str, ref visit, out list, seen);
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="comparable">The comparable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
         /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="comparable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
@@ -143,15 +179,17 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             [InstantHandle] IStructuralComparable comparable,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionList list
+            out DeconstructionList list,
+            HashSet<object?>? seen = null
         ) =>
-            TryCollect(comparable.ToList(), str, ref visit, out list);
+            TryCollect(comparable.ToList(), str, ref visit, out list, seen);
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="equatable">The equatable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
         /// <param name="visit">The maximum number of times to recurse.</param>
         /// <param name="list">The resulting <see cref="DeconstructionCollection.DeconstructionList"/>.</param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="equatable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
@@ -161,9 +199,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             [InstantHandle] IStructuralEquatable equatable,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionList list
+            out DeconstructionList list,
+            HashSet<object?>? seen = null
         ) =>
-            TryCollect(equatable.ToList(), str, ref visit, out list);
+            TryCollect(equatable.ToList(), str, ref visit, out list, seen);
 
         public override bool Fail()
         {
@@ -173,7 +212,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         /// <inheritdoc />
-        public override bool TryRecurse(int layer, ref int visit)
+        public override bool TryRecurse(int layer, ref int visit, HashSet<object?>? seen = null)
         {
             if (layer < 0)
                 return false;
@@ -182,10 +221,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
             if (layer is 0)
                 for (var i = 0; i < Count; i++)
-                    _list[i] = CollectNext(_list[i], str, ref visit, ref any);
+                    _list[i] = CollectNext(_list[i], str, ref visit, ref any, seen);
             else
                 foreach (var next in _list)
-                    RecurseNext(next, layer, ref visit, ref any);
+                    RecurseNext(next, layer, ref visit, ref any, seen);
 
             return any;
         }
@@ -309,6 +348,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="dictionary">
         /// The resulting <see cref="DeconstructionCollection.DeconstructionDictionary"/>.
         /// </param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
@@ -318,7 +358,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             [HandlesResourceDisposal] IDictionaryEnumerator enumerator,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionDictionary dictionary
+            out DeconstructionDictionary dictionary,
+            HashSet<object?>? seen = null
         )
         {
             using var _ = enumerator as IDisposable;
@@ -326,7 +367,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             dictionary = new(str);
 
             while (enumerator.MoveNext())
-                if (--copy > 0)
+                if (seen?.Contains(enumerator.Key) is true ||
+                    seen?.Add(enumerator.Value) is false ||
+                    seen?.Add(enumerator.Key) is false) { }
+                else if (--copy > 0)
                     dictionary.Add(enumerator.Key, enumerator.Value);
                 else if (!enumerator.MoveNext())
                     break;
@@ -344,6 +388,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="dictionary">
         /// The resulting <see cref="DeconstructionCollection.DeconstructionDictionary"/>.
         /// </param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="dict"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
@@ -353,9 +398,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             IDictionary dict,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionDictionary dictionary
+            out DeconstructionDictionary dictionary,
+            HashSet<object?>? seen = null
         ) =>
-            TryCollect(dict.GetEnumerator(), str, ref visit, out dictionary);
+            TryCollect(dict.GetEnumerator(), str, ref visit, out dictionary, seen);
 
         /// <summary>Attempts to deconstruct an object by reflectively collecting its fields and properties.</summary>
         /// <param name="value">The complex object to convert.</param>
@@ -364,6 +410,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <param name="dictionary">
         /// The resulting <see cref="DeconstructionCollection.DeconstructionDictionary"/>.
         /// </param>
+        /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
         /// <returns>
         /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
@@ -374,7 +421,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             object value,
             [NonNegativeValue] int str,
             ref int visit,
-            out DeconstructionDictionary dictionary
+            out DeconstructionDictionary dictionary,
+            HashSet<object?>? seen = null
         )
         {
             var copy = visit;
@@ -392,11 +440,13 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (next.FieldType.IsByRefLike)
                     continue;
 #endif
+                if (next.GetValue(value) is var result && seen?.Add(result) is false)
+                    continue;
+
                 if (--copy <= 0)
                     return dictionary.Fail();
 
                 var name = Name(next, fields, properties);
-                var result = next.GetValue(value);
                 dictionary.Add(name, result);
             }
 
@@ -409,11 +459,13 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 if (next.PropertyType.IsByRefLike)
                     continue;
 #endif
+                if (GetValueOrException(value, next, str, ref visit, seen) is var result && seen?.Add(result) is false)
+                    continue;
+
                 if (--copy <= 0)
                     return dictionary.Fail();
 
                 var name = Name(next, fields, properties);
-                var result = GetValueOrException(value, next, str, ref visit);
                 dictionary.Add(name, result);
             }
 
@@ -437,7 +489,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
 
         /// <inheritdoc />
-        public override bool TryRecurse(int layer, ref int visit)
+        public override bool TryRecurse(int layer, ref int visit, HashSet<object?>? seen = null)
         {
             if (layer < 0)
                 return false;
@@ -447,14 +499,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             if (layer is 0)
                 for (var i = 0; i < Count; i++) // ReSharper disable once NullableWarningSuppressionIsUsed
                     _list[i] = new(
-                        CollectNext(_list[i].Key, str, ref visit, ref any)!,
-                        CollectNext(_list[i].Value, str, ref visit, ref any)
+                        CollectNext(_list[i].Key, str, ref visit, ref any, seen)!,
+                        CollectNext(_list[i].Value, str, ref visit, ref any, seen)
                     );
             else
                 foreach (var next in _list)
                 {
-                    RecurseNext(next.Key, layer, ref visit, ref any);
-                    RecurseNext(next.Value, layer, ref visit, ref any);
+                    RecurseNext(next.Key, layer, ref visit, ref any, seen);
+                    RecurseNext(next.Value, layer, ref visit, ref any, seen);
                 }
 
             return any;
@@ -523,7 +575,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             object value,
             PropertyInfo next,
             [NonNegativeValue] int str,
-            ref int visit
+            ref int visit,
+            HashSet<object?>? seen = null
         )
         {
             try
@@ -534,7 +587,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             catch (Exception ex)
 #pragma warning restore CA1031
             {
-                return value is not Exception && TryReflectivelyCollect(ex, str, ref visit, out var x) ? x : ex;
+                return value is not Exception && TryReflectivelyCollect(ex, str, ref visit, out var x, seen) ? x : ex;
             }
         }
 
@@ -562,6 +615,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         DefaultVisitLength = 80,
         DefaultStringLength = 40,
         DefaultRecurseLength = 20;
+
+    /// <summary>Gets the comparer used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
+    [Pure]
+    public static IEqualityComparer<object?> Comparer { get; } = new DeconstructionComparer();
 
     /// <inheritdoc />
     [Pure]
@@ -605,8 +662,15 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
     /// <param name="any">Whether any value was collected.</param>
+    /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
     /// <returns>The replacement value.</returns>
-    public static object? CollectNext(object? value, [NonNegativeValue] int str, ref int visit, ref bool any)
+    public static object? CollectNext(
+        object? value,
+        [NonNegativeValue] int str,
+        ref int visit,
+        ref bool any,
+        HashSet<object?>? seen = null
+    )
     {
         static object? Ok(object? o, out bool any)
         {
@@ -620,27 +684,27 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             case Type x: return x.UnfoldedName();
             case Pointer x: return x.ToHexString();
             case Version x: return x.ToShortString();
-            case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary):
+            case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
             case IDictionaryEnumerator x
-                when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionaryEnumerator):
+                when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionaryEnumerator, seen):
                 return Ok(dictionaryEnumerator, out any);
             case IDictionaryEnumerator: goto default;
-            case IEnumerable x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerable):
+            case IEnumerable x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerable, seen):
                 return Ok(enumerable, out any);
             case IEnumerable: goto default;
-            case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator):
+            case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator, seen):
                 return Ok(enumerator, out any);
             case IEnumerator: goto default;
-            case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable):
+            case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable, seen):
                 return Ok(comparable, out any);
             case IStructuralComparable: goto default;
-            case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable):
+            case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable, seen):
                 return Ok(equatable, out any);
             case IStructuralEquatable: goto default;
             default:
-                return DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj)
+                return DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj, seen)
                     ? Ok(obj, out any)
                     : value;
         }
@@ -658,8 +722,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Attempts to recurse into this instance's elements.</summary>
     /// <param name="layer">The amount of layers of recursion to apply.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
+    /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
     /// <returns>Whether any mutation occured.</returns>
-    public abstract bool TryRecurse(int layer, ref int visit);
+    public abstract bool TryRecurse(int layer, ref int visit, HashSet<object?>? seen = null);
 
     /// <inheritdoc />
     [Pure]
@@ -688,10 +753,17 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="layer">The amount of layers of recursion to apply.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
     /// <param name="any">Whether any value was collected.</param>
-    protected static void RecurseNext(object? value, int layer, ref int visit, ref bool any)
+    /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
+    protected static void RecurseNext(
+        object? value,
+        int layer,
+        ref int visit,
+        ref bool any,
+        HashSet<object?>? seen = null
+    )
     {
         if (value is DeconstructionCollection collection)
-            any |= collection.TryRecurse(layer - 1, ref visit);
+            any |= collection.TryRecurse(layer - 1, ref visit, seen);
     }
 
     /// <summary>Converts the <see cref="object"/> to a <see cref="string"/>.</summary>
