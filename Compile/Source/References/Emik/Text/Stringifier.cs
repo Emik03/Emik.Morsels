@@ -160,7 +160,11 @@ static partial class Stringifier
             return accumulator;
         }
 
-        return expression?.Collapse().SplitSpanLines().Aggregate(new StringBuilder(prefix), Accumulator).ToString();
+        return expression?.Collapse()
+           .SplitSpanLines()
+           .Aggregate(new StringBuilder(prefix), Accumulator)
+           .Trim()
+           .ToString();
 #else
         return expression
           ?.Collapse()
@@ -202,13 +206,13 @@ static partial class Stringifier
         path is null
 #if NET8_0_OR_GREATER
             ? default
-            : path.SplitOn(s_slashes).Last;
+            : path.SplitOn(s_slashes).Last.Trim();
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitAny(Slashes.AsMemory()).Last;
+            : path.SplitAny(Slashes.AsMemory()).Last.Trim();
 #else
             ? ""
-            : Path.GetFileName(path) ?? "";
+            : Path.GetFileName(path).Trim() ?? "";
 #endif
 
     /// <summary>Creates the prettified form of the string.</summary>
