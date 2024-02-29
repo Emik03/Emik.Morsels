@@ -62,7 +62,7 @@ static partial class EnumerableChunk
                 var local = array;
 
                 // ReSharper disable once RedundantNameQualifier UseSymbolAlias
-                Debug.Assert(local.Length == size, "local.Length == size");
+                System.Diagnostics.Debug.Assert(local.Length == size, "local.Length == size");
 
                 for (; (uint)i < (uint)local.Length && e.MoveNext(); i++)
                     local[i] = e.Current;
