@@ -11,6 +11,7 @@ static partial class EnumerableOrder
     /// <typeparam name="T">The type of elements of <paramref name="source"/>.</typeparam>
     /// <param name="source">A sequence of values to order.</param>
     /// <returns>An <see cref="IOrderedEnumerable{TElement}"/> whose elements are sorted.</returns>
+    [LinqTunnel, Pure]
     public static IOrderedEnumerable<T> Order<T>(this IEnumerable<T> source) => Order(source, null);
 
     /// <summary>Sorts the elements of a sequence in ascending order.</summary>
@@ -18,6 +19,7 @@ static partial class EnumerableOrder
     /// <param name="source">A sequence of values to order.</param>
     /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
     /// <returns>An <see cref="IOrderedEnumerable{TElement}"/> whose elements are sorted.</returns>
+    [LinqTunnel, Pure]
     public static IOrderedEnumerable<T> Order<T>(this IEnumerable<T> source, IComparer<T>? comparer) =>
         source.OrderBy(x => x, comparer);
 
@@ -25,6 +27,7 @@ static partial class EnumerableOrder
     /// <typeparam name="T">The type of elements of <paramref name="source"/>.</typeparam>
     /// <param name="source">A sequence of values to order.</param>
     /// <returns>An <see cref="IOrderedEnumerable{TElement}"/> whose elements are sorted.</returns>
+    [LinqTunnel, Pure]
     public static IOrderedEnumerable<T> OrderDescending<T>(this IEnumerable<T> source) => OrderDescending(source, null);
 
     /// <summary>Sorts the elements of a sequence in descending order.</summary>
@@ -32,6 +35,7 @@ static partial class EnumerableOrder
     /// <param name="source">A sequence of values to order.</param>
     /// <param name="comparer">An <see cref="IComparer{T}"/> to compare keys.</param>
     /// <returns>An <see cref="IOrderedEnumerable{TElement}"/> whose elements are sorted.</returns>
+    [LinqTunnel, Pure]
     public static IOrderedEnumerable<T> OrderDescending<T>(this IEnumerable<T> source, IComparer<T>? comparer) =>
         source.OrderByDescending(x => x, comparer);
 }
