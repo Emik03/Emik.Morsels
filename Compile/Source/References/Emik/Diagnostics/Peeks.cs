@@ -154,7 +154,7 @@ static partial class Peeks
         (Action<string>)Console.WriteLine;
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <summary>Gets all of the types currently loaded.</summary>
+    /// <summary>Gets all the types currently loaded.</summary>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
