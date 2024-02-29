@@ -8353,7 +8353,7 @@ public partial struct Two<T>(T left, T right) :
         (Action<string>)Console.WriteLine;
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <summary>Gets all of the types currently loaded.</summary>
+    /// <summary>Gets all the types currently loaded.</summary>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
@@ -12732,6 +12732,30 @@ readonly
 #endif
             _ => !((span = default) is var _),
         };
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+
+// NOTE: This file should be moved to ./Compile/Source/References/System/Linq/EnumerableIndex.cs when .NET 9 is released
+// and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
+#if !CSHARPREPL
+// ReSharper disable once CheckNamespace EmptyNamespace
+namespace System.Linq;
+#endif
+#if !NETCOREAPP9_0_OR_GREATER
+/// <summary>The backport of the Index method for <see cref="IEnumerable{T}"/>.</summary>
+
+    /// <summary>Returns an enumerable that incorporates the element's index into a tuple.</summary>
+    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
+    /// <param name="source">The source enumerable providing the elements.</param>
+    /// <returns>The enumerable that incorporates the element's index into a tuple.</returns>
+    public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source)
+    {
+        var index = 0;
+
+        foreach (var item in source)
+            yield return (index++, item);
+    }
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
