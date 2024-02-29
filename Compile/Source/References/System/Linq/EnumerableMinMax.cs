@@ -5,7 +5,7 @@ namespace System.Linq;
 
 #if !NET6_0_OR_GREATER
 /// <summary>The backport of the MinBy and MaxBy methods for <see cref="IEnumerable{T}"/>.</summary>
-static partial class EnumerableMaxMinBy
+static partial class EnumerableMinMax
 {
     /// <summary>
     /// Returns the minimum value in a generic sequence according to a specified key selector function.

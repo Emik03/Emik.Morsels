@@ -15,6 +15,7 @@ static partial class EnumerableZip
     /// <param name="first">The first sequence to merge.</param>
     /// <param name="second">The second sequence to merge.</param>
     /// <returns>A sequence of tuples with elements taken from the first and second sequence, in that order.</returns>
+    [Pure]
     public static IEnumerable<(TFirst First, TSecond Second)> Zip<TFirst, TSecond>(
         this IEnumerable<TFirst> first,
         IEnumerable<TSecond> second
@@ -39,6 +40,7 @@ static partial class EnumerableZip
     /// <returns>
     /// A sequence of tuples with elements taken from the first, second, and third sequences, in that order.
     /// </returns>
+    [Pure]
     public static IEnumerable<(TFirst First, TSecond Second, TThird Third)> Zip<TFirst, TSecond, TThird>(
         this IEnumerable<TFirst> first,
         IEnumerable<TSecond> second,
@@ -64,6 +66,7 @@ static partial class EnumerableZip
     /// <param name="second">The second sequence to merge.</param>
     /// <param name="resultSelector">A function that specifies how to merge the elements from the two sequences.</param>
     /// <returns>An <see cref="IEnumerable{T}"/> that contains merged elements of two input sequences.</returns>
+    [Pure]
     public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(
         this IEnumerable<TFirst> first,
         IEnumerable<TSecond> second,
