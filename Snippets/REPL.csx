@@ -12896,7 +12896,8 @@ namespace System.Linq;
 #pragma warning restore MA0051
         where T : IBitwiseOperators<T, T, T>, IDecrementOperators<T>, IIncrementOperators<T>, IShiftOperators<T, int, T>
     {
-        value |= --value >>> 1;
+        --value;
+        value |= value >>> 1;
         value |= value >>> 2;
         value |= value >>> 4;
 
