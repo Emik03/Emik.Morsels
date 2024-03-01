@@ -12765,6 +12765,72 @@ namespace System.Linq;
 
 /// <summary>Extension methods to clamp numbers.</summary>
 
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2(this int value) =>
+#if NET6_0_OR_GREATER
+        BitOperations.IsPow2(value);
+#else
+        (value & value - 1) is 0 && value > 0;
+#endif
+
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2(this uint value) =>
+#if NET6_0_OR_GREATER
+        BitOperations.IsPow2(value);
+#else
+        (value & value - 1) is 0 && value > 0;
+#endif
+
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2(this long value) =>
+#if NET6_0_OR_GREATER
+        BitOperations.IsPow2(value);
+#else
+        (value & value - 1) is 0 && value > 0;
+#endif
+
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2(this ulong value) =>
+#if NET6_0_OR_GREATER
+        BitOperations.IsPow2(value);
+#else
+        (value & value - 1) is 0 && value > 0;
+#endif
+
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2(this nint value) =>
+#if NET7_0_OR_GREATER
+        BitOperations.IsPow2(value);
+#else
+        (value & value - 1) is 0 && value > 0;
+#endif
+
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2(this nuint value) =>
+#if NET7_0_OR_GREATER
+        BitOperations.IsPow2(value);
+#else
+        (value & value - 1) is 0 && value > 0;
+#endif
+#if NET7_0_OR_GREATER
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2<T>(this T value)
+        where T : IBitwiseOperators<T, T, T>, IComparisonOperators<T, T, bool>, INumberBase<T> =>
+        (value & value - T.One) == T.Zero && value > T.Zero;
+#endif
+
     /// <summary>Round the given integral value up to a power of 2.</summary>
     /// <remarks><para>
     /// The fallback implementation is based on
@@ -12823,6 +12889,104 @@ namespace System.Linq;
         sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 #endif
 #if NET7_0_OR_GREATER
+    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+#pragma warning disable MA0051
+    public static T RoundUpToPowerOf2<T>(this T value)
+#pragma warning restore MA0051
+        where T : IBitwiseOperators<T, T, T>, IDecrementOperators<T>, IIncrementOperators<T>, IShiftOperators<T, int, T>
+    {
+        value |= --value >>> 1;
+        value |= value >>> 2;
+        value |= value >>> 4;
+
+        if (Unsafe.SizeOf<T>() > 1 << 0)
+            value |= value >>> (8 << 0);
+
+        if (Unsafe.SizeOf<T>() > 1 << 1)
+            value |= value >>> (8 << 1);
+
+        if (Unsafe.SizeOf<T>() > 1 << 2)
+            value |= value >>> (8 << 2);
+
+        if (Unsafe.SizeOf<T>() > 1 << 3)
+            value |= value >>> (8 << 3);
+
+        if (Unsafe.SizeOf<T>() > 1 << 4)
+            value |= value >>> (8 << 4);
+
+        if (Unsafe.SizeOf<T>() > 1 << 5)
+            value |= value >>> (8 << 5);
+
+        if (Unsafe.SizeOf<T>() > 1 << 6)
+            value |= value >>> (8 << 6);
+
+        if (Unsafe.SizeOf<T>() > 1 << 7)
+            value |= value >>> (8 << 7);
+
+        if (Unsafe.SizeOf<T>() > 1 << 8)
+            value |= value >>> (8 << 8);
+
+        if (Unsafe.SizeOf<T>() > 1 << 9)
+            value |= value >>> (8 << 9);
+
+        if (Unsafe.SizeOf<T>() > 1 << 10)
+            value |= value >>> (8 << 10);
+
+        if (Unsafe.SizeOf<T>() > 1 << 11)
+            value |= value >>> (8 << 11);
+
+        if (Unsafe.SizeOf<T>() > 1 << 12)
+            value |= value >>> (8 << 12);
+
+        if (Unsafe.SizeOf<T>() > 1 << 13)
+            value |= value >>> (8 << 13);
+
+        if (Unsafe.SizeOf<T>() > 1 << 14)
+            value |= value >>> (8 << 14);
+
+        if (Unsafe.SizeOf<T>() > 1 << 15)
+            value |= value >>> (8 << 15);
+
+        if (Unsafe.SizeOf<T>() > 1 << 16)
+            value |= value >>> (8 << 16);
+
+        if (Unsafe.SizeOf<T>() > 1 << 17)
+            value |= value >>> (8 << 17);
+
+        if (Unsafe.SizeOf<T>() > 1 << 18)
+            value |= value >>> (8 << 18);
+
+        if (Unsafe.SizeOf<T>() > 1 << 19)
+            value |= value >>> (8 << 19);
+
+        if (Unsafe.SizeOf<T>() > 1 << 20)
+            value |= value >>> (8 << 20);
+
+        if (Unsafe.SizeOf<T>() > 1 << 21)
+            value |= value >>> (8 << 21);
+
+        if (Unsafe.SizeOf<T>() > 1 << 22)
+            value |= value >>> (8 << 22);
+
+        if (Unsafe.SizeOf<T>() > 1 << 23)
+            value |= value >>> (8 << 23);
+
+        if (Unsafe.SizeOf<T>() > 1 << 24)
+            value |= value >>> (8 << 24);
+
+        if (Unsafe.SizeOf<T>() > 1 << 25)
+            value |= value >>> (8 << 25);
+
+        if (Unsafe.SizeOf<T>() > 1 << 26)
+            value |= value >>> (8 << 26);
+
+        if (Unsafe.SizeOf<T>() > 1 << 27)
+            value |= value >>> (8 << 27);
+
+        return ++value;
+    }
+
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <typeparam name="T">The type of numeric value for comparisons.</typeparam>
     /// <param name="number">The number to clip.</param>
@@ -19989,34 +20153,34 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSingle(in T item) =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-    	0 switch
-    	{
-    	    _ when typeof(T) == typeof(byte) => BitOperations.IsPow2((byte)(object)item),
-    	    _ when typeof(T) == typeof(sbyte) => BitOperations.IsPow2(unchecked((byte)(sbyte)(object)item)),
-    	    _ when typeof(T) == typeof(short) => BitOperations.IsPow2(unchecked((ushort)(short)(object)item)),
-    	    _ when typeof(T) == typeof(ushort) => BitOperations.IsPow2((ushort)(object)item),
-    	    _ when typeof(T) == typeof(int) => BitOperations.IsPow2(unchecked((uint)(int)(object)item)),
-    	    _ when typeof(T) == typeof(uint) => BitOperations.IsPow2((uint)(object)item),
-    	    _ when typeof(T) == typeof(long) => BitOperations.IsPow2(unchecked((ulong)(long)(object)item)),
-    	    _ when typeof(T) == typeof(ulong) => BitOperations.IsPow2((ulong)(object)item),
-    	    _ when typeof(T) == typeof(nint) => BitOperations.IsPow2(unchecked((nuint)(nint)(object)item)),
-    	    _ when typeof(T) == typeof(nuint) => BitOperations.IsPow2((nuint)(object)item),
-    	    _ when !typeof(T).IsEnum => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
+        0 switch
+        {
+            _ when typeof(T) == typeof(sbyte) => unchecked((uint)(sbyte)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(byte) => ((uint)(byte)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(short) => unchecked((uint)(short)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(ushort) => ((uint)(ushort)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(int) => unchecked((uint)(int)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(uint) => ((uint)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(long) => unchecked((ulong)(long)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(ulong) => ((ulong)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(nint) => ((nuint)(nint)(object)item).IsPow2(),
+            _ when typeof(T) == typeof(nuint) => ((nuint)(object)item).IsPow2(),
+            _ when !typeof(T).IsEnum => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
             _ => (typeof(T) == typeof(Enum) ? item.GetType() : typeof(T)).GetEnumUnderlyingType() switch
             {
-    	        var x when x == typeof(byte) => BitOperations.IsPow2((byte)(object)item),
-    	        var x when x == typeof(sbyte) => BitOperations.IsPow2(unchecked((byte)(sbyte)(object)item)),
-    	        var x when x == typeof(short) => BitOperations.IsPow2(unchecked((ushort)(short)(object)item)),
-    	        var x when x == typeof(ushort) => BitOperations.IsPow2((ushort)(object)item),
-    	        var x when x == typeof(int) => BitOperations.IsPow2(unchecked((uint)(int)(object)item)),
-    	        var x when x == typeof(uint) => BitOperations.IsPow2((uint)(object)item),
-    	        var x when x == typeof(long) => BitOperations.IsPow2(unchecked((ulong)(long)(object)item)),
-    	        var x when x == typeof(ulong) => BitOperations.IsPow2((ulong)(object)item),
-    	        var x when x == typeof(nint) => BitOperations.IsPow2(unchecked((nuint)(nint)(object)item)),
-    	        var x when x == typeof(nuint) => BitOperations.IsPow2((nuint)(object)item),
-    	        _ => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
+                var x when x == typeof(sbyte) => unchecked((uint)(sbyte)(object)item).IsPow2(),
+                var x when x == typeof(byte) => ((uint)(byte)(object)item).IsPow2(),
+                var x when x == typeof(short) => unchecked((uint)(short)(object)item).IsPow2(),
+                var x when x == typeof(ushort) => ((uint)(ushort)(object)item).IsPow2(),
+                var x when x == typeof(int) => unchecked((uint)(int)(object)item).IsPow2(),
+                var x when x == typeof(uint) => ((uint)(object)item).IsPow2(),
+                var x when x == typeof(long) => unchecked((ulong)(long)(object)item).IsPow2(),
+                var x when x == typeof(ulong) => ((ulong)(object)item).IsPow2(),
+                var x when x == typeof(nint) => ((nuint)(nint)(object)item).IsPow2(),
+                var x when x == typeof(nuint) => ((nuint)(object)item).IsPow2(),
+                _ => (Enumerator)item is var e && e.MoveNext() && !e.MoveNext(),
             },
-    	};
+        };
 #else
         (Enumerator)item is var e && e.MoveNext() && !e.MoveNext();
 #endif
