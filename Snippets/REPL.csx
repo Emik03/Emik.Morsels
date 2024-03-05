@@ -4597,6 +4597,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public static SplitMemory<char, char, MatchAny> SplitAny(this string span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitAny(separator);
 
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char, char, MatchAny> SplitAny(this ReadOnlyMemory<char> span, string separator) =>
+        span.SplitAny(separator.AsMemory());
+
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAll> SplitAll(this string span, string separator) =>
@@ -4606,6 +4611,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAll> SplitAll(this string span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitAll(separator);
+
+    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char, char, MatchAll> SplitAll(this ReadOnlyMemory<char> span, string separator) =>
+        span.SplitAll(separator.AsMemory());
 
     /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
