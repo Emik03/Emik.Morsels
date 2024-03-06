@@ -20,7 +20,11 @@ static partial class CartesianProductFactories
         this IEnumerable<T1> first,
         IEnumerable<T2> second
     ) =>
-        first.SelectMany(_ => second, (x, y) => (x, y));
+        first.SelectMany(_ => second, (x, y) => (x, y)) is var e &&
+        first.TryCount() is { } f &&
+        second.TryCount() is { } s
+            ? e.WithCount(f * s)
+            : e;
 
     /// <summary>Creates a cartesian product from three collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
@@ -42,7 +46,12 @@ static partial class CartesianProductFactories
     ) =>
         first
            .SelectMany(_ => second, (x, y) => (x, y))
-           .SelectMany(_ => third, (xy, z) => (xy.x, xy.y, z));
+           .SelectMany(_ => third, (xy, z) => (xy.x, xy.y, z)) is var e &&
+        first.TryCount() is { } f &&
+        second.TryCount() is { } s &&
+        third.TryCount() is { } t
+            ? e.WithCount(f * s * t)
+            : e;
 
     /// <summary>Creates a cartesian product from four collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
@@ -68,7 +77,13 @@ static partial class CartesianProductFactories
         first
            .SelectMany(_ => second, (x, y) => (x, y))
            .SelectMany(_ => third, (xy, z) => (xy, z))
-           .SelectMany(_ => fourth, (xyz, w) => (xyz.xy.x, xyz.xy.y, xyz.z, w));
+           .SelectMany(_ => fourth, (xyz, w) => (xyz.xy.x, xyz.xy.y, xyz.z, w)) is var e &&
+        first.TryCount() is { } f &&
+        second.TryCount() is { } s &&
+        third.TryCount() is { } t &&
+        fourth.TryCount() is { } u
+            ? e.WithCount(f * s * t * u)
+            : e;
 
     /// <summary>Creates a cartesian product from n-collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>

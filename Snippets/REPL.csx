@@ -9884,7 +9884,11 @@ public partial struct Two<T>(T left, T right) :
         this IEnumerable<T1> first,
         IEnumerable<T2> second
     ) =>
-        first.SelectMany(_ => second, (x, y) => (x, y));
+        first.SelectMany(_ => second, (x, y) => (x, y)) is var e &&
+        first.TryCount() is { } f &&
+        second.TryCount() is { } s
+            ? e.WithCount(f * s)
+            : e;
 
     /// <summary>Creates a cartesian product from three collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
@@ -9906,7 +9910,12 @@ public partial struct Two<T>(T left, T right) :
     ) =>
         first
            .SelectMany(_ => second, (x, y) => (x, y))
-           .SelectMany(_ => third, (xy, z) => (xy.x, xy.y, z));
+           .SelectMany(_ => third, (xy, z) => (xy.x, xy.y, z)) is var e &&
+        first.TryCount() is { } f &&
+        second.TryCount() is { } s &&
+        third.TryCount() is { } t
+            ? e.WithCount(f * s * t)
+            : e;
 
     /// <summary>Creates a cartesian product from four collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
@@ -9932,7 +9941,13 @@ public partial struct Two<T>(T left, T right) :
         first
            .SelectMany(_ => second, (x, y) => (x, y))
            .SelectMany(_ => third, (xy, z) => (xy, z))
-           .SelectMany(_ => fourth, (xyz, w) => (xyz.xy.x, xyz.xy.y, xyz.z, w));
+           .SelectMany(_ => fourth, (xyz, w) => (xyz.xy.x, xyz.xy.y, xyz.z, w)) is var e &&
+        first.TryCount() is { } f &&
+        second.TryCount() is { } s &&
+        third.TryCount() is { } t &&
+        fourth.TryCount() is { } u
+            ? e.WithCount(f * s * t * u)
+            : e;
 
     /// <summary>Creates a cartesian product from n-collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
@@ -9967,6 +9982,46 @@ public partial struct Two<T>(T left, T right) :
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 
+#if !NETFRAMEWORK || NET35_OR_GREATER
+    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
+#endif
+
+    /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
+    /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
+    /// <param name="count">The number of elements in the parameter <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/> as a <see cref="Collection{T}"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static Collection<T>? WithCount<T>(this IEnumerable<T>? iterable, [NonNegativeValue] int count) =>
+        iterable is null ? null : new(iterable, count);
+
+    /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as ICollection<T> ??
+            (iterable.TryCount() is { } count
+                ? new Collection<T>(iterable, count)
+#if NETFRAMEWORK && NET40_OR_GREATER
+                : new List<T>(iterable));
+#else
+                : iterable.ToListLazily());
+#endif
+
     /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
     /// <typeparam name="T">The type of item within the enumeration.</typeparam>
     /// <param name="iterable">The potentially empty collection.</param>
@@ -9987,34 +10042,6 @@ public partial struct Two<T>(T left, T right) :
             foreach (var b in fallback)
                 yield return b;
     }
-#if !NETFRAMEWORK || NET35_OR_GREATER
-    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
-#endif
-
-    /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as ICollection<T> ??
-            (iterable.TryCount() is { } count
-                ? new Collection<T>(iterable, count)
-#if NETFRAMEWORK && NET40_OR_GREATER
-                : new List<T>(iterable));
-#else
-                : iterable.ToListLazily());
-#endif
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -10029,15 +10056,6 @@ public partial struct Two<T>(T left, T right) :
         iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
-    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
-
     /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
@@ -10050,6 +10068,15 @@ public partial struct Two<T>(T left, T right) :
         IEqualityComparer<T>? comparer = null
     ) =>
         iterable is null ? null : new HashSet<T>(iterable, comparer);
+
+    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
 
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -10070,8 +10097,9 @@ public partial struct Two<T>(T left, T right) :
     /// <param name="count">The pre-computed count.</param>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
 #pragma warning disable IDE0044
-    sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) : ICollection,
+    internal sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) :
 #pragma warning restore IDE0044
+        ICollection,
         ICollection<T>,
         IReadOnlyCollection<T>
     {
@@ -10541,11 +10569,10 @@ public partial struct Two<T>(T left, T right) :
     public static IEnumerable<T> For<T>(this T upper)
         where T : IComparisonOperators<T?, T?, bool>,
         ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T>
+        IIncrementOperators<T>
     {
         var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = isNegative ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return isNegative ? upper - i : i;
@@ -10559,8 +10586,7 @@ public partial struct Two<T>(T left, T right) :
     public static IEnumerator<T> GetEnumerator<T>(this T num)
         where T : IComparisonOperators<T?, T?, bool>,
         ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T> =>
+        IIncrementOperators<T> =>
         num.For().GetEnumerator();
 
     /// <summary>
@@ -10577,10 +10603,9 @@ public partial struct Two<T>(T left, T right) :
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+        where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = upper < default(T) ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return external;
@@ -10603,10 +10628,9 @@ public partial struct Two<T>(T left, T right) :
         [NonNegativeValue] this T upper,
         [InstantHandle] Func<TResult> func
     )
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+        where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = upper < default(T) ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return func();
@@ -10629,13 +10653,10 @@ public partial struct Two<T>(T left, T right) :
         [NonNegativeValue] this T upper,
         [InstantHandle] Converter<T, TResult> func
     )
-        where T : IComparisonOperators<T?, T?, bool>,
-        ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T>
+        where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = isNegative ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return func(isNegative ? upper - i : i);
@@ -10736,11 +10757,20 @@ public partial struct Two<T>(T left, T right) :
 
         return upper;
     }
+#endif
+
+    /// <inheritdoc cref="Array.FindAll{T}"/>
+    public static T[] FindAll<T>(this T[] array, [InstantHandle] Predicate<T> match) => Array.FindAll(array, match);
 
     /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
-    public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter) =>
+    public static TOutput[] ConvertAll<TInput, TOutput>(
+        this TInput[] array,
+        [InstantHandle] Converter<TInput, TOutput> converter
+    ) =>
         Array.ConvertAll(array, converter);
-#endif
+
+    /// <inheritdoc cref="Array.AsReadOnly{T}"/>
+    public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -11469,7 +11499,7 @@ public enum ControlFlow : byte
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
-    [Pure]
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static List<object?> ToList(this IStructuralComparable structure)
     {
         ComparerCollector collector = new();
@@ -11480,7 +11510,7 @@ public enum ControlFlow : byte
     /// <summary>Converts an <see cref="IStructuralEquatable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralEquatable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
-    [Pure]
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static List<object?> ToList(this IStructuralEquatable structure)
     {
         ComparerCollector collector = new();
@@ -12759,13 +12789,8 @@ namespace System.Linq;
     /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
     /// <param name="source">The source enumerable providing the elements.</param>
     /// <returns>The enumerable that incorporates the element's index into a tuple.</returns>
-    public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source)
-    {
-        var index = 0;
-
-        foreach (var item in source)
-            yield return (index++, item);
-    }
+    public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source) =>
+        source is TSource[] { Length: 0 } ? [] : source.Select((x, i) => (i, x));
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
@@ -23874,6 +23899,10 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     public Split(T value)
         : this(value, value) { }
 
+    /// <summary>Gets <see cref="Truthy"/> and <see cref="Falsy"/> within an array, in that order.</summary>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public T[] Array => [truthy, falsy];
+
     /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
     [Pure]
     public T Falsy
@@ -23914,6 +23943,10 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
+    /// <inheritdoc cref="Array"/>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public KeyValuePair<bool, T>[] ArrayPair => [new(true, truthy), new(false, falsy)];
+
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
     public T this[bool key]
@@ -23952,11 +23985,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return truthy;
-        yield return falsy;
-    }
+    public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)Array).GetEnumerator();
 
     /// <inheritdoc />
     void ICollection<T>.Add(T item) { }
@@ -24018,11 +24047,8 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
-    {
-        yield return new(true, truthy);
-        yield return new(false, falsy);
-    }
+    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator() =>
+        ((IEnumerable<KeyValuePair<bool, T>>)ArrayPair).GetEnumerator();
 
     /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
     [Pure]
