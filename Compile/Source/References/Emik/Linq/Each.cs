@@ -390,11 +390,10 @@ static partial class Each
     public static IEnumerable<T> For<T>(this T upper)
         where T : IComparisonOperators<T?, T?, bool>,
         ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T>
+        IIncrementOperators<T>
     {
         var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = isNegative ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return isNegative ? upper - i : i;
@@ -408,8 +407,7 @@ static partial class Each
     public static IEnumerator<T> GetEnumerator<T>(this T num)
         where T : IComparisonOperators<T?, T?, bool>,
         ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T> =>
+        IIncrementOperators<T> =>
         num.For().GetEnumerator();
 
     /// <summary>
@@ -426,10 +424,9 @@ static partial class Each
     /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="int"/> from ranges 0 to <paramref name="upper"/> - 1.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+        where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = upper < default(T) ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return external;
@@ -452,10 +449,9 @@ static partial class Each
         [NonNegativeValue] this T upper,
         [InstantHandle] Func<TResult> func
     )
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>, IUnaryNegationOperators<T, T>
+        where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
-        var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = upper < default(T) ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return func();
@@ -478,13 +474,10 @@ static partial class Each
         [NonNegativeValue] this T upper,
         [InstantHandle] Converter<T, TResult> func
     )
-        where T : IComparisonOperators<T?, T?, bool>,
-        ISubtractionOperators<T, T, T>,
-        IIncrementOperators<T>,
-        IUnaryNegationOperators<T, T>
+        where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var isNegative = upper < default(T);
-        var abs = isNegative ? -upper : upper;
+        var abs = isNegative ? default(T) - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return func(isNegative ? upper - i : i);
@@ -585,9 +578,18 @@ static partial class Each
 
         return upper;
     }
+#endif
+
+    /// <inheritdoc cref="Array.FindAll{T}"/>
+    public static T[] FindAll<T>(this T[] array, [InstantHandle] Predicate<T> match) => Array.FindAll(array, match);
 
     /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
-    public static TOutput[] ConvertAll<TInput, TOutput>(this TInput[] array, Converter<TInput, TOutput> converter) =>
+    public static TOutput[] ConvertAll<TInput, TOutput>(
+        this TInput[] array,
+        [InstantHandle] Converter<TInput, TOutput> converter
+    ) =>
         Array.ConvertAll(array, converter);
-#endif
+
+    /// <inheritdoc cref="Array.AsReadOnly{T}"/>
+    public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
 }
