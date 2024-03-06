@@ -6,6 +6,46 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Collected
 {
+#if !NETFRAMEWORK || NET35_OR_GREATER
+    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
+#endif
+
+    /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
+    /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
+    /// <param name="count">The number of elements in the parameter <paramref name="iterable"/>.</param>
+    /// <returns>The parameter <paramref name="iterable"/> as a <see cref="Collection{T}"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static Collection<T>? WithCount<T>(this IEnumerable<T>? iterable, [NonNegativeValue] int count) =>
+        iterable is null ? null : new(iterable, count);
+
+    /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null
+            ? null
+            : iterable as ICollection<T> ??
+            (iterable.TryCount() is { } count
+                ? new Collection<T>(iterable, count)
+#if NETFRAMEWORK && NET40_OR_GREATER
+                : new List<T>(iterable));
+#else
+                : iterable.ToListLazily());
+#endif
+
     /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
     /// <typeparam name="T">The type of item within the enumeration.</typeparam>
     /// <param name="iterable">The potentially empty collection.</param>
@@ -26,34 +66,6 @@ static partial class Collected
             foreach (var b in fallback)
                 yield return b;
     }
-#if !NETFRAMEWORK || NET35_OR_GREATER
-    /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
-#endif
-
-    /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ICollection<T>? ToCollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null
-            ? null
-            : iterable as ICollection<T> ??
-            (iterable.TryCount() is { } count
-                ? new Collection<T>(iterable, count)
-#if NETFRAMEWORK && NET40_OR_GREATER
-                : new List<T>(iterable));
-#else
-                : iterable.ToListLazily());
-#endif
 
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -68,15 +80,6 @@ static partial class Collected
         iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
-    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
-    /// <typeparam name="T">The item in the collection.</typeparam>
-    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
-    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
-
     /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to encapsulate.</param>
@@ -89,6 +92,15 @@ static partial class Collected
         IEqualityComparer<T>? comparer = null
     ) =>
         iterable is null ? null : new HashSet<T>(iterable, comparer);
+
+    /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
+    /// <typeparam name="T">The item in the collection.</typeparam>
+    /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
+    /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(iterable))]
+    public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
 
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -109,8 +121,9 @@ static partial class Collected
     /// <param name="count">The pre-computed count.</param>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
 #pragma warning disable IDE0044
-    sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) : ICollection,
+    internal sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) :
 #pragma warning restore IDE0044
+        ICollection,
         ICollection<T>,
         IReadOnlyCollection<T>
     {
