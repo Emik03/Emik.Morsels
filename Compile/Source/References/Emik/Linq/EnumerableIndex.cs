@@ -14,12 +14,7 @@ static partial class EnumerableIndex
     /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
     /// <param name="source">The source enumerable providing the elements.</param>
     /// <returns>The enumerable that incorporates the element's index into a tuple.</returns>
-    public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source)
-    {
-        var index = 0;
-
-        foreach (var item in source)
-            yield return (index++, item);
-    }
+    public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source) =>
+        source is TSource[] { Length: 0 } ? [] : source.Select((x, i) => (i, x));
 }
 #endif
