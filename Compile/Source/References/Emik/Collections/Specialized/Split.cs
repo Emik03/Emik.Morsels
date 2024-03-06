@@ -108,6 +108,10 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     public Split(T value)
         : this(value, value) { }
 
+    /// <summary>Gets <see cref="Truthy"/> and <see cref="Falsy"/> within an array, in that order.</summary>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public T[] Array => [truthy, falsy];
+
     /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
     [Pure]
     public T Falsy
@@ -148,6 +152,10 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
 
+    /// <inheritdoc cref="Array"/>
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    public KeyValuePair<bool, T>[] ArrayPair => [new(true, truthy), new(false, falsy)];
+
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
     public T this[bool key]
@@ -186,11 +194,7 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    public IEnumerator<T> GetEnumerator()
-    {
-        yield return truthy;
-        yield return falsy;
-    }
+    public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)Array).GetEnumerator();
 
     /// <inheritdoc />
     void ICollection<T>.Add(T item) { }
@@ -252,11 +256,8 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 
     /// <inheritdoc />
     [Pure]
-    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator()
-    {
-        yield return new(true, truthy);
-        yield return new(false, falsy);
-    }
+    IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator() =>
+        ((IEnumerable<KeyValuePair<bool, T>>)ArrayPair).GetEnumerator();
 
     /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
     [Pure]
