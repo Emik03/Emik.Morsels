@@ -106,7 +106,7 @@ static partial class EnumeratorToEnumerable
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
-    [Pure]
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static List<object?> ToList(this IStructuralComparable structure)
     {
         ComparerCollector collector = new();
@@ -117,7 +117,7 @@ static partial class EnumeratorToEnumerable
     /// <summary>Converts an <see cref="IStructuralEquatable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralEquatable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
-    [Pure]
+    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static List<object?> ToList(this IStructuralEquatable structure)
     {
         ComparerCollector collector = new();
