@@ -7061,7 +7061,6 @@ public partial struct Two<T>(T left, T right) :
     )
     {
         selector ??= Rand();
-
         var list = iterable.ToListLazily();
 
         for (var j = list.Count; j >= 1; j--)
@@ -9542,10 +9541,23 @@ public partial struct Two<T>(T left, T right) :
         LogEventLevel level
     )
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static object? Box(T value) => value;
+        static object? Memory(T value) =>
+            value switch
+            {
+                null => null,
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+                Memory<char> m => m.ToString(),
+                ReadOnlyMemory<char> m => m.ToString(),
+                _ when value.GetType().GetMethod(nameof(Memory<int>.ToArray), []) is
+                    {
+                        IsStatic: false, ReturnParameter.ParameterType: var ret, IsGenericMethod: false,
+                    } method &&
+                    ret != typeof(void) => method.Invoke(value, null),
+#endif
+                _ => value,
+            };
 
-        var x = (map ?? Box)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
+        var x = (map ?? Memory)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
@@ -25207,9 +25219,6 @@ static class Stringifier
 
 /// <summary>Polyfill for <c>nameof()</c>.</summary>
 static class Morsels;
-
-/// <summary>Gets the nothing value, used when the inner value is unspecified.</summary>
-static object None => Emik.Results.Result.None;
 
 CatchFatalExceptions = true;
 

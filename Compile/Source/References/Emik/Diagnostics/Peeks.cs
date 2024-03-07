@@ -1333,10 +1333,23 @@ static partial class Peeks
         LogEventLevel level
     )
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static object? Box(T value) => value;
+        static object? Memory(T value) =>
+            value switch
+            {
+                null => null,
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+                Memory<char> m => m.ToString(),
+                ReadOnlyMemory<char> m => m.ToString(),
+                _ when value.GetType().GetMethod(nameof(Memory<int>.ToArray), []) is
+                    {
+                        IsStatic: false, ReturnParameter.ParameterType: var ret, IsGenericMethod: false,
+                    } method &&
+                    ret != typeof(void) => method.Invoke(value, null),
+#endif
+                _ => value,
+            };
 
-        var x = (map ?? Box)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
+        var x = (map ?? Memory)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
