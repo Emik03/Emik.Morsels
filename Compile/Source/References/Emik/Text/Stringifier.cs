@@ -182,9 +182,24 @@ static partial class Stringifier
     /// <returns>The conjugation of all the parameters.</returns>
     [Pure]
     public static string Conjugate(this int i, string one, string many = "s") =>
-        i is not 1 and not -1 && Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length) is var trim
+        i is not 1 and not -1 &&
+#if NET7_0_OR_GREATER
+        (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var found ? found : 0)
+#else
+        Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
+#endif
+        is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
+#if NET7_0_OR_GREATER
+    /// <inheritdoc cref="Conjugate(int, string, string)"/>
+    [Pure]
+    public static string Conjugate<T>(this T i, string one, string many = "s")
+        where T : INumberBase<T>, IComparisonOperators<T, T, bool> =>
+        (T.IsZero(i) || T.Abs(i) > T.One) && (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var f ? f : 0) is var tr
+            ? $"{i} {one[..^tr]}{many[tr..]}"
+            : $"{i} {one}";
+#endif
 
     /// <summary>Extracts the file name from the path.</summary>
     /// <remarks><para>
