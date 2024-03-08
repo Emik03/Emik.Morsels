@@ -28,6 +28,7 @@ global using Math = System.Math;
 global using Path = System.IO.Path;
 global using RegexOptions = System.Text.RegularExpressions.RegexOptions;
 global using Random = System.Random;
+global using Range = System.Range;
 global using StringBuilder = System.Text.StringBuilder;
 global using Trace = System.Diagnostics.Trace;
 global using Type = System.Type;
