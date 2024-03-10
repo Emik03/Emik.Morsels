@@ -28,7 +28,6 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define CSHARPREPL
-#define NO_ROSLYN
 <# /*
 
 Load all:

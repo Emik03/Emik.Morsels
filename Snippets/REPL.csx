@@ -22,7 +22,6 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define CSHARPREPL
-#define NO_ROSLYN
 global using System;
 global using System.Buffers;
 global using System.Buffers.Binary;
