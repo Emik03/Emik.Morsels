@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// NOTE: This file should be moved to ./Compile/Source/References/System/Linq/EnumerableIndex.cs when .NET 9 is released
+// NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableIndex.cs when .NET 9 is released
 // and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
 #if !CSHARPREPL
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Linq;
 #endif
-#if !NETCOREAPP9_0_OR_GREATER
+#if !NET9_0_OR_GREATER
 /// <summary>The backport of the Index method for <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumerableIndex
 {
