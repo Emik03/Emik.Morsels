@@ -17,7 +17,7 @@
 
 ## About
 
-Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project that contains utility code that don't belong together in a monolithic library. However, as oppose to [Code](https://github.com/shaynevanasperen/Code/), this repository has no source generators or roslyn analyzers to add these files. Instead, these are configurations which can be applied and synced to multiple projects simultaneously. This means that there is no need to add references, or figure out whether some type is needed or not, as all of them are added automatically.
+Inspired by [Code](https://github.com/shaynevanasperen/Code/); This is a project that contains utility code that don't belong together in a monolithic library. However, as opposed to [Code](https://github.com/shaynevanasperen/Code/), this repository has no source generators or roslyn analyzers to add these files. Instead, these are configurations which can be applied and synced to multiple projects simultaneously. This means that there is no need to add references, or figure out whether some type is needed or not, as all of them are added automatically.
 
 ## Usage
 
