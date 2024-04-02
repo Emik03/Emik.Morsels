@@ -215,13 +215,13 @@ readonly
             return -1;
 
         var that = (Enumerator)this;
-
+#pragma warning disable S1994
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
                 return i;
             else if (that.Mask > mask || that.Index > index)
                 return -1;
-
+#pragma warning restore S1994
         return -1;
     }
 
