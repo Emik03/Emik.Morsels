@@ -8,11 +8,13 @@ namespace Emik.Morsels;
 static partial class EnumeratorToEnumerable
 {
     /// <summary>Collects <see cref="IComparer"/> and <see cref="IEqualityComparer"/> instances.</summary>
+    // ReSharper disable once UnusedType.Local
     sealed class ComparerCollector : IComparer, IEqualityComparer
     {
         /// <summary>The most common usage is with tuples, in which the maximum capacity is 8.</summary>
         const int Capacity = 8;
 
+        // ReSharper disable once CollectionNeverQueried.Local MemberCanBePrivate.Local
         public List<object?> List { get; } = new(Capacity);
 
         /// <inheritdoc />
@@ -102,7 +104,7 @@ static partial class EnumeratorToEnumerable
     [MustDisposeResource, Pure]
     public static IEnumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
         new Enumerable<T>(enumerator);
-
+#if !NET20 && !NET30 && !NET35
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
@@ -124,4 +126,5 @@ static partial class EnumeratorToEnumerable
         _ = structure.Equals(structure, collector);
         return collector.List;
     }
+#endif
 }

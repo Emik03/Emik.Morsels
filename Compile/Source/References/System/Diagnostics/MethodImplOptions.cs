@@ -29,8 +29,7 @@ static partial class MethodImplOptions
     public const Options NoInlining = (Options)(1 << 3);
 
     /// <summary>The method is declared, but its implementation is provided elsewhere.</summary>
-    public const Options ForwardRef =
-        (Options)(1 << 4);
+    public const Options ForwardRef = (Options)(1 << 4);
 
     /// <summary>
     /// The method can be executed by only one thread at a time.

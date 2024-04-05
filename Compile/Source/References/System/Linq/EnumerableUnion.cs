@@ -9,8 +9,9 @@ namespace System.Linq;
 /// </summary>
 static partial class EnumerableUnion
 {
+#if NET472_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     const int DefaultInternalSetCapacity = 7;
-
+#endif
     /// <summary>Returns distinct elements from a sequence according to a specified key selector function.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
     /// <typeparam name="TKey">The type of key to distinguish elements by.</typeparam>
@@ -46,7 +47,11 @@ static partial class EnumerableUnion
         IEqualityComparer<TKey>? comparer
     )
     {
+#if NET472_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
         HashSet<TKey> set = new(DefaultInternalSetCapacity, comparer);
+#else
+        HashSet<TKey> set = new(comparer);
+#endif
         return source.Where(element => set.Add(keySelector(element)));
     }
 

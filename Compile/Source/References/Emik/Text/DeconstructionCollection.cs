@@ -70,7 +70,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         /// <inheritdoc />
         [Pure]
-        public int GetHashCode(object? obj) => IsScalar(obj) ? unchecked(_unique--) : RuntimeHelpers.GetHashCode(obj);
+        public int GetHashCode(object? obj) =>
+            IsScalar(obj)
+                ? unchecked(_unique--)
+#if NETFRAMEWORK && !NET35_OR_GREATER
+                : RuntimeHelpers.GetHashCode(obj);
+#else // RuntimeHelpers.GetHashCode eventually calls an external function that I have no idea how to replicate.
+                : 0;
+#endif
 
         /// <summary>Determines whether the value is a scalar.</summary>
         /// <param name="value">The value to check.</param>
@@ -163,7 +170,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             HashSet<object?>? seen = null
         ) =>
             TryCollect(enumerable.GetEnumerator(), str, ref visit, out list, seen);
-
+#if !NET20 && !NET30 && !NET35
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="comparable">The comparable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -203,7 +210,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             HashSet<object?>? seen = null
         ) =>
             TryCollect(equatable.ToList(), str, ref visit, out list, seen);
-
+#endif
         public override bool Fail()
         {
             // We append a character instead of a string because otherwise it would be surrounded by quotes.
@@ -453,7 +460,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var next in properties)
             {
-                if (next.GetMethod is { } getter && (getter.IsStatic || next.GetMethod.GetParameters() is not []))
+                if (next.GetGetMethod() is { } getter &&
+                    (getter.IsStatic || next.GetGetMethod().GetParameters() is not []))
                     continue;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
                 if (next.PropertyType.IsByRefLike)
@@ -697,12 +705,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator, seen):
                 return Ok(enumerator, out any);
             case IEnumerator: goto default;
+#if !NET20 && !NET30 && !NET35
             case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable, seen):
                 return Ok(comparable, out any);
             case IStructuralComparable: goto default;
             case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable, seen):
                 return Ok(equatable, out any);
             case IStructuralEquatable: goto default;
+#endif
             default:
                 return DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj, seen)
                     ? Ok(obj, out any)

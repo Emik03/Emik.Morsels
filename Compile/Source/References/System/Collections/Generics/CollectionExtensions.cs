@@ -6,6 +6,23 @@ namespace System.Collections.Generic;
 /// <summary>Provides extension methods for generic collections.</summary>
 static class CollectionExtensions
 {
+#if NETFRAMEWORK && !NET45_OR_GREATER
+    /// <inheritdoc cref="GetValueOrDefault{TKey,TValue}(IReadOnlyDictionary{TKey,TValue}, TKey)"/>
+    // ReSharper disable once ReturnTypeCanBeNotNullable
+    public static TValue? GetValueOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key) =>
+
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        dictionary.GetValueOrDefault(key, default!);
+
+    /// <inheritdoc cref="GetValueOrDefault{TKey,TValue}(IReadOnlyDictionary{TKey,TValue}, TKey, TValue)"/>
+    public static TValue GetValueOrDefault<TKey, TValue>(
+        this IDictionary<TKey, TValue> dictionary,
+        TKey key,
+        TValue defaultValue
+    ) =>
+        dictionary.TryGetValue(key, out var value) ? value : defaultValue;
+#endif
+
     /// <summary>
     /// Tries to get the value associated with the specified
     /// <paramref name="key"/> in the <paramref name="dictionary"/>.
@@ -21,10 +38,11 @@ static class CollectionExtensions
     /// object is the value associated with the specified <paramref name="key"/>.
     /// When the method fails, it returns the <see langword="default"/> value for <typeparamref name="TValue"/>.
     /// </returns>
+    // ReSharper disable once ReturnTypeCanBeNotNullable
     public static TValue? GetValueOrDefault<TKey, TValue>(
         this IReadOnlyDictionary<TKey, TValue> dictionary,
         TKey key
-    ) =>
+    ) => // ReSharper disable once NullableWarningSuppressionIsUsed
         dictionary.GetValueOrDefault(key, default!);
 
     /// <summary>
@@ -117,7 +135,7 @@ static class CollectionExtensions
     /// <returns>An object that acts as a read-only wrapper around the current <see cref="IList{T}"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="list"/> is null.</exception>
     public static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> list) => new(list);
-
+#if !NET20 && !NET30 && !NET35
     /// <summary>
     /// Returns a read-only <see cref="ReadOnlyDictionary{TKey, TValue}"/> wrapper for the current dictionary.
     /// </summary>
@@ -129,6 +147,7 @@ static class CollectionExtensions
     public static ReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
         where TKey : notnull =>
         new(dictionary);
+#endif
 
     /// <summary>Adds the elements of the specified span to the end of the <see cref="List{T}"/>.</summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>

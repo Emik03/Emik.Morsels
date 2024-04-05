@@ -11412,11 +11412,13 @@ public enum ControlFlow : byte
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 
     /// <summary>Collects <see cref="IComparer"/> and <see cref="IEqualityComparer"/> instances.</summary>
+    // ReSharper disable once UnusedType.Local
     sealed class ComparerCollector : IComparer, IEqualityComparer
     {
         /// <summary>The most common usage is with tuples, in which the maximum capacity is 8.</summary>
         const int Capacity = 8;
 
+        // ReSharper disable once CollectionNeverQueried.Local MemberCanBePrivate.Local
         public List<object?> List { get; } = new(Capacity);
 
         /// <inheritdoc />
@@ -11506,7 +11508,7 @@ public enum ControlFlow : byte
     [MustDisposeResource, Pure]
     public static IEnumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
         new Enumerable<T>(enumerator);
-
+#if !NET20 && !NET30 && !NET35
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
@@ -11528,6 +11530,7 @@ public enum ControlFlow : byte
         _ = structure.Equals(structure, collector);
         return collector.List;
     }
+#endif
 
 // SPDX-License-Identifier: MPL-2.0
 
@@ -16905,7 +16908,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
         /// <inheritdoc />
         [Pure]
-        public int GetHashCode(object? obj) => IsScalar(obj) ? unchecked(_unique--) : RuntimeHelpers.GetHashCode(obj);
+        public int GetHashCode(object? obj) =>
+            IsScalar(obj)
+                ? unchecked(_unique--)
+#if NETFRAMEWORK && !NET35_OR_GREATER
+                : RuntimeHelpers.GetHashCode(obj);
+#else // RuntimeHelpers.GetHashCode eventually calls an external function that I have no idea how to replicate.
+                : 0;
+#endif
 
         /// <summary>Determines whether the value is a scalar.</summary>
         /// <param name="value">The value to check.</param>
@@ -16998,7 +17008,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             HashSet<object?>? seen = null
         ) =>
             TryCollect(enumerable.GetEnumerator(), str, ref visit, out list, seen);
-
+#if !NET20 && !NET30 && !NET35
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="comparable">The comparable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -17038,7 +17048,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             HashSet<object?>? seen = null
         ) =>
             TryCollect(equatable.ToList(), str, ref visit, out list, seen);
-
+#endif
         public override bool Fail()
         {
             // We append a character instead of a string because otherwise it would be surrounded by quotes.
@@ -17288,7 +17298,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var next in properties)
             {
-                if (next.GetMethod is { } getter && (getter.IsStatic || next.GetMethod.GetParameters() is not []))
+                if (next.GetGetMethod() is { } getter &&
+                    (getter.IsStatic || next.GetGetMethod().GetParameters() is not []))
                     continue;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
                 if (next.PropertyType.IsByRefLike)
@@ -17532,12 +17543,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator, seen):
                 return Ok(enumerator, out any);
             case IEnumerator: goto default;
+#if !NET20 && !NET30 && !NET35
             case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable, seen):
                 return Ok(comparable, out any);
             case IStructuralComparable: goto default;
             case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable, seen):
                 return Ok(equatable, out any);
             case IStructuralEquatable: goto default;
+#endif
             default:
                 return DeconstructionDictionary.TryReflectivelyCollect(value, str, ref visit, out var obj, seen)
                     ? Ok(obj, out any)
@@ -21471,13 +21484,13 @@ readonly
             return -1;
 
         var that = (Enumerator)this;
-
+#pragma warning disable S1994
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
                 return i;
             else if (that.Mask > mask || that.Index > index)
                 return -1;
-
+#pragma warning restore S1994
         return -1;
     }
 
