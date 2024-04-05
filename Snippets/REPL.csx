@@ -18179,16 +18179,17 @@ public
     public
 #endif
         static unsafe string ToHexString<T>(this T value)
+#if !KTANE
         where T : unmanaged
+#endif
+#pragma warning disable 8500
     {
-        var sizeOfT = sizeof(T);
-        var bufferSize = 2 * sizeOfT + 2;
-        var p = stackalloc char[bufferSize];
+        var p = stackalloc char[sizeof(T) * 2];
         p[0] = '0';
         p[1] = 'x';
 
         fixed (char* rh = HexCharactersTable)
-            for (int i = 0, j = bufferSize - 2; i < sizeOfT; i++, j -= 2)
+            for (int i = 0, j = sizeof(T) * 2; i < sizeof(T); i++, j -= 2)
             {
                 var b = ((byte*)&value)[i];
                 var low = b & 0x0f;
@@ -18197,8 +18198,9 @@ public
                 p[j] = *(rh + high);
             }
 
-        return new(p, 0, bufferSize);
+        return new(p, 0, sizeof(T) * 2 + 2);
     }
+#pragma warning restore 8500
 #endif
 
     /// <summary>Forces the use of reflective stringification.</summary>
@@ -19605,7 +19607,7 @@ public sealed partial class Matrix<T> : IList<IList<T>>
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CA1502, MA0051, IDE0250
+#pragma warning disable 8500, CA1502, MA0051, IDE0250
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 
 
@@ -20400,7 +20402,7 @@ readonly
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable IDE0250
+#pragma warning disable 8500, IDE0250
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 
@@ -20984,7 +20986,7 @@ readonly
 }
 
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable IDE0250
+#pragma warning disable 8500, IDE0250
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
 
 
@@ -21279,7 +21281,7 @@ readonly
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry RedundantReadonlyModifier
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
+#pragma warning disable 8500, CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
 
 
 
@@ -21291,8 +21293,11 @@ readonly
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
-        where T : unmanaged =>
-        source;
+#if !KTANE
+        where T : unmanaged
+#endif
+        =>
+            source;
 
     /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -21300,7 +21305,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAnd<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -21316,7 +21323,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAndNot<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -21351,7 +21360,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseOr<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -21367,7 +21378,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseXor<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -21388,7 +21401,9 @@ public
 readonly
 #endif
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
+#if !KTANE
     where T : unmanaged
+#endif
 {
     static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
 
@@ -21644,6 +21659,7 @@ readonly
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         readonly object IEnumerator.Current
         {
+            // ReSharper disable once AssignNullToNotNullAttribute
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
         }
 

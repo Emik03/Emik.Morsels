@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CA1502, MA0051, IDE0250
+#pragma warning disable 8500, CA1502, MA0051, IDE0250
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 

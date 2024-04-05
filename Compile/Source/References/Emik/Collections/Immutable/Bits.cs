@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry RedundantReadonlyModifier
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
+#pragma warning disable 8500, CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -15,8 +15,11 @@ static partial class BitsFactory
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
-        where T : unmanaged =>
-        source;
+#if !KTANE
+        where T : unmanaged
+#endif
+        =>
+            source;
 
     /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -24,7 +27,9 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAnd<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -40,7 +45,9 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAndNot<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -75,7 +82,9 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseOr<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -91,7 +100,9 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseXor<T>(this IEnumerable<T> source)
+#if !KTANE
         where T : unmanaged
+#endif
     {
         T t = default;
 
@@ -113,7 +124,9 @@ public
 readonly
 #endif
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
+#if !KTANE
     where T : unmanaged
+#endif
 {
     static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
 
@@ -369,6 +382,7 @@ readonly
         [CollectionAccess(None)]
         readonly object IEnumerator.Current
         {
+            // ReSharper disable once AssignNullToNotNullAttribute
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
         }
 

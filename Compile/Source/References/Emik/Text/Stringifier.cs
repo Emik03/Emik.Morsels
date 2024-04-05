@@ -531,16 +531,17 @@ static partial class Stringifier
     public
 #endif
         static unsafe string ToHexString<T>(this T value)
+#if !KTANE
         where T : unmanaged
+#endif
+#pragma warning disable 8500
     {
-        var sizeOfT = sizeof(T);
-        var bufferSize = 2 * sizeOfT + 2;
-        var p = stackalloc char[bufferSize];
+        var p = stackalloc char[sizeof(T) * 2];
         p[0] = '0';
         p[1] = 'x';
 
         fixed (char* rh = HexCharactersTable)
-            for (int i = 0, j = bufferSize - 2; i < sizeOfT; i++, j -= 2)
+            for (int i = 0, j = sizeof(T) * 2; i < sizeof(T); i++, j -= 2)
             {
                 var b = ((byte*)&value)[i];
                 var low = b & 0x0f;
@@ -549,8 +550,9 @@ static partial class Stringifier
                 p[j] = *(rh + high);
             }
 
-        return new(p, 0, bufferSize);
+        return new(p, 0, sizeof(T) * 2 + 2);
     }
+#pragma warning restore 8500
 #endif
 
     /// <summary>Forces the use of reflective stringification.</summary>
