@@ -147,11 +147,11 @@ static partial class Peeks
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
-        (Action<string>)Shout +
+        Shout +
 #if KTANE
-        (Action<string>)UnityEngine.Debug.Log +
+        UnityEngine.Debug.Log +
 #endif
-        (Action<string>)Console.WriteLine;
+        Console.WriteLine;
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all the types currently loaded.</summary>
