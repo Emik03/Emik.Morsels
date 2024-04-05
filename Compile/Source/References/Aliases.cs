@@ -36,6 +36,7 @@ global using Vector = System.Numerics.Vector;
 #endif
 #if KTANE
 global using Application = UnityEngine.Application;
+global using Assembly = System.Reflection.Assembly;
 global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
