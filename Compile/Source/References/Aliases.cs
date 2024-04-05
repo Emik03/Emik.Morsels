@@ -57,6 +57,7 @@ global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
+global using Range = System.Range;
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #else
@@ -89,6 +90,6 @@ using static AttributeTargets;
 /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
 [AttributeUsage(Class | Constructor | Delegate | Event | Parameter | Method | Property)]
 #pragma warning disable MA0048
-sealed partial class PureAttribute : Attribute { }
+sealed partial class PureAttribute : Attribute;
 #pragma warning restore MA0048
 #endif
