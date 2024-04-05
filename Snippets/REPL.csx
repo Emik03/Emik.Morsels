@@ -18804,6 +18804,14 @@ public
         return builder;
     }
 #endif
+#if WAWA
+    static IEnumerable<int> AsBits(this int i)
+    {
+        for (var j = 1; j is not 0; j >>= 1)
+            if ((i & j) is not 0)
+                yield return j;
+    }
+#endif
 #pragma warning disable 8500
     static unsafe T? ReadPointer<T>(T* ptr) => (nuint)ptr >= 1 << 11 ? *ptr : default;
 #pragma warning restore 8500

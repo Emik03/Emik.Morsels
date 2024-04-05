@@ -531,7 +531,9 @@ static partial class Stringifier
     public
 #endif
         static unsafe string ToHexString<T>(this T value)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
 #pragma warning disable 8500
@@ -1152,6 +1154,14 @@ static partial class Stringifier
             builder.Append('*');
 
         return builder;
+    }
+#endif
+#if WAWA
+    static IEnumerable<int> AsBits(this int i)
+    {
+        for (var j = 1; j is not 0; j >>= 1)
+            if ((i & j) is not 0)
+                yield return j;
     }
 #endif
 #pragma warning disable 8500
