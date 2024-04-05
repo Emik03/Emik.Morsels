@@ -18179,7 +18179,9 @@ public
     public
 #endif
         static unsafe string ToHexString<T>(this T value)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
 #pragma warning disable 8500
@@ -21293,7 +21295,9 @@ readonly
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
         =>
@@ -21305,7 +21309,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAnd<T>(this IEnumerable<T> source)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
     {
@@ -21323,7 +21329,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAndNot<T>(this IEnumerable<T> source)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
     {
@@ -21360,7 +21368,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseOr<T>(this IEnumerable<T> source)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
     {
@@ -21378,7 +21388,9 @@ readonly
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseXor<T>(this IEnumerable<T> source)
-#if !KTANE
+#if KTANE
+        where T : struct
+#else
         where T : unmanaged
 #endif
     {
@@ -21401,7 +21413,9 @@ public
 readonly
 #endif
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
-#if !KTANE
+#if KTANE
+    where T : struct
+#else
     where T : unmanaged
 #endif
 {
@@ -21552,7 +21566,11 @@ readonly
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult Coerce<TResult>()
+#if KTANE
+        where TResult : struct
+#else
         where TResult : unmanaged
+#endif
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Copy(T value)
@@ -21586,7 +21604,11 @@ readonly
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult CoerceLeft<TResult>()
+#if KTANE
+        where TResult : struct
+#else
         where TResult : unmanaged
+#endif
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Copy(T value)
