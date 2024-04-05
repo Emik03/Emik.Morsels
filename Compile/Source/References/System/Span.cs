@@ -16,9 +16,7 @@ unsafe
     ref
 #endif
     partial struct Span<T>
-#if KTANE
-    where T : struct
-#elif UNMANAGED_SPAN
+#if UNMANAGED_SPAN
     where T : unmanaged
 #endif
 {
@@ -388,9 +386,7 @@ unsafe
     ref
 #endif
     partial struct ReadOnlySpan<T>
-#if KTANE
-    where T : struct
-#elif UNMANAGED_SPAN
+#if UNMANAGED_SPAN
     where T : unmanaged
 #endif
 {
@@ -727,9 +723,7 @@ unsafe
 /// <summary>Represents a debug view to this span.</summary>
 /// <typeparam name="T">The type of element in the span.</typeparam>
 sealed class SpanDebugView<T>
-#if KTANE
-    where T : struct
-#elif UNMANAGED_SPAN
+#if UNMANAGED_SPAN
     where T : unmanaged
 #endif
 {
