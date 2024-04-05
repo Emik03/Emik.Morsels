@@ -59,11 +59,13 @@ global using NotNullAttribute = unity::JetBrains.Annotations.NotNullAttribute;
 global using Object = unity::UnityEngine.Object;
 global using PathReferenceAttribute = unity::JetBrains.Annotations.PathReferenceAttribute;
 global using PublicAPIAttribute = unity::JetBrains.Annotations.PublicAPIAttribute;
-global using Range = System.Range;
 global using StringFormatMethodAttribute = unity::JetBrains.Annotations.StringFormatMethodAttribute;
 global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicitlyAttribute;
 #else
 global using Debug = System.Diagnostics.Debug;
+#endif
+#if KTANE && !WAWA
+global using Range = System.Range;
 #endif
 #if KTANE && WAWA
 global using PureAttribute = unity::JetBrains.Annotations.PureAttribute;
