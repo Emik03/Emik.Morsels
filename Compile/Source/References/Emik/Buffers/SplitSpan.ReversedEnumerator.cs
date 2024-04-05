@@ -25,8 +25,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
+#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-
+#pragma warning restore IDE0032
         ReadOnlySpan<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>

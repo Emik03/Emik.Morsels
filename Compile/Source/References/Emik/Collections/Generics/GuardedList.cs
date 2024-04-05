@@ -133,7 +133,7 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator<T> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
+    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]

@@ -998,7 +998,9 @@ partial struct SmallList<T> :
         {
             { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
             { Count: not 0 } x => [.. x],
+#pragma warning disable IDE0004
             _ => (IList<T>)[],
+#pragma warning restore IDE0004
         };
 
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>

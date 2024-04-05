@@ -271,10 +271,11 @@ readonly
         TAccumulator accumulator,
         scoped in ReadOnlySpan<TBody> next
     );
-
+#pragma warning disable IDE0034
     readonly ReadOnlySpan<TBody> _body = body;
 
     readonly ReadOnlySpan<TSeparator> _separator = separator;
+#pragma warning restore IDE0034
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
     /// <param name="body">The line to split.</param>

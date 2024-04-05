@@ -201,7 +201,7 @@ static partial class SpanHelpers
         // ReSharper disable CompareNonConstrainedGenericWithNull
         if (default(T) is not null || value is not null)
         {
-#pragma warning disable 8602
+#pragma warning disable 8602, S2259
             Debug.Assert(value is not null);
 
             while (length >= 8)
@@ -262,7 +262,7 @@ static partial class SpanHelpers
                 index += 1;
                 length--;
             }
-#pragma warning restore 8602
+#pragma warning restore 8602, S2259
         }
         else
         {

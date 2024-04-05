@@ -166,12 +166,14 @@ static partial class Stringifier
            .Trim()
            .ToString();
 #else
+#pragma warning disable IDE0004
         return expression
-          ?.Collapse()
+          ?.Collapse() // ReSharper disable once RedundantCast
            .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-           .Select(x => x.Trim())
+           .Select(x => x.Trim())!
            .Prepend(prefix)
            .Conjoin("");
+#pragma warning restore IDE0004
 #endif
     }
 

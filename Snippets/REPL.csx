@@ -5288,7 +5288,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         partial struct Enumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
+#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
+#pragma warning restore IDE0032
 
         ReadOnlySpan<TBody> _body = body, _current;
 
@@ -5678,8 +5680,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
+#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-
+#pragma warning restore IDE0032
         ReadOnlySpan<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
@@ -6240,10 +6243,11 @@ readonly
         TAccumulator accumulator,
         scoped in ReadOnlySpan<TBody> next
     );
-
+#pragma warning disable IDE0034
     readonly ReadOnlySpan<TBody> _body = body;
 
     readonly ReadOnlySpan<TSeparator> _separator = separator;
+#pragma warning restore IDE0034
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
@@ -8354,9 +8358,9 @@ public partial struct Two<T>(T left, T right) :
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
-        Shout +
+        (Action<string>)Shout +
 #if KTANE
-        UnityEngine.Debug.Log +
+        (Action<string>)UnityEngine.Debug.Log +
 #endif
         (Action<string>)Console.WriteLine;
 #endif
@@ -17810,12 +17814,14 @@ public
            .Trim()
            .ToString();
 #else
+#pragma warning disable IDE0004
         return expression
-          ?.Collapse()
+          ?.Collapse() // ReSharper disable once RedundantCast
            .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-           .Select(x => x.Trim())
+           .Select(x => x.Trim())!
            .Prepend(prefix)
            .Conjoin("");
+#pragma warning restore IDE0004
 #endif
     }
 
@@ -19315,7 +19321,7 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator<T> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
+    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
@@ -23962,7 +23968,9 @@ public partial struct SmallList<T> :
         {
             { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
             { Count: not 0 } x => [.. x],
+#pragma warning disable IDE0004
             _ => (IList<T>)[],
+#pragma warning restore IDE0004
         };
 
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>

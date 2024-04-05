@@ -147,9 +147,9 @@ static partial class Peeks
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
-        Shout +
+        (Action<string>)Shout +
 #if KTANE
-        UnityEngine.Debug.Log +
+        (Action<string>)UnityEngine.Debug.Log +
 #endif
         (Action<string>)Console.WriteLine;
 #endif
