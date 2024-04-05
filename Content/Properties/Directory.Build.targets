@@ -354,11 +354,15 @@
     </Target>
     <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository from Windows. -->
     <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != '' and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
-        <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;xcopy &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
+        <Exec Command="xcopy $(Out) &quot;$(Destination)&quot;"/>
+        <Exec Command="xcopy &quot;$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;"/>
+        <Exec Command="xcopy &quot;$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" IgnoreExitCode="true"/>
     </Target>
     <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository from Mac or Linux. -->
     <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(OS)' != 'Windows_NT' and '$(TargetFramework)' == 'net35' and $(Destination) != '' and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
-        <Exec Command="cp $(Out) &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;"/>
+        <Exec Command="cp $(Out) &quot;$(Destination)&quot;"/>
+        <Exec Command="cp &quot;$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;"/>
+        <Exec Command="cp &quot;$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" IgnoreExitCode="true"/>
     </Target>
     <!-- We only need to validate the properties that are being used. -->
     <Target Name="ValidateLocalProperties" BeforeTargets="PreBuildEvent">
