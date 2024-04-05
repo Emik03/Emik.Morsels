@@ -167,7 +167,7 @@
         <IsKtane>true</IsKtane>
         <NoTests>true</NoTests>
         <NoWarn>$(NoWarn);419</NoWarn>
-        <FileVersion>4.6.1</FileVersion>
+        <FileVersion>4.6.2</FileVersion>
         <Nullable>annotations</Nullable>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
