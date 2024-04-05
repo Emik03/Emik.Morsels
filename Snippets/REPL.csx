@@ -17672,11 +17672,14 @@ public
 #endif
 
     const int MaxIteration = 32, MaxRecursion = 3;
+
+    unsafe delegate nuint VoidPointer(void* v);
 #if !WAWA
     const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
 #endif // ReSharper disable UnusedMember.Local
 #pragma warning disable CA1823, IDE0051
     const string
+        Apology = "I am so sorry that you have to deal with double pointers, but this cannot be supported.",
         BitFlagSeparator = " | ",
         Else = "th",
         EqualityContract = nameof(EqualityContract),
@@ -17736,6 +17739,8 @@ public
 #endif
         s_exSeparator = Constant(Separator),
         s_exTrue = Constant(true);
+
+    static readonly unsafe MethodInfo s_readVoidPointer = ((VoidPointer)ReadVoidPointer).Method;
 
     static readonly MethodInfo // ReSharper disable NullableWarningSuppressionIsUsed
         s_boolStringify = ((Func<bool, int, bool, string>)Stringify).Method,
@@ -18672,9 +18677,12 @@ public
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
         while (type.IsPointer && (type = type.GetElementType()!) is var _)
-            exAcc = Call(s_readPointer.MakeGenericMethod(type), exAcc);
+            exAcc = type.IsPointer
+                ? throw new NotSupportedException(Apology)
+                : Call(type == typeof(void) ? s_readVoidPointer : s_readPointer.MakeGenericMethod(type), exAcc);
 
-        Expression exCall = Call(s_stringify.MakeGenericMethod(type), exAcc, exDepth, s_exTrue);
+        Expression exCall =
+            Call(s_stringify.MakeGenericMethod(type == typeof(void) ? typeof(nuint) : type), exAcc, exDepth, s_exTrue);
 #if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
         var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
         Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
@@ -18812,6 +18820,7 @@ public
                 yield return j;
     }
 #endif
+    static unsafe nuint ReadVoidPointer(void* ptr) => (nuint)ptr;
 #pragma warning disable 8500
     static unsafe T? ReadPointer<T>(T* ptr) => (nuint)ptr >= 1 << 11 ? *ptr : default;
 #pragma warning restore 8500
