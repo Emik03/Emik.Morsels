@@ -197,10 +197,10 @@
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <MarkdownIndexFilePath>$(ProjectDir)Documentation/index.md</MarkdownIndexFilePath>
-        <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE</DefineConstants>
         <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">$(RepositoryUrl)</PackageProjectUrl>
         <RootNamespace>$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
+        <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE;NO_SYSTEM_MEMORY</DefineConstants>
         <Copyright Condition="$(CopyrightSince) != ''">Copyright © Emik $(CopyrightSince) - $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <DefineConstants Condition="'$(IsCeleste)' == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
