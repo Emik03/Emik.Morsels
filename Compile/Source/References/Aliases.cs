@@ -35,12 +35,13 @@ global using Type = System.Type;
 global using Vector = System.Numerics.Vector;
 #endif
 #if KTANE
-global using Application = UnityEngine.Application;
+global using Application = unity::UnityEngine.Application;
 global using Assembly = System.Reflection.Assembly;
 global using AssertionMethodAttribute = unity::JetBrains.Annotations.AssertionMethodAttribute;
 global using BaseTypeRequiredAttribute = unity::JetBrains.Annotations.BaseTypeRequiredAttribute;
 global using CanBeNullAttribute = unity::JetBrains.Annotations.CanBeNullAttribute;
 global using CannotApplyEqualityOperatorAttribute = unity::JetBrains.Annotations.CannotApplyEqualityOperatorAttribute;
+global using Color = unity::UnityEngine.Color;
 global using Component = unity::UnityEngine.Component;
 global using ContractAnnotationAttribute = unity::JetBrains.Annotations.ContractAnnotationAttribute;
 global using Debug = unity::UnityEngine.Debug;
