@@ -8358,7 +8358,7 @@ public partial struct Two<T>(T left, T right) :
 #if KTANE
         UnityEngine.Debug.Log +
 #endif
-        Console.WriteLine;
+        (Action<string>)Console.WriteLine;
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all the types currently loaded.</summary>
