@@ -1159,7 +1159,7 @@ static partial class Stringifier
 #if WAWA
     static IEnumerable<int> AsBits(this int i)
     {
-        for (var j = 1; j is not 0; j >>= 1)
+        for (var j = 1; j is not 0; j <<= 1)
             if ((i & j) is not 0)
                 yield return j;
     }
