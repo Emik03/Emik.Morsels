@@ -147,11 +147,13 @@ static partial class Peeks
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
+#pragma warning disable IDE0004
         (Action<string>)Shout +
 #if KTANE
         (Action<string>)UnityEngine.Debug.Log +
 #endif
         (Action<string>)Console.WriteLine;
+#pragma warning restore IDE0004
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all the types currently loaded.</summary>
@@ -183,7 +185,9 @@ static partial class Peeks
         // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
+#pragma warning disable S6670
         Trace.WriteLine(message);
+#pragma warning restore S6670
 #endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
         if (File.Exists(s_debugFile))
