@@ -18127,7 +18127,7 @@ public
             nint x => $"{x}",
             nuint x => $"{x}",
             char x => useQuotes ? Escape(x) : $"{x}",
-            string x => useQuotes ? $@"""{x}""" : x,
+            string x => useQuotes ? @$"""{x}""" : x,
             Enum x when x.AsInt() is var i && x.GetType().IsDefined(typeof(FlagsAttribute), false) is var b =>
                 $"{x.GetType().Name}({(b ? $"0x{i:x}" : i)}) = {(b
                     ? Conjoin(i.AsBits().Select(x.GetType().Into), BitFlagSeparator)
@@ -18147,9 +18147,9 @@ public
                 source.StringifyObject(depth - 1),
 #endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
-            IEnumerable<char> x => useQuotes ? $@"""{x.Concat()}""" : x.Concat(),
+            IEnumerable<char> x => useQuotes ? @$"""{x.Concat()}""" : x.Concat(),
 #else
-            IEnumerable<char> x => useQuotes ? $@"""{Conjoin(x, "")}""" : Conjoin(x, ""),
+            IEnumerable<char> x => useQuotes ? @$"""{Conjoin(x, "")}""" : Conjoin(x, ""),
 #endif
             IDictionary { Count: 0 } => "{ }",
             IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
