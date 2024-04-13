@@ -167,7 +167,7 @@
         <IsKtane>true</IsKtane>
         <NoTests>true</NoTests>
         <NoWarn>$(NoWarn);419</NoWarn>
-        <FileVersion>4.7.1</FileVersion>
+        <FileVersion>4.7.2</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
