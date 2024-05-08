@@ -406,7 +406,7 @@ static partial class Span
             *(nuint*)ptr = address;
 #else
         Unsafe.SkipInit(out reference);
-        Unsafe.AsRef(reference) = Unsafe.AddByteOffset(ref Unsafe.NullRef<T>(), address);
+        Unsafe.As<T?, nuint>(ref reference) = address;
 #endif
     }
 
