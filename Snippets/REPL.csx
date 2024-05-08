@@ -6951,7 +6951,7 @@ public partial struct Two<T>(T left, T right) :
     /// <param name="tuple">The <see cref="ValueTuple{T1, T2}"/> to convert.</param>
     /// <returns>The equivalent sequential layout of the parameter <paramref name="tuple"/>.</returns>
     [Pure]
-    public static implicit operator Two<T>((T First, T Second) tuple) => (tuple.First, tuple.Second);
+    public static implicit operator Two<T>((T First, T Second) tuple) => new(tuple.First, tuple.Second);
 
     /// <inheritdoc cref="object.Equals(object)"/>
     [Pure]
