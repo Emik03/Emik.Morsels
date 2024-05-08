@@ -395,14 +395,19 @@ static partial class Span
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
         fixed (T* ptr = &reference)
 #pragma warning restore 8500
             *(nuint*)ptr = address;
+#else
+        Unsafe.SkipInit(out reference);
+        Unsafe.AsRef(reference) = Unsafe.AddByteOffset(ref Unsafe.NullRef<T>(), address);
+#endif
     }
 
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
@@ -439,7 +444,12 @@ static partial class Span
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
-    public static unsafe nuint ToAddress(this object? reference) => *(nuint*)&reference;
+    public static unsafe nuint ToAddress(this object? reference) =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        *(nuint*)&reference;
+#else
+        *(nuint*)Unsafe.AsPointer(ref Unsafe.AsRef(reference));
+#endif
 #pragma warning restore 8500
 #pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
@@ -938,8 +948,12 @@ static partial class Span
 #pragma warning disable 8500
     public static unsafe ref T AsRef<T>(in T source)
     {
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         fixed (T* ptr = &source)
             return ref Unsafe.AsRef<T>(ptr);
+#else
+        return ref Unsafe.AsRef(source);
+#endif
     }
 #pragma warning restore 8500
 #endif
