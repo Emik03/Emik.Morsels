@@ -143,7 +143,8 @@ static partial class TryTake
     /// <param name="array">The array to potentially return.</param>
     /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
     [Pure]
-    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
+        array.IsDefault ? ImmutableArray<T>.Empty : array;
 #endif
 
     /// <summary>Gets a specific character from a string.</summary>
