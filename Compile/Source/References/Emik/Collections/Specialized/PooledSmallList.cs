@@ -50,7 +50,11 @@ ref
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
     /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList([NonNegativeValue] int capacity) => MakeRoom(capacity);
+    public PooledSmallList([NonNegativeValue] int capacity)
+    {
+        MakeRoom(capacity);
+        _length = 0;
+    }
 
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="view">The view to hold as the initial value.</param>
