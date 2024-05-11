@@ -461,7 +461,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             foreach (var next in properties)
             {
                 if (next.GetGetMethod() is { } getter &&
-                    (getter.IsStatic || next.GetGetMethod().GetParameters() is not []))
+                    (getter.IsStatic || next.GetGetMethod()?.GetParameters() is not []))
                     continue;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
                 if (next.PropertyType.IsByRefLike)

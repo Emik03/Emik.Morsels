@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable MissingBlankLines RedundantUsingDirective.Global
-#pragma warning disable GlobalUsingsAnalyzer, SA1649
+#pragma warning disable GlobalUsingsAnalyzer, IDE0005, SA1649
 #if KTANE
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 extern alias unity;
@@ -11,6 +11,7 @@ extern alias ms;
 #endif
 global using Attribute = System.Attribute;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
+global using FieldInfo = System.Reflection.FieldInfo;
 global using Version = System.Version;
 #if ANDROID
 global using Action = System.Action;
