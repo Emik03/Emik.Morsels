@@ -125,7 +125,9 @@ static partial class Clamped
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
 #if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
-        BitOperations.RoundUpToPowerOf2(value);
+#pragma warning disable IDE0004 // ReSharper disable once RedundantCast
+        (nuint)BitOperations.RoundUpToPowerOf2(value);
+#pragma warning restore IDE0004
 #else
         sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 #endif
@@ -137,6 +139,17 @@ static partial class Clamped
 #pragma warning restore MA0051
         where T : IBitwiseOperators<T, T, T>, IDecrementOperators<T>, IIncrementOperators<T>, IShiftOperators<T, int, T>
     {
+        if (typeof(T) == typeof(BigInteger))
+            return ((BigInteger)(object)value).IsZero ||
+                ((BigInteger)(object)value).IsOne ||
+                (BigInteger)(object)value == BigInteger.MinusOne
+                    ? value
+                    : (T)(object)(BigInteger.Pow(
+                            2,
+                            (int)BigInteger.Log2(BigInteger.Abs((BigInteger)(object)value) - 1) + 1
+                        ) *
+                        ((BigInteger)(object)value).Sign);
+
         --value;
         value |= value >>> 1;
         value |= value >>> 2;
