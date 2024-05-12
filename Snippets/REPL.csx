@@ -14008,10 +14008,9 @@ public sealed class Primes : IEnumerable<ulong>
         s_roundUp = new byte[s_circumference * 2];
 
         for (byte i = 1; i < s_roundUp.Length; i++)
-            if (i > s_circumference)
-                s_roundUp[i] = (byte)(s_circumference + s_positions[s_lookup[i - s_circumference]]);
-            else
-                s_roundUp[i] = s_positions[s_lookup[i]];
+            s_roundUp[i] = i > s_circumference
+                ? (byte)(s_circumference + s_positions[s_lookup[i - s_circumference]])
+                : s_positions[s_lookup[i]];
 
         s_counting = new byte[1 << 16];
 
