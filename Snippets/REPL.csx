@@ -13144,7 +13144,9 @@ namespace System.Linq;
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
 #if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
-        BitOperations.RoundUpToPowerOf2(value);
+#pragma warning disable IDE0004 // ReSharper disable once RedundantCast
+        (nuint)BitOperations.RoundUpToPowerOf2(value);
+#pragma warning restore IDE0004
 #else
         sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 #endif
@@ -13156,6 +13158,17 @@ namespace System.Linq;
 #pragma warning restore MA0051
         where T : IBitwiseOperators<T, T, T>, IDecrementOperators<T>, IIncrementOperators<T>, IShiftOperators<T, int, T>
     {
+        if (typeof(T) == typeof(BigInteger))
+            return ((BigInteger)(object)value).IsZero ||
+                ((BigInteger)(object)value).IsOne ||
+                (BigInteger)(object)value == BigInteger.MinusOne
+                    ? value
+                    : (T)(object)(BigInteger.Pow(
+                            2,
+                            (int)BigInteger.Log2(BigInteger.Abs((BigInteger)(object)value) - 1) + 1
+                        ) *
+                        ((BigInteger)(object)value).Sign);
+
         --value;
         value |= value >>> 1;
         value |= value >>> 2;
@@ -14595,7 +14608,7 @@ public sealed class Primes : IEnumerable<ulong>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Successor<T>(this T value)
         where T : Enum =>
-#if NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         (value.AsInt() + 1).As<T>();
 #else
         value.Op(static x => unchecked(x + 1));
@@ -14703,7 +14716,7 @@ public sealed class Primes : IEnumerable<ulong>
         =>
             source.Aggregate(Add);
 #endif
-#if !NETCOREAPP
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
         where T : Enum =>
@@ -16779,6 +16792,62 @@ readonly struct LightweightOverloadResolution(
         return builder.Remove(startIndex, length);
     }
 
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER
+    /// <inheritdoc cref="string.Trim()"/>
+    public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
+
+    /// <inheritdoc cref="string.Trim()"/>
+    public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> memory) => memory.TrimStart().TrimEnd();
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static Memory<char> TrimStart(this Memory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..i];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..i];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static Memory<char> TrimEnd(this Memory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static ReadOnlyMemory<char> TrimEnd(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+
+        return default;
+    }
+#endif
+
     /// <inheritdoc cref="string.Trim()"/>
     public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
 
@@ -17862,7 +17931,7 @@ public
 #else
         Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
 #endif
-        is var trim
+            is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
 #if NET7_0_OR_GREATER

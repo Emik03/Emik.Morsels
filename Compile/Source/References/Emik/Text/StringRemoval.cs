@@ -125,6 +125,62 @@ static partial class StringRemoval
         return builder.Remove(startIndex, length);
     }
 
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER
+    /// <inheritdoc cref="string.Trim()"/>
+    public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
+
+    /// <inheritdoc cref="string.Trim()"/>
+    public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> memory) => memory.TrimStart().TrimEnd();
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static Memory<char> TrimStart(this Memory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..i];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..i];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static Memory<char> TrimEnd(this Memory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static ReadOnlyMemory<char> TrimEnd(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+
+        return default;
+    }
+#endif
+
     /// <inheritdoc cref="string.Trim()"/>
     public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
 
