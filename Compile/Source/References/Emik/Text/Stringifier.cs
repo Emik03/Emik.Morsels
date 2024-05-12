@@ -195,7 +195,7 @@ static partial class Stringifier
 #else
         Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
 #endif
-        is var trim
+            is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
 #if NET7_0_OR_GREATER
