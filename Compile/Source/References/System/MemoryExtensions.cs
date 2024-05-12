@@ -4,9 +4,45 @@
 namespace System;
 #pragma warning disable 8500
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-/// <summary>Extension methods for <see cref="Span{T}"/>, Memory{T}, and friends.</summary>
+/// <summary>Extension methods for <see cref="Span{T}"/>, <c>Memory&lt;T&gt;</c>, and friends.</summary>
 static partial class MemoryExtensions
 {
+    /// <summary>Determines whether this span ends with the specified value.</summary>
+    /// <typeparam name="T">The type of span and value.</typeparam>
+    /// <param name="span">The span to search.</param>
+    /// <param name="value">The value to search for.</param>
+    /// <returns>The value determining whether this span ends with the specified value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool EndsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        var offset = span.Length - value.Length;
+
+        if (offset < 0)
+            return false;
+
+        for (var i = offset; i < value.Length; i++)
+            if (value[i] is { } next ? next.Equals(span[i]) : span[i] is not null)
+                return false;
+
+        return true;
+    }
+
+    /// <inheritdoc cref="StartsWith{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool EndsWith<T>(this Span<T> span, ReadOnlySpan<T> value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).StartsWith(value);
+
     /// <summary>
     /// Determines whether two sequences are equal by comparing the
     /// elements using <see cref="IEquatable{T}.Equals(T)"/>.
@@ -38,6 +74,40 @@ static partial class MemoryExtensions
 #endif
         =>
             ((ReadOnlySpan<T>)span).SequenceEqual(other);
+
+    /// <summary>Determines whether this span starts with the specified value.</summary>
+    /// <typeparam name="T">The type of span and value.</typeparam>
+    /// <param name="span">The span to search.</param>
+    /// <param name="value">The value to search for.</param>
+    /// <returns>The value determining whether this span starts with the specified value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool StartsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+    {
+        if (value.Length > span.Length)
+            return false;
+
+        for (var i = 0; i < value.Length; i++)
+            if (value[i] is { } next ? next.Equals(span[i]) : span[i] is not null)
+                return false;
+
+        return true;
+    }
+
+    /// <inheritdoc cref="StartsWith{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool StartsWith<T>(this Span<T> span, ReadOnlySpan<T> value)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>?
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            ((ReadOnlySpan<T>)span).StartsWith(value);
 
     /// <summary>
     /// Searches for the specified value and returns the index of its first occurrence.
