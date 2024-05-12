@@ -155,7 +155,7 @@ static partial class EnumMath
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Successor<T>(this T value)
         where T : Enum =>
-#if NETCOREAPP
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         (value.AsInt() + 1).As<T>();
 #else
         value.Op(static x => unchecked(x + 1));
@@ -263,7 +263,7 @@ static partial class EnumMath
         =>
             source.Aggregate(Add);
 #endif
-#if !NETCOREAPP
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
         where T : Enum =>
