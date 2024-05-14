@@ -229,6 +229,7 @@
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
+        <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
         <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
     </PropertyGroup>
@@ -239,9 +240,12 @@
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <None Remove="Documentation/**"/>
+        <None Remove="$(AssemblyName).Tests/**"/>
+        <Compile Remove="$(AssemblyName).Tests/**"/>
         <PackageReference Remove="$(AssemblyName)"/>
         <None Remove="$(AssemblyName).Generated.Tests/**"/>
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
+        <EditorConfigFiles Remove="$(AssemblyName).Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.7.0"/>
         <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
@@ -288,11 +292,15 @@
         <PackageReference Remove="GlobalUsingsAnalyzer"/>
         <ProjectReference Include="../*.csproj" PrivateAssets="all"/>
         <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
-        <PackageReference Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
-        <PackageReference Include="NUnit.Analyzers" Version="3.10.0" PrivateAssets="all"/>
-        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all"/>
         <PackageReference Include="coverlet.collector" Version="6.0.0" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23577-04" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit" Version="2.8.0" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10.0" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.console" Version="2.8.0" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="2.8.0" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
