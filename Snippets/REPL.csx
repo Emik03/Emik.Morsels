@@ -17972,6 +17972,35 @@ public
             : Path.GetFileName(path).Trim() ?? "";
 #endif
 
+    /// <summary>Extracts the file name from the path.</summary>
+    /// <remarks><para>
+    /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
+    /// </para></remarks>
+    /// <param name="path">The path to extract the file name from.</param>
+    /// <returns>The file name.</returns>
+    [Pure]
+#if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+    [return: NotNullIfNotNull(nameof(path))]
+#endif
+    public static
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        ReadOnlyMemory<char>
+#else
+        string
+#endif
+        UntrimmedFileName(this string? path) =>
+        path is null
+#if NET8_0_OR_GREATER
+            ? default
+            : path.SplitOn(s_slashes).Last;
+#elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            ? default
+            : path.SplitAny(Slashes.AsMemory()).Last;
+#else
+            ? ""
+            : Path.GetFileName(path) ?? "";
+#endif
+
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
