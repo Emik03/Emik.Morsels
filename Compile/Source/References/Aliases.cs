@@ -86,15 +86,44 @@ global using Rectangle = Microsoft.Xna.Framework.Rectangle;
 global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
 global using Vector2 = Microsoft.Xna.Framework.Vector2;
 #endif
+using static System.AttributeTargets;
+
+// ReSharper disable once CheckNamespace
+namespace Emik.Morsels
+{
+    /// <summary>Signifies to ignore this when determining potential interfaces that can be implemented.</summary>
+    /// <remarks>
+    /// <para>
+    /// The behavior of this attribute depends on what you apply it on:
+    /// </para>
+    /// <list type="table">
+    ///    <listheader>
+    ///        <term>Target</term>
+    ///        <description>Behavior</description>
+    ///    </listheader>
+    ///    <item>
+    ///        <term>Type Member</term>
+    ///        <description>Ignores the type altogether. No generation is ever performed on it.</description>
+    ///    </item>
+    ///    <item>
+    ///        <term>Member</term>
+    ///        <description>Ignores only this particular member when evaluating potential interfaces.</description>
+    ///    </item>
+    /// </list>
+    /// </remarks>
+    [AttributeUsage(Class | AttributeTargets.Struct | Method | Property | Field | Event)]
+    sealed partial class NoStructuralTypingAttribute : Attribute;
+}
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-namespace System.Diagnostics.Contracts;
-
-using static AttributeTargets;
-
-/// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
-[AttributeUsage(Class | Constructor | Delegate | Event | Parameter | Method | Property)]
+namespace System.Diagnostics.Contracts
+{
+    /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
+    [AttributeUsage(
+        Class | Constructor | AttributeTargets.Delegate | Event | AttributeTargets.Parameter | Method | Property
+    )]
 #pragma warning disable MA0048
-sealed partial class PureAttribute : Attribute;
+    sealed partial class PureAttribute : Attribute;
 #pragma warning restore MA0048
+}
 #endif
