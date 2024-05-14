@@ -14799,7 +14799,7 @@ public sealed class Primes : IEnumerable<ulong>
     {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         T output = default;
-        random.NextBytes(To<byte>.From(Ref(ref output)));
+        random.NextBytes(MemoryMarshal.Cast<T, byte>(Ref(ref output)));
         return output;
 #else
         return Next<T>(random.Next);
