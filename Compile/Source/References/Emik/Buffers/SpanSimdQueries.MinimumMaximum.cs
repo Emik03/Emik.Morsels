@@ -278,7 +278,7 @@ static partial class SpanSimdQueries
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static Vector<T> LoadUnsafe<T>(in T source)
+    static System.Numerics.Vector<T> LoadUnsafe<T>(in T source)
 #if !NET8_0_OR_GREATER
         where T : struct
 #endif
@@ -309,10 +309,10 @@ static partial class SpanSimdQueries
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() ||
 #if NET7_0_OR_GREATER
-            !Vector<T>.IsSupported ||
+            !System.Numerics.Vector<T>.IsSupported ||
 #endif
             !Vector.IsHardwareAccelerated ||
-            span.Length < Vector<T>.Count
+            span.Length < System.Numerics.Vector<T>.Count
         )
 #endif
         {
@@ -326,13 +326,13 @@ static partial class SpanSimdQueries
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         ref var current = ref MemoryMarshal.GetReference(span);
-        ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector<T>.Count);
+        ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
-        current = ref Unsafe.Add(ref current, Vector<T>.Count)!;
+        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
 
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
-            current = ref Unsafe.Add(ref current, Vector<T>.Count)!)
+            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
             best = 0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(current)),
@@ -349,7 +349,7 @@ static partial class SpanSimdQueries
 
         value = best[0];
 
-        for (var i = 1; i < Vector<T>.Count; i++)
+        for (var i = 1; i < System.Numerics.Vector<T>.Count; i++)
             if (0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => Compare<T, TS>(best[i], value),

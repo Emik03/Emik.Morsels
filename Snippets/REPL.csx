@@ -3736,11 +3736,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
 #if NET7_0_OR_GREATER
-            Vector<T>.IsSupported &&
+            System.Numerics.Vector<T>.IsSupported &&
 #endif
             Vector.IsHardwareAccelerated &&
-            Vector<T>.Count > 2 &&
-            span.Length >= Vector<T>.Count * 4)
+            System.Numerics.Vector<T>.Count > 2 &&
+            span.Length >= System.Numerics.Vector<T>.Count * 4)
             return SumVectorized(span);
 #endif
         if (typeof(T).IsEnum)
@@ -3968,7 +3968,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
+    static System.Numerics.Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
             Vector.LoadUnsafe(ref source, elementOffset);
@@ -4027,12 +4027,12 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     {
         ref var ptr = ref MemoryMarshal.GetReference(span);
         var length = (nuint)span.Length;
-        var accumulator = Vector<T>.Zero;
+        var accumulator = System.Numerics.Vector<T>.Zero;
 
-        Vector<T> overflowTestVector = new(MinValue<T>());
+        System.Numerics.Vector<T> overflowTestVector = new(MinValue<T>());
 
         nuint index = 0;
-        var limit = length - (nuint)Vector<T>.Count * 4;
+        var limit = length - (nuint)System.Numerics.Vector<T>.Count * 4;
 
         do
         {
@@ -4040,29 +4040,29 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             var accumulator2 = accumulator + data;
             var overflowTracking = (accumulator2 ^ accumulator) & (accumulator2 ^ data);
 
-            data = LoadUnsafe(ref ptr, index + (nuint)Vector<T>.Count);
+            data = LoadUnsafe(ref ptr, index + (nuint)System.Numerics.Vector<T>.Count);
             accumulator = accumulator2 + data;
             overflowTracking |= (accumulator ^ accumulator2) & (accumulator ^ data);
 
-            data = LoadUnsafe(ref ptr, index + (nuint)Vector<T>.Count * 2);
+            data = LoadUnsafe(ref ptr, index + (nuint)System.Numerics.Vector<T>.Count * 2);
             accumulator2 = accumulator + data;
             overflowTracking |= (accumulator2 ^ accumulator) & (accumulator2 ^ data);
 
-            data = LoadUnsafe(ref ptr, index + (nuint)Vector<T>.Count * 3);
+            data = LoadUnsafe(ref ptr, index + (nuint)System.Numerics.Vector<T>.Count * 3);
             accumulator = accumulator2 + data;
             overflowTracking |= (accumulator ^ accumulator2) & (accumulator ^ data);
 
-            if ((overflowTracking & overflowTestVector) != Vector<T>.Zero)
+            if ((overflowTracking & overflowTestVector) != System.Numerics.Vector<T>.Zero)
                 throw new OverflowException();
 
-            index += (nuint)Vector<T>.Count * 4;
+            index += (nuint)System.Numerics.Vector<T>.Count * 4;
         } while (index < limit);
 
-        limit = length - (nuint)Vector<T>.Count;
+        limit = length - (nuint)System.Numerics.Vector<T>.Count;
 
         if (index < limit)
         {
-            var overflowTracking = Vector<T>.Zero;
+            var overflowTracking = System.Numerics.Vector<T>.Zero;
 
             do
             {
@@ -4071,16 +4071,16 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
                 overflowTracking |= (accumulator2 ^ accumulator) & (accumulator2 ^ data);
                 accumulator = accumulator2;
 
-                index += (nuint)Vector<T>.Count;
+                index += (nuint)System.Numerics.Vector<T>.Count;
             } while (index < limit);
 
-            if ((overflowTracking & overflowTestVector) != Vector<T>.Zero)
+            if ((overflowTracking & overflowTestVector) != System.Numerics.Vector<T>.Zero)
                 throw new OverflowException();
         }
 
         T result = default!;
 
-        for (var i = 0; i < Vector<T>.Count; i++)
+        for (var i = 0; i < System.Numerics.Vector<T>.Count; i++)
             checked
             {
                 result = Adder(result, accumulator[i]);
@@ -4379,7 +4379,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static Vector<T> LoadUnsafe<T>(in T source)
+    static System.Numerics.Vector<T> LoadUnsafe<T>(in T source)
 #if !NET8_0_OR_GREATER
         where T : struct
 #endif
@@ -4410,10 +4410,10 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() ||
 #if NET7_0_OR_GREATER
-            !Vector<T>.IsSupported ||
+            !System.Numerics.Vector<T>.IsSupported ||
 #endif
             !Vector.IsHardwareAccelerated ||
-            span.Length < Vector<T>.Count
+            span.Length < System.Numerics.Vector<T>.Count
         )
 #endif
         {
@@ -4427,13 +4427,13 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         ref var current = ref MemoryMarshal.GetReference(span);
-        ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - Vector<T>.Count);
+        ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
-        current = ref Unsafe.Add(ref current, Vector<T>.Count)!;
+        current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
 
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
-            current = ref Unsafe.Add(ref current, Vector<T>.Count)!)
+            current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
             best = 0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(current)),
@@ -4450,7 +4450,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
         value = best[0];
 
-        for (var i = 1; i < Vector<T>.Count; i++)
+        for (var i = 1; i < System.Numerics.Vector<T>.Count; i++)
             if (0 switch
             {
                 _ when typeof(TS) == typeof(SMax) => Compare<T, TS>(best[i], value),
