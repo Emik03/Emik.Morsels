@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable MissingBlankLines RedundantUsingDirective.Global
-#pragma warning disable GlobalUsingsAnalyzer, IDE0005, SA1649
+// ReSharper disable ArrangeStaticMemberQualifier MissingBlankLines RedundantUsingDirective.Global
+#pragma warning disable GlobalUsingsAnalyzer, IDE0005, MA0048, SA1403, SA1649
 #if KTANE
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 extern alias unity;
@@ -111,7 +111,7 @@ namespace Emik.Morsels
     ///    </item>
     /// </list>
     /// </remarks>
-    [AttributeUsage(Class | AttributeTargets.Struct | Method | Property | Field | Event)]
+    [AttributeUsage(Class | AttributeTargets.Struct | Method | Property | Field | AttributeTargets.Event)]
     sealed partial class NoStructuralTypingAttribute : Attribute;
 }
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
@@ -120,10 +120,8 @@ namespace System.Diagnostics.Contracts
 {
     /// <summary>Indicates that a type or method is pure, that is, it does not make any visible state changes.</summary>
     [AttributeUsage(
-        Class | Constructor | AttributeTargets.Delegate | Event | AttributeTargets.Parameter | Method | Property
+        Class | Constructor | AttributeTargets.Delegate | AttributeTargets.Event | AttributeTargets.Parameter | Method | Property
     )]
-#pragma warning disable MA0048
     sealed partial class PureAttribute : Attribute;
-#pragma warning restore MA0048
 }
 #endif
