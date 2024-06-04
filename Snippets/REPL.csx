@@ -10155,11 +10155,11 @@ public partial struct Two<T>(T left, T right) :
         /// <inheritdoc />
         public void CopyTo(Array array, [NonNegativeValue] int index)
         {
-            var i = 0;
+            var i = index;
 
             foreach (var next in enumerable)
             {
-                array.SetValue(next, index);
+                array.SetValue(next, i);
                 _ = checked(i++);
             }
         }
@@ -10167,11 +10167,11 @@ public partial struct Two<T>(T left, T right) :
         /// <inheritdoc />
         public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
         {
-            var i = 0;
+            var i = arrayIndex;
 
             foreach (var next in enumerable)
             {
-                array[arrayIndex] = next;
+                array[i] = next;
                 _ = checked(i++);
             }
         }
