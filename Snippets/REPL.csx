@@ -13020,7 +13020,6 @@ namespace System.Linq;
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
 
 
