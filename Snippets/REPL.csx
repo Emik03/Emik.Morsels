@@ -13032,7 +13032,7 @@ namespace System.Linq;
     /// <param name="source">The collection to iterate over.</param>
     /// <returns>The <see cref="IEnumerable{T}"/> containing the current and next items.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T Current, T Next)> Window<T>(this IEnumerable<T> source) =>
+    public static IEnumerable<(T Left, T Right)> Window<T>(this IEnumerable<T> source) =>
         source.TryCount() is { } x ? Iterator(source).WithCount(x - 1) : Iterator(source);
 
     /// <summary>
@@ -13056,7 +13056,7 @@ namespace System.Linq;
             };
 
     [Pure]
-    static IEnumerable<(T Current, T Next)> Iterator<T>(IEnumerable<T> source)
+    static IEnumerable<(T Left, T Right)> Iterator<T>(IEnumerable<T> source)
     {
         using var e = source.GetEnumerator();
 
@@ -13085,8 +13085,8 @@ namespace System.Linq;
 
         while (e.MoveNext())
         {
-            for (var i = 0; i < window.Length - 1; i++)
-                window[i] = window[i + 1];
+            for (var i = 1; i < window.Length; i++)
+                window[i - 1] = window[i];
 
             window[^1] = e.Current;
             yield return (T[])window.Clone();
