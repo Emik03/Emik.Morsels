@@ -66,8 +66,8 @@ static partial class WindowIteration
 
         while (e.MoveNext())
         {
-            for (var i = 0; i < window.Length - 1; i++)
-                window[i] = window[i + 1];
+            for (var i = 1; i < window.Length; i++)
+                window[i - 1] = window[i];
 
             window[^1] = e.Current;
             yield return (T[])window.Clone();
