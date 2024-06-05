@@ -13,7 +13,7 @@ static partial class WindowIteration
     /// <param name="source">The collection to iterate over.</param>
     /// <returns>The <see cref="IEnumerable{T}"/> containing the current and next items.</returns>
     [LinqTunnel, Pure]
-    public static IEnumerable<(T Left, T Right)> Window<T>(this IEnumerable<T> source) =>
+    public static IEnumerable<(T Left, T Right)> Pairs<T>(this IEnumerable<T> source) =>
         source.TryCount() is { } x ? Iterator(source).WithCount(x - 1) : Iterator(source);
 
     /// <summary>
