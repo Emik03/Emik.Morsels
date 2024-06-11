@@ -443,14 +443,21 @@ static partial class Span
     /// <param name="reference">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable 8500
-    public static unsafe nuint ToAddress(this object? reference) =>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        *(nuint*)&reference;
+#pragma warning disable RCS1175 // ReSharper disable once EntityNameCapturedOnly.Global
+    public static nuint ToAddress(this object? reference)
+#if CSHARPREPL
+        =>
+            Unsafe.As<object, nuint>(ref reference);
 #else
-        *(nuint*)Unsafe.AsPointer(ref Unsafe.AsRef(reference));
+    {
+        // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
+        // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
+        // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+        IL.Emit.Ldarg_0();
+        return IL.Return<nuint>();
+    }
 #endif
-#pragma warning restore 8500
+#pragma warning restore RCS1175
 #pragma warning disable 9091 // InlineAttribute makes this okay.
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
