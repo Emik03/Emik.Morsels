@@ -15871,9 +15871,9 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static RefKind GetRefKind(this ArgumentSyntax? argument) =>
         argument?.RefKindKeyword.Kind() switch
         {
-            RefKeyword => RefKind.Ref,
-            OutKeyword => RefKind.Out,
-            InKeyword => RefKind.In,
+            SyntaxKind.RefKeyword => RefKind.Ref,
+            SyntaxKind.OutKeyword => RefKind.Out,
+            SyntaxKind.InKeyword => RefKind.In,
             _ => RefKind.None,
         };
 
