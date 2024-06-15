@@ -146,11 +146,10 @@
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.8.0" PrivateAssets="all"/>
+        <PackageReference Include="Fody" Version="6.8.1" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.2.0" PrivateAssets="all"/>
-        <PackageReference Include="Absence.Fody" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24.0" PrivateAssets="all"/>
         <PackageReference Include="UnitGenerator" Version="1.6.1" PrivateAssets="all"/>
@@ -165,30 +164,30 @@
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.7" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.150" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.158" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.3" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.4" PrivateAssets="all"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.2" PrivateAssets="all"/>
         <PackageReference Include="Jubjubnest.Style.DotNet" Version="0.1.54" PrivateAssets="all"/>
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.25.0.90414" PrivateAssets="all"/>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.27.0.93347" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.2.0" PrivateAssets="all"/>
-        <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24165.2" PrivateAssets="all"/>
+        <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.5" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.3" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.4" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.10.48" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24165.2" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24165.2" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24165.2" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24225.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="8.0.100"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))" Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
@@ -197,10 +196,10 @@
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="4.7.2"/>
         <Reference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
         <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.2.1" PrivateAssets="all"/>
-        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog" Version="4.0.0-dev-02167" PrivateAssets="all"/>
+        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog" Version="4.0.0" PrivateAssets="all"/>
+        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Sinks.Console" Version="6.0.0" PrivateAssets="all"/>
+        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Formatting.Compact" Version="3.0.0" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Sinks.File" Version="5.0.1-dev-00972" PrivateAssets="all"/>
-        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Sinks.Console" Version="5.1.0-dev-00943" PrivateAssets="all"/>
-        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Formatting.Compact" Version="2.0.1-dev-00969" PrivateAssets="all"/>
         <PackageReference Condition="($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp')))" Include="FastGenericNew.SourceGenerator" Version="3.1.0-preview1" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Community Toolkit starts at .NET Standard 2.0. -->
@@ -212,7 +211,7 @@
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
         <PackageReference Include="ReSharper.ExportAnnotations.Task" Version="1.4.0" PrivateAssets="all"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.3.0" PrivateAssets="all" IncludeAssets="compile"/>
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0-eap1" PrivateAssets="all" IncludeAssets="compile"/>
     </ItemGroup>
     <!-- Explicit references -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))">
