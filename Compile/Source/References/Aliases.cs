@@ -111,7 +111,7 @@ namespace Emik.Morsels
     ///    </item>
     /// </list>
     /// </remarks>
-    [AttributeUsage(Class | AttributeTargets.Struct | Method | Property | Field | AttributeTargets.Event)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | Method | Property | Field | AttributeTargets.Event)]
     sealed partial class NoStructuralTypingAttribute : Attribute;
 }
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER

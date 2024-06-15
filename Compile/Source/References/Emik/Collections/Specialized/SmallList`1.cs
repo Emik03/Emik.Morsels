@@ -163,7 +163,7 @@ partial struct SmallList<T> :
     public readonly int Count
     {
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => _rest.ToAddress() is < InlinedLength and var address ? (int)address : _rest!.Count + InlinedLength;
+        get => _rest.ToAddress() < InlinedLength ? (int)_rest.ToAddress() : _rest!.Count + InlinedLength;
     }
 
     /// <summary>Gets the number of head elements used.</summary>
@@ -382,7 +382,7 @@ partial struct SmallList<T> :
     /// <summary>Copies all values onto the destination.</summary>
     /// <param name="list">The destination.</param>
     /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="list"/> has less elements than itself.
+    /// The parameter <paramref name="list"/> has fewer elements than itself.
     /// </exception>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void CopyTo(ref SmallList<T> list)
