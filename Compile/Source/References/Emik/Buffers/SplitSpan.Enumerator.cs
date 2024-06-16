@@ -87,6 +87,12 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(To<SearchValues<TBody>>.From(sep), ref body, out current),
 #endif
+#if NET9_0_OR_GREATER
+                _ when typeof(TStrategy) == typeof(MatchAny) &&
+                    typeof(TSeparator) == typeof(SearchValues<string>) &&
+                    typeof(TBody) == typeof(char) =>
+                    MoveNextAny(To<SearchValues<TBody>>.From(sep), ref body, out current),
+#endif
                 _ when typeof(TStrategy) == typeof(MatchAny) =>
                     MoveNextAny(To<TBody>.From(sep), ref body, out current),
                 _ when typeof(TStrategy) == typeof(MatchOne) =>
@@ -269,6 +275,41 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             ref var single = ref MemoryMarshal.GetReference(sep);
 
             switch (body.IndexOfAnyExcept(single))
+            {
+                case -1:
+                    current = default;
+                    return false;
+                case 0: break;
+                case var offset:
+                    body = UnsafelyAdvance(body, offset);
+                    break;
+            }
+
+            if (body.IndexOfAny(single) is not -1 and var length)
+            {
+                current = UnsafelyTake(body, length);
+                body = UnsafelyAdvance(body, length + 1);
+                return true;
+            }
+
+            current = body;
+            body = default;
+            return true;
+        }
+#endif
+#if NET9_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool MoveNextAny(
+            scoped in ReadOnlySpan<SearchValues<string>> sep,
+            scoped ref ReadOnlySpan<char> body,
+            out ReadOnlySpan<char> current
+        )
+        {
+            System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
+            System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
+            ref var single = ref MemoryMarshal.GetReference(sep);
+
+            switch (body.IndexOfAny(single))
             {
                 case -1:
                     current = default;

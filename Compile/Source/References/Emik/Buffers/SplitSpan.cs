@@ -92,6 +92,23 @@ static partial class SplitSpanFactory
         where T : IEquatable<T> =>
         ((ReadOnlySpan<T>)span).SplitOn(separator);
 #endif
+#if NET9_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, SearchValues<string>, MatchAny> SplitOn(
+        this ReadOnlySpan<char> span,
+        in SearchValues<string> separator
+    ) =>
+        new(span, In(separator));
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, SearchValues<string>, MatchAny> SplitOn(
+        this Span<char> span,
+        in SearchValues<string> separator
+    ) =>
+        ((ReadOnlySpan<char>)span).SplitOn(separator);
+#endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

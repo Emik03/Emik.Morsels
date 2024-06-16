@@ -83,6 +83,23 @@ static partial class SplitMemoryFactory
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)span).SplitOn(separator);
 #endif
+#if NET9_0_OR_GREATER
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char, SearchValues<string>, MatchOne> SplitOn(
+        this ReadOnlyMemory<char> span,
+        in OnceMemoryManager<SearchValues<string>> separator
+    ) =>
+        new(span, separator.Memory);
+
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char, SearchValues<string>, MatchOne> SplitOn(
+        this Memory<char> span,
+        in OnceMemoryManager<SearchValues<string>> separator
+    ) =>
+        ((ReadOnlyMemory<char>)span).SplitOn(separator);
+#endif
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
