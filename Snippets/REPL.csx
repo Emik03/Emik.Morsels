@@ -8398,7 +8398,7 @@ public partial struct Two<T>(T left, T right) :
     [Pure]
     public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
 
-    /// <summary>Gets the dummy diagnostic.</summary>
+    /// <summary>Gets the placeholder diagnostic.</summary>
     [Pure]
     public static DiagnosticDescriptor Bare { get; } = new(Name, $"{s_guid}", "", Name, DiagnosticSeverity.Error, true);
 #endif
