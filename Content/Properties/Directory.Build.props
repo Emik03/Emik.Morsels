@@ -128,6 +128,11 @@
     <PropertyGroup Condition="Exists('Images/icon.png')">
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
+    <!-- Set .globalconfig to the proper tag. If it exists above, it is likely symlinked to it and we don't do anything. -->
+    <ItemGroup Condition="!Exists($([MSBuild]::GetPathOfFileAbove('.globalconfig', '$(MSBuildProjectFullPath)../')))">
+        <AdditionalFiles Remove="$(Morsels)/Content/Properties/.globalconfig"/>
+        <GlobalAnalyzerConfigFiles Include="$(Morsels)/Content/Properties/.globalconfig" Link="Properties/.globalconfig"/>
+    </ItemGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
         <AdditionalFiles Include="*.??proj" Visible="false"/>
@@ -135,14 +140,12 @@
         <Content Include="$(Morsels)/Content/Properties/**" Link="Properties/**" Pack="false"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.csproj'" Include="$(Morsels)/Compile/**/*.cs"/>
         <None Condition="Exists('Images/icon.png')" Include="Images/icon.png" Link="Images/icon.png" Pack="true" PackagePath="icon.png"/>
-        <Compile Condition="'$(MSBuildProjectExtension)' == '.fsproj'" Include="$(Morsels)/Compile/**/*.fs" Link="Source/Emik.Morsels/*.fs"/>
+        <Compile Condition="'$(MSBuildProjectExtension)' == '.fsproj'" Include="$(Morsels)/Compile/**/*.fs" Link="Emik.Morsels/*.fs"/>
         <None Include="$([MSBuild]::GetPathOfFileAbove('README.md', '$(MSBuildProjectFullPath)../'))" Link="README.md" Pack="true" PackagePath="/"/>
     </ItemGroup>
-    <!-- Set .globalconfig to the proper tag. If it exists above, it is likely symlinked to it and we don't do anything. -->
+    <!-- This has to come afterwards due to the above wildcard. -->
     <ItemGroup Condition="!Exists($([MSBuild]::GetPathOfFileAbove('.globalconfig', '$(MSBuildProjectFullPath)../')))">
         <Content Remove="$(Morsels)/Content/Properties/.globalconfig"/>
-        <AdditionalFiles Remove="$(Morsels)/Content/Properties/.globalconfig"/>
-        <GlobalAnalyzerConfigFiles Include="$(Morsels)/Content/Properties/.globalconfig" Link="Properties/.globalconfig"/>
     </ItemGroup>
     <!-- Fody references that target any framework. -->
     <ItemGroup>
