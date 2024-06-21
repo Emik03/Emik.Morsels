@@ -59,6 +59,15 @@ let inline uncurry7 fn (a, b, c, d, e, f, g) = fn a b c d e f g
 /// Invokes the function.
 let inline invoke fn = fn ()
 
+/// Gets the function that ignores the passed value with the value passed in here.
+let inline ignored a = fun _ -> a
+
+/// Gets the function that ignores the passed value with true.
+let inline fals _ = false
+
+/// Gets the function that ignores the passed value with true.
+let inline tru _ = true
+
 /// Drops the first element from the tuple.
 let inline dropLeft (_, b, c) = (b, c)
 
