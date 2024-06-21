@@ -59,10 +59,10 @@ let inline uncurry7 fn (a, b, c, d, e, f, g) = fn a b c d e f g
 /// Invokes the function.
 let inline invoke fn = fn ()
 
-/// Gets the function that ignores the passed value with the value passed in here.
-let inline ignored a = fun _ -> a
+/// Gets the function that ignores the second argument and returns the first.
+let inline ignored a _ = a
 
-/// Gets the function that ignores the passed value with true.
+/// Gets the function that ignores the passed value with false.
 let inline fals _ = false
 
 /// Gets the function that ignores the passed value with true.
