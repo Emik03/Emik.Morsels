@@ -69,10 +69,10 @@ let inline fals _ = false
 let inline tru _ = true
 
 /// Drops the first element from the tuple.
-let inline dropLeft (_, b, c) = (b, c)
+let inline dropLeft (_, b, c) = b, c
 
 /// Drops the second element from the tuple.
-let inline dropMiddle (a, _, c) = (a, c)
+let inline dropMiddle (a, _, c) = a, c
 
 /// Drops the third element from the tuple.
-let inline dropRight (a, b, _) = (a, b)
+let inline dropRight (a, b, _) = a, b
