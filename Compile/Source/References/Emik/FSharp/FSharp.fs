@@ -13,22 +13,22 @@ let inline (<&&>) f g x = f x && g x
 let inline (<||>) f g x = f x || g x
 
 /// Converts the 2-tupled function with the curried equivalent.
-let inline curry fn a b = a, b |> fn
+let inline curry fn a b = fn (a, b)
 
 /// Converts the 3-tupled function with the curried equivalent.
-let inline curry3 fn a b c = a, b, c |> fn
+let inline curry3 fn a b c = fn (a, b, c)
 
 /// Converts the 4-tupled function with the curried equivalent.
-let inline curry4 fn a b c d = a, b, c, d |> fn
+let inline curry4 fn a b c d = fn (a, b, c, d)
 
 /// Converts the 5-tupled function with the curried equivalent.
-let inline curry5 fn a b c d e = a, b, c, d, e |> fn
+let inline curry5 fn a b c d e = fn (a, b, c, d, e)
 
 /// Converts the 6-tupled function with the curried equivalent.
-let inline curry6 fn a b c d e f = a, b, c, d, e, f |> fn
+let inline curry6 fn a b c d e f = fn (a, b, c, d, e, f)
 
 /// Converts the 7-tupled function with the curried equivalent.
-let inline curry7 fn a b c d e f g = a, b, c, d, e, f, g |> fn
+let inline curry7 fn a b c d e f g = fn (a, b, c, d, e, f, g)
 
 /// Maps the 2 arguments into a tuple.
 let inline tuple a b = a, b
@@ -155,31 +155,31 @@ let inline tryPickRandom fn xs =
 #endif
 
 /// Determines whether any element in the sequence is equal to the argument.
-let contains i s = s |> Seq.exists ((=) i)
+let inline contains i s = s |> Seq.exists ((=) i)
 
 /// Determines whether the coordinates are in range for a 2D array.
-let inBounds y x a =
+let inline inBounds y x a =
     Array2D.base1 a <= y && Array2D.base2 a <= x && y < Array2D.length1 a && x < Array2D.length2 a
 
 /// Determines whether the coordinates are in range for a 3D array.
-let inBounds3 z y x a =
+let inline inBounds3 z y x a =
     z < Array3D.length1 a && y < Array3D.length2 a && x < Array3D.length3 a &&
     a.GetLowerBound 0 <= z && a.GetLowerBound 1 <= y && a.GetLowerBound 2 <= x
 
 /// Determines whether the coordinates are in range for a 4D array.
-let inBounds4 w z y x a =
+let inline inBounds4 w z y x a =
     w < Array4D.length1 a && z < Array4D.length2 a &&
     y < Array4D.length3 a && x < Array4D.length4 a &&
     a.GetLowerBound 0 <= w && a.GetLowerBound 1 <= z &&
     a.GetLowerBound 2 <= y && a.GetLowerBound 3 <= x
 
 /// Gets the jagged array from the 2D array.
-let toJagged (a : _[,]) =
+let inline toJagged (a : _[,]) =
     [| for y in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
            yield [| for x in a.GetLowerBound 1 .. a.GetLength 1 - 1 -> a[y, x] |] |]
 
 /// Gets the jagged array from the 3D array.
-let toJagged3 (a : _[,,]) =
+let inline toJagged3 (a : _[,,]) =
     [| for z in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
            yield
                [| for y in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -187,7 +187,7 @@ let toJagged3 (a : _[,,]) =
                                    a[z, y, x] |] |] |]
 
 /// Gets the jagged array from the 4D array.
-let toJagged4 (a : _[,,,]) =
+let inline toJagged4 (a : _[,,,]) =
     [| for w in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
            yield
                [| for z in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -198,7 +198,7 @@ let toJagged4 (a : _[,,,]) =
                                             a[w, z, y, x] |] |] |] |]
 
 /// Gets the sequence from the 2D array.
-let toSeq (a : _[,]) =
+let inline toSeq (a : _[,]) =
     seq {
         for y in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
             for x in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -206,7 +206,7 @@ let toSeq (a : _[,]) =
     }
 
 /// Gets the sequence from the 3D array.
-let toSeq3 (a : _[,,]) =
+let inline toSeq3 (a : _[,,]) =
     seq {
         for z in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
             for y in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -215,7 +215,7 @@ let toSeq3 (a : _[,,]) =
     }
 
 /// Gets the sequence from the 4D array.
-let toSeq4 (a : _[,,,]) =
+let inline toSeq4 (a : _[,,,]) =
     seq {
         for w in a.GetLowerBound 0 .. a.GetLength 0 - 1 do
             for z in a.GetLowerBound 1 .. a.GetLength 1 - 1 do
@@ -225,16 +225,16 @@ let toSeq4 (a : _[,,,]) =
     }
 
 /// Returns the corresponding index if in range for a 2D array, else None.
-let tryGet y x a = if a |> inBounds y x then Some (a[y, x]) else None
+let inline tryGet y x a = if a |> inBounds y x then Some (a[y, x]) else None
 
 /// Returns the corresponding index if in range for a 3D array, else None.
-let tryGet3 z y x a = if a |> inBounds3 z y x then Some (a[z, y, x]) else None
+let inline tryGet3 z y x a = if a |> inBounds3 z y x then Some (a[z, y, x]) else None
 
 /// Returns the corresponding index if in range for a 4D array, else None.
-let tryGet4 w z y x a = if a |> inBounds4 w z y x then Some (a[w, z, y, x]) else None
+let inline tryGet4 w z y x a = if a |> inBounds4 w z y x then Some (a[w, z, y, x]) else None
 
 /// Removes the item from the list. Only the first occurence of the item will be removed.
-let remove n list =
+let inline remove n list =
     let rec go n list acc =
         match list with
         | h :: tl when h = n -> acc @ tl
