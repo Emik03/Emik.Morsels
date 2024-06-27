@@ -3,7 +3,8 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
 
-// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable RedundantNameQualifier RedundantUsingDirective
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
 using FieldInfo = System.Reflection.FieldInfo;
 
@@ -641,7 +642,7 @@ ref
     {
         length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
 
-        if (!To<T>.Unmanagable)
+        if (IsReferenceOrContainsReferences<T>())
         {
             Unsafe.SkipInit(out bytes);
             return false;

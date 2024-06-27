@@ -3,6 +3,10 @@
 // ReSharper disable BadPreprocessorIndent ConvertToStaticClass
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
+
+// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+
 #pragma warning disable DOC106
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
 /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -26,9 +30,11 @@ static partial class Span
             // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-                typeof(TTo) == typeof(TFrom) ||
+                typeof(TFrom) == typeof(TTo) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
-                (IsReinterpretable(typeof(TFrom), typeof(TTo)) || Unmanagable && To<TFrom>.Unmanagable);
+                (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
+                    IsReferenceOrContainsReferences<TFrom>() &&
+                    IsReferenceOrContainsReferences<TTo>());
 #else
                 typeof(TTo) == typeof(TFrom);
 #endif
@@ -50,10 +56,6 @@ static partial class Span
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
 #endif
         }
-
-        /// <summary>Gets a value indicating whether the type is unmanaged.</summary>
-        public static bool Unmanagable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            typeof(TTo).IsUnmanaged();
 
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
@@ -419,7 +421,7 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsStack<T>([NonNegativeValue] int length) => InBytes<T>(length) <= StackallocSize;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
@@ -428,7 +430,9 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] // ReSharper disable once RedundantUnsafeContext
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+
+    // ReSharper disable once RedundantUnsafeContext
     public static unsafe int InBytes<T>([NonNegativeValue] int length) =>
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
         length * Unsafe.SizeOf<T>();

@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP)
+#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER)
 // ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 
@@ -19,6 +19,18 @@ static partial class RuntimeHelpers
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => sizeof(nint) + 4;
     }
 
+    /// <summary>
+    /// Returns a value that indicates whether the specified type is a reference
+    /// type or a value type that contains references or by-refs.
+    /// </summary>
+    /// <typeparam name="T">The type.</typeparam>
+    /// <returns>
+    /// <see langword="true"/> if the given type is a reference type or a value type
+    /// that contains references or by-refs; otherwise, <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsReferenceOrContainsReferences<T>() => !typeof(T).IsUnmanaged();
+
     /// <summary>Slices the specified array using the specified range.</summary>
     /// <typeparam name="T">The type of elements in the array.</typeparam>
     /// <param name="array">The array to slice.</param>
@@ -31,14 +43,12 @@ static partial class RuntimeHelpers
     {
         range.GetOffsetAndLength(array.Length, out var offset, out var length);
 
-        var isArrayTypeEqual = default(T) is not null || typeof(T[]) == array.GetType();
-
-        if (isArrayTypeEqual && length is 0)
+        if (default(T) is not null || typeof(T[]) == array.GetType() && length is 0)
             return [];
 
-        var dest = isArrayTypeEqual ? new T[length] :
-            array.GetType().GetElementType() is { } element ? (T[])Array.CreateInstance(element, length) :
-            throw Unreachable;
+        var dest = default(T) is not null || typeof(T[]) == array.GetType()
+            ? new T[length] // ReSharper disable once NullableWarningSuppressionIsUsed
+            : (T[])Array.CreateInstance(array.GetType().GetElementType()!, length);
 
         Array.Copy(array, offset, dest, 0, length);
         return dest;

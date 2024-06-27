@@ -4,6 +4,8 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+// ReSharper disable once RedundantNameQualifier
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
 
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
@@ -67,17 +69,17 @@ static partial class SmallFactory
 #endif
     {
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static Span<T> Stack(int it)
+        static Span<T> Stack(int length)
         {
-            var ptr = stackalloc byte[it];
-            return new(ptr, it);
+            var ptr = stackalloc byte[InBytes<T>(length)];
+            return new(ptr, InBytes<T>(length));
         }
 
         return it switch
         {
             <= 0 => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span to point to deallocated stack memory.
-            _ when InBytes<T>(it) is <= StackallocSize and var i && To<T>.Unmanagable => Stack(i), // Stack allocation
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+            _ when IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stack(it), // Stack allocation
 #endif
             _ => it.AsPooledSmallList<T>(), // Heap allocation
         };
@@ -114,7 +116,8 @@ static partial class SmallFactory
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => [..iterable];
+    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? default : [..iterable];
 
     /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>

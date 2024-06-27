@@ -220,6 +220,7 @@ global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNul
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 global using GeneratedSource = (string HintName, string Source);
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
@@ -237,6 +238,8 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
 
@@ -1486,6 +1489,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 // ReSharper disable BadPreprocessorIndent ConvertToStaticClass
 // ReSharper disable once CheckNamespace
 
+
+// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+
 #pragma warning disable DOC106
 /// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
 /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -1508,9 +1514,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-                typeof(TTo) == typeof(TFrom) ||
+                typeof(TFrom) == typeof(TTo) ||
                 sizeof(TFrom) >= sizeof(TTo) &&
-                (IsReinterpretable(typeof(TFrom), typeof(TTo)) || Unmanagable && To<TFrom>.Unmanagable);
+                (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
+                    IsReferenceOrContainsReferences<TFrom>() &&
+                    IsReferenceOrContainsReferences<TTo>());
 #else
                 typeof(TTo) == typeof(TFrom);
 #endif
@@ -1532,10 +1540,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
 #endif
         }
-
-        /// <summary>Gets a value indicating whether the type is unmanaged.</summary>
-        public static bool Unmanagable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            typeof(TTo).IsUnmanaged();
 
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
@@ -1901,7 +1905,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsStack<T>([NonNegativeValue] int length) => InBytes<T>(length) <= StackallocSize;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
@@ -1910,7 +1914,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] // ReSharper disable once RedundantUnsafeContext
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+
+    // ReSharper disable once RedundantUnsafeContext
     public static unsafe int InBytes<T>([NonNegativeValue] int length) =>
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
         length * Unsafe.SizeOf<T>();
@@ -22200,7 +22206,7 @@ public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : I
 // ReSharper disable once CheckNamespace EmptyNamespace
 
 
-// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 
 
 
@@ -22838,7 +22844,7 @@ public ref
     {
         length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
 
-        if (!To<T>.Unmanagable)
+        if (IsReferenceOrContainsReferences<T>())
         {
             Unsafe.SkipInit(out bytes);
             return false;
@@ -22901,6 +22907,7 @@ public ref
 // ReSharper disable once CheckNamespace
 
 
+// ReSharper disable once RedundantNameQualifier
 
 
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
@@ -22962,17 +22969,17 @@ public ref
 #endif
     {
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static Span<T> Stack(int it)
+        static Span<T> Stack(int length)
         {
-            var ptr = stackalloc byte[it];
-            return new(ptr, it);
+            var ptr = stackalloc byte[InBytes<T>(length)];
+            return new(ptr, InBytes<T>(length));
         }
 
         return it switch
         {
             <= 0 => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span to point to deallocated stack memory.
-            _ when InBytes<T>(it) is <= StackallocSize and var i && To<T>.Unmanagable => Stack(i), // Stack allocation
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+            _ when IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stack(it), // Stack allocation
 #endif
             _ => it.AsPooledSmallList<T>(), // Heap allocation
         };
@@ -23009,7 +23016,8 @@ public ref
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterable"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) => [..iterable];
+    public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+        iterable is null ? default : [..iterable];
 
     /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
