@@ -1648,9 +1648,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// </para><para>
     /// However, there isn't as much stack memory available as there is heap, which can cause a DoS (Denial of Service)
     /// vulnerability if you aren't careful. The methods in <c>Span</c> will automatically switch to unmanaged heap
-    /// allocation if the type argument and length create an array that exceeds 1kiB (1024 bytes).
+    /// allocation if the type argument and length create an array size that exceeds 2kiB (2048 bytes).
     /// </para></remarks>
-    public const int StackallocSize = 1 << 10;
+    public const int StackallocSize = 1 << 11;
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
