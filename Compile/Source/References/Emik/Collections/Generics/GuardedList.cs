@@ -1,6 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 

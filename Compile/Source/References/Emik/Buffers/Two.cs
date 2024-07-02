@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
 using static Span;

@@ -698,6 +698,20 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <summary>The number of bits in a byte.</summary>
     public const int BitsInByte = 8;
 
+    /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
+    /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
+    /// <param name="disposable">The disposable to dispose.</param>
+    public static void DisposeOf<T>(ref T? disposable)
+#if NET9_0_OR_GREATER
+        where T : IDisposable, allows ref struct
+#else
+        where T : IDisposable
+#endif
+    {
+        disposable?.Dispose();
+        disposable = default;
+    }
+
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
@@ -4531,7 +4545,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantExtendsListEntry RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 
 #pragma warning disable 8618, 9193, CA1823, IDE0250, IDE0251, MA0071, MA0102, RCS1158, SA1137
@@ -6754,7 +6768,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier RedundantExtendsListEntry RedundantUsingDirective StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantNameQualifier RedundantUsingDirective StructCanBeMadeReadOnly
 
 
 
@@ -11173,7 +11187,6 @@ public partial struct Two<T>(T left, T right) :
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -11793,7 +11806,6 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable MA0048, IDISP005
@@ -19629,7 +19641,6 @@ public enum KeyMods : ushort
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -19724,7 +19735,6 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace NullnessAnnotationConflictWithJetBrainsAnnotations
 
 
@@ -19817,7 +19827,6 @@ public sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IL
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -21179,7 +21188,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 #pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
 
 
@@ -21440,7 +21449,6 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -21530,7 +21538,7 @@ public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : I
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 
 
 #pragma warning disable IDE0250, IDE0251, MA0102, SA1137
@@ -21903,7 +21911,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantExtendsListEntry RedundantReadonlyModifier
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
 #pragma warning disable 8500, CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
 
 
@@ -22419,7 +22427,6 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 
@@ -23256,7 +23263,7 @@ public ref
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 
 
@@ -23381,7 +23388,7 @@ public ref
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext RedundantUsingDirective
+// ReSharper disable RedundantUnsafeContext RedundantUsingDirective
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
@@ -23636,7 +23643,7 @@ public ref
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry
+// ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
 
 #pragma warning disable 8500, MA0102, RCS1146
@@ -24694,7 +24701,6 @@ public partial struct SmallList<T> :
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry
 // ReSharper disable once CheckNamespace
 
 #if !NET20 && !NET30

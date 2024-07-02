@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable RedundantExtendsListEntry RedundantUnsafeContext RedundantUsingDirective
+// ReSharper disable RedundantUnsafeContext RedundantUsingDirective
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.

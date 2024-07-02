@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantUnsafeContext
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 

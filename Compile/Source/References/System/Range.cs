@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace RedundantExtendsListEntry StructCanBeMadeReadOnly
+// ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace StructCanBeMadeReadOnly
 namespace System;
 #pragma warning disable IDE0250, MA0008, MA0048, MA0102, SA1137, SA1515, SA1611, SA1615, SA1623, SA1642, SA1649
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
