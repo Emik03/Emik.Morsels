@@ -19614,7 +19614,7 @@ public
 #if XNA
 // ReSharper disable once CheckNamespace
 
-
+#pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [Flags]
 public enum KeyMods : ushort
@@ -19636,6 +19636,60 @@ public enum KeyMods : ushort
     CapsLock = 1 << 13,
     AltGr = 1 << 14,
     Reserved = 1 << 15,
+}
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if XNA
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Provides thread-safe access to keyboard input.</summary>
+
+    /// <summary>Converts <see cref="GamePadButtons"/> to <see cref="Buttons"/>.</summary>
+    /// <param name="state">The <see cref="GamePadButtons"/> to convert.</param>
+    /// <returns>The <see cref="Buttons"/> equivalent.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // Not `in` because `GamePadButtons` is 4 bytes large.
+    public static Buttons AsButtons(this GamePadButtons state) => Unsafe.As<GamePadButtons, Buttons>(ref state);
+
+    /// <summary>Converts <see cref="MouseState"/> to <see cref="MouseButtons"/>.</summary>
+    /// <param name="state">The <see cref="MouseState"/> to convert.</param>
+    /// <returns>The <see cref="MouseButtons"/> equivalent.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static MouseButtons ToMouseButtons(this in MouseState state) =>
+        (state.LeftButton is ButtonState.Pressed ? MouseButtons.Left : MouseButtons.None) |
+        (state.MiddleButton is ButtonState.Pressed ? MouseButtons.Middle : MouseButtons.None) |
+        (state.RightButton is ButtonState.Pressed ? MouseButtons.Right : MouseButtons.None) |
+        (state.XButton1 is ButtonState.Pressed ? MouseButtons.X1 : MouseButtons.None) |
+        (state.XButton2 is ButtonState.Pressed ? MouseButtons.X2 : MouseButtons.None);
+#endif
+
+// SPDX-License-Identifier: MPL-2.0
+#if XNA
+// ReSharper disable once CheckNamespace
+
+
+/// <summary>Contains mouse buttons.</summary>
+[Flags]
+public enum MouseButtons : byte
+{
+    /// <summary>No mouse button.</summary>
+    None,
+
+    /// <summary>Left mouse button.</summary>
+    Left,
+
+    /// <summary>Middle mouse button.</summary>
+    Middle,
+
+    /// <summary>Right mouse button.</summary>
+    Right = 1 << 2,
+
+    /// <summary>X1 mouse button.</summary>
+    X1 = 1 << 3,
+
+    /// <summary>X2 mouse button.</summary>
+    X2 = 1 << 4,
 }
 #endif
 

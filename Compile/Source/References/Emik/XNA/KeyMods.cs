@@ -2,7 +2,7 @@
 #if XNA
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [Flags]
 public enum KeyMods : ushort
