@@ -119,6 +119,36 @@ static partial class SpanQueries
         return false;
     }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this string left, ReadOnlySpan<char> right) =>
+        ((ReadOnlySpan<char>)left).Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, ReadOnlySpan<char> right) =>
+        ((ReadOnlySpan<char>)left.Memory.Span).Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this Memory<char> left, ReadOnlySpan<char> right) =>
+        ((ReadOnlySpan<char>)left.Span).Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this Span<char> left, ReadOnlySpan<char> right) =>
+        ((ReadOnlySpan<char>)left).Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this ReadOnlyMemory<char> left, ReadOnlySpan<char> right) =>
+        left.Span.Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this ReadOnlySpan<char> left, ReadOnlySpan<char> right) =>
+        left.Equals(right, StringComparison.OrdinalIgnoreCase);
+
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> Select<T>(
