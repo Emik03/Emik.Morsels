@@ -17029,9 +17029,21 @@ readonly struct LightweightOverloadResolution(
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this string s, IFormatProvider? provider)
+        where T : IParsable<T> =>
+        Into<T>(s, provider, out _);
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this string s, IFormatProvider? provider, out bool success)
+        where T : IParsable<T> =>
+        (success = T.TryParse(s, provider, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -17041,9 +17053,21 @@ readonly struct LightweightOverloadResolution(
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<byte> s, IFormatProvider? provider)
+        where T : IUtf8SpanParsable<T> =>
+        Into<T>(s, provider, out _);
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this ReadOnlySpan<byte> s, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
+        where T : IUtf8SpanParsable<T> =>
+        (success = T.TryParse(s, provider, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -17053,9 +17077,21 @@ readonly struct LightweightOverloadResolution(
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<char> s, IFormatProvider? provider)
+        where T : ISpanParsable<T> =>
+        Into<T>(s, provider, out _);
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this ReadOnlySpan<char> s, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
+        where T : ISpanParsable<T> =>
+        (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
@@ -17075,7 +17111,6 @@ readonly struct LightweightOverloadResolution(
     public static T? TryParse<T>(this ReadOnlySpan<char> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
-
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -17085,15 +17120,33 @@ readonly struct LightweightOverloadResolution(
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryInto<T>(this string s, IFormatProvider? provider)
+        where T : struct, IParsable<T> =>
+        T.TryParse(s, provider, out var result) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryInto<T>(this ReadOnlySpan<byte> s, IFormatProvider? provider)
+        where T : struct, IUtf8SpanParsable<T> =>
+        T.TryParse(s, provider, out var result) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryInto<T>(this ReadOnlySpan<char> s, IFormatProvider? provider)
+        where T : struct, ISpanParsable<T> =>
+        T.TryParse(s, provider, out var result) ? result : default;
 #endif
 
     static class FindTryParseFor<T>
@@ -17105,7 +17158,7 @@ readonly struct LightweightOverloadResolution(
         public delegate T? CharParser(in ReadOnlySpan<char> s, out bool success);
 
         [Pure]
-        public delegate T? Parser(in string s, out bool success);
+        public delegate T? Parser(in string? s, out bool success);
 
         [Pure]
         delegate bool InByteParser(ReadOnlySpan<byte> s, CultureInfo info, out T? result);
@@ -17114,39 +17167,59 @@ readonly struct LightweightOverloadResolution(
         delegate bool InCharParser(ReadOnlySpan<char> s, CultureInfo info, out T? result);
 
         [Pure]
+        delegate bool InEnumByteParser(ReadOnlySpan<byte> s, bool ignoreCase, out T? result);
+
+        [Pure]
+        delegate bool InEnumCharParser(ReadOnlySpan<char> s, bool ignoreCase, out T? result);
+
+        [Pure]
+        delegate bool InEnumParser(string? s, bool ignoreCase, out T? result);
+
+        [Pure]
         delegate bool InNumberByteParser(ReadOnlySpan<byte> s, CultureInfo info, NumberStyles style, out T? result);
 
         [Pure]
         delegate bool InNumberCharParser(ReadOnlySpan<char> s, CultureInfo info, NumberStyles style, out T? result);
 
         [Pure]
-        delegate bool InNumberParser(string s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberParser(string? s, CultureInfo info, NumberStyles style, out T? result);
 
         [Pure]
-        delegate bool InParser(string s, CultureInfo info, out T? result);
+        delegate bool InParser(string? s, CultureInfo info, out T? result);
+
+        const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
 
         static readonly InByteParser? s_byteParse = Make<InByteParser>();
 
-        static readonly InNumberByteParser? s_byteParseNumber = Make<InNumberByteParser>();
-
         static readonly InCharParser? s_charParse = Make<InCharParser>();
+
+        static readonly InEnumByteParser? s_byteParseEnum = Make<InEnumByteParser>();
+
+        static readonly InEnumCharParser? s_charParseEnum = Make<InEnumCharParser>();
+
+        static readonly InEnumParser? s_parseEnum = Make<InEnumParser>();
+
+        static readonly InNumberByteParser? s_byteParseNumber = Make<InNumberByteParser>();
 
         static readonly InNumberCharParser? s_charParseNumber = Make<InNumberCharParser>();
 
-        static readonly InParser? s_parse = Make<InParser>();
-
         static readonly InNumberParser? s_parseNumber = Make<InNumberParser>();
+
+        static readonly InParser? s_parse = Make<InParser>();
 
         public static Parser WithString { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_parseNumber is not null ? ParseNumberInvoker :
+            s_parseEnum is not null ? ParseEnumInvoker :
             s_parse is not null ? ParseInvoker : FailedParseInvoker;
 
         public static ByteParser WithByteSpan { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_byteParseNumber is not null ? ByteParseNumberInvoker :
+            s_byteParseEnum is not null ? ByteParseEnumInvoker :
             s_byteParse is not null ? ByteParseInvoker : ByteFailedParseInvoker;
 
         public static CharParser WithCharSpan { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_charParseNumber is not null ? CharParseNumberInvoker :
+            s_charParseEnum is not null ? CharParseEnumInvoker :
             s_charParse is not null ? CharParseInvoker : CharFailedParseInvoker;
 
         // ReSharper disable NullableWarningSuppressionIsUsed
@@ -17161,6 +17234,13 @@ readonly struct LightweightOverloadResolution(
         static T? ByteParseInvoker(in ReadOnlySpan<byte> s, out bool b)
         {
             b = s_byteParse!(s, CultureInfo.InvariantCulture, out var result);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static T? ByteParseEnumInvoker(in ReadOnlySpan<byte> s, out bool b)
+        {
+            b = s_byteParseEnum!(s, true, out var result);
             return result;
         }
 
@@ -17186,6 +17266,13 @@ readonly struct LightweightOverloadResolution(
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static T? CharParseEnumInvoker(in ReadOnlySpan<char> s, out bool b)
+        {
+            b = s_charParseEnum!(s, true, out var result);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharParseNumberInvoker(in ReadOnlySpan<char> s, out bool b)
         {
             b = s_charParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
@@ -17193,21 +17280,28 @@ readonly struct LightweightOverloadResolution(
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static T? FailedParseInvoker(in string _, out bool b)
+        static T? FailedParseInvoker(in string? _, out bool b)
         {
             b = false;
             return default;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static T? ParseInvoker(in string s, out bool b)
+        static T? ParseInvoker(in string? s, out bool b)
         {
             b = s_parse!(s, CultureInfo.InvariantCulture, out var result);
             return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static T? ParseNumberInvoker(in string s, out bool b)
+        static T? ParseEnumInvoker(in string? s, out bool b)
+        {
+            b = s_parseEnum!(s, true, out var result);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static T? ParseNumberInvoker(in string? s, out bool b)
         {
             b = s_parseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
             return result;
@@ -17218,9 +17312,26 @@ readonly struct LightweightOverloadResolution(
             where TDelegate : Delegate => // ReSharper disable once NullableWarningSuppressionIsUsed
             typeof(TDelegate).GetMethod(nameof(Invoke))!.GetParameters() is var parameters &&
             Array.ConvertAll(parameters, x => x.ParameterType) is var types &&
-            typeof(T).GetMethod(nameof(int.TryParse), types) is { } method
+            typeof(T)
+               .GetMethods(Flags)
+               .Where(x => x.Name is nameof(int.TryParse))
+               .Select(x => x.IsGenericMethodDefinition && x.GetGenericArguments() is { Length: 1 } ? TryCoerce(x) : x)
+               .FirstOrDefault(x => x.GetParameters().Select(x => x.ParameterType).SequenceEqual(types)) is { } method
                 ? Delegate.CreateDelegate(typeof(TDelegate), method) as TDelegate
                 : null;
+
+        [MustUseReturnValue]
+        static MethodInfo TryCoerce(MethodInfo x)
+        {
+            try
+            {
+                return x.MakeGenericMethod(typeof(T));
+            }
+            catch (ArgumentException)
+            {
+                return x;
+            }
+        }
     }
 
 // SPDX-License-Identifier: MPL-2.0
