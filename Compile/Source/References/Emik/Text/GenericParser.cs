@@ -45,9 +45,21 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this string s, CultureInfo? provider)
+        where T : IParsable<T> =>
+        Into<T>(s, provider, out _);
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this string s, CultureInfo? provider, out bool success)
+        where T : IParsable<T> =>
+        (success = T.TryParse(s, provider, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -57,9 +69,21 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<byte> s, CultureInfo? provider)
+        where T : IUtf8SpanParsable<T> =>
+        Into<T>(s, provider, out _);
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this ReadOnlySpan<byte> s, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<byte> s, CultureInfo? provider, out bool success)
+        where T : IUtf8SpanParsable<T> =>
+        (success = T.TryParse(s, provider, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -69,9 +93,21 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<char> s, CultureInfo? provider)
+        where T : ISpanParsable<T> =>
+        Into<T>(s, provider, out _);
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this ReadOnlySpan<char> s, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Into<T>(this ReadOnlySpan<char> s, CultureInfo? provider, out bool success)
+        where T : ISpanParsable<T> =>
+        (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
@@ -101,15 +137,33 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryInto<T>(this string s, CultureInfo? provider)
+        where T : struct, IParsable<T> =>
+        T.TryParse(s, provider, out var result) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryInto<T>(this ReadOnlySpan<byte> s, CultureInfo? provider)
+        where T : struct, IUtf8SpanParsable<T> =>
+        T.TryParse(s, provider, out var result) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
+
+    /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? TryInto<T>(this ReadOnlySpan<char> s, CultureInfo? provider)
+        where T : struct, ISpanParsable<T> =>
+        T.TryParse(s, provider, out var result) ? result : default;
 #endif
 
     static class FindTryParseFor<T>
