@@ -109,6 +109,44 @@ static partial class GenericParser
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
+#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
+    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type to parse into.</typeparam>
+    /// <param name="s">The buffer source.</param>
+    /// <param name="ignoreCase">Whether to ignore case.</param>
+    /// <returns>The parsed value.</returns>
+    public static T IntoEnum<T>(this string s, bool ignoreCase = true)
+        where T : struct =>
+        Enum.TryParse(s, ignoreCase, out T result) ? result : default;
+
+    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type to parse into.</typeparam>
+    /// <param name="s">The buffer source.</param>
+    /// <param name="ignoreCase">Whether to ignore case.</param>
+    /// <returns>The parsed value.</returns>
+    public static T? TryIntoEnum<T>(this string s, bool ignoreCase = true)
+        where T : struct =>
+        Enum.TryParse(s, ignoreCase, out T result) ? result : null;
+#endif
+#if NET6_0_OR_GREATER
+    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type to parse into.</typeparam>
+    /// <param name="s">The buffer source.</param>
+    /// <param name="ignoreCase">Whether to ignore case.</param>
+    /// <returns>The parsed value.</returns>
+    public static T IntoEnum<T>(this ReadOnlySpan<char> s, bool ignoreCase = true)
+        where T : struct =>
+        Enum.TryParse(s, ignoreCase, out T result) ? result : default;
+
+    /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
+    /// <typeparam name="T">The type to parse into.</typeparam>
+    /// <param name="s">The buffer source.</param>
+    /// <param name="ignoreCase">Whether to ignore case.</param>
+    /// <returns>The parsed value.</returns>
+    public static T? TryIntoEnum<T>(this ReadOnlySpan<char> s, bool ignoreCase = true)
+        where T : struct =>
+        Enum.TryParse(s, ignoreCase, out T result) ? result : null;
+#endif
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
