@@ -65,6 +65,9 @@ global using UsedImplicitlyAttribute = unity::JetBrains.Annotations.UsedImplicit
 #else
 global using Debug = System.Diagnostics.Debug;
 #endif
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
+global using Vector = System.Numerics.Vector;
+#endif
 #if KTANE && !WAWA
 global using Range = System.Range;
 #endif
