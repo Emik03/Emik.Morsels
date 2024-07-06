@@ -59,7 +59,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
+    public static void Deconstruct<T>(this scoped in Span<T> span, out T? head, out Span<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -84,7 +84,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
+    public static void Deconstruct<T>(this scoped in ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -109,7 +109,7 @@ static partial class SpanIndexers
     /// <param name="value">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ref T value)
+    public static unsafe int IndexOf<T>(this scoped in ReadOnlySpan<T> span, ref T value)
 #pragma warning disable 8500
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         =>
@@ -127,14 +127,15 @@ static partial class SpanIndexers
     }
 #endif
 #pragma warning restore 8500
-    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
+    /// <inheritdoc cref="IndexOf{T}(in ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this Span<T> origin, ref T target) => ((ReadOnlySpan<T>)origin).IndexOf(ref target);
+    public static int IndexOf<T>(this scoped in Span<T> origin, ref T target) =>
+        ((ReadOnlySpan<T>)origin).IndexOf(ref target);
 #endif
 #if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOfAny<T>(this Span<T> span, ReadOnlySpan<T> values)
+    public static int IndexOfAny<T>(this scoped Span<T> span, scoped ReadOnlySpan<T> values)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>?
 #else
@@ -152,7 +153,7 @@ static partial class SpanIndexers
     /// <param name="values">The set of values to search for.</param>
     /// <returns>The first index of the occurrence of any of the values in the span. If not found, returns -1.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values)
+    public static unsafe int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>?
 #else

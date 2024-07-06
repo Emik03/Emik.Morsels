@@ -20,20 +20,20 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this ReadOnlySpan<byte> s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s) => Parse<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this ReadOnlySpan<byte> s, out bool success) =>
+    public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s, out bool success) =>
         FindTryParseFor<T>.WithByteSpan(s, out success);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this ReadOnlySpan<char> s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this scoped in ReadOnlySpan<char> s) => Parse<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this ReadOnlySpan<char> s, out bool success) =>
+    public static T? Parse<T>(this scoped in ReadOnlySpan<char> s, out bool success) =>
         FindTryParseFor<T>.WithCharSpan(s, out success);
 
 #if NET7_0_OR_GREATER
@@ -63,49 +63,49 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<byte> s)
+    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<byte> s, IFormatProvider? provider)
+    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, provider, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<byte> s, out bool success)
+    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<char> s)
+    public static T? Into<T>(this scoped in ReadOnlySpan<char> s)
         where T : ISpanParsable<T> =>
         Into<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : ISpanParsable<T> =>
         Into<T>(s, provider, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<char> s, out bool success)
+    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
@@ -134,7 +134,7 @@ static partial class GenericParser
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T IntoEnum<T>(this ReadOnlySpan<char> s, bool ignoreCase = true)
+    public static T IntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : default;
 
@@ -143,7 +143,7 @@ static partial class GenericParser
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T? TryIntoEnum<T>(this ReadOnlySpan<char> s, bool ignoreCase = true)
+    public static T? TryIntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : null;
 #endif
@@ -156,13 +156,13 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this ReadOnlySpan<byte> s)
+    public static T? TryParse<T>(this scoped in ReadOnlySpan<byte> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this ReadOnlySpan<char> s)
+    public static T? TryParse<T>(this scoped in ReadOnlySpan<char> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
 #if NET7_0_OR_GREATER
@@ -180,32 +180,32 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this ReadOnlySpan<byte> s)
+    public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this ReadOnlySpan<byte> s, IFormatProvider? provider)
+    public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this ReadOnlySpan<char> s)
+    public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : default;
 #endif
 
     static class FindTryParseFor<T>
     {
-        [Pure]
+        [Pure] // ReSharper disable once MemberCanBePrivate.Local
         public delegate T? ByteParser(in ReadOnlySpan<byte> s, out bool success);
 
         [Pure]
