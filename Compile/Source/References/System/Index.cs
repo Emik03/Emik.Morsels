@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
-#pragma warning disable MA0008, SA1515, SA1611, SA1615, SA1623, SA1642
+#pragma warning disable MA0008, SA1611, SA1615, SA1623, SA1642
 // ReSharper disable BadPreprocessorIndent
 // ReSharper disable once CheckNamespace StructCanBeMadeReadOnly
 namespace System;
