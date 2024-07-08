@@ -177,9 +177,9 @@
         <PackageReference Include="SonarAnalyzer.CSharp" Version="9.28.0.94264" PrivateAssets="all"/>
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all"/>
-        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.2.1" PrivateAssets="all"/>
         <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
-        <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.5" PrivateAssets="all"/>
+        <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.6" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
