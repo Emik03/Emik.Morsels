@@ -266,6 +266,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static SpecialType;" => "",
         "using static SplitFactory;" => "",
         "using Range = System.Range;" => "",
+        "global using GamePadStates" => "",
         "global using static Undergo;" => "",
         "using static OperatorCaching;" => "",
         "using static SplitSpanFactory;" => "",

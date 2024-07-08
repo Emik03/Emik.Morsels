@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
+#pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -10,6 +11,15 @@ struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>
     readonly PlayerIndex _length = last + 1;
 
     PlayerIndex _index;
+
+    /// <summary>Gets the first four <see cref="GamePadState"/> instances.</summary>
+    public static (GamePadState First, GamePadState Second, GamePadState Third, GamePadState Fourth) Four =>
+    (
+        GamePad.GetState(PlayerIndex.One),
+        GamePad.GetState(PlayerIndex.Two),
+        GamePad.GetState(PlayerIndex.Three),
+        GamePad.GetState(PlayerIndex.Four)
+    );
 
     /// <inheritdoc />
     public GamePadState Current { get; private set; }
@@ -36,5 +46,35 @@ struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>
 
     /// <inheritdoc />
     readonly IEnumerator<GamePadState> IEnumerable<GamePadState>.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>Extensions for <see cref="GamePadState"/>.</summary>
+#pragma warning disable MA0048
+static class GamePadStateExtensions
+#pragma warning restore MA0048
+{
+    /// <inheritdoc cref="GamePadState.IsConnected"/>
+    public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
+        state.First.IsConnected || state.Second.IsConnected || state.Third.IsConnected || state.Fourth.IsConnected;
+
+    /// <inheritdoc cref="GamePadState.IsButtonDown"/>
+    public static bool IsButtonDown(
+        this in (GamePadState, GamePadState, GamePadState, GamePadState) state, Buttons buttons
+    )
+        =>
+            Unsafe.AsRef(state.First).IsButtonDown(buttons) ||
+            Unsafe.AsRef(state.Second).IsButtonDown(buttons) ||
+            Unsafe.AsRef(state.Third).IsButtonDown(buttons) ||
+            Unsafe.AsRef(state.Fourth).IsButtonDown(buttons);
+
+    /// <inheritdoc cref="GamePadState.IsButtonUp"/>
+    public static bool IsButtonUp(
+        this in (GamePadState, GamePadState, GamePadState, GamePadState) state, Buttons buttons
+    )
+    	=>
+            Unsafe.AsRef(state.First).IsButtonUp(buttons) ||
+            Unsafe.AsRef(state.Second).IsButtonUp(buttons) ||
+            Unsafe.AsRef(state.Third).IsButtonUp(buttons) ||
+            Unsafe.AsRef(state.Fourth).IsButtonUp(buttons);
 }
 #endif
