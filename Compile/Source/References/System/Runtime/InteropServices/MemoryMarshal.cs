@@ -179,12 +179,12 @@ static partial class MemoryMarshal
         {
             const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
-            Type[] args = { typeof(T).MakeByRefType(), typeof(int) };
+            Type[] args = [typeof(T).MakeByRefType(), typeof(int)];
 
             ParameterExpression[] parameters =
-            {
+            [
                 Parameter(typeof(T).MakeByRefType(), nameof(T)), Parameter(typeof(int), nameof(Int32)),
-            };
+            ];
 
             ReadOnlySpan = Make<ReadOnlySpanCreator<T>>(typeof(ReadOnlySpan<T>));
             Span = Make<SpanCreator<T>>(typeof(Span<T>));
