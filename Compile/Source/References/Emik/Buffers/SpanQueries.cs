@@ -122,7 +122,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this string left, ReadOnlySpan<char> right) =>
-        ((ReadOnlySpan<char>)left).Equals(right, StringComparison.OrdinalIgnoreCase);
+        left.AsSpan().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

@@ -55,26 +55,26 @@ static class GamePadStateExtensions
 {
     /// <inheritdoc cref="GamePadState.IsConnected"/>
     public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
-        state.First.IsConnected || state.Second.IsConnected || state.Third.IsConnected || state.Fourth.IsConnected;
+        state.Item1.IsConnected || state.Item2.IsConnected || state.Item3.IsConnected || state.Item4.IsConnected;
 
     /// <inheritdoc cref="GamePadState.IsButtonDown"/>
     public static bool IsButtonDown(
-        this in (GamePadState, GamePadState, GamePadState, GamePadState) state, Buttons buttons
-    )
-        =>
-            Unsafe.AsRef(state.First).IsButtonDown(buttons) ||
-            Unsafe.AsRef(state.Second).IsButtonDown(buttons) ||
-            Unsafe.AsRef(state.Third).IsButtonDown(buttons) ||
-            Unsafe.AsRef(state.Fourth).IsButtonDown(buttons);
+        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        Buttons buttons
+    ) =>
+        Unsafe.AsRef(state.Item1).IsButtonDown(buttons) ||
+        Unsafe.AsRef(state.Item2).IsButtonDown(buttons) ||
+        Unsafe.AsRef(state.Item3).IsButtonDown(buttons) ||
+        Unsafe.AsRef(state.Item4).IsButtonDown(buttons);
 
     /// <inheritdoc cref="GamePadState.IsButtonUp"/>
     public static bool IsButtonUp(
-        this in (GamePadState, GamePadState, GamePadState, GamePadState) state, Buttons buttons
-    )
-    	=>
-            Unsafe.AsRef(state.First).IsButtonUp(buttons) ||
-            Unsafe.AsRef(state.Second).IsButtonUp(buttons) ||
-            Unsafe.AsRef(state.Third).IsButtonUp(buttons) ||
-            Unsafe.AsRef(state.Fourth).IsButtonUp(buttons);
+        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        Buttons buttons
+    ) =>
+        Unsafe.AsRef(state.Item1).IsButtonUp(buttons) ||
+        Unsafe.AsRef(state.Item2).IsButtonUp(buttons) ||
+        Unsafe.AsRef(state.Item3).IsButtonUp(buttons) ||
+        Unsafe.AsRef(state.Item4).IsButtonUp(buttons);
 }
 #endif
