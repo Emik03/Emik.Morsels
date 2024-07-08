@@ -5,7 +5,7 @@
 global using GeneratedSource = (string HintName, string Source);
 global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 
-#pragma warning restore GlobalUsingsAnalyzer
+#pragma warning restore GlobalUsingsAnalyzer, RCS1175
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -273,6 +273,9 @@ static partial class IncludedSyntaxNodeRegistrant
     public static string Keyword(this ITypeSymbol symbol) =>
         symbol switch
         {
+            { TypeKind: TypeKind.Enum } => "enum",
+            { TypeKind: TypeKind.Delegate } => "delegate",
+            { TypeKind: TypeKind.Interface } => "interface",
             { IsValueType: true, IsRecord: true } => "record struct",
             { IsRecord: true } => "record",
             { IsValueType: true } => "struct",

@@ -15807,7 +15807,7 @@ public ref partial struct ImmutableArrayBuilder<T>
 // ReSharper disable once RedundantUsingDirective.Global
 
 
-#pragma warning restore GlobalUsingsAnalyzer
+#pragma warning restore GlobalUsingsAnalyzer, RCS1175
 // ReSharper disable once CheckNamespace
 
 
@@ -16074,6 +16074,9 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static string Keyword(this ITypeSymbol symbol) =>
         symbol switch
         {
+            { TypeKind: TypeKind.Enum } => "enum",
+            { TypeKind: TypeKind.Delegate } => "delegate",
+            { TypeKind: TypeKind.Interface } => "interface",
             { IsValueType: true, IsRecord: true } => "record struct",
             { IsRecord: true } => "record",
             { IsValueType: true } => "struct",
