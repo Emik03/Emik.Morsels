@@ -101,6 +101,12 @@ static partial class OperatorCaching
             _ => Fail<T>(),
         };
 
+    /// <summary>Gets the maximum value.</summary>
+    /// <typeparam name="T">The type of value to get the maximum value of.</typeparam>
+    /// <returns>The maximum value of <typeparamref name="T"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T MaxValue<T>() => DirectOperators<T>.MaxValue;
+
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
@@ -155,6 +161,27 @@ static partial class OperatorCaching
             get;
         } = true;
 #pragma warning restore RCS1158
+        /// <summary>Gets the minimum value.</summary>
+        // ReSharper disable once NullableWarningSuppressionIsUsed
+        public static T MaxValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
+            {
+                var x when x == typeof(byte) => (T)(object)byte.MaxValue,
+                var x when x == typeof(double) => (T)(object)double.MaxValue,
+                var x when x == typeof(float) => (T)(object)float.MaxValue,
+                var x when x == typeof(int) => (T)(object)int.MaxValue,
+#if NET5_0_OR_GREATER
+                var x when x == typeof(nint) => (T)(object)nint.MaxValue,
+                var x when x == typeof(nuint) => (T)(object)nuint.MaxValue,
+#endif
+                var x when x == typeof(sbyte) => (T)(object)sbyte.MaxValue,
+                var x when x == typeof(short) => (T)(object)short.MaxValue,
+                var x when x == typeof(uint) => (T)(object)uint.MaxValue,
+                var x when x == typeof(ulong) => (T)(object)ulong.MaxValue,
+                var x when x == typeof(ushort) => (T)(object)ushort.MaxValue,
+                _ => typeof(T).GetField(nameof(MaxValue), Flags)?.GetValue(null) is T t ? t : default!,
+            };
+
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
