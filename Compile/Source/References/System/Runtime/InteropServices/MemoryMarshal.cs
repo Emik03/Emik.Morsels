@@ -177,37 +177,61 @@ static partial class MemoryMarshal
     {
         static Cache()
         {
-            const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            const BindingFlags ConstructorFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+            const BindingFlags FactoryFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             Type[] args = [typeof(T).MakeByRefType(), typeof(int)];
+            ParameterExpression[] parameters = [Parameter(args[0], nameof(T)), Parameter(args[1], nameof(Int32))];
 
-            ParameterExpression[] parameters =
-            [
-                Parameter(typeof(T).MakeByRefType(), nameof(T)), Parameter(typeof(int), nameof(Int32)),
-            ];
+            ReadOnlySpan = Make<ReadOnlySpanFactory<T>>() ?? InefficientReadOnlySpanFallback;
+            Span = Make<SpanFactory<T>>() ?? InefficientSpanFallback;
 
-            ReadOnlySpan = Make<ReadOnlySpanCreator<T>>(typeof(ReadOnlySpan<T>));
-            Span = Make<SpanCreator<T>>(typeof(Span<T>));
+            static MethodInfo? Factory(Type type) =>
+                type.Assembly
+                   .GetType("System.Runtime.InteropServices.MemoryMarshal")
+                  ?.GetMethod($"Create{type.Name}", FactoryFlags)
+                  ?.MakeGenericMethod(typeof(T));
 
-            TTarget Make<TTarget>(Type type) =>
-                Lambda<TTarget>(New(Constructor(type), parameters.AsEnumerable()), parameters).Compile();
+            ConstructorInfo? Constructor(Type type) => type.GetConstructor(ConstructorFlags, null, args, null);
 
-            // ReSharper disable once NullableWarningSuppressionIsUsed
-            ConstructorInfo Constructor(Type type) => type.GetConstructor(Flags, null, args, null)!;
+            TTarget? Make<TTarget>() =>
+                typeof(TTarget).GetMethod(nameof(Invoke))?.ReturnType is var type &&
+                Constructor(type) is { } constructor ?
+                    Lambda<TTarget>(New(constructor, parameters.AsEnumerable()), parameters).Compile() :
+                    Factory(type) is { } factory ?
+                        Lambda<TTarget>(Call(factory, parameters.AsEnumerable()), parameters).Compile() : default;
         }
 
         /// <summary>Gets the invocation for creating a <see cref="ReadOnlySpan{T}"/>.</summary>
         [Pure]
-        public static ReadOnlySpanCreator<T> ReadOnlySpan { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+        public static ReadOnlySpanFactory<T> ReadOnlySpan { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
 
         /// <summary>Gets the invocation for creating a <see cref="Span{T}"/>.</summary>
         [Pure]
-        public static SpanCreator<T> Span { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+        public static SpanFactory<T> Span { [MethodImpl(MethodImplOptions.AggressiveInlining)] get; }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static ReadOnlySpan<T> InefficientReadOnlySpanFallback(scoped ref T reference, int length) =>
+            InefficientSpanFallback(ref reference, length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static Span<T> InefficientSpanFallback(scoped ref T reference, int length)
+        {
+            Span<T> span = new T[length];
+
+            Unsafe.CopyBlock(
+                ref Unsafe.As<T, byte>(ref reference),
+                ref Unsafe.As<T, byte>(ref span.GetPinnableReference()),
+                unchecked((uint)(length * Unsafe.SizeOf<T>()))
+            );
+
+            return span;
+        }
     }
 
-    delegate ReadOnlySpan<T> ReadOnlySpanCreator<T>(scoped ref T reference, int length);
+    delegate ReadOnlySpan<T> ReadOnlySpanFactory<T>(scoped ref T reference, int length);
 
-    delegate Span<T> SpanCreator<T>(scoped ref T reference, int length);
+    delegate Span<T> SpanFactory<T>(scoped ref T reference, int length);
 #endif
 }
 #endif
