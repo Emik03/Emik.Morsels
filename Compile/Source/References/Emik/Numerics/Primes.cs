@@ -6,6 +6,10 @@ namespace Emik.Morsels;
 /// <summary>Provides prime numbers.</summary>
 public static class Primes
 {
+    public const short Min = 2;
+
+    public const short MaxInt16 = 32749;
+
     /// <summary>Gets all <see langword="short"/> prime numbers.</summary>
     public static ReadOnlySpan<short> Int16
     {
@@ -235,4 +239,10 @@ public static class Primes
             32609, 32611, 32621, 32633, 32647, 32653, 32687, 32693, 32707, 32713, 32717, 32719, 32749,
         ];
     }
+
+    [Pure, ValueRange(Min, MaxInt16)]
+    public static short Index(int index) => Int16[index.Mod(Int16.Length)];
+
+    [Pure, ValueRange(Min, MaxInt16)]
+    internal static short Index(Index index) => Index(index.IsFromEnd ? -index.Value - 1 : index.Value);
 }
