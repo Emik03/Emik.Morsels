@@ -23,12 +23,37 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
     /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable RCS1175
     public static void Drain(this in SyntaxNodeAnalysisContext context)
+#pragma warning restore RCS1175
     {
 #if !RELEASE && ROSLYN
         while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
             context.ReportDiagnostic(diagnostic);
 #endif
+    }
+
+    /// <summary>
+    /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
+    /// </summary>
+    /// <param name="syntax">The <see cref="AttributeSyntax"/> to extract from.</param>
+    /// <returns>
+    /// The <see cref="TypeDeclarationSyntax"/>, or <see langword="null"/> if the parameter <paramref name="syntax"/>
+    /// is <see langword="null"/>, or annotated to something other than a <see cref="TypeDeclarationSyntax"/>.
+    /// </returns>
+    [Pure]
+    public static TypeDeclarationSyntax? TypeDeclaration(this AttributeSyntax? syntax)
+    {
+        if (syntax is not { Parent: var parent })
+            return null;
+
+        while (parent is { Parent: var grandparent } and
+            not BaseParameterSyntax and
+            not MemberDeclarationSyntax and
+            not TypeParameterSyntax)
+            parent = grandparent;
+
+        return parent as TypeDeclarationSyntax;
     }
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
