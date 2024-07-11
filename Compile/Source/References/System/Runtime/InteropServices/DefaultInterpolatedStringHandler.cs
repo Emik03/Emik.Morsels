@@ -538,8 +538,8 @@ public ref struct DefaultInterpolatedStringHandler
     /// </param>
     /// <param name="format">The format string.</param>
     public void AppendFormatted(object? value, int alignment = 0, string? format = null) =>
-        // This overload is expected to be used rarely, only if either a) something strongly typed as object is
-        // formatted with both an alignment and a format, or b) the compiler is unable to target type to T. It
+        // This overload is expected to be used rarely, only if either a: something strongly typed as object is
+        // formatted with both an alignment and a format, or b: the compiler is unable to target type to T. It
         // exists purely to help make cases from (b) compile. Just delegate to the T-based implementation.
         AppendFormatted<object?>(value, alignment, format);
 
