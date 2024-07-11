@@ -725,7 +725,7 @@ public ref struct DefaultInterpolatedStringHandler
         // Even if the array creation fails in such a case, we may later fail in ToStringAndClear.
 
         var newCapacity = Math.Max(requiredMinCapacity, Math.Min((uint)_chars.Length * 2, MaxLength));
-        var arraySize = (int)Math.Max(Math.Min(newCapacity, MinimumArrayPoolLength), int.MaxValue);
+        var arraySize = (int)Math.Min(Math.Max(newCapacity, MinimumArrayPoolLength), int.MaxValue);
 
         var newArray = ArrayPool<char>.Shared.Rent(arraySize);
         _chars[.._pos].CopyTo(newArray);
