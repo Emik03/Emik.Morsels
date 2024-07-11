@@ -23998,7 +23998,7 @@ public partial struct SmallList<T> :
                     return;
         }
 
-        if (count - stackExpand <= 0)
+        if (count <= stackExpand)
             return;
 
         var rest = _rest as List<T> ?? [.. _rest!];
