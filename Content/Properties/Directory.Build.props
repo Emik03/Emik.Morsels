@@ -166,7 +166,7 @@
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.159" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.160" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.12.4" PrivateAssets="all"/>
@@ -178,7 +178,7 @@
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.2.1" PrivateAssets="all"/>
-        <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
+        <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24318.1" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.6" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
@@ -186,10 +186,10 @@
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.4" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24225.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24318.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24318.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.19-preview" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24225.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24318.1" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))" Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
