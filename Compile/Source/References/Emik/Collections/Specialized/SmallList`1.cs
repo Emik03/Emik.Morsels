@@ -563,6 +563,66 @@ partial struct SmallList<T> :
             UnsafelySetNullishTo(out _rest, (byte)count);
     }
 
+    [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // ReSharper disable once CognitiveComplexity
+    public void Reverse()
+    {
+#pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void SwapByRef(ref T left, ref T right)
+        {
+            var temp = left;
+            left = right;
+            right = temp;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Swap(ref T left, in IList<T> right, int index)
+        {
+            var temp = left;
+            left = right[index];
+            right[index] = temp;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void SwapItself(in IList<T> list, int index, int count)
+        {
+            var temp = list[index];
+            list[count - index - 4] = list[index];
+            list[count - index - 4] = temp;
+        }
+#pragma warning restore IDE0180 // ReSharper restore SwapViaDeconstruction
+        switch (Count)
+        {
+            case 2:
+                SwapByRef(ref _first, ref _second);
+                break;
+            case 3:
+                SwapByRef(ref _first, ref _third);
+                break;
+            case 4:
+                Swap(ref _first, EnsureMutability(), 0);
+                SwapByRef(ref _second, ref _third);
+                break;
+            case 5:
+                Swap(ref _first, EnsureMutability(), 1);
+                Swap(ref _second, _rest, 0);
+                break;
+            case >= 6 and var count:
+                Swap(ref _first, EnsureMutability(), count - 4);
+                Swap(ref _second, _rest, count - 5);
+                Swap(ref _third, _rest, count - 6);
+
+                if (_rest is List<T> rest)
+                    rest.Reverse(0, count - 6);
+                else
+                    for (var i = 0; i < count / 2 - 3; i++)
+                        SwapItself(_rest, i, count);
+
+                break;
+        }
+    }
+
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Contains(T item) =>
