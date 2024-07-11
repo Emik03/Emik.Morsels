@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !NET6_0_OR_GREATER
+// ReSharper disable InvocationIsSkipped
 // ReSharper disable once CheckNamespace
-
+#pragma warning disable IDE0064, IDE0251, MA0102, RCS1146, SA1214
 namespace System.Runtime.CompilerServices;
 
 /// <summary>
@@ -19,17 +20,17 @@ public ref struct DefaultInterpolatedStringHandler
     /// <summary>
     /// Expected average length of formatted data used for an individual interpolation expression result.
     /// </summary>
-    /// <remarks>
+    /// <remarks><para>
     /// This is inherited from string.Format, and could be changed based on further data.
     /// string.Format actually uses `format.Length + args.Length * 8`, but format.Length
     /// includes the format items themselves, e.g. "{0}", and since it's rare to have double-digit
     /// numbers of items, we bump the 8 up to 11 to account for the three extra characters in "{d}",
     /// since the compiler-provided base length won't include the equivalent character count.
-    /// </remarks>
+    /// </para></remarks>
     private const int GuessedLengthPerHole = 11;
 
     /// <summary>Minimum size array to rent from the pool.</summary>
-    /// <remarks>Same as stack-allocation size used today by string.Format.</remarks>
+    /// <remarks><para>Same as stack-allocation size used today by string.Format.</para></remarks>
     private const int MinimumArrayPoolLength = 256;
 
     /// <summary>Optional provider to pass to IFormattable.ToString or ISpanFormattable.TryFormat calls.</summary>
@@ -45,24 +46,27 @@ public ref struct DefaultInterpolatedStringHandler
     private int _pos;
 
     /// <summary>Whether <see cref="_provider"/> provides an ICustomFormatter.</summary>
-    /// <remarks>
+    /// <remarks><para>
     /// Custom formatters are very rare.  We want to support them, but it's ok if we make them more expensive
     /// in order to make them as pay-for-play as possible.  So, we avoid adding another reference type field
     /// to reduce the size of the handler and to reduce required zeroing, by only storing whether the provider
     /// provides a formatter, rather than actually storing the formatter.  This in turn means, if there is a
     /// formatter, we pay for the extra interface call on each AppendFormatted that needs it.
-    /// </remarks>
+    /// </para></remarks>
     private readonly bool _hasCustomFormatter;
 
-    /// <summary>Creates a handler used to translate an interpolated string into a <see cref="string"/>.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultInterpolatedStringHandler"/> struct
+    /// used to translate an interpolated string into a <see cref="string"/>.
+    /// </summary>
     /// <param name="literalLength">
     /// The number of constant characters outside of interpolation expressions in the interpolated string.
     /// </param>
     /// <param name="formattedCount">The number of interpolation expressions in the interpolated string.</param>
-    /// <remarks>
+    /// <remarks><para>
     /// This is intended to be called only by compiler-generated code. Arguments are not
     /// validated as they'd otherwise be for members intended to be used directly.
-    /// </remarks>
+    /// </para></remarks>
     public DefaultInterpolatedStringHandler(int literalLength, int formattedCount)
     {
         _chars = _arrayToReturnToPool =
@@ -73,16 +77,19 @@ public ref struct DefaultInterpolatedStringHandler
         _hasCustomFormatter = false;
     }
 
-    /// <summary>Creates a handler used to translate an interpolated string into a <see cref="string"/>.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultInterpolatedStringHandler"/> struct
+    /// used to translate an interpolated string into a <see cref="string"/>.
+    /// </summary>
     /// <param name="literalLength">
     /// The number of constant characters outside of interpolation expressions in the interpolated string.
     /// </param>
     /// <param name="formattedCount">The number of interpolation expressions in the interpolated string.</param>
     /// <param name="provider">An object that supplies culture-specific formatting information.</param>
-    /// <remarks>
+    /// <remarks><para>
     /// This is intended to be called only by compiler-generated code. Arguments are not
     /// validated as they'd otherwise be for members intended to be used directly.
-    /// </remarks>
+    /// </para></remarks>
     public DefaultInterpolatedStringHandler(int literalLength, int formattedCount, IFormatProvider? provider)
     {
         _chars = _arrayToReturnToPool =
@@ -93,7 +100,10 @@ public ref struct DefaultInterpolatedStringHandler
         _hasCustomFormatter = provider is not null && HasCustomFormatter(provider);
     }
 
-    /// <summary>Creates a handler used to translate an interpolated string into a <see cref="string"/>.</summary>
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DefaultInterpolatedStringHandler"/> struct
+    /// used to translate an interpolated string into a <see cref="string"/>.
+    /// </summary>
     /// <param name="literalLength">
     /// The number of constant characters outside of interpolation expressions in the interpolated string.
     /// </param>
@@ -103,10 +113,10 @@ public ref struct DefaultInterpolatedStringHandler
     /// A buffer temporarily transferred to the handler for use
     /// as part of its formatting. Contents may be overwritten.
     /// </param>
-    /// <remarks>
+    /// <remarks><para>
     /// This is intended to be called only by compiler-generated code. Arguments are not
     /// validated as they'd otherwise be for members intended to be used directly.
-    /// </remarks>
+    /// </para></remarks>
     public DefaultInterpolatedStringHandler(
         [UsedImplicitly] int literalLength,
         [UsedImplicitly] int formattedCount,
@@ -126,6 +136,7 @@ public ref struct DefaultInterpolatedStringHandler
     /// The number of constant characters outside of interpolation expressions in the interpolated string.
     /// </param>
     /// <param name="formattedCount">The number of interpolation expressions in the interpolated string.</param>
+    /// <returns>The default length.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // becomes a constant when inputs are constant
     internal static int GetDefaultLength(int literalLength, int formattedCount) =>
         Math.Max(MinimumArrayPoolLength, literalLength + formattedCount * GuessedLengthPerHole);
@@ -136,12 +147,12 @@ public ref struct DefaultInterpolatedStringHandler
 
     /// <summary>Gets the built <see cref="string"/> and clears the handler.</summary>
     /// <returns>The built string.</returns>
-    /// <remarks>
+    /// <remarks><para>
     /// This releases any resources used by the handler. The method should be invoked only
     /// once and as the last thing performed on the handler. Subsequent use is erroneous, ill-defined,
     /// and may destabilize the process, as using any other copies of the handler after ToStringAndClear
     /// is called on any one of them.
-    /// </remarks>
+    /// </para></remarks>
     public string ToStringAndClear()
     {
         var result = Text.ToString();
@@ -398,13 +409,13 @@ public ref struct DefaultInterpolatedStringHandler
     }
 
     /// <summary>Writes the specified value to the handler.</summary>
+    /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="value">The value to write.</param>
-    /// <param name="format">The format string.</param>
     /// <param name="alignment">
     /// Minimum number of characters that should be written for this value. If the value is negative,
     /// it indicates left-aligned and the required minimum is the absolute value.
     /// </param>
-    /// <typeparam name="T">The type of the value to write.</typeparam>
+    /// <param name="format">The format string.</param>
     public void AppendFormatted<T>(T value, int alignment, string? format)
     {
         var startingPos = _pos;
@@ -495,10 +506,10 @@ public ref struct DefaultInterpolatedStringHandler
 
     /// <summary>Writes the specified value to the handler.</summary>
     /// <param name="value">The value to write.</param>
-    /// <remarks>
+    /// <remarks><para>
     /// Slow path to handle a custom formatter, potentially null value,
     /// or a string that doesn't fit in the current buffer.
-    /// </remarks>
+    /// </para></remarks>
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AppendFormattedSlow(string? value)
     {
@@ -548,10 +559,15 @@ public ref struct DefaultInterpolatedStringHandler
 #endregion
 
     /// <summary>Gets whether the provider provides a custom formatter.</summary>
+    /// <param name="provider">The <see cref="IFormatProvider"/>.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the provider provides
+    /// a custom formatter; otherwise, <see langword="false"/>.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // only used in a few hot path call sites
     internal static bool HasCustomFormatter(IFormatProvider provider)
     {
-        Debug.Assert(provider is not null);
+        Debug.Assert(provider is not null, "provider is not null");
 
         Debug.Assert(
             provider is not CultureInfo || provider.GetFormat(typeof(ICustomFormatter)) is null,
@@ -574,14 +590,14 @@ public ref struct DefaultInterpolatedStringHandler
         // a provider was used that supplied an ICustomFormatter which wanted to intercept the particular value.
         // We do the cast here rather than in the ctor, even though this could be executed multiple times per
         // formatting, to make the cast pay for play.
-        Debug.Assert(_hasCustomFormatter);
-        Debug.Assert(_provider != null);
+        Debug.Assert(_hasCustomFormatter, "_hasCustomFormatter");
+        Debug.Assert(_provider is not null, "_provider is not null");
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
         var formatter = (ICustomFormatter?)_provider!.GetFormat(typeof(ICustomFormatter));
 
         Debug.Assert(
-            formatter != null,
+            formatter is not null,
             "An incorrectly written provider said it implemented ICustomFormatter, and then didn't"
         );
 
@@ -599,8 +615,8 @@ public ref struct DefaultInterpolatedStringHandler
     /// </param>
     private void AppendOrInsertAlignmentIfNeeded(int startingPos, int alignment)
     {
-        Debug.Assert(startingPos >= 0 && startingPos <= _pos);
-        Debug.Assert(alignment != 0);
+        Debug.Assert(startingPos >= 0 && startingPos <= _pos, "startingPos >= 0 && startingPos <= _pos");
+        Debug.Assert(alignment is not 0, "alignment is not 0");
 
         var charsWritten = _pos - startingPos;
 
@@ -678,7 +694,7 @@ public ref struct DefaultInterpolatedStringHandler
         // insufficient to store a specific number of additional characters.  Thus, we
         // need to grow to at least that new total. GrowCore will handle growing by more
         // than that if possible.
-        Debug.Assert(additionalChars > _chars.Length - _pos);
+        Debug.Assert(additionalChars > _chars.Length - _pos, "additionalChars > _chars.Length - _pos");
         GrowCore((uint)_pos + (uint)additionalChars);
     }
 
