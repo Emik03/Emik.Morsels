@@ -33,7 +33,7 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>, IOrderedEnumerable<T>
 {
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
@@ -80,4 +80,13 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(None), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(None), MustDisposeResource(false), Pure]
+    IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
+        Func<T, TKey> keySelector,
+        IComparer<TKey> comparer,
+        bool descending
+    ) =>
+        this;
 }

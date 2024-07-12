@@ -21236,7 +21236,8 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Once<T>([ProvidesContext] T value)
+    : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IOrderedEnumerable<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
@@ -21388,6 +21389,15 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
+    IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
+        Func<T, TKey> keySelector,
+        IComparer<TKey> comparer,
+        bool descending
+    ) =>
+        this;
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -21556,7 +21566,7 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>
+    partial struct Yes<T>([ProvidesContext] T value) : IEnumerable<T>, IEnumerator<T>, IOrderedEnumerable<T>
 {
     /// <inheritdoc />
     [CollectionAccess(Read), ProvidesContext, Pure]
@@ -21603,6 +21613,15 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
+    IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
+        Func<T, TKey> keySelector,
+        IComparer<TKey> comparer,
+        bool descending
+    ) =>
+        this;
 }
 
 // SPDX-License-Identifier: MPL-2.0

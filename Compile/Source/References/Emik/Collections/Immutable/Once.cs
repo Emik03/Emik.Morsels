@@ -62,7 +62,8 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Once<T>([ProvidesContext] T value)
+    : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IOrderedEnumerable<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
@@ -214,6 +215,15 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <inheritdoc />
+    [CollectionAccess(None), MustDisposeResource(false), Pure]
+    IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
+        Func<T, TKey> keySelector,
+        IComparer<TKey> comparer,
+        bool descending
+    ) =>
+        this;
 
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
