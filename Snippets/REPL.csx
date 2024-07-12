@@ -15563,21 +15563,21 @@ public ref partial struct ImmutableArrayBuilder<T>
     ) =>
         symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
 
-    /// <summary>Determines whether the symbol is declared in any project, as opposed to a compiled .DLL file.</summary>
+    /// <summary>Determines whether the symbol is from metadata.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is in any source, otherwise; <see langword="false"/>.
+    /// is in metadata, otherwise; <see langword="false"/>.
     /// </returns>
     [Pure]
     public static bool IsInMetadata([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol is { Locations: [{ IsInMetadata: true }, ..] };
 
-    /// <summary>Determines whether the symbol is declared in any project, as opposed to a compiled .DLL file.</summary>
+    /// <summary>Determines whether the symbol is from source code.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// is in any source, otherwise; <see langword="false"/>.
+    /// is from source code, otherwise; <see langword="false"/>.
     /// </returns>
     [Pure]
     public static bool IsInSource([NotNullWhen(true)] this ISymbol? symbol) =>
