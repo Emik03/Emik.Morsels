@@ -1,4 +1,4 @@
-﻿// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #pragma warning disable 1696, SA1137, SA1216
@@ -363,6 +363,50 @@ static partial class Stringifier
     ) =>
         $"{new StringBuilder().AppendMany(values, separator)}";
 
+    /// <summary>Converts the <see cref="Stopwatch"/> to its concise <see cref="string"/> representation.</summary>
+    /// <param name="stopwatch">The <see cref="Stopwatch"/> to convert.</param>
+    /// <returns>The <see cref="string"/> representation of <paramref name="stopwatch"/>.</returns>
+    [Pure]
+    public static string ToConciseString(
+        this
+#if !WAWA
+            Stopwatch? stopwatch
+#endif
+    ) =>
+        stopwatch is null ? "0" : ToConciseString(stopwatch.Elapsed);
+
+    /// <summary>Converts the <see cref="TimeSpan"/> to its concise <see cref="string"/> representation.</summary>
+    /// <param name="time">The <see cref="TimeSpan"/> to convert.</param>
+    /// <returns>The <see cref="string"/> representation of <paramref name="time"/>.</returns>
+    [Pure]
+    public static string ToConciseString(
+#if !WAWA
+        this
+#endif
+        TimeSpan time
+    )
+    {
+        var sign = time.Ticks < 0 ? "-" : "";
+        var ticks = Math.Abs(time.Ticks);
+
+        return ticks switch
+        {
+            0 => "0",
+            >= TimeSpan.TicksPerDay * 7 => $"{sign}{ticks / TimeSpan.TicksPerDay}d",
+            >= TimeSpan.TicksPerDay => $"{sign}{ticks / TimeSpan.TicksPerDay
+            }d{ticks % TimeSpan.TicksPerDay / TimeSpan.TicksPerHour
+            }h",
+            >= TimeSpan.TicksPerHour => $"{sign}{ticks / TimeSpan.TicksPerHour
+            }h{ticks % TimeSpan.TicksPerHour / TimeSpan.TicksPerMinute
+            }m{ticks % TimeSpan.TicksPerMinute / TimeSpan.TicksPerSecond}s",
+            >= TimeSpan.TicksPerMinute => $"{sign}{ticks / TimeSpan.TicksPerMinute
+            }m{ticks % TimeSpan.TicksPerMinute / TimeSpan.TicksPerSecond}s",
+            >= TimeSpan.TicksPerSecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerSecond, 1)}s",
+            >= TimeSpan.TicksPerMillisecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerMillisecond, 1)}ms",
+            _ => $"{sign}{ticks / 10.0}µs",
+        };
+    }
+
     /// <summary>Converts a <see cref="Pointer"/> to a <see cref="string"/>.</summary>
     /// <param name="value">The <see cref="Pointer"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="value"/>.</returns>
@@ -509,6 +553,7 @@ static partial class Stringifier
                 $"{x.GetType().Name}({(b ? $"0x{i:x}" : i)}) = {(b
                     ? Conjoin(i.AsBits().Select(x.GetType().Into), BitFlagSeparator)
                     : x)}",
+            TimeSpan x => ToConciseString(x),
             Type x => UnfoldedName(x),
             Pointer x => ToHexString(x),
             Version x => ToShortString(x),
