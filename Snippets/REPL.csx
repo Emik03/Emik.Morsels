@@ -15563,6 +15563,26 @@ public ref partial struct ImmutableArrayBuilder<T>
     ) =>
         symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
 
+    /// <summary>Determines whether the symbol is declared in any project, as opposed to a compiled .DLL file.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is in any source, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInMetadata([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is { Locations: [{ IsInMetadata: true }, ..] };
+
+    /// <summary>Determines whether the symbol is declared in any project, as opposed to a compiled .DLL file.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is in any source, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInSource([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is { Locations: [{ IsInSource: true }, ..] };
+
     /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -15900,6 +15920,7 @@ public ref partial struct ImmutableArrayBuilder<T>
     /// <param name="context">The context.</param>
     /// <param name="token">The cancellation token.</param>
     /// <returns>The context node as <typeparamref name="T"/>.</returns>
+    [Pure]
     public static T? Get<T>(this in GeneratorSyntaxContext context, CancellationToken token = default)
         where T : ISymbol =>
         context.SemanticModel.GetDeclaredSymbol(context.Node, token) is T symbol ? symbol : default;
@@ -15922,7 +15943,7 @@ public ref partial struct ImmutableArrayBuilder<T>
 
     [Pure]
     static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
-        ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
+        ((x as INamespaceSymbol)?.GetAllMembers() ?? []).Prepend(x);
 #endif
 
 // SPDX-License-Identifier: MPL-2.0
