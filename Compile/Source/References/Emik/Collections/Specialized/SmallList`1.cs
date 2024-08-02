@@ -479,28 +479,6 @@ partial struct SmallList<T> :
         [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> del
     ) =>
         del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
-    /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void HeadSpan<TParam>(
-        ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<T, TParam> del
-    ) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
-    /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void HeadSpan<TParam>(
-        Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionSpan<T, TParam> del
-    ) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 #endif
 
     /// <inheritdoc />
@@ -825,32 +803,6 @@ partial struct SmallList<T> :
     public TResult HeadSpan<TParam, TResult>(
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> del
-    ) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
-    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
-    /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="del">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TResult HeadSpan<TParam, TResult>(
-        ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<T, TParam, TResult> del
-    ) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
-    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
-    /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="del">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TResult HeadSpan<TParam, TResult>(
-        Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncSpan<T, TParam, TResult> del
     ) =>
         del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
 #endif

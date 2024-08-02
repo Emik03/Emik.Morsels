@@ -22,6 +22,9 @@ static partial class Span
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         public static class Is<TFrom>
+#if !NO_ALLOWS_REF_STRUCT
+            where TFrom : allows ref struct
+#endif
         {
             /// <summary>
             /// Gets a value indicating whether the conversion between types
@@ -70,9 +73,15 @@ static partial class Span
         /// The reinterpretation of the parameter <paramref name="source"/> from its original type
         /// <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
         public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
+#if NET9_0_OR_GREATER
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
+                ? Unsafe.As<ReadOnlySpan<TFrom>, ReadOnlySpan<TTo>>(ref AsRef(source))
+                : throw Is<TFrom>.Error;
+#else
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
+#endif
 
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
@@ -80,49 +89,53 @@ static partial class Span
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="Span{T}"/> to convert from.</param>
-        /// <exception cref="NotSupportedException">Thrown when conversion between the types TFrom and TTo is not supported.</exception>
+        /// <exception cref="NotSupportedException">
+        /// Thrown when <see cref="Is{TFrom}.Supported"/> is <see langword="false"/>.
+        /// </exception>
         /// <returns>
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
         /// type <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
         /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
         public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
+#if NET9_0_OR_GREATER
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
+                ? Unsafe.As<Span<TFrom>, Span<TTo>>(ref AsRef(source))
+                : throw Is<TFrom>.Error;
+#else
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
+#endif
 #pragma warning restore 8500, RCS1158
     }
 
     /// <summary>A callback for a span.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <param name="span">The allocated span.</param>
-    public delegate void SpanAction<TSpan>(scoped Span<TSpan> span);
+    public delegate void SpanAction<TSpan>(Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TParam">The type of the parameter.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
-    public delegate void SpanAction<TSpan, in TParam>(scoped Span<TSpan> span, TParam param);
-
-    /// <summary>A callback for a span with a reference parameter that is also a span, but immutable.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionReadOnlySpan<TSpan, TParam>(scoped Span<TSpan> span, ReadOnlySpan<TParam> param);
-
-    /// <summary>A callback for a span with a reference parameter that is also a span.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the span parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    public delegate void SpanActionSpan<TSpan, TParam>(scoped Span<TSpan> span, Span<TParam> param);
+    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
+#if NO_ALLOWS_REF_STRUCT
+        ;
+#else
+        where TParam : allows ref struct;
+#endif
 
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(scoped Span<TSpan> span);
+    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span)
+#if NO_ALLOWS_REF_STRUCT
+        ;
+#else
+        where TResult : allows ref struct;
+#endif
 
     /// <summary>A callback for a span with a reference parameter with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -131,30 +144,13 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(scoped Span<TSpan> span, TParam param);
-
-    /// <summary>A callback for a span with a reference parameter that is also a span, with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncReadOnlySpan<TSpan, TParam, out TResult>(
-        scoped Span<TSpan> span,
-        ReadOnlySpan<TParam> param
-    );
-
-    /// <summary>
-    /// A callback for a span with a reference parameter that is also a span, but immutable, with a return value.
-    /// </summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The inner type of the immutable span parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The span parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFuncSpan<TSpan, TParam, out TResult>(scoped Span<TSpan> span, Span<TParam> param);
+    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
+#if NO_ALLOWS_REF_STRUCT
+        ;
+#else
+        where TParam : allows ref struct
+        where TResult : allows ref struct;
+#endif
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
     /// <remarks><para>
@@ -221,8 +217,12 @@ static partial class Span
         int length,
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanAction<byte, TParam> del
-    ) =>
-        Allocate<byte, TParam>(length, param, del);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TParam : allows ref struct
+#endif
+        =>
+            Allocate<byte, TParam>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -237,6 +237,9 @@ static partial class Span
         [InstantHandle, RequireStaticDelegate] SpanAction<TSpan, TParam> del
     )
         where TSpan : unmanaged
+#if !NO_ALLOWS_REF_STRUCT
+        where TParam : allows ref struct
+#endif
     {
         var value = Math.Max(length, 0);
 
@@ -257,121 +260,22 @@ static partial class Span
             Marshal.FreeHGlobal(ptr);
         }
     }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Allocate<TParam>(
-        int length,
-        scoped ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<byte, TParam> del
-    )
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
+#endif
+    /// <summary>Reads the raw memory of the object.</summary>
+    /// <typeparam name="T">The type of value to read.</typeparam>
+    /// <param name="value">The value to read.</param>
+    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static byte[] Raw<T>(in T value)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
 #endif
         =>
-            Allocate<byte, TParam>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static unsafe void Allocate<TSpan, TParam>(
-        int length,
-        scoped ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionReadOnlySpan<TSpan, TParam> del
-    )
-        where TSpan : unmanaged
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-        {
-            del(stackalloc TSpan[value], param);
-            return;
-        }
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            del(new((void*)ptr, value), param);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Allocate<TParam>(
-        int length,
-        scoped Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionSpan<byte, TParam> del
-    )
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        =>
-            Allocate<byte, TParam>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static unsafe void Allocate<TSpan, TParam>(
-        int length,
-        scoped Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanActionSpan<TSpan, TParam> del
-    )
-        where TSpan : unmanaged
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-        {
-            del(stackalloc TSpan[value], param);
-            return;
-        }
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            del(new((void*)ptr, value), param);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-#endif
+            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
 #pragma warning disable 1574, 1580, 1581, 1584
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
-    public static unsafe int OffsetOf<T>(this in ReadOnlySpan<T> origin, in ReadOnlySpan<T> target) =>
+    public static unsafe int OffsetOf<T>(this scoped in ReadOnlySpan<T> origin, ReadOnlySpan<T> target) =>
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         origin.IndexOf(ref MemoryMarshal.GetReference(target));
 #else
@@ -382,7 +286,7 @@ static partial class Span
 
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int OffsetOf<T>(this in Span<T> origin, in ReadOnlySpan<T> target) =>
+    public static int OffsetOf<T>(this scoped in Span<T> origin, ReadOnlySpan<T> target) =>
         ((ReadOnlySpan<T>)origin).OffsetOf(target);
 #pragma warning restore 1574, 1580, 1581, 1584
     /// <summary>Sets the reference to the address within the null range.</summary>
@@ -422,7 +326,12 @@ static partial class Span
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsStack<T>([NonNegativeValue] int length) => InBytes<T>(length) <= StackallocSize;
+    public static bool IsStack<T>([NonNegativeValue] int length)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+        =>
+            InBytes<T>(length) <= StackallocSize;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -433,12 +342,16 @@ static partial class Span
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
 
     // ReSharper disable once RedundantUnsafeContext
-    public static unsafe int InBytes<T>([NonNegativeValue] int length) =>
+    public static unsafe int InBytes<T>([NonNegativeValue] int length)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+        =>
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-        length * Unsafe.SizeOf<T>();
+            length * Unsafe.SizeOf<T>();
 #else
 #pragma warning disable 8500
-        length * sizeof(T);
+            length * sizeof(T);
 #pragma warning restore 8500
 #endif // ReSharper disable RedundantUnsafeContext
 
@@ -737,7 +650,7 @@ static partial class Span
     /// <typeparam name="TTo">The destination type.</typeparam>
     /// <param name="reference">A reference to data.</param>
     /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
-    public static unsafe ReadOnlySpan<TTo> In<TFrom, TTo>(in TFrom reference)
+    public static ReadOnlySpan<TTo> In<TFrom, TTo>(in TFrom reference)
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(In(reference));
@@ -753,8 +666,12 @@ static partial class Span
     public static TResult Allocate<TResult>(
         int length,
         [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TResult> del
-    ) =>
-        Allocate<byte, TResult>(length, del);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TResult : allows ref struct
+#endif
+        =>
+            Allocate<byte, TResult>(length, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -768,6 +685,9 @@ static partial class Span
         int length,
         [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TResult> del
     )
+#if !NO_ALLOWS_REF_STRUCT
+        where TResult : allows ref struct
+#endif
         where TSpan : unmanaged
     {
         var value = Math.Max(length, 0);
@@ -800,8 +720,13 @@ static partial class Span
         int length,
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TParam, TResult> del
-    ) =>
-        Allocate<byte, TParam, TResult>(length, param, del);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TParam : allows ref struct
+        where TResult : allows ref struct
+#endif
+        =>
+            Allocate<byte, TParam, TResult>(length, param, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -818,121 +743,11 @@ static partial class Span
         TParam param,
         [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TParam, TResult> del
     )
+#if !NO_ALLOWS_REF_STRUCT
+        where TParam : allows ref struct
+        where TResult : allows ref struct
+#endif
         where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-            return del(stackalloc TSpan[value], param);
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            return del(new((void*)ptr, value), param);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public static TResult Allocate<TParam, TResult>(
-        int length,
-        scoped ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<byte, TParam, TResult> del
-    )
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        =>
-            Allocate<byte, TParam, TResult>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static unsafe TResult Allocate<TSpan, TParam, TResult>(
-        int length,
-        scoped ReadOnlySpan<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncReadOnlySpan<TSpan, TParam, TResult> del
-    )
-        where TSpan : unmanaged
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-            return del(stackalloc TSpan[value], param);
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            return del(new((void*)ptr, value), param);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public static TResult Allocate<TParam, TResult>(
-        int length,
-        scoped Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncSpan<byte, TParam, TResult> del
-    )
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
-        =>
-            Allocate<byte, TParam, TResult>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter within the span.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static unsafe TResult Allocate<TSpan, TParam, TResult>(
-        int length,
-        scoped Span<TParam> param,
-        [InstantHandle, RequireStaticDelegate] SpanFuncSpan<TSpan, TParam, TResult> del
-    )
-        where TSpan : unmanaged
-#if UNMANAGED_SPAN
-        where TParam : unmanaged
-#endif
     {
         var value = Math.Max(length, 0);
 
@@ -958,6 +773,9 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
     public static unsafe ref T AsRef<T>(in T source)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
     {
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         fixed (T* ptr = &source)
