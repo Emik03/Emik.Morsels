@@ -3,6 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable IDE0056, SA1137
+
+using static Span;
+
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 // ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
 static partial class SpanIndexers
@@ -72,7 +75,7 @@ static partial class SpanIndexers
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         head = MemoryMarshal.GetReference(span);
-        tail = MemoryMarshal.CreateSpan(ref Unsafe.Add(ref head, 1), span.Length - 1);
+        tail = span.UnsafelyAdvance(1);
 #else
         head = span[0];
         tail = span[1..];
@@ -98,7 +101,7 @@ static partial class SpanIndexers
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         head = MemoryMarshal.GetReference(span);
-        tail = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref head, 1), span.Length - 1);
+        tail = span.UnsafelySkip(1);
 #else
         head = span[0];
         tail = span[1..];

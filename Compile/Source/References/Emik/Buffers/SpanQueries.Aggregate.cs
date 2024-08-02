@@ -20,14 +20,17 @@ static partial class SpanQueries
 
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func) =>
+    public static T? Aggregate<T>(
+        this in Memory<T> source,
+        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
+    ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, func);
 #endif
 
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
-        this scoped Span<T> source,
+        this scoped in Span<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     )
 #if UNMANAGED_SPAN
@@ -39,7 +42,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
-        this ReadOnlyMemory<T> source,
+        this in ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     ) =>
         Aggregate(source.Span, func);
@@ -48,22 +51,22 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
-        this scoped ReadOnlySpan<T> source,
+        this scoped in ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        var e = source.GetEnumerator();
-
-        if (!e.MoveNext())
+        if (source.IsEmpty)
             return default;
 
-        var accumulator = e.Current;
+        var accumulator = MemoryMarshal.GetReference(source);
+        ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(source), 1);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        while (e.MoveNext())
-            accumulator = func(accumulator, e.Current);
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
+            accumulator = func(accumulator, start);
 
         return accumulator;
     }
@@ -80,7 +83,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this Memory<T> source,
+        this in Memory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     ) =>
@@ -90,7 +93,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this scoped Span<T> source,
+        this scoped in Span<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     )
@@ -103,7 +106,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this ReadOnlyMemory<T> source,
+        this in ReadOnlyMemory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     ) =>
@@ -113,7 +116,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this scoped ReadOnlySpan<T> source,
+        this scoped in ReadOnlySpan<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     )
@@ -121,8 +124,11 @@ static partial class SpanQueries
         where T : unmanaged
 #endif
     {
-        foreach (var next in source)
-            seed = func(seed, next);
+        ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
+
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
+            seed = func(seed, start);
 
         return seed;
     }
@@ -140,7 +146,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this Memory<T> source,
+        this in Memory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
@@ -151,7 +157,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this scoped Span<T> source,
+        this scoped in Span<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
@@ -165,7 +171,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this ReadOnlyMemory<T> source,
+        this in ReadOnlyMemory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
@@ -176,7 +182,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this scoped ReadOnlySpan<T> source,
+        this scoped in ReadOnlySpan<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
@@ -185,8 +191,11 @@ static partial class SpanQueries
         where T : unmanaged
 #endif
     {
-        foreach (var next in source)
-            seed = func(seed, next);
+        ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
+
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
+            seed = func(seed, start);
 
         return resultSelector(seed);
     }

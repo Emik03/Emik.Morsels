@@ -67,7 +67,7 @@ static partial class SpanQueries
                 return end + i - start;
 
             end += i - start;
-            source[i - end] = source[i];
+            source[i - end] = source.UnsafelyIndex(i);
         }
 
         return end;
@@ -76,11 +76,11 @@ static partial class SpanQueries
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool IsPass<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
     {
-        if (!predicate(source[i]))
+        if (!predicate(source.UnsafelyIndex(i)))
             return false;
 
         if (end > 0)
-            source[i - end] = source[i];
+            source[i - end] = source.UnsafelyIndex(i);
 
         return true;
     }
@@ -91,7 +91,7 @@ static partial class SpanQueries
         do
             if (++i >= source.Length)
                 return false;
-        while (!predicate(source[i]));
+        while (!predicate(source.UnsafelyIndex(i)));
 
         return true;
     }

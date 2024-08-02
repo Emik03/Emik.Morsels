@@ -15,7 +15,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
-        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
+        _ = BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
         return iterable;
     }
 
@@ -26,7 +26,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
-        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
+        _ = BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
         return iterable;
     }
 #endif
@@ -38,7 +38,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
-        BreakableFor((ReadOnlySpan<T>)iterable, func);
+        _ = BreakableFor((ReadOnlySpan<T>)iterable, func);
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -49,7 +49,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
-        BreakableFor(iterable.Span, func);
+        _ = BreakableFor(iterable.Span, func);
         return iterable;
     }
 #endif
@@ -61,8 +61,11 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
-        foreach (var x in iterable)
-            if (func(x) is ControlFlow.Break)
+        ref var start = ref MemoryMarshal.GetReference(iterable);
+        ref var end = ref Unsafe.Add(ref start, iterable.Length);
+
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
+            if (func(start) is ControlFlow.Break)
                 break;
 
         return iterable;
@@ -75,7 +78,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
-        BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
+        _ = BreakableFor((ReadOnlySpan<T>)iterable.Memory.Span, func);
         return iterable;
     }
 
@@ -86,7 +89,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
-        BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
+        _ = BreakableFor((ReadOnlySpan<T>)iterable.Span, func);
         return iterable;
     }
 #endif
@@ -98,7 +101,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
-        BreakableFor((ReadOnlySpan<T>)iterable, func);
+        _ = BreakableFor((ReadOnlySpan<T>)iterable, func);
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -109,7 +112,7 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
-        BreakableFor(iterable.Span, func);
+        _ = BreakableFor(iterable.Span, func);
         return iterable;
     }
 #endif
@@ -121,7 +124,10 @@ static partial class EachSpan
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
-        for (var i = 0; i < iterable.Length; i++)
+        ref var start = ref MemoryMarshal.GetReference(iterable);
+        ref var end = ref Unsafe.Add(ref start, iterable.Length);
+
+        for (var i = 0; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1), i++)
             if (func(iterable[i], i) is ControlFlow.Break)
                 break;
 

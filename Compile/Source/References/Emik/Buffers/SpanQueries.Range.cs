@@ -45,7 +45,7 @@ static partial class SpanQueries
                 return source;
             case var length:
                 if (!IsNumericPrimitive<T>() && !IsSupported<T>())
-                    Fail<T>();
+                    _ = Fail<T>();
 
                 InAscendingOrder<T>.UpTo(length).CopyTo(source);
                 return source;
@@ -65,9 +65,9 @@ static partial class SpanQueries
             return source;
 
         if (!IsNumericPrimitive<T>() && !IsSupported<T>())
-            Fail<T>();
+            _ = Fail<T>();
 
-        InAscendingOrder<T>.UpTo(index + source.Length)[index..].CopyTo(source);
+        InAscendingOrder<T>.UpTo(index + source.Length).UnsafelySkip(index).CopyTo(source);
         return source;
     }
 
@@ -92,23 +92,26 @@ static partial class SpanQueries
             ReadOnlySpan<T> original = s_values;
 
             if (length <= original.Length)
-                return original[..length];
+                return original.UnsafelyTake(length);
 
             var replacement = new T[((uint)length).RoundUpToPowerOf2()];
             Span<T> span = replacement;
             original.CopyTo(span);
-            Populate(span[(original.Length - 1)..]);
+            Populate(span.UnsafelyAdvance(original.Length - 1));
             s_values = replacement;
-            return span[..length];
+            return span.UnsafelyTake(length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Populate(scoped Span<T> span)
         {
-            for (var i = 1; i < span.Length; i++)
+            ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
+            ref var end = ref Unsafe.Add(ref start, span.Length - 1);
+
+            for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             {
-                span[i] = span[i - 1];
-                Increment(ref span[i]);
+                start = Unsafe.Subtract(ref start, 1);
+                Increment(ref start);
             }
         }
     }

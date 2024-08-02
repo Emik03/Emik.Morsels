@@ -67,10 +67,9 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!func(start))
                 return false;
 
@@ -117,10 +116,9 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (func(start))
                 return true;
 
@@ -213,10 +211,9 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = Unsafe.Add(ref start, 1))
             start = selector(start);
 
         return source;
@@ -286,19 +283,8 @@ static partial class SpanQueries
     public static Memory<T> SkipWhile<T>(
         this in Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-        ref var start = ref MemoryMarshal.GetReference(span);
-
-        for (ref var end = ref Unsafe.Add(ref start, span.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
-            if (!predicate(start))
-                return source[span.Distance(start)..];
-
-        return source;
-    }
+    ) =>
+        source[SkipWhile(source.Span, predicate).Length..];
 #endif
 
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
@@ -312,12 +298,11 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return MemoryMarshal.CreateSpan(ref start, source.Distance(start));
+                return source.UnsafelyAdvance(source.Distance(start));
 
         return source;
     }
@@ -327,19 +312,8 @@ static partial class SpanQueries
     public static ReadOnlyMemory<T> SkipWhile<T>(
         this in ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-        ref var start = ref MemoryMarshal.GetReference(span);
-
-        for (ref var end = ref Unsafe.Add(ref start, span.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
-            if (!predicate(start))
-                return source[span.Distance(start)..];
-
-        return source;
-    }
+    ) =>
+        source[SkipWhile(source.Span, predicate).Length..];
 #endif
 
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
@@ -353,12 +327,11 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return MemoryMarshal.CreateReadOnlySpan(ref start, source.Distance(start));
+                return source.UnsafelySkip(source.Distance(start));
 
         return source;
     }
@@ -376,19 +349,8 @@ static partial class SpanQueries
     public static Memory<T> TakeWhile<T>(
         this in Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-        ref var start = ref MemoryMarshal.GetReference(span);
-
-        for (ref var end = ref Unsafe.Add(ref start, span.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
-            if (!predicate(start))
-                return source[..span.Distance(start)];
-
-        return source;
-    }
+    ) =>
+        source[..TakeWhile(source.Span, predicate).Length];
 #endif
 
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
@@ -402,12 +364,11 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(source), source.Distance(start));
+                return source.UnsafelyTake(source.Distance(start));
 
         return source;
     }
@@ -417,19 +378,8 @@ static partial class SpanQueries
     public static ReadOnlyMemory<T> TakeWhile<T>(
         this in ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
-    )
-    {
-        var span = source.Span;
-        ref var start = ref MemoryMarshal.GetReference(span);
-
-        for (ref var end = ref Unsafe.Add(ref start, span.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
-            if (!predicate(start))
-                return source[..span.Distance(start)];
-
-        return source;
-    }
+    ) =>
+        source[..TakeWhile(source.Span, predicate).Length];
 #endif
 
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
@@ -443,12 +393,11 @@ static partial class SpanQueries
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
+        ref var end = ref Unsafe.Add(ref start, source.Length);
 
-        for (ref var end = ref Unsafe.Add(ref start, source.Length);
-            Unsafe.IsAddressLessThan(ref start, ref end);
-            start = ref Unsafe.Add(ref start, 1))
+        for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(source), source.Distance(start));
+                return source.UnsafelyTake(source.Distance(start));
 
         return source;
     }

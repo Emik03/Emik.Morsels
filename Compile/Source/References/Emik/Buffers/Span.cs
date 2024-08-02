@@ -644,7 +644,6 @@ static partial class Span
 #else
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
 #endif
-
     /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
     /// <typeparam name="TTo">The destination type.</typeparam>
@@ -654,6 +653,56 @@ static partial class Span
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(In(reference));
+#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> UnsafelySkip<T>(this scoped in ReadOnlySpan<T> body, int start) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(
+            ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
+            body.Length - start
+        );
+#else
+        body[start..];
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T UnsafelyIndex<T>(this scoped in ReadOnlySpan<T> body, int index) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+#else
+        body[index];
+#endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> UnsafelyTake<T>(this scoped in ReadOnlySpan<T> body, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(body), end);
+#else
+        body[..end];
+#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> UnsafelyAdvance<T>(this scoped in Span<T> body, int start) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateSpan(
+            ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
+            body.Length - start
+        );
+#else
+        body[start..];
+#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T UnsafelyIndex<T>(this scoped in Span<T> body, int index) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+#else
+        body[index];
+#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> UnsafelyTake<T>(this scoped in Span<T> body, int end) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(body), end);
+#else
+        body[..end];
 #endif
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
