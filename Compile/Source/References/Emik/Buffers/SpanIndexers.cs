@@ -14,7 +14,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this Memory<T> memory, out T? head, out Memory<T> tail)
+    public static void Deconstruct<T>(this in Memory<T> memory, out T? head, out Memory<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -36,7 +36,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this ReadOnlyMemory<T> memory, out T? head, out ReadOnlyMemory<T> tail)
+    public static void Deconstruct<T>(this in ReadOnlyMemory<T> memory, out T? head, out ReadOnlyMemory<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -72,10 +72,11 @@ static partial class SpanIndexers
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         head = MemoryMarshal.GetReference(span);
+        tail = MemoryMarshal.CreateSpan(ref Unsafe.Add(ref head, 1), span.Length - 1);
 #else
         head = span[0];
-#endif
         tail = span[1..];
+#endif
     }
 
     /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
@@ -97,10 +98,11 @@ static partial class SpanIndexers
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         head = MemoryMarshal.GetReference(span);
+        tail = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref head, 1), span.Length - 1);
 #else
         head = span[0];
-#endif
         tail = span[1..];
+#endif
     }
 #if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NO_SYSTEM_MEMORY
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
@@ -192,7 +194,7 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlyMemory<T> Nth<T>(this ReadOnlyMemory<T> span, Range range)
+    public static ReadOnlyMemory<T> Nth<T>(this in ReadOnlyMemory<T> span, Range range)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -205,7 +207,7 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Memory<T> Nth<T>(this Memory<T> span, Range range)
+    public static Memory<T> Nth<T>(this in Memory<T> span, Range range)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -231,7 +233,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
+    public static T? Nth<T>(this in ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -257,7 +259,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this ReadOnlyMemory<T> memory, Index index)
+    public static T? Nth<T>(this in ReadOnlyMemory<T> memory, Index index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -283,7 +285,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
+    public static T? NthLast<T>(this in ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -296,7 +298,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this Memory<T> memory, [NonNegativeValue] int index)
+    public static T? Nth<T>(this in Memory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -309,7 +311,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this Memory<T> memory, Index index)
+    public static T? Nth<T>(this in Memory<T> memory, Index index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -322,7 +324,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this Memory<T> memory, [NonNegativeValue] int index)
+    public static T? NthLast<T>(this in Memory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -336,7 +338,7 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
+    public static ReadOnlySpan<T> Nth<T>(this scoped in ReadOnlySpan<T> span, Range range)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -349,7 +351,7 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Nth<T>(this Span<T> span, Range range)
+    public static Span<T> Nth<T>(this scoped in Span<T> span, Range range)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -362,7 +364,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+    public static T? Nth<T>(this scoped in ReadOnlySpan<T> span, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -375,7 +377,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index)
+    public static T? Nth<T>(this scoped in ReadOnlySpan<T> span, Index index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -388,7 +390,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+    public static T? NthLast<T>(this scoped in ReadOnlySpan<T> span, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -401,7 +403,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+    public static T? Nth<T>(this scoped in Span<T> span, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -414,7 +416,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped Span<T> span, Index index)
+    public static T? Nth<T>(this scoped in Span<T> span, Index index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -429,7 +431,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+    public static T? NthLast<T>(this scoped in Span<T> span, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
