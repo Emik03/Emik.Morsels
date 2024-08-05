@@ -8,7 +8,7 @@ using static OperatorCaching;
 using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable InvocationIsSkipped NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+// ReSharper disable InvocationIsSkipped NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
@@ -92,7 +92,7 @@ static partial class SpanSimdQueries
             return SumVectorized(span);
 #endif
         if (typeof(T).IsEnum)
-            return span.UnderlyingSum();
+            return UnderlyingSum(span);
 
         T sum = default!;
 
@@ -329,16 +329,15 @@ static partial class SpanSimdQueries
 #endif
 #endif
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(this in ReadOnlySpan<TFrom> span)
+    static ReadOnlySpan<TTo> Underlying<TFrom, TTo>(ReadOnlySpan<TFrom> span)
     {
-        // ReSharper disable RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(TFrom).IsEnum, "typeof(TFrom).IsEnum");
         System.Diagnostics.Debug.Assert(typeof(TTo).IsPrimitive, "typeof(TTo).IsPrimitive");
 
         System.Diagnostics.Debug.Assert(
             Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>(),
             "Unsafe.SizeOf<TFrom>() == Unsafe.SizeOf<TTo>()"
-        ); // ReSharper restore RedundantNameQualifier
+        );
 
         return MemoryMarshal.CreateReadOnlySpan(
             ref Unsafe.As<TFrom, TTo>(ref MemoryMarshal.GetReference(span)),
@@ -347,19 +346,19 @@ static partial class SpanSimdQueries
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T UnderlyingSum<T>(this in ReadOnlySpan<T> span) =>
+    static T UnderlyingSum<T>(scoped ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
         {
-            var x when x == typeof(sbyte) => (T)(object)span.Underlying<T, sbyte>().Sum(),
-            var x when x == typeof(byte) => (T)(object)span.Underlying<T, byte>().Sum(),
-            var x when x == typeof(short) => (T)(object)span.Underlying<T, short>().Sum(),
-            var x when x == typeof(ushort) => (T)(object)span.Underlying<T, ushort>().Sum(),
-            var x when x == typeof(int) => (T)(object)span.Underlying<T, int>().Sum(),
-            var x when x == typeof(uint) => (T)(object)span.Underlying<T, uint>().Sum(),
-            var x when x == typeof(long) => (T)(object)span.Underlying<T, long>().Sum(),
-            var x when x == typeof(ulong) => (T)(object)span.Underlying<T, ulong>().Sum(),
-            var x when x == typeof(nint) => (T)(object)span.Underlying<T, nint>().Sum(),
-            var x when x == typeof(nuint) => (T)(object)span.Underlying<T, nuint>().Sum(),
+            var x when x == typeof(sbyte) => (T)(object)Underlying<T, sbyte>(span).Sum(),
+            var x when x == typeof(byte) => (T)(object)Underlying<T, byte>(span).Sum(),
+            var x when x == typeof(short) => (T)(object)Underlying<T, short>(span).Sum(),
+            var x when x == typeof(ushort) => (T)(object)Underlying<T, ushort>(span).Sum(),
+            var x when x == typeof(int) => (T)(object)Underlying<T, int>(span).Sum(),
+            var x when x == typeof(uint) => (T)(object)Underlying<T, uint>(span).Sum(),
+            var x when x == typeof(long) => (T)(object)Underlying<T, long>(span).Sum(),
+            var x when x == typeof(ulong) => (T)(object)Underlying<T, ulong>(span).Sum(),
+            var x when x == typeof(nint) => (T)(object)Underlying<T, nint>(span).Sum(),
+            var x when x == typeof(nuint) => (T)(object)Underlying<T, nuint>(span).Sum(),
             _ => throw Unreachable,
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER

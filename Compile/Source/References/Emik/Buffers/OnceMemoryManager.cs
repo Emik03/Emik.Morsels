@@ -16,7 +16,7 @@ sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
     T _value = value;
 
     /// <summary>Gets the value.</summary>
-    public ref readonly T Value
+    public ref T Value
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref _value;
     }
@@ -24,7 +24,7 @@ sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
     /// <summary>Wraps the <typeparamref name="T"/> instance into the <see cref="OnceMemoryManager{T}"/>.</summary>
     /// <param name="value">The value to wrap.</param>
     /// <returns>The wrapped value.</returns>
-    public static implicit operator OnceMemoryManager<T>(in T value) => new(value);
+    public static explicit operator OnceMemoryManager<T>(in T value) => new(value);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

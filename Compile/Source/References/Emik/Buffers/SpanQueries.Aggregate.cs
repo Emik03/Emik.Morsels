@@ -21,7 +21,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
-        this in Memory<T> source,
+        this Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     ) =>
         Aggregate((ReadOnlySpan<T>)source.Span, func);
@@ -29,10 +29,7 @@ static partial class SpanQueries
 
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T? Aggregate<T>(
-        this scoped in Span<T> source,
-        [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
-    )
+    public static T? Aggregate<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Func<T, T, T> func)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -42,7 +39,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
-        this in ReadOnlyMemory<T> source,
+        this ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     ) =>
         Aggregate(source.Span, func);
@@ -51,7 +48,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T}(IEnumerable{T}, Func{T, T, T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T? Aggregate<T>(
-        this scoped in ReadOnlySpan<T> source,
+        this scoped ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T, T> func
     )
 #if UNMANAGED_SPAN
@@ -77,28 +74,39 @@ static partial class SpanQueries
         this IMemoryOwner<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func);
 
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this in Memory<T> source,
+        this Memory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source.Span, seed, func);
 #endif
 
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this scoped in Span<T> source,
+        this scoped Span<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
+#endif
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, seed, func);
@@ -106,22 +114,29 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this in ReadOnlyMemory<T> source,
+        this ReadOnlyMemory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
-    ) =>
-        Aggregate(source.Span, seed, func);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
+#endif
+        =>
+            Aggregate(source.Span, seed, func);
 #endif
 
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TAccumulate Aggregate<T, TAccumulate>(
-        this scoped in ReadOnlySpan<T> source,
+        this scoped ReadOnlySpan<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
+#endif
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);
@@ -140,30 +155,41 @@ static partial class SpanQueries
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func, resultSelector);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source.Memory.Span, seed, func, resultSelector);
 
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this in Memory<T> source,
+        this Memory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
+#endif
+        =>
+            Aggregate((ReadOnlySpan<T>)source.Span, seed, func, resultSelector);
 #endif
 
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this scoped in Span<T> source,
+        this scoped Span<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
+#endif
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
 #endif
         =>
             Aggregate((ReadOnlySpan<T>)source, seed, func, resultSelector);
@@ -171,24 +197,31 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this in ReadOnlyMemory<T> source,
+        this ReadOnlyMemory<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
-    ) =>
-        Aggregate(source.Span, seed, func, resultSelector);
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
+#endif
+        =>
+            Aggregate(source.Span, seed, func, resultSelector);
 #endif
 
     /// <inheritdoc cref="Enumerable.Aggregate{T, TAccumulate, TResult}(IEnumerable{T}, TAccumulate, Func{TAccumulate, T, TAccumulate}, Func{TAccumulate, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Aggregate<T, TAccumulate, TResult>(
-        this scoped in ReadOnlySpan<T> source,
+        this scoped ReadOnlySpan<T> source,
         TAccumulate seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, T, TAccumulate> func,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulate, TResult> resultSelector
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
+#endif
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulate : allows ref struct
 #endif
     {
         ref var start = ref MemoryMarshal.GetReference(source);

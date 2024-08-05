@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression
 #pragma warning disable MA0048
 static partial class SpanSimdQueries
 #pragma warning restore MA0048
@@ -316,11 +316,11 @@ static partial class SpanSimdQueries
         )
 #endif
         {
-            value = span[0];
+            value = span.UnsafelyIndex(0);
 
             for (var i = 1; i < span.Length; i++)
-                if (Compare<T, TS>(span[i], value))
-                    value = span[i];
+                if (span.UnsafelyIndex(i) is var next && Compare<T, TS>(next, value))
+                    value = next;
 
             return value;
         }

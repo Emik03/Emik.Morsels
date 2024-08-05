@@ -49,7 +49,7 @@ static partial class SpanQueries
     // ReSharper restore CommentTypo
 
     [NonNegativeValue, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static int Filter<T>(Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
+    static int Filter<T>(scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> predicate)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -58,7 +58,7 @@ static partial class SpanQueries
 
         for (var i = 0; i < source.Length; i++)
         {
-            if (IsPass(ref source, predicate, i, end))
+            if (IsPass(source, predicate, i, end))
                 continue;
 
             var start = i;
@@ -74,7 +74,7 @@ static partial class SpanQueries
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool IsPass<T>(ref Span<T> source, Predicate<T> predicate, int i, int end)
+    static bool IsPass<T>(scoped Span<T> source, Predicate<T> predicate, int i, int end)
     {
         if (!predicate(source.UnsafelyIndex(i)))
             return false;
@@ -86,7 +86,7 @@ static partial class SpanQueries
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static bool FindNextPass<T>(in ReadOnlySpan<T> source, Predicate<T> predicate, ref int i)
+    static bool FindNextPass<T>(scoped Span<T> source, Predicate<T> predicate, ref int i)
     {
         do
             if (++i >= source.Length)

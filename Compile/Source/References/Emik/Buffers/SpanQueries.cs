@@ -13,7 +13,11 @@ static partial class SpanQueries
     /// <typeparam name="T">The type to test.</typeparam>
     /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsNumericPrimitive<T>() =>
+    public static bool IsNumericPrimitive<T>()
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+        =>
         typeof(T) == typeof(byte) ||
         typeof(T) == typeof(double) ||
         typeof(T) == typeof(float) ||
@@ -34,13 +38,13 @@ static partial class SpanQueries
 
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(this in Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+    public static bool All<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         All((ReadOnlySpan<T>)source.Span, func);
 #endif
 
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool All<T>(this scoped in Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
+    public static bool All<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -50,7 +54,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(
-        this in ReadOnlyMemory<T> source,
+        this ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     ) =>
         All(source.Span, func);
@@ -59,7 +63,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.All{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool All<T>(
-        this scoped in ReadOnlySpan<T> source,
+        this scoped ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     )
 #if UNMANAGED_SPAN
@@ -83,13 +87,13 @@ static partial class SpanQueries
 
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(this in Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
+    public static bool Any<T>(this Memory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         Any((ReadOnlySpan<T>)source.Span, func);
 #endif
 
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(this scoped in Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
+    public static bool Any<T>(this scoped Span<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -98,17 +102,14 @@ static partial class SpanQueries
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Any<T>(
-        this in ReadOnlyMemory<T> source,
-        [InstantHandle, RequireStaticDelegate] Predicate<T> func
-    ) =>
+    public static bool Any<T>(ReadOnlyMemory<T> source, [InstantHandle, RequireStaticDelegate] Predicate<T> func) =>
         Any(source.Span, func);
 #endif
 
     /// <inheritdoc cref="Enumerable.Any{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Any<T>(
-        this scoped in ReadOnlySpan<T> source,
+        this scoped ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> func
     )
 #if UNMANAGED_SPAN
@@ -127,32 +128,32 @@ static partial class SpanQueries
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this string left, scoped in ReadOnlySpan<char> right) =>
-        ((ReadOnlySpan<char>)left).Equals(right, StringComparison.OrdinalIgnoreCase);
+    public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>
+        left.AsSpan().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, scoped in ReadOnlySpan<char> right) =>
-        ((ReadOnlySpan<char>)left.Memory.Span).Equals(right, StringComparison.OrdinalIgnoreCase);
+    public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, scoped ReadOnlySpan<char> right) =>
+        left.Memory.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this in Memory<char> left, scoped in ReadOnlySpan<char> right) =>
-        ((ReadOnlySpan<char>)left.Span).Equals(right, StringComparison.OrdinalIgnoreCase);
+    public static bool EqualsIgnoreCase(this Memory<char> left, scoped ReadOnlySpan<char> right) =>
+        left.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this scoped in Span<char> left, scoped in ReadOnlySpan<char> right) =>
-        ((ReadOnlySpan<char>)left).Equals(right, StringComparison.OrdinalIgnoreCase);
+    public static bool EqualsIgnoreCase(this scoped Span<char> left, scoped ReadOnlySpan<char> right) =>
+        left.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this in ReadOnlyMemory<char> left, scoped in ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this ReadOnlyMemory<char> left, scoped ReadOnlySpan<char> right) =>
         left.Span.Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool EqualsIgnoreCase(this scoped in ReadOnlySpan<char> left, scoped in ReadOnlySpan<char> right) =>
+    public static bool EqualsIgnoreCase(this scoped ReadOnlySpan<char> left, scoped ReadOnlySpan<char> right) =>
         left.Equals(right, StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
@@ -180,7 +181,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Select<T>(
-        this in Memory<T> source,
+        this Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T> selector
     )
     {
@@ -191,7 +192,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, int, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> Select<T>(
-        this in Memory<T> source,
+        this Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, int, T> selector
     )
     {
@@ -203,7 +204,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.Select{T, TResult}(IEnumerable{T}, Func{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Select<T>(
-        this scoped in Span<T> source,
+        this Span<T> source,
         [InstantHandle, RequireStaticDelegate] Func<T, T> selector
     )
 #if UNMANAGED_SPAN
@@ -242,8 +243,8 @@ static partial class SpanQueries
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(
-        this in Memory<T> span,
-        in ReadOnlyMemory<T> other,
+        this Memory<T> span,
+        ReadOnlyMemory<T> other,
         IEqualityComparer<T>? comparer = null
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
@@ -251,21 +252,21 @@ static partial class SpanQueries
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(
-        this in ReadOnlyMemory<T> span,
-        in ReadOnlyMemory<T> other,
+        this ReadOnlyMemory<T> span,
+        ReadOnlyMemory<T> other,
         IEqualityComparer<T>? comparer = null
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
 #else
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this in Memory<T> span, in ReadOnlyMemory<T> other)
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
         where T : IEquatable<T>? =>
         span.Span.SequenceEqual(other.Span);
 
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool SequenceEqual<T>(this in ReadOnlyMemory<T> span, in ReadOnlyMemory<T> other)
+    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
         where T : IEquatable<T>? =>
         span.Span.SequenceEqual(other.Span);
 #endif
@@ -281,7 +282,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> SkipWhile<T>(
-        this in Memory<T> source,
+        this Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     ) =>
         source[SkipWhile(source.Span, predicate).Length..];
@@ -290,7 +291,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> SkipWhile<T>(
-        this scoped in Span<T> source,
+        this Span<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
 #if UNMANAGED_SPAN
@@ -302,7 +303,7 @@ static partial class SpanQueries
 
         for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return source.UnsafelyAdvance(source.Distance(start));
+                return source.UnsafelySkip(source.IndexOf(ref start));
 
         return source;
     }
@@ -310,7 +311,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> SkipWhile<T>(
-        this in ReadOnlyMemory<T> source,
+        this ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     ) =>
         source[SkipWhile(source.Span, predicate).Length..];
@@ -319,7 +320,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> SkipWhile<T>(
-        this scoped in ReadOnlySpan<T> source,
+        this ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
 #if UNMANAGED_SPAN
@@ -331,7 +332,7 @@ static partial class SpanQueries
 
         for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return source.UnsafelySkip(source.Distance(start));
+                return source.UnsafelySkip(source.IndexOf(ref start));
 
         return source;
     }
@@ -347,7 +348,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> TakeWhile<T>(
-        this in Memory<T> source,
+        this Memory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     ) =>
         source[..TakeWhile(source.Span, predicate).Length];
@@ -356,7 +357,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> TakeWhile<T>(
-        this scoped in Span<T> source,
+        this Span<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
 #if UNMANAGED_SPAN
@@ -368,7 +369,7 @@ static partial class SpanQueries
 
         for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return source.UnsafelyTake(source.Distance(start));
+                return source.UnsafelyTake(source.IndexOf(ref start));
 
         return source;
     }
@@ -376,7 +377,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> TakeWhile<T>(
-        this in ReadOnlyMemory<T> source,
+        this ReadOnlyMemory<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     ) =>
         source[..TakeWhile(source.Span, predicate).Length];
@@ -385,7 +386,7 @@ static partial class SpanQueries
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, bool})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> TakeWhile<T>(
-        this scoped in ReadOnlySpan<T> source,
+        this ReadOnlySpan<T> source,
         [InstantHandle, RequireStaticDelegate] Predicate<T> predicate
     )
 #if UNMANAGED_SPAN
@@ -397,16 +398,8 @@ static partial class SpanQueries
 
         for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             if (!predicate(start))
-                return source.UnsafelyTake(source.Distance(start));
+                return source.UnsafelyTake(source.IndexOf(ref start));
 
         return source;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static int Distance<T>(this scoped in ReadOnlySpan<T> source, in T start) =>
-        source.Length - (int)Unsafe.ByteOffset(ref MemoryMarshal.GetReference(source), start) / Unsafe.SizeOf<T>();
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static int Distance<T>(this scoped in Span<T> source, in T start) =>
-        source.Length - (int)Unsafe.ByteOffset(ref MemoryMarshal.GetReference(source), start) / Unsafe.SizeOf<T>();
 }

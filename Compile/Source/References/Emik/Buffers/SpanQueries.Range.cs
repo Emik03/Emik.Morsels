@@ -97,7 +97,7 @@ static partial class SpanQueries
             var replacement = new T[((uint)length).RoundUpToPowerOf2()];
             Span<T> span = replacement;
             original.CopyTo(span);
-            Populate(span.UnsafelyAdvance(original.Length - 1));
+            Populate(span.UnsafelySkip(original.Length - 1));
             s_values = replacement;
             return span.UnsafelyTake(length);
         }

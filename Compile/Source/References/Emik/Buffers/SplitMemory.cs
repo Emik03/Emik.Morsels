@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 namespace Emik.Morsels;
-#pragma warning disable 8618, 9193, CA1823, IDE0250, IDE0251, MA0071, MA0102, RCS1158, SA1137
+#pragma warning disable 8618, 9193, CA1823, IDE0032, IDE0036, IDE0250, IDE0251, MA0071, MA0102, RCS1158, SA1137
 using static SmallList;
 using static Span;
 using static SplitMemoryFactory;
@@ -56,7 +56,7 @@ static partial class SplitMemoryFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this ReadOnlyMemory<T> span,
-        in OnceMemoryManager<SearchValues<T>> separator
+        OnceMemoryManager<SearchValues<T>> separator
     )
         where T : IEquatable<T> =>
         new(span, separator.Memory);
@@ -65,7 +65,7 @@ static partial class SplitMemoryFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this Memory<T> span,
-        in OnceMemoryManager<SearchValues<T>> separator
+        OnceMemoryManager<SearchValues<T>> separator
     )
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)span).SplitOn(separator);
@@ -73,13 +73,13 @@ static partial class SplitMemoryFactory
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, in OnceMemoryManager<T> separator)
+    public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         new(span, separator.Memory);
 
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, in OnceMemoryManager<T> separator)
+    public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         ((ReadOnlyMemory<T>)span).SplitOn(separator);
 #endif
@@ -151,10 +151,10 @@ static partial class SplitMemoryFactory
         MatchAny> SplitLines(this Memory<char> span) =>
         ((ReadOnlyMemory<char>)span).SplitLines();
 
-    // /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
-    // [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    // public static SplitMemory<char, char, One> SplitOn(this string span, in char separator) =>
-    //     span.AsMemory().SplitOn(separator);
+    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitMemory<char, char, MatchOne> SplitOn(this string span, char separator) =>
+        span.AsMemory().SplitOn(separator);
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -232,7 +232,11 @@ readonly
     public delegate TAccumulator RefAccumulator<TAccumulator>(
         TAccumulator accumulator,
         scoped in ReadOnlyMemory<TBody> next
-    );
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulator : allows ref struct
+#endif
+    ;
 
     readonly ReadOnlyMemory<TBody> _body = body;
 
@@ -539,6 +543,9 @@ readonly
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] RefAccumulator<TAccumulator> func
     )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulator : allows ref struct
+#endif
     {
         var accumulator = seed;
 
@@ -554,6 +561,9 @@ readonly
         TAccumulator seed,
         [InstantHandle, RequireStaticDelegate] Func<TAccumulator, ReadOnlyMemory<TBody>, TAccumulator> func
     )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulator : allows ref struct
+#endif
     {
         var accumulator = seed;
 

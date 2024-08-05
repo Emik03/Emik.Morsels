@@ -17,7 +17,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this in Memory<T> memory, out T? head, out Memory<T> tail)
+    public static void Deconstruct<T>(this Memory<T> memory, out T? head, out Memory<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -29,7 +29,7 @@ static partial class SpanIndexers
             return;
         }
 
-        head = MemoryMarshal.GetReference(memory.Span);
+        head = memory.Span.UnsafelyIndex(0);
         tail = memory[1..];
     }
 
@@ -39,7 +39,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="memory"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="memory"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this in ReadOnlyMemory<T> memory, out T? head, out ReadOnlyMemory<T> tail)
+    public static void Deconstruct<T>(this ReadOnlyMemory<T> memory, out T? head, out ReadOnlyMemory<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -51,7 +51,7 @@ static partial class SpanIndexers
             return;
         }
 
-        head = MemoryMarshal.GetReference(memory.Span);
+        head = memory.Span.UnsafelyIndex(0);
         tail = memory[1..];
     }
 #endif
@@ -62,7 +62,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this scoped in Span<T> span, out T? head, out Span<T> tail)
+    public static void Deconstruct<T>(this Span<T> span, out T? head, out Span<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -73,13 +73,9 @@ static partial class SpanIndexers
             tail = default;
             return;
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        head = MemoryMarshal.GetReference(span);
-        tail = span.UnsafelyAdvance(1);
-#else
-        head = span[0];
-        tail = span[1..];
-#endif
+
+        head = span.UnsafelyIndex(0);
+        tail = span.UnsafelySkip(1);
     }
 
     /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
@@ -88,7 +84,7 @@ static partial class SpanIndexers
     /// <param name="head">The first element of the parameter <paramref name="span"/>.</param>
     /// <param name="tail">The rest of the parameter <paramref name="span"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Deconstruct<T>(this scoped in ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
+    public static void Deconstruct<T>(this ReadOnlySpan<T> span, out T? head, out ReadOnlySpan<T> tail)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -99,13 +95,9 @@ static partial class SpanIndexers
             tail = default;
             return;
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        head = MemoryMarshal.GetReference(span);
+
+        head = span.UnsafelyIndex(0);
         tail = span.UnsafelySkip(1);
-#else
-        head = span[0];
-        tail = span[1..];
-#endif
     }
 #if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NO_SYSTEM_MEMORY
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
@@ -114,7 +106,7 @@ static partial class SpanIndexers
     /// <param name="value">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this scoped in ReadOnlySpan<T> span, ref T value)
+    public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ref T value)
 #pragma warning disable 8500
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         =>
@@ -132,10 +124,9 @@ static partial class SpanIndexers
     }
 #endif
 #pragma warning restore 8500
-    /// <inheritdoc cref="IndexOf{T}(in ReadOnlySpan{T}, ref T)"/>
+    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this scoped in Span<T> origin, ref T target) =>
-        ((ReadOnlySpan<T>)origin).IndexOf(ref target);
+    public static int IndexOf<T>(this Span<T> origin, ref T target) => origin.ReadOnly().IndexOf(ref target);
 #endif
 #if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
@@ -197,7 +188,7 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlyMemory<T> Nth<T>(this in ReadOnlyMemory<T> span, Range range)
+    public static ReadOnlyMemory<T> Nth<T>(this ReadOnlyMemory<T> span, Range range)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -210,7 +201,7 @@ static partial class SpanIndexers
     /// <param name="range">The index to get.</param>
     /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Memory<T> Nth<T>(this in Memory<T> span, Range range)
+    public static Memory<T> Nth<T>(this Memory<T> span, Range range)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -236,7 +227,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this in ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
+    public static T? Nth<T>(this ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -262,12 +253,14 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this in ReadOnlyMemory<T> memory, Index index)
+    public static T? Nth<T>(this ReadOnlyMemory<T> memory, Index index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
-            index.GetOffset(memory.Length) is var off && (uint)off < (uint)memory.Length ? memory.Span[off] : default;
+            index.GetOffset(memory.Length) is var o && (uint)o < (uint)memory.Length
+                ? memory.Span.UnsafelyIndex(o)
+                : default;
 
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
@@ -288,7 +281,7 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this in ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
+    public static T? NthLast<T>(this ReadOnlyMemory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -301,12 +294,12 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this in Memory<T> memory, [NonNegativeValue] int index)
+    public static T? Nth<T>(this Memory<T> memory, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
-            (uint)index < (uint)memory.Length ? memory.Span[index] : default;
+            (uint)index < (uint)memory.Length ? memory.Span.UnsafelyIndex(index) : default;
 
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
@@ -314,130 +307,184 @@ static partial class SpanIndexers
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this in Memory<T> memory, Index index)
+    public static T? Nth<T>(this Memory<T> memory, Index index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
-            index.GetOffset(memory.Length) is var off && (uint)off < (uint)memory.Length ? memory.Span[off] : default;
-
-    /// <summary>Gets a specific item from the memory.</summary>
-    /// <typeparam name="T">The type of item in the memory.</typeparam>
-    /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this in Memory<T> memory, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            (uint)(index - 1) < (uint)memory.Length ? memory.Span[memory.Length - index] : default;
-#endif
-
-    /// <summary>Gets the specific slice from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> Nth<T>(this scoped in ReadOnlySpan<T> span, Range range)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.Slice(off, len) : default;
-
-    /// <summary>Gets the specific slice from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="range">The index to get.</param>
-    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Nth<T>(this scoped in Span<T> span, Range range)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.Slice(off, len) : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped in ReadOnlySpan<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            (uint)index < (uint)span.Length ? span[index] : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped in ReadOnlySpan<T> span, Index index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            index.GetOffset(span.Length) is var off && (uint)off < (uint)span.Length ? span[off] : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped in ReadOnlySpan<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            (uint)(index - 1) < (uint)span.Length ? span[span.Length - index] : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped in Span<T> span, [NonNegativeValue] int index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            (uint)index < (uint)span.Length ? span[index] : default;
-
-    /// <summary>Gets a specific item from the span.</summary>
-    /// <typeparam name="T">The type of item in the span.</typeparam>
-    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
-    /// <param name="index">The index to get.</param>
-    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Nth<T>(this scoped in Span<T> span, Index index)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            index.GetOffset(span.Length) is var off && (uint)off < (uint)span.Length
-                ? span[off]
+            index.GetOffset(memory.Length) is var off && (uint)off < (uint)memory.Length
+                ? memory.Span.UnsafelyIndex(off)
                 : default;
 
+    /// <summary>Gets a specific item from the memory.</summary>
+    /// <typeparam name="T">The type of item in the memory.</typeparam>
+    /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="memory"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? NthLast<T>(this Memory<T> memory, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (uint)(index - 1) < (uint)memory.Length ? memory.Span.UnsafelyIndex(memory.Length - index) : default;
+#endif
+
+    /// <summary>Gets the specific slice from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
+    /// <param name="range">The index to get.</param>
+    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> Nth<T>(this ReadOnlySpan<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.UnsafelySlice(off, len) : default;
+
+    /// <summary>Gets the specific slice from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="range">The index to get.</param>
+    /// <returns>A slice from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> Nth<T>(this Span<T> span, Range range)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.UnsafelySlice(off, len) : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped ReadOnlySpan<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? NthLast<T>(this scoped ReadOnlySpan<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
+
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? NthLast<T>(this scoped in Span<T> span, [NonNegativeValue] int index)
+    public static T? Nth<T>(this scoped Span<T> span, [NonNegativeValue] int index)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
         =>
-            (uint)(index - 1) < (uint)span.Length ? span[span.Length - index] : default;
+            (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? Nth<T>(this scoped Span<T> span, Index index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
+
+    /// <summary>Gets a specific item from the span.</summary>
+    /// <typeparam name="T">The type of item in the span.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
+    /// <param name="index">The index to get.</param>
+    /// <returns>An element from the parameter <paramref name="span"/>, or <see langword="default"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T? NthLast<T>(this scoped Span<T> span, [NonNegativeValue] int index)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
+
+    /// <inheritdoc cref="Span{T}.this"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, int index) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+#else
+        body[index];
+#endif
+
+    /// <inheritdoc cref="Enumerable.Skip{T}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> UnsafelySkip<T>(this ReadOnlySpan<T> body, int start) =>
+        UnsafelySlice(body, start, body.Length - start);
+
+    /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> UnsafelySlice<T>(this ReadOnlySpan<T> body, int start, int length) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+#else
+        body.Slice(start, length);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<T> UnsafelyTake<T>(this ReadOnlySpan<T> body, int end) => UnsafelySlice(body, 0, end);
+
+    /// <inheritdoc cref="Span{T}.this"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T UnsafelyIndex<T>(this scoped Span<T> body, int index) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+#else
+        body[index];
+#endif
+
+    /// <inheritdoc cref="Enumerable.Skip{T}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> UnsafelySkip<T>(this Span<T> body, int start) =>
+        UnsafelySlice(body, start, body.Length - start);
+
+    /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> UnsafelySlice<T>(this Span<T> body, int start, int length) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+#else
+        body.Slice(start, length);
+#endif
+
+    /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> UnsafelyTake<T>(this Span<T> body, int end) => UnsafelySlice(body, 0, end);
 }

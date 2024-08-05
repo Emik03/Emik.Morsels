@@ -22,7 +22,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> BreakableFor<T>(
-        this in Memory<T> iterable,
+        this Memory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
@@ -34,7 +34,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> BreakableFor<T>(
-        this scoped in Span<T> iterable,
+        this Span<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
@@ -45,7 +45,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> BreakableFor<T>(
-        this in ReadOnlyMemory<T> iterable,
+        this ReadOnlyMemory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
@@ -57,7 +57,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> BreakableFor<T>(
-        this scoped in ReadOnlySpan<T> iterable,
+        this ReadOnlySpan<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, ControlFlow> func
     )
     {
@@ -85,7 +85,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> BreakableFor<T>(
-        this in Memory<T> iterable,
+        this Memory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
@@ -97,7 +97,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> BreakableFor<T>(
-        this scoped in Span<T> iterable,
+        this Span<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
@@ -108,7 +108,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> BreakableFor<T>(
-        this in ReadOnlyMemory<T> iterable,
+        this ReadOnlyMemory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
@@ -120,7 +120,7 @@ static partial class EachSpan
     /// <inheritdoc cref="EachWithControlFlow.BreakableFor{T}(IEnumerable{T}, Func{T, int, ControlFlow})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> BreakableFor<T>(
-        this scoped in ReadOnlySpan<T> iterable,
+        this ReadOnlySpan<T> iterable,
         [InstantHandle, RequireStaticDelegate] Func<T, int, ControlFlow> func
     )
     {
@@ -147,7 +147,7 @@ static partial class EachSpan
 
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Memory<T> For<T>(this in Memory<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
+    public static Memory<T> For<T>(this Memory<T> iterable, [InstantHandle, RequireStaticDelegate] Action<T> action)
     {
         For((ReadOnlySpan<T>)iterable.Span, action);
         return iterable;
@@ -157,7 +157,7 @@ static partial class EachSpan
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> For<T>(
-        this scoped in Span<T> iterable,
+        this Span<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T> action
     )
     {
@@ -168,7 +168,7 @@ static partial class EachSpan
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> For<T>(
-        this in ReadOnlyMemory<T> iterable,
+        this ReadOnlyMemory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T> action
     )
     {
@@ -180,7 +180,7 @@ static partial class EachSpan
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> For<T>(
-        this scoped in ReadOnlySpan<T> iterable,
+        this ReadOnlySpan<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T> action
     )
     {
@@ -204,11 +204,11 @@ static partial class EachSpan
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Memory<T> For<T>(
-        this in Memory<T> iterable,
+        this Memory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T, int> action
     )
     {
-        For((ReadOnlySpan<T>)iterable.Span, action);
+        _ = For((ReadOnlySpan<T>)iterable.Span, action);
         return iterable;
     }
 #endif
@@ -216,22 +216,22 @@ static partial class EachSpan
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> For<T>(
-        this scoped in Span<T> iterable,
+        this Span<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T, int> action
     )
     {
-        For((ReadOnlySpan<T>)iterable, action);
+        _ = For((ReadOnlySpan<T>)iterable, action);
         return iterable;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlyMemory<T> For<T>(
-        this in ReadOnlyMemory<T> iterable,
+        this ReadOnlyMemory<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T, int> action
     )
     {
-        For(iterable.Span, action);
+        _ = For(iterable.Span, action);
         return iterable;
     }
 #endif
@@ -239,7 +239,7 @@ static partial class EachSpan
     /// <inheritdoc cref="Each.For{T}(IEnumerable{T}, Action{T, int})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> For<T>(
-        this scoped in ReadOnlySpan<T> iterable,
+        this ReadOnlySpan<T> iterable,
         [InstantHandle, RequireStaticDelegate] Action<T, int> action
     )
     {

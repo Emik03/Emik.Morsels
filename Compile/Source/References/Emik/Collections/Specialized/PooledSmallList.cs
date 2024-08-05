@@ -29,6 +29,9 @@ static class PooledSmallListBuilder
 ref
 #endif
     partial struct PooledSmallList<T>
+#if !NO_ALLOWS_REF_STRUCT
+    : IDisposable
+#endif
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -127,10 +130,11 @@ ref
             if (!IsUnmanagedHeap)
                 return 0;
 
+            var pointer = UnmanagedHeapPointer;
             _length = 0;
             _view = default;
             _rental = null;
-            return UnmanagedHeapPointer;
+            return pointer;
         }
     }
 

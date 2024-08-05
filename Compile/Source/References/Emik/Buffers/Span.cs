@@ -119,23 +119,17 @@ static partial class Span
     /// <param name="span">The allocated span.</param>
     /// <param name="param">The parameter.</param>
     public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
-#if NO_ALLOWS_REF_STRUCT
-        ;
-#else
-        where TParam : allows ref struct;
+#if !NO_ALLOWS_REF_STRUCT
+        where TParam : allows ref struct
 #endif
+    ;
 
     /// <summary>A callback for a span with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
     /// <param name="span">The allocated span.</param>
     /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span)
-#if NO_ALLOWS_REF_STRUCT
-        ;
-#else
-        where TResult : allows ref struct;
-#endif
+    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span);
 
     /// <summary>A callback for a span with a reference parameter with a return value.</summary>
     /// <typeparam name="TSpan">The inner type of the span.</typeparam>
@@ -145,12 +139,10 @@ static partial class Span
     /// <param name="param">The parameter.</param>
     /// <returns>The returned value of this delegate.</returns>
     public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
-#if NO_ALLOWS_REF_STRUCT
-        ;
-#else
+#if !NO_ALLOWS_REF_STRUCT
         where TParam : allows ref struct
-        where TResult : allows ref struct;
 #endif
+    ;
 
     /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
     /// <remarks><para>
@@ -266,7 +258,7 @@ static partial class Span
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static byte[] Raw<T>(in T value)
+    public static byte[] Raw<T>(T value)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
@@ -654,56 +646,12 @@ static partial class Span
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(In(reference));
 #endif
+    /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
+    /// <typeparam name="T">The type of span.</typeparam>
+    /// <param name="span">The span to convert.</param>
+    /// <returns>The <see cref="ReadOnlySpan{T}"/> of the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySkip<T>(this scoped in ReadOnlySpan<T> body, int start) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateReadOnlySpan(
-            ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
-            body.Length - start
-        );
-#else
-        body[start..];
-#endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped in ReadOnlySpan<T> body, int index) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
-#else
-        body[index];
-#endif
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelyTake<T>(this scoped in ReadOnlySpan<T> body, int end) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(body), end);
-#else
-        body[..end];
-#endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelyAdvance<T>(this scoped in Span<T> body, int start) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateSpan(
-            ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start),
-            body.Length - start
-        );
-#else
-        body[start..];
-#endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped in Span<T> body, int index) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
-#else
-        body[index];
-#endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelyTake<T>(this scoped in Span<T> body, int end) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(body), end);
-#else
-        body[..end];
-#endif
+    public static ReadOnlySpan<T> ReadOnly<T>(this Span<T> span) => span;
 #if !NETSTANDARD1_0
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -715,12 +663,8 @@ static partial class Span
     public static TResult Allocate<TResult>(
         int length,
         [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TResult> del
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where TResult : allows ref struct
-#endif
-        =>
-            Allocate<byte, TResult>(length, del);
+    ) =>
+        Allocate<byte, TResult>(length, del);
 
     /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
     /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
@@ -734,9 +678,6 @@ static partial class Span
         int length,
         [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TResult> del
     )
-#if !NO_ALLOWS_REF_STRUCT
-        where TResult : allows ref struct
-#endif
         where TSpan : unmanaged
     {
         var value = Math.Max(length, 0);
@@ -772,7 +713,6 @@ static partial class Span
     )
 #if !NO_ALLOWS_REF_STRUCT
         where TParam : allows ref struct
-        where TResult : allows ref struct
 #endif
         =>
             Allocate<byte, TParam, TResult>(length, param, del);
@@ -794,7 +734,6 @@ static partial class Span
     )
 #if !NO_ALLOWS_REF_STRUCT
         where TParam : allows ref struct
-        where TResult : allows ref struct
 #endif
         where TSpan : unmanaged
     {
