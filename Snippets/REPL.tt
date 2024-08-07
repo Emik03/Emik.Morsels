@@ -29,6 +29,7 @@
 #define NETSTANDARD
 #define NO_ALLOWS_REF_STRUCT
 #define CSHARPREPL
+#define DEBUG
 <# /*
 
 Load all:

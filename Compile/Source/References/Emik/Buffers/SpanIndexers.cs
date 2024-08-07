@@ -97,13 +97,24 @@ static partial class SpanIndexers
         tail = span.UnsafelySkip(1);
     }
 #if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NO_SYSTEM_MEMORY
+    /// <summary>
+    /// Gets the index of an element of a given <see cref="Memory{T}"/> from its <see cref="Span{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type if items in the input <see cref="Memory{T}"/>.</typeparam>
+    /// <param name="memory">The input <see cref="Memory{T}"/> to calculate the index for.</param>
+    /// <param name="span">The reference to the target item to get the index for.</param>
+    /// <returns>The index of <paramref name="memory"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
+        memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
+
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
     /// <param name="value">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ref T value)
+    public static unsafe int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value)
 #pragma warning disable 8500
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         =>
@@ -179,8 +190,19 @@ static partial class SpanIndexers
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
-        ((ReadOnlySpan<T>)origin).OffsetOf(target);
-
+        origin.ReadOnly().OffsetOf(target);
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Converts the provided <see cref="Span{T}"/> to the <see cref="Memory{T}"/>.</summary>
+    /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to convert.</param>
+    /// <param name="memory">The bounds.</param>
+    /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
+        memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is var i and not -1
+            ? memory.Slice(i, span.Length)
+            : default;
+#endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>

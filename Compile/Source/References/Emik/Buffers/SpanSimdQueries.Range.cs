@@ -166,7 +166,7 @@ static partial class SpanSimdQueries
             var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
             Span<T> span = replacement;
             original.CopyTo(span);
-            Populate(span.UnsafelySkip(original.Length - 1));
+            Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
             s_values = replacement;
             return span.UnsafelyTake(length);
         }
@@ -191,7 +191,7 @@ static partial class SpanSimdQueries
         static void Populate(scoped Span<T> span)
         {
             ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
-            ref var end = ref Unsafe.Add(ref start, span.Length - 1);
+            ref var end = ref Unsafe.Add(ref start, span.Length);
 
             for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             {

@@ -21,9 +21,9 @@
 #define NETSTANDARD1_1_OR_GREATER
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
-#define DEBUG
-#define CSHARPREPL
 #define NO_ALLOWS_REF_STRUCT
+#define CSHARPREPL
+#define DEBUG
 global using System;
 global using System.Buffers;
 global using System.Buffers.Binary;
@@ -1732,13 +1732,24 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
         tail = span.UnsafelySkip(1);
     }
 #if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NO_SYSTEM_MEMORY
+    /// <summary>
+    /// Gets the index of an element of a given <see cref="Memory{T}"/> from its <see cref="Span{T}"/>.
+    /// </summary>
+    /// <typeparam name="T">The type if items in the input <see cref="Memory{T}"/>.</typeparam>
+    /// <param name="memory">The input <see cref="Memory{T}"/> to calculate the index for.</param>
+    /// <param name="span">The reference to the target item to get the index for.</param>
+    /// <returns>The index of <paramref name="memory"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
+        memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
+
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
     /// <param name="value">The reference to the target item to get the index for.</param>
     /// <returns>The index of <paramref name="value"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ref T value)
+    public static unsafe int IndexOf<T>(this scoped ReadOnlySpan<T> span, scoped ref T value)
 #pragma warning disable 8500
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         =>
@@ -1814,8 +1825,19 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
-        ((ReadOnlySpan<T>)origin).OffsetOf(target);
-
+        origin.ReadOnly().OffsetOf(target);
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Converts the provided <see cref="Span{T}"/> to the <see cref="Memory{T}"/>.</summary>
+    /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The <see cref="Span{T}"/> to convert.</param>
+    /// <param name="memory">The bounds.</param>
+    /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
+        memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is var i and not -1
+            ? memory.Slice(i, span.Length)
+            : default;
+#endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
@@ -2763,7 +2785,7 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
             var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
             Span<T> span = replacement;
             original.CopyTo(span);
-            Populate(span.UnsafelySkip(original.Length - 1));
+            Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
             s_values = replacement;
             return span.UnsafelyTake(length);
         }
@@ -2788,7 +2810,7 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
         static void Populate(scoped Span<T> span)
         {
             ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
-            ref var end = ref Unsafe.Add(ref start, span.Length - 1);
+            ref var end = ref Unsafe.Add(ref start, span.Length);
 
             for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             {
@@ -3866,8 +3888,8 @@ readonly
         {
             var b = body.Span;
             var ret = SplitSpan<TBody, TSeparator, TStrategy>.Enumerator.Move(sep.Span, ref b, out var c);
-            current = body[c.Length..];
-            body = body[b.Length..];
+            current = c.AsMemory(body);
+            body = b.AsMemory(body);
             return ret;
         }
 
@@ -3947,8 +3969,8 @@ readonly
         {
             var b = body.Span;
             var ret = SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.MoveNext(sep.Span, ref b, out var c);
-            current = body[c.Length..];
-            body = body[b.Length..];
+            current = c.AsMemory(body);
+            body = b.AsMemory(body);
             return ret;
         }
 
@@ -4049,16 +4071,13 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             {
                 _ when body.IsEmpty && (current = default) is var _ => false,
                 _ when sep.IsEmpty => (current = body) is var _ && (body = default) is var _,
-                _ when typeof(TStrategy) == typeof(MatchAll) =>
-                    MoveNextAll(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAll) => MoveNextAll(To<TBody>.From(sep), ref body, out current),
 #if NET8_0_OR_GREATER
                 _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(To<SearchValues<TBody>>.From(sep), ref body, out current),
 #endif
-                _ when typeof(TStrategy) == typeof(MatchAny) =>
-                    MoveNextAny(To<TBody>.From(sep), ref body, out current),
-                _ when typeof(TStrategy) == typeof(MatchOne) =>
-                    MoveNextOne(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAny) => MoveNextAny(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
 
@@ -4431,16 +4450,13 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             {
                 _ when body.IsEmpty && (current = default) is var _ => false,
                 _ when sep.IsEmpty => (current = body) is var _ && (body = default) is var _,
-                _ when typeof(TStrategy) == typeof(MatchAll) =>
-                    MoveNextAll(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAll) => MoveNextAll(To<TBody>.From(sep), ref body, out current),
 #if NET8_0_OR_GREATER
                 _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(To<SearchValues<TBody>>.From(sep), ref body, out current),
 #endif
-                _ when typeof(TStrategy) == typeof(MatchAny) =>
-                    MoveNextAny(To<TBody>.From(sep), ref body, out current),
-                _ when typeof(TStrategy) == typeof(MatchOne) =>
-                    MoveNextOne(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAny) => MoveNextAny(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
 

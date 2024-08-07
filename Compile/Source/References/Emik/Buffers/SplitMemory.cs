@@ -656,8 +656,8 @@ readonly
         {
             var b = body.Span;
             var ret = SplitSpan<TBody, TSeparator, TStrategy>.Enumerator.Move(sep.Span, ref b, out var c);
-            current = body[c.Length..];
-            body = body[b.Length..];
+            current = c.AsMemory(body);
+            body = b.AsMemory(body);
             return ret;
         }
 
@@ -737,8 +737,8 @@ readonly
         {
             var b = body.Span;
             var ret = SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.MoveNext(sep.Span, ref b, out var c);
-            current = body[c.Length..];
-            body = body[b.Length..];
+            current = c.AsMemory(body);
+            body = b.AsMemory(body);
             return ret;
         }
 

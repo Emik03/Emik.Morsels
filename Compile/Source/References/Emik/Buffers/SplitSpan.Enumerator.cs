@@ -80,16 +80,13 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             {
                 _ when body.IsEmpty && (current = default) is var _ => false,
                 _ when sep.IsEmpty => (current = body) is var _ && (body = default) is var _,
-                _ when typeof(TStrategy) == typeof(MatchAll) =>
-                    MoveNextAll(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAll) => MoveNextAll(To<TBody>.From(sep), ref body, out current),
 #if NET8_0_OR_GREATER
                 _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(To<SearchValues<TBody>>.From(sep), ref body, out current),
 #endif
-                _ when typeof(TStrategy) == typeof(MatchAny) =>
-                    MoveNextAny(To<TBody>.From(sep), ref body, out current),
-                _ when typeof(TStrategy) == typeof(MatchOne) =>
-                    MoveNextOne(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAny) => MoveNextAny(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
 
