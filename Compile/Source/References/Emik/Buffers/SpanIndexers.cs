@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+// ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse RedundantNameQualifier UseIndexFromEndExpression UseSymbolAlias
 static partial class SpanIndexers
 {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
@@ -449,55 +449,85 @@ static partial class SpanIndexers
 
     /// <inheritdoc cref="Span{T}.this"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, int index) =>
+    public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, int index)
+    {
+        System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+        return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
 #else
-        body[index];
+        return body[index];
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Skip{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySkip<T>(this ReadOnlySpan<T> body, int start) =>
-        UnsafelySlice(body, start, body.Length - start);
+    public static ReadOnlySpan<T> UnsafelySkip<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int start)
+    {
+        System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
+        return UnsafelySlice(body, start, body.Length - start);
+    }
 
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySlice<T>(this ReadOnlySpan<T> body, int start, int length) =>
+    public static ReadOnlySpan<T> UnsafelySlice<T>(
+        this scoped ReadOnlySpan<T> body,
+        [NonNegativeValue] int start,
+        [NonNegativeValue] int length
+    )
+    {
+        System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+        return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
-        body.Slice(start, length);
+        return body.Slice(start, length);
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelyTake<T>(this ReadOnlySpan<T> body, int end) => UnsafelySlice(body, 0, end);
+    public static ReadOnlySpan<T> UnsafelyTake<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int end)
+    {
+        System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
+        return UnsafelySlice(body, 0, end);
+    }
 
     /// <inheritdoc cref="Span{T}.this"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped Span<T> body, int index) =>
+    public static T UnsafelyIndex<T>(this scoped Span<T> body, int index)
+    {
+        System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+        return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
 #else
-        body[index];
+        return body[index];
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Skip{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySkip<T>(this Span<T> body, int start) =>
-        UnsafelySlice(body, start, body.Length - start);
+    public static Span<T> UnsafelySkip<T>(this Span<T> body, int start)
+    {
+        System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
+        return UnsafelySlice(body, start, body.Length - start);
+    }
 
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySlice<T>(this Span<T> body, int start, int length) =>
+    public static Span<T> UnsafelySlice<T>(this Span<T> body, int start, int length)
+    {
+        System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+        return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
-        body.Slice(start, length);
+        return body.Slice(start, length);
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelyTake<T>(this Span<T> body, int end) => UnsafelySlice(body, 0, end);
+    public static Span<T> UnsafelyTake<T>(this Span<T> body, int end)
+    {
+        System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
+        return UnsafelySlice(body, 0, end);
+    }
 }

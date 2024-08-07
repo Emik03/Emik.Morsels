@@ -36,12 +36,10 @@ static partial class DeconstructionCollectionExtensions
 
         if (next is not DeconstructionCollection x)
         {
-            // ReSharper disable once InvocationIsSkipped
             System.Diagnostics.Debug.Assert(!assertion, "!assertion");
             return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
         }
 
-        // ReSharper disable once InvocationIsSkipped
         System.Diagnostics.Debug.Assert(assertion, "assertion");
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && x.TryRecurse(i, ref visitLength, seen); i++) { }

@@ -6,6 +6,7 @@
 using Expression = System.Linq.Expressions.Expression;
 
 namespace Emik.Morsels;
+
 #pragma warning restore GlobalUsingsAnalyzer
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 static partial class OperatorCaching

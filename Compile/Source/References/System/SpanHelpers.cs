@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace InvocationIsSkipped
+// ReSharper disable CheckNamespace
 namespace System;
 
 // ReSharper disable CognitiveComplexity

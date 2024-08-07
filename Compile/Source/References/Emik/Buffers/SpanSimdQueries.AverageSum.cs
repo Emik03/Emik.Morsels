@@ -8,7 +8,7 @@ using static OperatorCaching;
 using static Span;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable InvocationIsSkipped NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 static partial class SpanSimdQueries
 {
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>

@@ -144,9 +144,7 @@ static partial class SpanSimdQueries
         // Vector512<T> is the largest vector type.
         const int InitialCapacity = 512;
 
-        static T[] s_values = new T[InitialCapacity / Unsafe.SizeOf<T>()];
-
-        static InAscendingOrder() => Populate(s_values);
+        static T[] s_values = [];
 
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
@@ -158,14 +156,14 @@ static partial class SpanSimdQueries
         public static ReadOnlySpan<T> Span(int length)
         {
             if (typeof(T) == typeof(char))
-                return To<T>.From(InAscendingOrder<ushort>.Span(length));
+                return To<T>.From(length.SpanRange<ushort>());
 
             ReadOnlySpan<T> original = s_values;
 
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
 
-            var replacement = new T[length.RoundUpToPowerOf2()];
+            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - 1));
@@ -183,9 +181,7 @@ static partial class SpanSimdQueries
         public static ReadOnlyMemory<T> Memory(int length)
         {
             if (typeof(T) == typeof(char))
-                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(
-                    ref AsRef(InAscendingOrder<ushort>.Memory(length))
-                );
+                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(ref AsRef(length.MemoryRange<ushort>()));
 
             _ = Span(length);
             return new(s_values, 0, length);

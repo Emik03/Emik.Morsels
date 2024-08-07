@@ -182,7 +182,7 @@ static partial class Peeks
 #pragma warning restore CS1574
     public static void Shout(string message)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 #pragma warning disable S6670

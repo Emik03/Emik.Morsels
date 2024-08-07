@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
+// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
@@ -219,7 +219,7 @@ static partial class TryTake
     // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY

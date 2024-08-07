@@ -783,7 +783,7 @@ static partial class Stringifier
         span = span.UnsafelySkip(1);
     }
 
-    // ReSharper disable InvocationIsSkipped RedundantAssignment
+    // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);

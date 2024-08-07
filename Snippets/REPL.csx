@@ -21,8 +21,9 @@
 #define NETSTANDARD1_1_OR_GREATER
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
-#define NO_ALLOWS_REF_STRUCT
+#define DEBUG
 #define CSHARPREPL
+#define NO_ALLOWS_REF_STRUCT
 global using System;
 global using System.Buffers;
 global using System.Buffers.Binary;
@@ -1639,7 +1640,7 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
 
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-// ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
+// ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse RedundantNameQualifier UseIndexFromEndExpression UseSymbolAlias
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
@@ -2083,57 +2084,87 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
 
     /// <inheritdoc cref="Span{T}.this"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, int index) =>
+    public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, int index)
+    {
+        System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+        return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
 #else
-        body[index];
+        return body[index];
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Skip{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySkip<T>(this ReadOnlySpan<T> body, int start) =>
-        UnsafelySlice(body, start, body.Length - start);
+    public static ReadOnlySpan<T> UnsafelySkip<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int start)
+    {
+        System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
+        return UnsafelySlice(body, start, body.Length - start);
+    }
 
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelySlice<T>(this ReadOnlySpan<T> body, int start, int length) =>
+    public static ReadOnlySpan<T> UnsafelySlice<T>(
+        this scoped ReadOnlySpan<T> body,
+        [NonNegativeValue] int start,
+        [NonNegativeValue] int length
+    )
+    {
+        System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+        return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
-        body.Slice(start, length);
+        return body.Slice(start, length);
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlySpan<T> UnsafelyTake<T>(this ReadOnlySpan<T> body, int end) => UnsafelySlice(body, 0, end);
+    public static ReadOnlySpan<T> UnsafelyTake<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int end)
+    {
+        System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
+        return UnsafelySlice(body, 0, end);
+    }
 
     /// <inheritdoc cref="Span{T}.this"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T UnsafelyIndex<T>(this scoped Span<T> body, int index) =>
+    public static T UnsafelyIndex<T>(this scoped Span<T> body, int index)
+    {
+        System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
+        return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
 #else
-        body[index];
+        return body[index];
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Skip{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySkip<T>(this Span<T> body, int start) =>
-        UnsafelySlice(body, start, body.Length - start);
+    public static Span<T> UnsafelySkip<T>(this Span<T> body, int start)
+    {
+        System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
+        return UnsafelySlice(body, start, body.Length - start);
+    }
 
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySlice<T>(this Span<T> body, int start, int length) =>
+    public static Span<T> UnsafelySlice<T>(this Span<T> body, int start, int length)
+    {
+        System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
+        return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
-        body.Slice(start, length);
+        return body.Slice(start, length);
 #endif
+    }
 
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelyTake<T>(this Span<T> body, int end) => UnsafelySlice(body, 0, end);
+    public static Span<T> UnsafelyTake<T>(this Span<T> body, int end)
+    {
+        System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
+        return UnsafelySlice(body, 0, end);
+    }
 
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -2145,7 +2176,7 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
 
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable InvocationIsSkipped NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2710,9 +2741,7 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
         // Vector512<T> is the largest vector type.
         const int InitialCapacity = 512;
 
-        static T[] s_values = new T[InitialCapacity / Unsafe.SizeOf<T>()];
-
-        static InAscendingOrder() => Populate(s_values);
+        static T[] s_values = [];
 
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
@@ -2724,14 +2753,14 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
         public static ReadOnlySpan<T> Span(int length)
         {
             if (typeof(T) == typeof(char))
-                return To<T>.From(InAscendingOrder<ushort>.Span(length));
+                return To<T>.From(length.SpanRange<ushort>());
 
             ReadOnlySpan<T> original = s_values;
 
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
 
-            var replacement = new T[length.RoundUpToPowerOf2()];
+            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - 1));
@@ -2749,9 +2778,7 @@ public sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
         public static ReadOnlyMemory<T> Memory(int length)
         {
             if (typeof(T) == typeof(char))
-                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(
-                    ref AsRef(InAscendingOrder<ushort>.Memory(length))
-                );
+                return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(ref AsRef(length.MemoryRange<ushort>()));
 
             _ = Span(length);
             return new(s_values, 0, length);
@@ -3942,7 +3969,7 @@ readonly
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf InvocationIsSkipped RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 
 
@@ -4324,7 +4351,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf InvocationIsSkipped RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 
 #pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
@@ -4637,7 +4664,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf InvocationIsSkipped RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 
 #pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
@@ -6827,7 +6854,7 @@ readonly
 #pragma warning restore CS1574
     public static void Shout(string message)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 #pragma warning disable S6670
@@ -10892,7 +10919,7 @@ public enum ControlFlow : byte
 
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
+// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 
 
 /// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
@@ -11110,7 +11137,7 @@ public enum ControlFlow : byte
     // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
@@ -12955,6 +12982,7 @@ public sealed class Primes : IEnumerable<ulong>
 // ReSharper disable RedundantUsingDirective
 // ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 #pragma warning disable GlobalUsingsAnalyzer
+
 
 
 
@@ -16663,7 +16691,7 @@ public
         span = span.UnsafelySkip(1);
     }
 
-    // ReSharper disable InvocationIsSkipped RedundantAssignment
+    // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);
@@ -17212,12 +17240,10 @@ public
 
         if (next is not DeconstructionCollection x)
         {
-            // ReSharper disable once InvocationIsSkipped
             System.Diagnostics.Debug.Assert(!assertion, "!assertion");
             return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
         }
 
-        // ReSharper disable once InvocationIsSkipped
         System.Diagnostics.Debug.Assert(assertion, "assertion");
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && x.TryRecurse(i, ref visitLength, seen); i++) { }
