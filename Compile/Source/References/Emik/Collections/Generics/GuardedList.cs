@@ -18,7 +18,7 @@ static partial class GuardedFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
+        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToIListLazily());
 }
 #endif
 
@@ -28,7 +28,6 @@ static partial class GuardedFactory
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-[NoStructuralTyping]
 sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
     /// <inheritdoc cref="IList{T}.this"/>
@@ -139,8 +138,8 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => list.ToString();
+    [CollectionAccess(Read), Pure]
+    public override string ToString() => list.ToString().OrEmpty();
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;

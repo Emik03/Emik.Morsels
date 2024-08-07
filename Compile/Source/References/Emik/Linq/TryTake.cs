@@ -215,13 +215,18 @@ static partial class TryTake
     }
 #endif
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once UnusedMember.Local
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
     static unsafe T Reinterpret<T>(char c)
     {
         // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #pragma warning disable 8500
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         return *(T*)&c;
+#else
+        return Unsafe.As<char, T>(ref c);
+#endif
 #pragma warning restore 8500
     }
 }

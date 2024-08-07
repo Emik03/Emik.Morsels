@@ -29,7 +29,7 @@ static partial class AssertResultEnumerableOperations
     /// <returns>The collected result of all assertions.</returns>
     [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
-        enumerable.Select(x => x.Run()).ToListLazily();
+        enumerable.Select(x => x.Run()).ToIListLazily();
 }
 
 /// <inheritdoc cref="Emik.Morsels.Assert"/>

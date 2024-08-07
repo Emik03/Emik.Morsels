@@ -353,7 +353,7 @@ partial struct SmallList<T> :
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(IEnumerable<T>? collection)
     {
-        if (collection?.ToCollectionLazily() is not { Count: var count and not 0 } c)
+        if (collection?.ToICollectionLazily() is not { Count: var count and not 0 } c)
             return;
 
         if (InlinedLength - HeadCount is var stackExpand && stackExpand is not 0)
@@ -367,11 +367,11 @@ partial struct SmallList<T> :
                     return;
         }
 
-        if (count - stackExpand <= 0)
+        if (count <= stackExpand)
             return;
 
         var rest = _rest as List<T> ?? [.. _rest!];
-        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToCollectionLazily());
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollectionLazily());
         _rest = rest;
     }
 
@@ -461,25 +461,6 @@ partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest) =>
         (first, second, third, rest) = (_first, _second, _third, Rest ?? []);
-#if !UNMANAGED_SPAN
-#pragma warning disable 8500
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void HeadSpan([InstantHandle, RequireStaticDelegate] SpanAction<T> del) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
-
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
-    /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="del">The function to use.</param>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void HeadSpan<TParam>(
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanAction<T, TParam> del
-    ) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-#endif
 
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -784,28 +765,6 @@ partial struct SmallList<T> :
 
         return default;
     }
-#if !UNMANAGED_SPAN
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
-    /// <param name="del">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TResult HeadSpan<TResult>([InstantHandle, RequireStaticDelegate] SpanFunc<T, TResult> del) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount));
-
-    /// <summary>Creates the temporary span to be passed into the function.</summary>
-    /// <typeparam name="TParam">The type of reference parameter to pass into the function.</typeparam>
-    /// <typeparam name="TResult">The resulting type of the function.</typeparam>
-    /// <param name="param">The reference parameter to pass into the function.</param>
-    /// <param name="del">The function to use.</param>
-    /// <returns>The result of the parameter <paramref name="del"/>.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public TResult HeadSpan<TParam, TResult>(
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<T, TParam, TResult> del
-    ) =>
-        del(MemoryMarshal.CreateSpan(ref _first!, HeadCount), param);
-#endif
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

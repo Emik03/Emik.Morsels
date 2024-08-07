@@ -2,9 +2,6 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable IDE0056, SA1137
-
-using static Span;
 
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 // ReSharper disable BadPreprocessorIndent ConditionIsAlwaysTrueOrFalse UseIndexFromEndExpression
@@ -168,6 +165,22 @@ static partial class SpanIndexers
             return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
     }
 #endif
+    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
+    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        origin.IndexOf(ref MemoryMarshal.GetReference(target));
+#else
+#pragma warning disable 8500
+        origin.IndexOf(ref *(T*)target.Pointer);
+#pragma warning restore 8500
+#endif
+
+    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
+        ((ReadOnlySpan<T>)origin).OffsetOf(target);
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>

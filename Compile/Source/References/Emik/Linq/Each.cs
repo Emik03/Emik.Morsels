@@ -110,7 +110,7 @@ static partial class Each
         [InstantHandle] Action<T> action
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollectionLazily();
 
         foreach (var item in list)
             action(item);
@@ -137,7 +137,7 @@ static partial class Each
         [InstantHandle] Action<T, TExternal> action
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollectionLazily();
 
         foreach (var item in list)
             action(item, external);
@@ -161,7 +161,7 @@ static partial class Each
         [InstantHandle] Action<T, int> action
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollectionLazily();
         var i = 0;
 
         foreach (var item in list)
@@ -189,7 +189,7 @@ static partial class Each
         [InstantHandle] Action<T, int, TExternal> action
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollectionLazily();
         var i = 0;
 
         foreach (var item in list)

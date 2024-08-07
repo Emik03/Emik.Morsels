@@ -28,16 +28,17 @@ sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDISP010, IDISP023
-    protected override void Dispose(bool disposing) => Unpin();
-#pragma warning restore IDISP010, IDISP023
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override void Unpin()
+#pragma warning disable IDISP010
+    protected override void Dispose(bool disposing)
+#pragma warning restore IDISP010
     {
         if (_handle.IsAllocated)
             _handle.Free();
     }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override void Unpin() => Dispose(true);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]

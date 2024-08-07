@@ -19,7 +19,7 @@ static partial class MatrixFactory
 #if WAWA
         iterator is null ? null : new(iterator as IList<T> ?? [..iterator], countPerList);
 #else
-        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+        iterator is null ? null : new(iterator.ToIListLazily(), countPerList);
 #endif
 
     /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
@@ -33,23 +33,18 @@ static partial class MatrixFactory
 #if WAWA
         iterator is null ? null : new(iterator as IList<T> ?? [..iterator], countPerList);
 #else
-        iterator is null ? null : new(iterator.ToListLazily(), countPerList);
+        iterator is null ? null : new(iterator.ToIListLazily(), countPerList);
 #endif
 }
 
 /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
 /// <typeparam name="T">The type of item within the list.</typeparam>
-#if !WAWA
-[NoStructuralTyping]
-#endif
 sealed partial class Matrix<T> : IList<IList<T>>
 {
     /// <summary>Represents a slice of a matrix.</summary>
     /// <param name="matrix">The matrix to reference.</param>
     /// <param name="ordinal">The first index of the matrix.</param>
-#pragma warning disable IDE0044
     sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
-#pragma warning restore IDE0044
     {
         /// <inheritdoc />
         public T this[[NonNegativeValue] int index]
@@ -71,45 +66,73 @@ sealed partial class Matrix<T> : IList<IList<T>>
         }
 
         /// <inheritdoc />
-        public void Add(T item) => matrix.List.Add(item);
+        public void Add(T item) => matrix.List.Insert(Count * (ordinal + 1), item);
 
         /// <inheritdoc />
         public void Clear()
         {
-            for (var i = 0; i < Count; i++)
-                matrix.List.RemoveAt(Count * ordinal);
+            for (int i = 0, count = Count; i < count; i++)
+                matrix.List.RemoveAt(count * ordinal);
         }
 
         /// <inheritdoc />
         public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
         {
-            for (var i = 0; i < Count; i++)
-                array[arrayIndex + i] = this[i];
+            for (int i = 0, count = Count; i < count; i++)
+                array[arrayIndex + i] = matrix.List[count * ordinal + i];
         }
 
         /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, T item) => matrix.List.Insert(Count * ordinal + index, item);
+        public void Insert([NonNegativeValue] int index, T item)
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (Count is var count && index >= 0 && index < count)
+                matrix.List.Insert(Count * ordinal + index, item);
+        }
 
         /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => matrix.List.RemoveAt(Count * ordinal + index);
+        public void RemoveAt([NonNegativeValue] int index)
+        {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+            if (Count is var count && index >= 0 && index < count)
+                matrix.List.RemoveAt(Count * ordinal + index);
+        }
 
         /// <inheritdoc />
         [Pure]
-        public bool Contains(T item) =>
-            Enumerable
-               .Range(0, Count)
-               .Any(x => EqualityComparer<T>.Default.Equals(matrix.List[Count * ordinal + x], item));
+        public bool Contains(T item) => IndexOf(item) is not -1;
 
         /// <inheritdoc />
-        public bool Remove(T item) => Contains(item) && matrix.List.Remove(item);
+        public bool Remove(T item)
+        {
+            for (int i = 0, count = Count; i < count; i++)
+                if (count * ordinal + i is var view && EqualityComparer<T>.Default.Equals(matrix.List[view], item))
+                {
+                    matrix.List.RemoveAt(view);
+                    return true;
+                }
+
+            return false;
+        }
 
         /// <inheritdoc />
         [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(T item) => Contains(item) ? matrix.List.IndexOf(item) - Count * ordinal : -1;
+        public int IndexOf(T item)
+        {
+            for (int i = 0, count = Count; i < count; i++)
+                if (EqualityComparer<T>.Default.Equals(matrix.List[count * ordinal + i], item))
+                    return i;
+
+            return -1;
+        }
 
         /// <inheritdoc />
         [Pure]
-        public IEnumerator<T> GetEnumerator() => matrix.List.Skip(Count * ordinal).Take(Count).GetEnumerator();
+        public IEnumerator<T> GetEnumerator()
+        {
+            var count = Count;
+            return matrix.List.Skip(count * ordinal).Take(count).GetEnumerator();
+        }
 
         /// <inheritdoc />
         [Pure]
@@ -169,6 +192,13 @@ sealed partial class Matrix<T> : IList<IList<T>>
         _countPerListLazy = countPerList;
         _listLazy = list;
     }
+
+    /// <inheritdoc cref="IList{T}.this"/>
+    public IList<T> this[[NonNegativeValue] int index]
+    {
+        [Pure] get => new Slice(this, index);
+        set => Add(value);
+    }
 #if !WAWA
     /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
     /// <param name="x">The <c>x</c> position, which is the list to take.</param>
@@ -179,29 +209,6 @@ sealed partial class Matrix<T> : IList<IList<T>>
         set => List[Count * x + y] = value;
     }
 #endif
-
-    /// <inheritdoc cref="IList{T}.this"/>
-    public IList<T> this[[NonNegativeValue] int index]
-    {
-        [Pure] get => new Slice(this, index);
-        set => Add(value);
-    }
-
-    /// <summary>Gets the amount of items per list.</summary>
-    public int CountPerList
-    {
-        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
-    }
-
-    /// <summary>Gets the encapsulated list.</summary>
-    [ProvidesContext]
-#pragma warning disable CS8603 // Unreachable.
-    public IList<T> List
-    {
-        [Pure] // ReSharper disable once AssignNullToNotNullAttribute
-        get => _listLazy?.Invoke() ?? _listEager;
-    }
-#pragma warning restore CS8603
 
     /// <inheritdoc />
     public bool IsReadOnly
@@ -216,24 +223,39 @@ sealed partial class Matrix<T> : IList<IList<T>>
         [Pure] get => List.Count / CountPerList;
     }
 
+    /// <summary>Gets the amount of items per list.</summary>
+    public int CountPerList
+    {
+        [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
+    }
+
+    /// <summary>Gets the encapsulated list.</summary>
+    [ProvidesContext]
+    public IList<T> List
+    {
+        [Pure]
+#pragma warning disable 8603 // Unreachable.
+        get => _listLazy?.Invoke() ?? _listEager;
+#pragma warning restore 8603
+    }
+
     /// <inheritdoc />
-    public void Add(IList<T>? item) =>
-        item?.ToList()
-#pragma warning disable SA1110
-#if NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-           .For
-#else
-           .ForEach
-#endif
-                (List.Add);
-#pragma warning restore SA1110
+    public void Add(IList<T>? item)
+    {
+        if (item is null)
+            return;
+
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (int i = 0, count = item.Count; i < count; i++)
+            List.Add(item[i]);
+    }
 
     /// <inheritdoc />
     public void Clear() => List.Clear();
 
     /// <inheritdoc />
     [Pure]
-    public bool Contains(IList<T>? item) => item?.All(List.Contains) ?? false;
+    public bool Contains(IList<T>? item) => IndexOf(item) is not -1;
 
     /// <inheritdoc />
     public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
@@ -253,16 +275,39 @@ sealed partial class Matrix<T> : IList<IList<T>>
     public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
 
     /// <inheritdoc />
-    public bool Remove(IList<T>? item) => item?.Select(List.Remove).Any() ?? false;
+    public bool Remove(IList<T>? item)
+    {
+        if (item is null)
+            return false;
+
+        for (int i = 0, count = Count; i < count; i++)
+            if (this[i].SequenceEqual(item))
+            {
+                RemoveAt(i);
+                return true;
+            }
+
+        return false;
+    }
 
     /// <inheritdoc />
     [Pure, ValueRange(-1, int.MaxValue)]
-    public int IndexOf(IList<T>? item) => item?.Count > 0 ? List.IndexOf(item[0]) : -1;
+    public int IndexOf(IList<T>? item)
+    {
+        if (item is null)
+            return -1;
+
+        for (int i = 0, count = Count; i < count; i++)
+            if (this[i].SequenceEqual(item))
+                return i;
+
+        return -1;
+    }
 
     /// <inheritdoc />
     [Pure]
     public IEnumerator<IList<T>> GetEnumerator() =>
-        Enumerable.Range(0, Count).Select(x => (IList<T>)new Slice(this, x)).GetEnumerator();
+        Enumerable.Range(0, Count).Select(IList<T> (x) => new Slice(this, x)).GetEnumerator();
 
     /// <inheritdoc />
     [Pure]

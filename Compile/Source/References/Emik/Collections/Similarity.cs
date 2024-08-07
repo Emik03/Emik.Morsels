@@ -266,7 +266,7 @@ static partial class Similarity
         where T : unmanaged
 #endif
         =>
-            ((ReadOnlySpan<T>)left).Jaro(right, comparer);
+            left.ReadOnly().Jaro(right, comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
@@ -683,10 +683,14 @@ static partial class Similarity
     [MustUseReturnValue, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
         scoped Span<byte> visited,
-        (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>) args
+        T left,
+        T right,
+        [NonNegativeValue] int leftLength,
+        [NonNegativeValue] int rightLength,
+        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
+        [InstantHandle] Func<TItem, TItem, bool> comparer
     )
     {
-        var (left, right, leftLength, rightLength, indexer, comparer) = args;
         int rightPreviousIndex = 0, transpositionCount = 0;
         double matchCount = 0;
         visited.Clear();
@@ -718,16 +722,27 @@ static partial class Similarity
         [NonNegativeValue] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
         [InstantHandle] Func<TItem, TItem, bool> comparer
-    ) =>
-        leftLength is 0 && rightLength is 0 ? 1 :
-            leftLength is 0 || rightLength is 0 ? 0 :
-                leftLength is 1 && rightLength is 1 ?
-                    EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0 :
-                    Allocate(rightLength, (left, right, leftLength, rightLength, indexer, comparer), Fun<T, TItem>());
+    )
+    {
+        if (leftLength is 0 || rightLength is 0)
+            return (leftLength is 0 && rightLength is 0).ToByte();
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static SpanFunc<byte, (T, T, int, int, Func<T, int, TItem>, Func<TItem, TItem, bool>), double> Fun<T, TItem>() =>
-        static (span, tuple) => JaroAllocated(span, tuple);
+        if (leftLength is 1 && rightLength is 1)
+            return EqualsAt(left, right, 0, 0, comparer, indexer).ToByte();
+
+        var rent = rightLength.Alloc<byte>(out var span);
+
+        try
+        {
+            return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
+        }
+        finally
+        {
+#pragma warning disable IDISP017 // Once CSharpRepl upgrades to .NET 9, apply this lint.
+            rent.Dispose();
+#pragma warning restore IDISP017
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(

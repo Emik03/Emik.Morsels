@@ -58,28 +58,21 @@ static partial class SmallFactory
     public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
 
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
     /// <param name="it">The length of the buffer.</param>
     /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe PooledSmallList<T> Alloc<T>(this in int it)
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static PooledSmallList<T> Alloc<T>(this in int it)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
     {
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static Span<T> Stack(int length)
-        {
-            var ptr = stackalloc byte[InBytes<T>(length)];
-            return new(ptr, InBytes<T>(length));
-        }
-
         return it switch
         {
             <= 0 => default, // No allocation
 #if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
-            _ when IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stack(it), // Stack allocation
+            _ when !IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stackalloc<T>(it), // Stack allocation
 #endif
             _ => it.AsPooledSmallList<T>(), // Heap allocation
         };

@@ -6,19 +6,19 @@ namespace Emik.Morsels;
 using static CollectionAccessType;
 
 #if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="ClippedList{T}"/>.</summary>
+/// <summary>Extension methods that act as factories for <see cref="ClampedList{T}"/>.</summary>
 #pragma warning disable MA0048
 static partial class ClippedFactory
 #pragma warning restore MA0048
 {
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClippedList{T}"/>.</summary>
+    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClampedList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="ClippedList{T}"/>.</param>
-    /// <returns>A <see cref="ClippedList{T}"/> of <paramref name="iterable"/>.</returns>
+    /// <param name="iterable">The collection to turn into a <see cref="ClampedList{T}"/>.</param>
+    /// <returns>A <see cref="ClampedList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static ClippedList<T>? ToClippedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ClippedList<T> ?? new(iterable.ToListLazily());
+    public static ClampedList<T>? ToClamped<T>(this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as ClampedList<T> ?? new(iterable.ToIListLazily());
 }
 #endif
 
@@ -27,8 +27,7 @@ static partial class ClippedFactory
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-[NoStructuralTyping]
-sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
+sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
@@ -87,8 +86,8 @@ sealed partial class ClippedList<T>([ProvidesContext] IList<T> list) : IList<T>,
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => list.ToString();
+    [CollectionAccess(Read), Pure]
+    public override string ToString() => list.ToString().OrEmpty();
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;

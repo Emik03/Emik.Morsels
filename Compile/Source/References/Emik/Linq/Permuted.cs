@@ -19,7 +19,7 @@ static partial class Permuted
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
 #if NETFRAMEWORK && !NET45_OR_GREATER
-        iterator.Select(x => x.ToListLazily()).ToListLazily().Combinations();
+        iterator.Select(x => x.ToIListLazily()).ToIListLazily().Combinations();
 #else
         iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
 #endif

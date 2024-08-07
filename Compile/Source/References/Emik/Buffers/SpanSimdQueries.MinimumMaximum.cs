@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace EmptyNamespace
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 1574, 1580, 1581, 1584, S1199 // ReSharper disable once RedundantUsingDirective
-using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression
-#pragma warning disable MA0048
 static partial class SpanSimdQueries
-#pragma warning restore MA0048
 {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>

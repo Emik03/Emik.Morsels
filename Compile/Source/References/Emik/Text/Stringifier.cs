@@ -155,7 +155,7 @@ static partial class Stringifier
     public static string? CollapseToSingleLine(this string? expression, string? prefix = null)
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped in ReadOnlySpan<char> next)
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
         {
             var trimmed = next.Trim();
 
@@ -175,6 +175,7 @@ static partial class Stringifier
         return expression
           ?.Collapse() // ReSharper disable once RedundantCast
            .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            // ReSharper disable once RedundantSuppressNullableWarningExpression
            .Select(x => x.Trim())!
            .Prepend(prefix)
            .Conjoin("");
@@ -194,8 +195,8 @@ static partial class Stringifier
         (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var found ? found : 0)
 #else
         Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
-#endif
-            is var trim
+#endif // ReSharper disable once BadPreprocessorIndent
+        is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
 #if NET7_0_OR_GREATER
@@ -775,11 +776,11 @@ static partial class Stringifier
 #endif
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-#pragma warning disable IDE0057
+
     static void Push(char c, scoped ref Span<char> span)
     {
         span[0] = c; // ReSharper disable once ReplaceSliceWithRangeIndexer
-        span = span.Slice(1);
+        span = span.UnsafelySkip(1);
     }
 
     // ReSharper disable InvocationIsSkipped RedundantAssignment
@@ -787,9 +788,9 @@ static partial class Stringifier
     {
         var it = next.TryFormat(span, out var slice);
         System.Diagnostics.Debug.Assert(it, "TryFormat"); // ReSharper disable once ReplaceSliceWithRangeIndexer
-        span = span.Slice(slice);
+        span = span.UnsafelySkip(slice);
     }
-#pragma warning restore IDE0057
+
     // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {
@@ -823,7 +824,7 @@ static partial class Stringifier
                 break;
         }
 
-        System.Diagnostics.Debug.Assert(span.IsEmpty, nameof(Span<char>.IsEmpty));
+        System.Diagnostics.Debug.Assert(span.IsEmpty, "span is drained");
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
@@ -1018,7 +1019,7 @@ static partial class Stringifier
 #if WAWA
            .ToList();
 #else
-           .ToCollectionLazily();
+           .ToICollectionLazily();
 #endif
         var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();

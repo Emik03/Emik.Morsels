@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent ConvertToStaticClass
+// ReSharper disable BadPreprocessorIndent RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
-#pragma warning disable DOC106
-/// <summary>Defines methods for callbacks with spans. Methods here do not clear the allocated buffer.</summary>
-/// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
+#pragma warning disable 8500
+/// <summary>Defines methods for spans.</summary>
+/// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
 static partial class Span
 {
     /// <summary>Provides reinterpret span methods.</summary>
     /// <typeparam name="TTo">The type to convert to.</typeparam>
     public static class To<TTo>
     {
-#pragma warning disable 8500, RCS1158
         /// <summary>
         /// Encapsulates the functionality to determine if a conversion is supported between two types.
         /// </summary>
@@ -28,20 +27,22 @@ static partial class Span
         {
             /// <summary>
             /// Gets a value indicating whether the conversion between types
-            /// <typeparamref name="TFrom"/> and <c>TTo</c> in <see cref="To{TTo}"/> is defined.
+            /// <typeparamref name="TFrom"/> and <see name="TTo"/> in <see cref="To{TTo}"/> is defined.
             /// </summary>
-            // ReSharper disable once RedundantUnsafeContext
             public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
+                typeof(TTo) == typeof(TFrom);
+#else
                 typeof(TFrom) == typeof(TTo) ||
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+                Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>() &&
+#else
                 sizeof(TFrom) >= sizeof(TTo) &&
+#endif
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
                     IsReferenceOrContainsReferences<TFrom>() &&
                     IsReferenceOrContainsReferences<TTo>());
-#else
-                typeof(TTo) == typeof(TFrom);
 #endif
-
             /// <summary>
             /// Gets the error that occurs when converting between types would cause undefined behavior.
             /// </summary>
@@ -62,7 +63,7 @@ static partial class Span
 
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
-        /// to a <see cref="ReadOnlySpan{T}"/> of type <c>TTo</c> in <see cref="To{TTo}"/>.
+        /// to a <see cref="ReadOnlySpan{T}"/> of type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="ReadOnlySpan{T}"/> to convert from.</param>
@@ -71,21 +72,22 @@ static partial class Span
         /// </exception>
         /// <returns>
         /// The reinterpretation of the parameter <paramref name="source"/> from its original type
-        /// <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
+        /// <typeparamref name="TFrom"/> to the destination type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
 #if NET9_0_OR_GREATER
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
                 ? Unsafe.As<ReadOnlySpan<TFrom>, ReadOnlySpan<TTo>>(ref AsRef(source))
                 : throw Is<TFrom>.Error;
 #else
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(ReadOnlySpan<TTo>*)&source : throw Is<TFrom>.Error;
+            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
+                ? *(ReadOnlySpan<TTo>*)&source
+                : throw Is<TFrom>.Error;
 #endif
-
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
-        /// to a <see cref="Span{T}"/> of type <c>TTo</c> in <see cref="To{TTo}"/>.
+        /// to a <see cref="Span{T}"/> of type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </summary>
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The <see cref="Span{T}"/> to convert from.</param>
@@ -94,9 +96,9 @@ static partial class Span
         /// </exception>
         /// <returns>
         /// The reinterpretation of the parameter <paramref name="source"/> from its original
-        /// type <typeparamref name="TFrom"/> to the destination type <c>TTo</c> in <see cref="To{TTo}"/>.
+        /// type <typeparamref name="TFrom"/> to the destination type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
 #if NET9_0_OR_GREATER
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
@@ -105,182 +107,19 @@ static partial class Span
 #else
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
 #endif
-#pragma warning restore 8500, RCS1158
     }
 
-    /// <summary>A callback for a span.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    public delegate void SpanAction<TSpan>(Span<TSpan> span);
-
-    /// <summary>A callback for a span with a reference parameter.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The parameter.</param>
-    public delegate void SpanAction<TSpan, in TParam>(Span<TSpan> span, TParam param)
-#if !NO_ALLOWS_REF_STRUCT
-        where TParam : allows ref struct
-#endif
-    ;
-
-    /// <summary>A callback for a span with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, out TResult>(Span<TSpan> span);
-
-    /// <summary>A callback for a span with a reference parameter with a return value.</summary>
-    /// <typeparam name="TSpan">The inner type of the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <typeparam name="TResult">The resulting type.</typeparam>
-    /// <param name="span">The allocated span.</param>
-    /// <param name="param">The parameter.</param>
-    /// <returns>The returned value of this delegate.</returns>
-    public delegate TResult SpanFunc<TSpan, in TParam, out TResult>(Span<TSpan> span, TParam param)
-#if !NO_ALLOWS_REF_STRUCT
-        where TParam : allows ref struct
-#endif
-    ;
-
-    /// <summary>The maximum size for the number of bytes a stack allocation will occur in this class.</summary>
+    /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
     /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes from
     /// instantiating arrays normally. Notably, that all classes (such as <see cref="Array"/> or <see cref="List{T}"/>)
     /// are heap allocated, and moreover are garbage collected. This can put a strain in methods that are called often.
     /// </para><para>
     /// However, there isn't as much stack memory available as there is heap, which can cause a DoS (Denial of Service)
-    /// vulnerability if you aren't careful. The methods in <c>Span</c> will automatically switch to unmanaged heap
-    /// allocation if the type argument and length create an array size that exceeds 2kiB (2048 bytes).
+    /// vulnerability if you aren't careful. Use this constant to determine if you should use a heap allocation.
     /// </para></remarks>
-    public const int StackallocSize = 1 << 11;
-#if !NETSTANDARD1_0
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="del">The callback to invoke.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Allocate(
-        [NonNegativeValue] int length,
-        [InstantHandle, RequireStaticDelegate] SpanAction<byte> del
-    ) =>
-        Allocate<byte>(length, del);
+    public const int MaxStackalloc = 1 << 11;
 
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static unsafe void Allocate<TSpan>(
-        int length,
-        [InstantHandle, RequireStaticDelegate] SpanAction<TSpan> del
-    )
-        where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-        {
-            del(stackalloc TSpan[value]);
-            return;
-        }
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            del(new((void*)ptr, value));
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Allocate<TParam>(
-        int length,
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanAction<byte, TParam> del
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where TParam : allows ref struct
-#endif
-        =>
-            Allocate<byte, TParam>(length, param, del);
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    public static unsafe void Allocate<TSpan, TParam>(
-        int length,
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanAction<TSpan, TParam> del
-    )
-        where TSpan : unmanaged
-#if !NO_ALLOWS_REF_STRUCT
-        where TParam : allows ref struct
-#endif
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-        {
-            del(stackalloc TSpan[value], param);
-            return;
-        }
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            del(new((void*)ptr, value), param);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-#endif
-    /// <summary>Reads the raw memory of the object.</summary>
-    /// <typeparam name="T">The type of value to read.</typeparam>
-    /// <param name="value">The value to read.</param>
-    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static byte[] Raw<T>(T value)
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-        =>
-            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
-#pragma warning disable 1574, 1580, 1581, 1584
-    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
-    public static unsafe int OffsetOf<T>(this scoped in ReadOnlySpan<T> origin, ReadOnlySpan<T> target) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        origin.IndexOf(ref MemoryMarshal.GetReference(target));
-#else
-#pragma warning disable 8500
-        origin.IndexOf(ref *(T*)target.Pointer);
-#pragma warning restore 8500
-#endif
-
-    /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int OffsetOf<T>(this scoped in Span<T> origin, ReadOnlySpan<T> target) =>
-        ((ReadOnlySpan<T>)origin).OffsetOf(target);
-#pragma warning restore 1574, 1580, 1581, 1584
     /// <summary>Sets the reference to the address within the null range.</summary>
     /// <remarks><para>
     /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
@@ -293,14 +132,12 @@ static partial class Span
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 8500
         fixed (T* ptr = &reference)
-#pragma warning restore 8500
             *(nuint*)ptr = address;
 #else
         Unsafe.SkipInit(out reference);
@@ -308,9 +145,83 @@ static partial class Span
 #endif
     }
 
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>
+        left.AsSpan().Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, scoped ReadOnlySpan<char> right) =>
+        left.Memory.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this Memory<char> left, scoped ReadOnlySpan<char> right) =>
+        left.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this scoped Span<char> left, scoped ReadOnlySpan<char> right) =>
+        left.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this ReadOnlyMemory<char> left, scoped ReadOnlySpan<char> right) =>
+        left.Span.Equals(right, StringComparison.OrdinalIgnoreCase);
+
+    /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool EqualsIgnoreCase(this scoped ReadOnlySpan<char> left, scoped ReadOnlySpan<char> right) =>
+        left.Equals(right, StringComparison.OrdinalIgnoreCase);
+#if NET6_0_OR_GREATER
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(
+        this Memory<T> span,
+        ReadOnlyMemory<T> other,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        span.Span.SequenceEqual(other.Span, comparer);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(
+        this ReadOnlyMemory<T> span,
+        ReadOnlyMemory<T> other,
+        IEqualityComparer<T>? comparer = null
+    ) =>
+        span.Span.SequenceEqual(other.Span, comparer);
+#else
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+
+    /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
+        where T : IEquatable<T>? =>
+        span.Span.SequenceEqual(other.Span);
+#endif
+#endif
+    /// <summary>Reads the raw memory of the object.</summary>
+    /// <typeparam name="T">The type of value to read.</typeparam>
+    /// <param name="value">The value to read.</param>
+    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static byte[] Raw<T>(T value)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+        =>
+            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
+
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
-    /// See <see cref="StackallocSize"/> for details about stack- and heap-allocation.
+    /// See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.
     /// </para></remarks>
     /// <typeparam name="T">The type of array.</typeparam>
     /// <param name="length">The amount of items.</param>
@@ -318,12 +229,7 @@ static partial class Span
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsStack<T>([NonNegativeValue] int length)
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-        =>
-            InBytes<T>(length) <= StackallocSize;
+    public static bool IsStack<T>([NonNegativeValue] int length) => InBytes<T>(length) <= MaxStackalloc;
 
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -332,31 +238,22 @@ static partial class Span
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-
-    // ReSharper disable once RedundantUnsafeContext
-    public static unsafe int InBytes<T>([NonNegativeValue] int length)
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-        =>
+    public static unsafe int InBytes<T>([NonNegativeValue] int length) =>
+        length *
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-            length * Unsafe.SizeOf<T>();
+        Unsafe.SizeOf<T>();
 #else
-#pragma warning disable 8500
-            length * sizeof(T);
-#pragma warning restore 8500
-#endif // ReSharper disable RedundantUnsafeContext
-
+        sizeof(T);
+#endif
     /// <summary>Returns the memory address of a given reference object.</summary>
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
-    /// <param name="reference">The reference <see cref="object"/> for which to get the address.</param>
+    /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable RCS1175 // ReSharper disable once EntityNameCapturedOnly.Global
-    public static nuint ToAddress(this object? reference)
+    public static nuint ToAddress(this object? _)
 #if CSHARPREPL
         =>
-            Unsafe.As<object, nuint>(ref reference);
+            Unsafe.As<object, nuint>(ref _);
 #else
     {
         // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
@@ -366,262 +263,6 @@ static partial class Span
         return IL.Return<nuint>();
     }
 #endif
-#pragma warning restore RCS1175
-#pragma warning disable 9091 // InlineAttribute makes this okay.
-#pragma warning disable RCS1242 // Normally causes defensive copies; Parameter is unused though.
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-    /// <summary>Allocates an inlined span of the specified size.</summary>
-    /// <remarks><para>
-    /// The returned <see cref="Span{T}"/> will point to uninitialized memory.
-    /// Be sure to call <see cref="Span{T}.Fill"/> or otherwise written to first before enumeration or reading.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
-    /// <param name="_">The discard, which is used to let the compiler track lifetimes.</param>
-    /// <returns>The <see cref="Span{T}"/> of the specified size.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static Span<T> Inline1<T>(in T _ = default!)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            Ref(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline1<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out T x);
-        return Ref(ref x);
-    }
-#endif
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline2<T>(in Two<T> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline2<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<T> x);
-        return PooledSmallList<T>.Validate<Two<T>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline4<T>(in Two<Two<T>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline4<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<T>> x);
-        return PooledSmallList<T>.Validate<Two<Two<T>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline8<T>(in Two<Two<Two<T>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline8<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<T>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<T>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline16<T>(in Two<Two<Two<Two<T>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline16<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<T>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<T>>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline32<T>(in Two<Two<Two<Two<Two<T>>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline32<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<T>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<T>>>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline64<T>(in Two<Two<Two<Two<Two<Two<T>>>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline64<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<T>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<T>>>>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline128<T>(in Two<Two<Two<Two<Two<Two<Two<T>>>>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline128<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<T>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline256<T>(in Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline256<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline512<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline512<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>.AsSpan(ref x);
-    }
-#endif
-
-    /// <inheritdoc cref="Inline1{T}"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if DEBUG || CSHARPREPL
-    public static Span<T> Inline1024<T>(in Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> _ = default)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            PooledSmallList<T>
-               .Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>
-               .AsSpan(ref AsRef(_));
-#else
-    public static unsafe Span<T> Inline1024<T>(in bool _ = false)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Unsafe.SkipInit(out Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>> x);
-        return PooledSmallList<T>.Validate<Two<Two<Two<Two<Two<Two<Two<Two<Two<Two<T>>>>>>>>>>>.AsSpan(ref x);
-    }
-#endif
-#endif
-#pragma warning restore RCS1242
-    /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
-    /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
-    /// <param name="reference">A reference to data.</param>
-    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Ref<T>(ref T reference) =>
-#if NET7_0_OR_GREATER
-        new(ref reference);
-#else
-        MemoryMarshal.CreateSpan(ref reference, 1);
-#endif
-
-    /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
-    /// <typeparam name="TFrom">The source type.</typeparam>
-    /// <typeparam name="TTo">The destination type.</typeparam>
-    /// <param name="reference">A reference to data.</param>
-    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
-    public static unsafe Span<TTo> Ref<TFrom, TTo>(ref TFrom reference)
-        where TFrom : struct
-        where TTo : struct =>
-        MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
@@ -646,133 +287,75 @@ static partial class Span
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(In(reference));
 #endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <summary>Converts the <see cref="Memory{T}"/> to the <see cref="ReadOnlyMemory{T}"/>.</summary>
+    /// <typeparam name="T">The type of memory.</typeparam>
+    /// <param name="memory">The memory to convert.</param>
+    /// <returns>The <see cref="ReadOnlyMemory{T}"/> of the parameter <paramref name="memory"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlyMemory<T> ReadOnly<T>(this Memory<T> memory) => memory;
+#endif
+
     /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <typeparam name="T">The type of span.</typeparam>
     /// <param name="span">The span to convert.</param>
     /// <returns>The <see cref="ReadOnlySpan{T}"/> of the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> ReadOnly<T>(this Span<T> span) => span;
-#if !NETSTANDARD1_0
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public static TResult Allocate<TResult>(
-        int length,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TResult> del
-    ) =>
-        Allocate<byte, TResult>(length, del);
 
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static unsafe TResult Allocate<TSpan, TResult>(
-        int length,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TResult> del
-    )
-        where TSpan : unmanaged
-    {
-        var value = Math.Max(length, 0);
-
-        if (IsStack<TSpan>(length))
-            return del(stackalloc TSpan[value]);
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            return del(new((void*)ptr, value));
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
-    }
-
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public static TResult Allocate<TParam, TResult>(
-        int length,
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<byte, TParam, TResult> del
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where TParam : allows ref struct
+    /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
+    /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> Ref<T>(ref T reference) =>
+#if NET7_0_OR_GREATER
+        new(ref reference);
+#else
+        MemoryMarshal.CreateSpan(ref reference, 1);
 #endif
-        =>
-            Allocate<byte, TParam, TResult>(length, param, del);
 
-    /// <summary>Allocates memory and calls the callback, passing in the <see cref="Span{T}"/>.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="TSpan">The type of parameter in the span.</typeparam>
-    /// <typeparam name="TParam">The type of the parameter.</typeparam>
-    /// <typeparam name="TResult">The return type.</typeparam>
-    /// <param name="length">The length of the buffer.</param>
-    /// <param name="param">The parameter to pass in.</param>
-    /// <param name="del">The callback to invoke.</param>
-    /// <returns>The returned value from invoking <paramref name="del"/>.</returns>
-    [MustUseReturnValue]
-    public static unsafe TResult Allocate<TSpan, TParam, TResult>(
-        int length,
-        TParam param,
-        [InstantHandle, RequireStaticDelegate] SpanFunc<TSpan, TParam, TResult> del
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where TParam : allows ref struct
-#endif
-        where TSpan : unmanaged
+    /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
+    /// <typeparam name="TFrom">The source type.</typeparam>
+    /// <typeparam name="TTo">The destination type.</typeparam>
+    /// <param name="reference">A reference to data.</param>
+    /// <returns>The created span over the parameter <paramref name="reference"/>.</returns>
+    public static Span<TTo> Ref<TFrom, TTo>(ref TFrom reference)
+        where TFrom : struct
+        where TTo : struct =>
+        MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+    /// <summary>Creates the stack allocation of the type.</summary>
+    /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
+    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
+    /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
-        var value = Math.Max(length, 0);
+        if (IsReferenceOrContainsReferences<T>())
+            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
 
-        if (IsStack<TSpan>(length))
-            return del(stackalloc TSpan[value], param);
-
-        var ptr = Marshal.AllocHGlobal(value);
-
-        try
-        {
-            return del(new((void*)ptr, value), param);
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(ptr);
-        }
+        var ptr = stackalloc byte[InBytes<T>(length)];
+        return new(ptr, length);
     }
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#endif
+
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
     /// <param name="source">The read-only reference to reinterpret.</param>
     /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable 8500
     public static unsafe ref T AsRef<T>(in T source)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
-    {
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    {
         fixed (T* ptr = &source)
-            return ref Unsafe.AsRef<T>(ptr);
-#else
-        return ref Unsafe.AsRef(source);
-#endif
+            return ref *ptr;
     }
-#pragma warning restore 8500
-#endif
+#else
+        =>
+            ref Unsafe.AsRef(source);
 #endif
 }

@@ -17,7 +17,7 @@ abstract partial class Assert(
 )
 {
 #if !CSHARPREPL
-    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToListLazily();
+    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToIListLazily();
 #endif
 
     /// <summary>Initializes a new instance of the <see cref="Emik.Morsels.Assert"/> class.</summary>

@@ -15,7 +15,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 
     /// <summary>
-    /// Represents the enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
+    /// Represents the backwards enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -72,7 +72,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool MoveNext(
-            scoped in ReadOnlySpan<TSeparator> sep,
+            scoped ReadOnlySpan<TSeparator> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         ) =>
@@ -99,7 +99,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
-            scoped in ReadOnlySpan<TBody> sep,
+            scoped ReadOnlySpan<TBody> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
@@ -120,7 +120,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             int lower = 0, upper = body.Length - sep.Length;
 
             for (; lower < upper; lower++)
-                if (UnsafelyTake(UnsafelyAdvance(body, lower), sep.Length).SequenceEqual(sep))
+                if (body.UnsafelySkip(lower).UnsafelyTake(sep.Length).SequenceEqual(sep))
                     break;
 
             if (lower == upper)
@@ -137,27 +137,25 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 case var i when i == body.Length - sep.Length:
                     if (body.Length != sep.Length)
                     {
-                        body = UnsafelyTake(body, i);
+                        body = body.UnsafelyTake(i);
                         goto Retry;
                     }
 
                     current = default;
                     return false;
                 case var i:
-                    current = UnsafelyAdvance(body, i + sep.Length);
-                    body = UnsafelyTake(body, i);
+                    current = body.UnsafelySkip(i + sep.Length);
+                    body = body.UnsafelyTake(i);
                     return true;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051
         static bool MoveNextAny(
-            scoped in ReadOnlySpan<TBody> sep,
+            scoped ReadOnlySpan<TBody> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
-#pragma warning restore MA0051
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
@@ -169,14 +167,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return false;
                 case var i when i == body.Length - 1: break;
                 case var i:
-                    body = UnsafelyTake(body, i + 1);
+                    body = body.UnsafelyTake(i + 1);
                     break;
             }
 
             if (body.LastIndexOfAny(sep) is not -1 and var length)
             {
-                current = UnsafelyAdvance(body, length + 1);
-                body = UnsafelyTake(body, length);
+                current = body.UnsafelySkip(length + 1);
+                body = body.UnsafelyTake(length);
                 return true;
             }
 
@@ -207,8 +205,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
             if (max is not -1)
             {
-                current = UnsafelyAdvance(body, max + 1);
-                body = UnsafelyTake(body, max);
+                current = body.UnsafelySkip(max + 1);
+                body = body.UnsafelyTake(max);
                 return true;
             }
 
@@ -221,7 +219,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
-            scoped in ReadOnlySpan<SearchValues<TBody>> sep,
+            scoped ReadOnlySpan<SearchValues<TBody>> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
@@ -237,14 +235,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return false;
                 case var i when i == body.Length - 1: break;
                 case var i:
-                    body = UnsafelyTake(body, i + 1);
+                    body = body.UnsafelyTake(i + 1);
                     break;
             }
 
             if (body.LastIndexOfAny(single) is not -1 and var length)
             {
-                current = UnsafelyAdvance(body, length + 1);
-                body = UnsafelyTake(body, length);
+                current = body.UnsafelySkip(length + 1);
+                body = body.UnsafelyTake(length);
                 return true;
             }
 
@@ -255,21 +253,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextOne(
-            scoped in ReadOnlySpan<TBody> sep,
+            scoped ReadOnlySpan<TBody> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchOne), "TStrategy is MatchOne");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            ref var single = ref MemoryMarshal.GetReference(sep);
-#else
-            var single = sep[0];
-#endif
-#if !NET7_0_OR_GREATER
-        Retry:
-#endif
+            var single = sep.UnsafelyIndex(0);
 #if NET7_0_OR_GREATER
             switch (body.LastIndexOfAnyExcept(single))
             {
@@ -278,14 +269,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return false;
                 case var i when i == body.Length - 1: break;
                 case var offset:
-                    body = UnsafelyTake(body, offset + 1);
+                    body = body.UnsafelyTake(offset + 1);
                     break;
             }
 
             if (body.IndexOf(single) is not -1 and var length)
             {
-                current = UnsafelyAdvance(body, length + 1);
-                body = UnsafelyTake(body, length);
+                current = body.UnsafelySkip(length + 1);
+                body = body.UnsafelyTake(length);
                 return true;
             }
 
@@ -293,6 +284,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             body = default;
             return true;
 #else
+        Retry:
+
             switch (body.LastIndexOf(single))
             {
                 case -1:
@@ -309,7 +302,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     current = default;
                     return false;
                 case var i:
-                    current = UnsafelyAdvance(body, i);
+                    current = UnsafelySkip(body, i);
                     body = UnsafelyTake(body, i - 1);
                     return true;
             }

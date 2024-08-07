@@ -100,7 +100,7 @@ static partial class Choices
     /// The <see cref="ICollection{T}"/> of <see cref="IList{T}"/> containing the binomial coefficients.
     /// </returns>
     [Pure]
-    public static Choices<T> Choose<T>(this IEnumerable<T>? n, int k) => new(n.ToListLazily(), k);
+    public static Choices<T> Choose<T>(this IEnumerable<T>? n, int k) => new(n.ToIListLazily(), k);
 }
 
 /// <summary>Provides methods to calculate various binomial coefficients.</summary>

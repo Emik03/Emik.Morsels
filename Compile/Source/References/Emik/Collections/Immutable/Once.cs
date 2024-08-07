@@ -165,7 +165,7 @@ readonly
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other) =>
         HasValue
             ? other.Any()
-            : other.ToCollectionLazily() is { Count: > 1 } c && Overlaps(c);
+            : other.ToICollectionLazily() is { Count: > 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(Read), Pure]
@@ -178,7 +178,7 @@ readonly
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) =>
-        !HasValue || other.ToCollectionLazily() is { Count: <= 1 } c && Overlaps(c);
+        !HasValue || other.ToICollectionLazily() is { Count: <= 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]

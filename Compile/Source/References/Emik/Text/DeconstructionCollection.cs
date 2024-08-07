@@ -3,9 +3,8 @@
 namespace Emik.Morsels;
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable 9107, MA0048
+#pragma warning disable 9107
 static partial class DeconstructionCollectionExtensions
-#pragma warning restore MA0048
 {
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
@@ -539,6 +538,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         public override IEnumerator GetEnumerator() => ((IDictionary)this).GetEnumerator();
 
         /// <inheritdoc />
+        // ReSharper disable once UsageOfDefaultStructEquality
         void IDictionary.Remove(object key) => _list.Remove(_list.Find(Eq(key)));
 
         /// <inheritdoc />
@@ -591,9 +591,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             {
                 return next.GetValue(value, null);
             }
-#pragma warning disable CA1031
             catch (Exception ex)
-#pragma warning restore CA1031
             {
                 return value is not Exception && TryReflectivelyCollect(ex, str, ref visit, out var x, seen) ? x : ex;
             }
