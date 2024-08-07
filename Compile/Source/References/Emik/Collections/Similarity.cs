@@ -730,18 +730,8 @@ static partial class Similarity
         if (leftLength is 1 && rightLength is 1)
             return EqualsAt(left, right, 0, 0, comparer, indexer).ToByte();
 
-        var rent = rightLength.Alloc<byte>(out var span);
-
-        try
-        {
-            return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
-        }
-        finally
-        {
-#pragma warning disable IDISP017 // Once CSharpRepl upgrades to .NET 9, apply this lint.
-            rent.Dispose();
-#pragma warning restore IDISP017
-        }
+        using var _ = rightLength.Alloc<byte>(out var span);
+        return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]

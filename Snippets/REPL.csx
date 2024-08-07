@@ -1534,7 +1534,7 @@ using static JetBrains.Annotations.CollectionAccessType;
     /// <param name="span">The temporary allocation.</param>
     /// <returns>The allocated buffer.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static Rent<T> Alloc<T>(this in int it, out Span<T> span)
+    public static Rented<T> Alloc<T>(this in int it, out Span<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -1550,39 +1550,30 @@ using static JetBrains.Annotations.CollectionAccessType;
                 _ => new(it, out span), // Heap allocation
             };
 
-/// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
-/// <typeparam name="T">The type of array to rent.</typeparam>
-#if CSHARPREPL
-public
-#endif
-#if NO_REF_STRUCTS
-public ref
-#endif // ReSharper disable once BadPreprocessorIndent
-    struct Rent<T>
-#if !NO_ALLOWS_REF_STRUCT
-    : IDisposable
-#endif
-{
-    T[]? _array;
-
-    /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
-    /// <param name="length">The length of the array to retrieve.</param>
-    /// <param name="span">
-    /// The resulting <see cref="Span{T}"/>. Note that while <see cref="ArrayPool{T}.Rent"/> may return
-    /// </param>
-    public Rent(in int length, out Span<T> span) =>
-        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
-
-    /// <inheritdoc />
-    public void Dispose()
+    /// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
+    /// <typeparam name="T">The type of array to rent.</typeparam>
+    public struct Rented<T> : IDisposable
     {
-        if (_array is null)
-            return;
+        T[]? _array;
 
-        ArrayPool<T>.Shared.Return(_array);
-        _array = null;
+        /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
+        /// <param name="length">The length of the array to retrieve.</param>
+        /// <param name="span">
+        /// The resulting <see cref="Span{T}"/>. Note that while <see cref="ArrayPool{T}.Rent"/> may return
+        /// </param>
+        public Rented(in int length, out Span<T> span) =>
+            span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
+
+        /// <inheritdoc />
+        void IDisposable.Dispose()
+        {
+            if (_array is null)
+                return;
+
+            ArrayPool<T>.Shared.Return(_array);
+            _array = null;
+        }
     }
-}
 
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
@@ -6327,18 +6318,8 @@ readonly
         if (leftLength is 1 && rightLength is 1)
             return EqualsAt(left, right, 0, 0, comparer, indexer).ToByte();
 
-        var rent = rightLength.Alloc<byte>(out var span);
-
-        try
-        {
-            return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
-        }
-        finally
-        {
-#pragma warning disable IDISP017 // Once CSharpRepl upgrades to .NET 9, apply this lint.
-            rent.Dispose();
-#pragma warning restore IDISP017
-        }
+        using var _ = rightLength.Alloc<byte>(out var span);
+        return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
@@ -20219,7 +20200,6 @@ readonly
 /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
 /// <typeparam name="T">The type of element in the list.</typeparam>
 /// <param name="list">The list to encapsulate.</param>
-[NoStructuralTyping]
 public sealed partial class ReadOnlyList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc />
@@ -20701,7 +20681,7 @@ readonly
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="bits">The item to use.</param>
-[StructLayout(LayoutKind.Auto), NoStructuralTyping]
+[StructLayout(LayoutKind.Auto)]
 #if CSHARPREPL
 public
 #endif
@@ -21127,7 +21107,6 @@ readonly
 
 /// <summary>Represents a list with no head.</summary>
 /// <typeparam name="T">The type of list to encapsulate.</typeparam>
-[NoStructuralTyping]
 #pragma warning disable MA0048
 public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
 #pragma warning restore MA0048
@@ -22132,7 +22111,7 @@ public ref
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
 /// <typeparam name="T">The element type.</typeparam>
-[NoStructuralTyping, StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)]
 public partial struct SmallList<T> :
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     IConvertible,
@@ -24468,10 +24447,6 @@ static partial class ManyQueries
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
 
-/// <summary>Signifies to ignore this when determining potential interfaces that can be implemented.</summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Struct)]
-sealed partial class NoStructuralTypingAttribute : Attribute;
-
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
 sealed partial class InlineAttribute : Attribute
@@ -24506,4 +24481,3 @@ static class Stringifier
 static class Morsels;
 
 CatchFatalExceptions = true;
-

@@ -126,7 +126,7 @@ static partial class BitsFactory
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="bits">The item to use.</param>
-[StructLayout(LayoutKind.Auto), NoStructuralTyping]
+[StructLayout(LayoutKind.Auto)]
 #if CSHARPREPL
 public
 #endif

@@ -16,7 +16,7 @@ static partial class Rent
     /// <param name="span">The temporary allocation.</param>
     /// <returns>The allocated buffer.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static Rent<T> Alloc<T>(this in int it, out Span<T> span)
+    public static Rented<T> Alloc<T>(this in int it, out Span<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -31,38 +31,29 @@ static partial class Rent
 #endif
                 _ => new(it, out span), // Heap allocation
             };
-}
 
-/// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
-/// <typeparam name="T">The type of array to rent.</typeparam>
-#if CSHARPREPL
-public
-#endif
-#if NO_REF_STRUCTS
-ref
-#endif // ReSharper disable once BadPreprocessorIndent
-    struct Rent<T>
-#if !NO_ALLOWS_REF_STRUCT
-    : IDisposable
-#endif
-{
-    T[]? _array;
-
-    /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
-    /// <param name="length">The length of the array to retrieve.</param>
-    /// <param name="span">
-    /// The resulting <see cref="Span{T}"/>. Note that while <see cref="ArrayPool{T}.Rent"/> may return
-    /// </param>
-    public Rent(in int length, out Span<T> span) =>
-        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
-
-    /// <inheritdoc />
-    public void Dispose()
+    /// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
+    /// <typeparam name="T">The type of array to rent.</typeparam>
+    public struct Rented<T> : IDisposable
     {
-        if (_array is null)
-            return;
+        T[]? _array;
 
-        ArrayPool<T>.Shared.Return(_array);
-        _array = null;
+        /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
+        /// <param name="length">The length of the array to retrieve.</param>
+        /// <param name="span">
+        /// The resulting <see cref="Span{T}"/>. Note that while <see cref="ArrayPool{T}.Rent"/> may return
+        /// </param>
+        public Rented(in int length, out Span<T> span) =>
+            span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
+
+        /// <inheritdoc />
+        void IDisposable.Dispose()
+        {
+            if (_array is null)
+                return;
+
+            ArrayPool<T>.Shared.Return(_array);
+            _array = null;
+        }
     }
 }
