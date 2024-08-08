@@ -18,7 +18,7 @@ static partial class RandomizedGetters
     )
     {
         selector ??= Rand();
-        var list = iterable.ToIListLazily();
+        var list = iterable.ToIList();
 
         for (var j = list.Count; j >= 1; j--)
         {

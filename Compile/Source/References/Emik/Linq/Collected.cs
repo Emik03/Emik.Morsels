@@ -34,7 +34,7 @@ static partial class Collected
     /// <returns>Itself as <see cref="ICollection{T}"/>, or collected.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static ICollection<T>? ToICollectionLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+    public static ICollection<T>? ToICollection<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null
             ? null
             : iterable as ICollection<T> ??
@@ -43,7 +43,7 @@ static partial class Collected
 #if NETFRAMEWORK && NET40_OR_GREATER
                 : new List<T>(iterable));
 #else
-                : iterable.ToIListLazily());
+                : iterable.ToIList());
 #endif
 
     /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
@@ -73,7 +73,7 @@ static partial class Collected
     /// <returns>Itself as <see cref="IList{T}"/>, or collected.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static IList<T>? ToIListLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
+    public static IList<T>? ToIList<T>([InstantHandle] this IEnumerable<T>? iterable) =>
 #if !NET40_OR_GREATER && NETFRAMEWORK
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 #else

@@ -1019,7 +1019,7 @@ static partial class Stringifier
 #if WAWA
            .ToList();
 #else
-           .ToICollectionLazily();
+           .ToICollection();
 #endif
         var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();

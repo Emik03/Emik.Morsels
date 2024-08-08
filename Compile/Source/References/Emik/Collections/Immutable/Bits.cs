@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable 8500, CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
+#pragma warning disable 8500, IDE0251, MA0102, RCS1085
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -416,7 +416,7 @@ readonly
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator T(Enumerator value) => value.Current;
+        public static explicit operator T(Enumerator value) => value.Current;
 
         /// <inheritdoc />
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]

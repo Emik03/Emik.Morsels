@@ -8,7 +8,7 @@ using static Span;
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
 /// <param name="value">The value to encapsulate.</param>
-sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
+sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 {
     GCHandle _handle;
 
@@ -24,7 +24,7 @@ sealed partial class OnceMemoryManager<T>(in T value) : MemoryManager<T>
     /// <summary>Wraps the <typeparamref name="T"/> instance into the <see cref="OnceMemoryManager{T}"/>.</summary>
     /// <param name="value">The value to wrap.</param>
     /// <returns>The wrapped value.</returns>
-    public static explicit operator OnceMemoryManager<T>(in T value) => new(value);
+    public static explicit operator OnceMemoryManager<T>(T value) => new(value);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

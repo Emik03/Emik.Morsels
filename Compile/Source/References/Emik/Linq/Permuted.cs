@@ -19,9 +19,9 @@ static partial class Permuted
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
 #if NETFRAMEWORK && !NET45_OR_GREATER
-        iterator.Select(x => x.ToIListLazily()).ToIListLazily().Combinations();
+        iterator.Select(x => x.ToIList()).ToIList().Combinations();
 #else
-        iterator.Select(x => x.ToReadOnly()).ToReadOnly().Combinations();
+        iterator.Select(x => x.ReadOnly()).ReadOnly().Combinations();
 #endif
 
     /// <summary>Generates all combinations of the nested list.</summary>

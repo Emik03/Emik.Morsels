@@ -48,6 +48,10 @@ static partial class SmallFactory
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
 
+    /// <inheritdoc cref="Emik.Morsels.PooledSmallList{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static PooledSmallList<T> ToPooledSmallList<T>(this Span<T> span) => new(span);
+
     /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="capacity">

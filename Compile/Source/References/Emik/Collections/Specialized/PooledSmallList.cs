@@ -10,9 +10,7 @@ using FieldInfo = System.Reflection.FieldInfo;
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Provides the method needed for collection expressions in <see cref="PooledSmallList{T}"/>.</summary>
-#pragma warning disable MA0048, SA1600
 static class PooledSmallListBuilder
-#pragma warning restore MA0048, SA1600
 {
     /// <summary>Converts the buffer into an expandable buffer.</summary>
     /// <typeparam name="T">The type of span.</typeparam>

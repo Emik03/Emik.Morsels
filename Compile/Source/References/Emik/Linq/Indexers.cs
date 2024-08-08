@@ -40,7 +40,7 @@ static partial class Indexers
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
     /// <remarks><para>
     /// The tail is not guaranteed to be able to be enumerated over multiple times.
-    /// As such, use a method like <see cref="Collected.ToICollectionLazily{T}"/> if multiple enumerations are needed.
+    /// As such, use a method like <see cref="Collected.ToICollection{T}"/> if multiple enumerations are needed.
     /// </para></remarks>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="enumerable">The enumerable to split.</param>
@@ -110,7 +110,7 @@ static partial class Indexers
         if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
             return Sub(iterable, startRange);
 
-        var arr = iterable.ToIListLazily();
+        var arr = iterable.ToIList();
         var arrRange = RangeStart(range, arr.Count);
         return Sub(arr, arrRange);
     }

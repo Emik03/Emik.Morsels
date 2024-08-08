@@ -62,7 +62,8 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T>([ProvidesContext] T value) : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
+    partial struct Once<T>([ProvidesContext] T value)
+    : IComparable<Once<T>>, IEquatable<Once<T>>, IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
@@ -100,7 +101,7 @@ readonly
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(None), Pure]
-    public static implicit operator Once<T>([ProvidesContext] Enumerator value) => value.Current;
+    public static explicit operator Once<T>([ProvidesContext] Enumerator value) => value.Current;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -119,6 +120,18 @@ readonly
     /// <returns>The value that was passed in to this instance.</returns>
     [CollectionAccess(Read), Pure]
     public static implicit operator T(Once<T> value) => value.Current;
+
+    public static bool operator ==(Once<T> left, Once<T> right) => left.Equals(right);
+
+    public static bool operator !=(Once<T> left, Once<T> right) => left.Equals(right);
+
+    public static bool operator >(Once<T> left, Once<T> right) => left.CompareTo(right) > 0;
+
+    public static bool operator <(Once<T> left, Once<T> right) => left.CompareTo(right) < 0;
+
+    public static bool operator >=(Once<T> left, Once<T> right) => left.CompareTo(right) >= 0;
+
+    public static bool operator <=(Once<T> left, Once<T> right) => left.CompareTo(right) <= 0;
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
@@ -165,7 +178,7 @@ readonly
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other) =>
         HasValue
             ? other.Any()
-            : other.ToICollectionLazily() is { Count: > 1 } c && Overlaps(c);
+            : other.ToICollection() is { Count: > 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(Read), Pure]
@@ -178,7 +191,7 @@ readonly
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) =>
-        !HasValue || other.ToICollectionLazily() is { Count: <= 1 } c && Overlaps(c);
+        !HasValue || other.ToICollection() is { Count: <= 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
@@ -198,7 +211,28 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
+    public override bool Equals(object? other) => other is Once<T> once && Equals(once);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public bool Equals(Once<T> other) => EqualityComparer<T>.Default.Equals(value, other);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public int CompareTo(Once<T> other) => Comparer<T>.Default.Compare(value, other.Current);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public override int GetHashCode() =>
+        value is null ? -2 : unchecked(EqualityComparer<T>.Default.GetHashCode(value) * 37);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     public int IndexOf(T item) => Contains(item) ? 0 : -1;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public override string ToString() => value?.ToString() ?? "";
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
@@ -245,7 +279,7 @@ readonly
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), Pure]
-        public static implicit operator T(Enumerator value) => value.Current;
+        public static explicit operator T(Enumerator value) => value.Current;
 
         /// <inheritdoc />
         [CollectionAccess(None)]

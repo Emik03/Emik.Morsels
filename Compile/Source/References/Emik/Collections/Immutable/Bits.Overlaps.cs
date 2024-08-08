@@ -74,7 +74,7 @@ readonly
 #if WAWA
            .ToList();
 #else
-           .ToICollectionLazily();
+           .ToICollection();
 #endif
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
@@ -116,7 +116,7 @@ readonly
 #if WAWA
            .ToList();
 #else
-           .ToICollectionLazily();
+           .ToICollection();
 #endif
 
         // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator

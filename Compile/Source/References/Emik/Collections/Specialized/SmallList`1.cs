@@ -353,7 +353,7 @@ partial struct SmallList<T> :
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(IEnumerable<T>? collection)
     {
-        if (collection?.ToICollectionLazily() is not { Count: var count and not 0 } c)
+        if (collection?.ToICollection() is not { Count: var count and not 0 } c)
             return;
 
         if (InlinedLength - HeadCount is var stackExpand && stackExpand is not 0)
@@ -371,7 +371,7 @@ partial struct SmallList<T> :
             return;
 
         var rest = _rest as List<T> ?? [.. _rest!];
-        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollectionLazily());
+        rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollection());
         _rest = rest;
     }
 

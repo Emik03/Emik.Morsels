@@ -60,9 +60,7 @@ static partial class SplitFactory
         List<T> t = [], f = [];
 
         foreach (var item in source)
-#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
             (predicate(item) ? t : f).Add(item);
-#pragma warning restore RCS1235
 
         return new(t, f);
     }

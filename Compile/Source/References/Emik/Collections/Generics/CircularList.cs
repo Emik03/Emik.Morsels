@@ -18,7 +18,7 @@ static partial class CircularFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static CircularList<T>? ToCircular<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToIListLazily());
+        iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToIList());
 }
 #endif
 
