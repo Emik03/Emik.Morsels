@@ -146,7 +146,7 @@ static partial class SpanIndexers
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).IndexOfAny(values);
+            span.ReadOnly().IndexOfAny(values);
 
     /// <summary>
     /// Searches for the first index of any of the specified values similar

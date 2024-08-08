@@ -3,7 +3,6 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 #pragma warning disable 8500, IDE0044, MA0102, SA1137
-using static Span;
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity
@@ -317,7 +316,7 @@ static partial class Similarity
         where T : unmanaged
 #endif
         =>
-            ((ReadOnlySpan<T>)left).Jaro(right, comparer);
+            left.ReadOnly().Jaro(right, comparer);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -361,7 +360,7 @@ static partial class Similarity
         where T : unmanaged
 #endif
         =>
-            ((ReadOnlySpan<T>)left).JaroEmik(right, comparer);
+            left.ReadOnly().JaroEmik(right, comparer);
 
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
@@ -420,7 +419,7 @@ static partial class Similarity
         where T : unmanaged
 #endif
         =>
-            ((ReadOnlySpan<T>)left).JaroEmik(right, comparer);
+            left.ReadOnly().JaroEmik(right, comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -464,7 +463,7 @@ static partial class Similarity
         where T : unmanaged
 #endif
         =>
-            ((ReadOnlySpan<T>)left).JaroWinkler(right, comparer);
+            left.ReadOnly().JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
@@ -523,7 +522,7 @@ static partial class Similarity
         where T : unmanaged
 #endif
         =>
-            ((ReadOnlySpan<T>)left).JaroWinkler(right, comparer);
+            left.ReadOnly().JaroWinkler(right, comparer);
 
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>

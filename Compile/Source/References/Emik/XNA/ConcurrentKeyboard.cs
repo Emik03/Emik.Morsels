@@ -82,7 +82,7 @@ static partial class ConcurrentKeyboard
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static KeyboardState ToState(this scoped in Span<Keys> keys, KeyMods mods = KeyMods.None) =>
-        ((ReadOnlySpan<Keys>)keys).ToState(mods);
+        keys.ReadOnly().ToState(mods);
 
     /// <summary>Gets the current set of key modifiers that are active.</summary>
     /// <returns>The <see cref="KeyMods"/> representing the current modifiers active.</returns>

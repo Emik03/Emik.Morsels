@@ -239,7 +239,7 @@ static partial class SplitSpanFactory
         char,
 #endif
         MatchAny> SplitLines(this Span<char> span) =>
-        ((ReadOnlySpan<char>)span).SplitLines();
+        span.ReadOnly().SplitLines();
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -279,7 +279,7 @@ static partial class SplitSpanFactory
         char,
 #endif
         MatchAny> SplitWhitespace(this Span<char> span) =>
-        ((ReadOnlySpan<char>)span).SplitWhitespace();
+        span.ReadOnly().SplitWhitespace();
 #endif
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
