@@ -5,7 +5,7 @@
 global using GeneratedSource = (string HintName, string Source);
 global using static Emik.Morsels.IncludedSyntaxNodeRegistrant;
 
-#pragma warning restore GlobalUsingsAnalyzer
+#pragma warning restore GlobalUsingsAnalyzer, RCS1175
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -23,12 +23,37 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
     /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable RCS1175
     public static void Drain(this in SyntaxNodeAnalysisContext context)
+#pragma warning restore RCS1175
     {
 #if !RELEASE && ROSLYN
         while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
             context.ReportDiagnostic(diagnostic);
 #endif
+    }
+
+    /// <summary>
+    /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
+    /// </summary>
+    /// <param name="syntax">The <see cref="AttributeSyntax"/> to extract from.</param>
+    /// <returns>
+    /// The <see cref="TypeDeclarationSyntax"/>, or <see langword="null"/> if the parameter <paramref name="syntax"/>
+    /// is <see langword="null"/>, or annotated to something other than a <see cref="TypeDeclarationSyntax"/>.
+    /// </returns>
+    [Pure]
+    public static TypeDeclarationSyntax? TypeDeclaration(this AttributeSyntax? syntax)
+    {
+        if (syntax is not { Parent: var parent })
+            return null;
+
+        while (parent is { Parent: var grandparent } and
+            not BaseParameterSyntax and
+            not MemberDeclarationSyntax and
+            not TypeParameterSyntax)
+            parent = grandparent;
+
+        return parent as TypeDeclarationSyntax;
     }
 
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
@@ -147,6 +172,26 @@ static partial class IncludedSyntaxNodeRegistrant
         CancellationToken token = default
     ) =>
         symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
+
+    /// <summary>Determines whether the symbol is from metadata.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is in metadata, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInMetadata([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is { Locations: [{ IsInMetadata: true }, ..] };
+
+    /// <summary>Determines whether the symbol is from source code.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// is from source code, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool IsInSource([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is { Locations: [{ IsInSource: true }, ..] };
 
     /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
     /// <param name="symbol">The symbol to check.</param>
@@ -273,6 +318,9 @@ static partial class IncludedSyntaxNodeRegistrant
     public static string Keyword(this ITypeSymbol symbol) =>
         symbol switch
         {
+            { TypeKind: TypeKind.Enum } => "enum",
+            { TypeKind: TypeKind.Delegate } => "delegate",
+            { TypeKind: TypeKind.Interface } => "interface",
             { IsValueType: true, IsRecord: true } => "record struct",
             { IsRecord: true } => "record",
             { IsValueType: true } => "struct",
@@ -482,6 +530,7 @@ static partial class IncludedSyntaxNodeRegistrant
     /// <param name="context">The context.</param>
     /// <param name="token">The cancellation token.</param>
     /// <returns>The context node as <typeparamref name="T"/>.</returns>
+    [Pure]
     public static T? Get<T>(this in GeneratorSyntaxContext context, CancellationToken token = default)
         where T : ISymbol =>
         context.SemanticModel.GetDeclaredSymbol(context.Node, token) is T symbol ? symbol : default;
@@ -504,6 +553,6 @@ static partial class IncludedSyntaxNodeRegistrant
 
     [Pure]
     static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
-        ((x as INamespaceSymbol)?.GetAllMembers() ?? Enumerable.Empty<INamespaceOrTypeSymbol>()).Prepend(x);
+        ((x as INamespaceSymbol)?.GetAllMembers() ?? []).Prepend(x);
 }
 #endif

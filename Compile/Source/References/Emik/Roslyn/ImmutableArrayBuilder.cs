@@ -67,9 +67,6 @@ ref partial struct ImmutableArrayBuilder<T>
     /// <summary>A class handling the actual buffer writing.</summary>
     sealed class Writer : ICollection<T>, IDisposable
     {
-        /// <summary>The starting offset within <see cref="_array"/>.</summary>
-        int _index;
-
         /// <summary>The underlying <typeparamref name="T"/> array.</summary>
         T?[]? _array = ArrayPool<T?>.Shared.Rent(typeof(T) == typeof(char) ? 1024 : 8);
 
@@ -79,28 +76,29 @@ ref partial struct ImmutableArrayBuilder<T>
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.Count"/>
         public int Count
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _index;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.WrittenSpan"/>
         public ReadOnlySpan<T> WrittenSpan
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new(_array!, 0, _index);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new(_array!, 0, Count);
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.Add"/>
         public void Add(T item)
         {
             EnsureCapacity(1);
-            _array![_index++] = item;
+            _array![Count++] = item;
         }
 
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.AddRange"/>
         public void AddRange(ReadOnlySpan<T> items)
         {
             EnsureCapacity(items.Length);
-            items.CopyTo(_array.AsSpan(_index)!);
-            _index += items.Length;
+            items.CopyTo(_array.AsSpan(Count)!);
+            Count += items.Length;
         }
 
         /// <inheritdoc/>
@@ -117,7 +115,7 @@ ref partial struct ImmutableArrayBuilder<T>
         void ICollection<T>.Clear() => throw new NotSupportedException();
 
         /// <inheritdoc/>
-        void ICollection<T>.CopyTo(T[] array, int arrayIndex) => Array.Copy(_array!, 0, array, arrayIndex, _index);
+        void ICollection<T>.CopyTo(T[] array, int arrayIndex) => Array.Copy(_array!, 0, array, arrayIndex, Count);
 
         /// <summary>
         /// Ensures that <see cref="_array"/> has enough free space to contain a given number of new items.
@@ -126,7 +124,7 @@ ref partial struct ImmutableArrayBuilder<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void EnsureCapacity(int requestedSize)
         {
-            if (requestedSize > _array!.Length - _index)
+            if (requestedSize > _array!.Length - Count)
                 ResizeBuffer(requestedSize);
         }
 
@@ -135,11 +133,11 @@ ref partial struct ImmutableArrayBuilder<T>
         [MethodImpl(MethodImplOptions.NoInlining)]
         void ResizeBuffer(int sizeHint)
         {
-            var minimumSize = _index + sizeHint;
+            var minimumSize = Count + sizeHint;
             var oldArray = _array!;
             var newArray = ArrayPool<T?>.Shared.Rent(minimumSize);
 
-            Array.Copy(oldArray, newArray, _index);
+            Array.Copy(oldArray, newArray, Count);
             _array = newArray;
             ArrayPool<T?>.Shared.Return(oldArray, typeof(T) != typeof(char));
         }
@@ -157,7 +155,7 @@ ref partial struct ImmutableArrayBuilder<T>
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             var array = _array!;
-            var length = _index;
+            var length = Count;
 
             for (var i = 0; i < length; i++)
                 yield return array[i]!;

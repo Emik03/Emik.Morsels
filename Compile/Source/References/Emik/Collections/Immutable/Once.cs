@@ -274,6 +274,15 @@ readonly
     [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    /// <inheritdoc />
+    [CollectionAccess(None), MustDisposeResource(false), Pure]
+    IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
+        Func<T, TKey> keySelector,
+        IComparer<TKey> comparer,
+        bool descending
+    ) =>
+        this;
+
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
