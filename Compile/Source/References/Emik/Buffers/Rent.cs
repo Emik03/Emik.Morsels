@@ -9,29 +9,6 @@ using static Span;
 
 static partial class Rent
 {
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="it">The length of the buffer.</param>
-    /// <param name="span">The temporary allocation.</param>
-    /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static Rented<T> Alloc<T>(this in int it, out Span<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            it switch
-            {
-                <= 0 when (span = default) is var _ => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
-                _ when !IsReferenceOrContainsReferences<T>() &&
-                    IsStack<T>(it) &&
-                    (span = Stackalloc<T>(it)) is var _ => default, // Stack allocation
-#endif
-                _ => new(it, out span), // Heap allocation
-            };
-
     /// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
     /// <typeparam name="T">The type of array to rent.</typeparam>
     public struct Rented<T> : IDisposable
@@ -56,4 +33,27 @@ static partial class Rent
             _array = null;
         }
     }
+
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="it">The length of the buffer.</param>
+    /// <param name="span">The temporary allocation.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static Rented<T> Alloc<T>(this in int it, out Span<T> span)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+            it switch
+            {
+                <= 0 when (span = default) is var _ => default, // No allocation
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+                _ when !IsReferenceOrContainsReferences<T>() &&
+                    IsStack<T>(it) &&
+                    (span = Stackalloc<T>(it)) is var _ => default, // Stack allocation
+#endif
+                _ => new(it, out span), // Heap allocation
+            };
 }
