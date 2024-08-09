@@ -1,13 +1,11 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632, RCS1196
+#pragma warning disable 8632, RCS1196
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Provides methods to use callbacks within a statement.</summary>
-#pragma warning disable MA0048
 static partial class Peeks
-#pragma warning restore MA0048
 {
 #if !RELEASE
 #if ROSLYN // ReSharper disable once RedundantExtendsListEntry

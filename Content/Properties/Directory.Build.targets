@@ -231,7 +231,7 @@
         <IsPackable>false</IsPackable>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
-        <NoWarn>$(NoWarn);1591;1595;CA1707;MA0048;NUnit2005;SA1600</NoWarn>
+        <NoWarn>$(NoWarn);1591;1595;CA1707;NUnit2005;SA1600</NoWarn>
     </PropertyGroup>
     <!-- Use separate copy of Celeste if one is specified. -->
     <PropertyGroup Condition="$(CelesteLegacy) != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">

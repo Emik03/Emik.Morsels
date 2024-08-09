@@ -2,7 +2,6 @@
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 1591, MA0048, SA1600 // Temporary because I don't feel like documenting yet.
 
 /// <summary>Defines the base class for an assertion, where a value is expected to return true.</summary>
 /// <typeparam name="T">The type of value to assert with.</typeparam>

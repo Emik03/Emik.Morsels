@@ -7,9 +7,7 @@ namespace Emik.Morsels;
 using static CollectionAccessType;
 
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class YesFactory
-#pragma warning restore MA0048
 {
     /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
     /// <typeparam name="T">The type of the item to yield.</typeparam>

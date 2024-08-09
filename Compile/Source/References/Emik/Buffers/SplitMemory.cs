@@ -10,9 +10,7 @@ using static SplitMemoryFactory;
 using static SplitSpanFactory;
 
 /// <summary>Methods to split spans into multiple spans.</summary>
-#pragma warning disable MA0048
 static partial class SplitMemoryFactory
-#pragma warning restore MA0048
 {
     /// <summary>
     /// Defines the values for <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> without a compile-time strategy.

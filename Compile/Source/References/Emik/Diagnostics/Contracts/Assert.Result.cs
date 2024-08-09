@@ -6,9 +6,7 @@ namespace Emik.Morsels;
 /// <summary>
 /// Methods that provide functions for enumerations of <see cref="Emik.Morsels.Assert.Result"/> instances.
 /// </summary>
-#pragma warning disable MA0048
 static partial class AssertResultEnumerableOperations
-#pragma warning restore MA0048
 {
     /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>

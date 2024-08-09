@@ -6,10 +6,8 @@ global using static Emik.Morsels.Unforgiving;
 // ReSharper disable once CheckNamespace RedundantUsingDirective.Global
 namespace Emik.Morsels;
 
-/// <summary>Provides a reference for an <c>UnreachableException</c>.</summary>
-#pragma warning disable MA0048
+/// <summary>Provides a reference for an <see cref="UnreachableException"/>.</summary>
 static partial class Unforgiving
-#pragma warning restore MA0048
 {
     /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>
     public static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");

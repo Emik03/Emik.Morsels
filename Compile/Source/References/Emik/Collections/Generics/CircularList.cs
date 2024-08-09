@@ -7,9 +7,7 @@ using static CollectionAccessType;
 
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class CircularFactory
-#pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>

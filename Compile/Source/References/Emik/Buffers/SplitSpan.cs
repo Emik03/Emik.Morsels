@@ -3,15 +3,13 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 namespace Emik.Morsels;
-#pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
+#pragma warning disable RCS1158
 using static SmallList;
 using static Span;
 using static SplitSpanFactory;
 
 /// <summary>Methods to split spans into multiple spans.</summary>
-#pragma warning disable MA0048
 static partial class SplitSpanFactory
-#pragma warning restore MA0048
 {
     /// <summary>The type that indicates to match all elements.</summary>
     public struct MatchAll;

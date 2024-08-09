@@ -9,9 +9,7 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
 
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class SmallFactory
-#pragma warning restore MA0048
 {
 #if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>

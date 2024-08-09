@@ -7,9 +7,7 @@ using static CollectionAccessType;
 
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for read-only lists.</summary>
-#pragma warning disable MA0048
 static partial class ReadOnlyFactory
-#pragma warning restore MA0048
 {
     /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
     /// <typeparam name="T">The type of element in the list.</typeparam>

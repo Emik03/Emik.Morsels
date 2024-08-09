@@ -4,9 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class MatrixFactory
-#pragma warning restore MA0048
 {
     /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
     /// <typeparam name="T">The type of item within the list.</typeparam>

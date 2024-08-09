@@ -6,9 +6,7 @@ namespace Emik.Morsels;
 using static SplitFactory;
 
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class SplitFactory
-#pragma warning restore MA0048
 {
     /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
     public static bool[] Booleans { get; } = [true, false];

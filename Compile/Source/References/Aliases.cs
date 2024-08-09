@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable ArrangeStaticMemberQualifier MissingBlankLines RedundantUsingDirective.Global
-#pragma warning disable GlobalUsingsAnalyzer, IDE0005, MA0048, SA1403, SA1649
+#pragma warning disable GlobalUsingsAnalyzer, IDE0005, SA1403, SA1649
 #if KTANE
 // Curse you Unity for making me do this. Allows JetBrains.Annotations and UnityEngine to coexist.
 extern alias unity;
