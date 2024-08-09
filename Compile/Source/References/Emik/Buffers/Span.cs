@@ -495,7 +495,8 @@ static partial class Span
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int IndexOf<T>(this Span<T> origin, ref T target) => origin.ReadOnly().IndexOf(ref target);
+    public static int IndexOf<T>(this scoped Span<T> origin, scoped ref T target) =>
+        origin.ReadOnly().IndexOf(ref target);
 #endif
 #if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
@@ -907,7 +908,11 @@ static partial class Span
 
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelySlice<T>(this Span<T> body, int start, int length)
+    public static Span<T> UnsafelySlice<T>(
+        this Span<T> body,
+        [NonNegativeValue] int start,
+        [NonNegativeValue] int length
+    )
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif
@@ -922,7 +927,7 @@ static partial class Span
 
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> UnsafelyTake<T>(this Span<T> body, int end)
+    public static Span<T> UnsafelyTake<T>(this Span<T> body, [NonNegativeValue] int end)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #endif

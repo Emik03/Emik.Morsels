@@ -314,7 +314,7 @@ static partial class SpanSimdQueries
 #endif
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static System.Numerics.Vector<T> LoadUnsafe<T>(ref T source, nuint elementOffset)
+    static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
             Vector.LoadUnsafe(ref source, elementOffset);
