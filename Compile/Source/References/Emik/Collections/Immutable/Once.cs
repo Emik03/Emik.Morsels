@@ -121,16 +121,42 @@ readonly
     [CollectionAccess(Read), Pure]
     public static implicit operator T(Once<T> value) => value.Current;
 
+    /// <summary>Determines whether both items are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both items are equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(Once<T> left, Once<T> right) => left.Equals(right);
 
-    public static bool operator !=(Once<T> left, Once<T> right) => left.Equals(right);
+    /// <summary>Determines whether both items are unequal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both items are not unequal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(Once<T> left, Once<T> right) => !left.Equals(right);
 
+    /// <summary>Determines whether the left-hand side is greater than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is greater than the right.</returns>
     public static bool operator >(Once<T> left, Once<T> right) => left.CompareTo(right) > 0;
 
-    public static bool operator <(Once<T> left, Once<T> right) => left.CompareTo(right) < 0;
-
+    /// <summary>Determines whether the left-hand side is greater than or equal to the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is greater than or equal to the right.</returns>
     public static bool operator >=(Once<T> left, Once<T> right) => left.CompareTo(right) >= 0;
 
+    /// <summary>Determines whether the left-hand side is less than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is less than the right.</returns>
+    public static bool operator <(Once<T> left, Once<T> right) => left.CompareTo(right) < 0;
+
+    /// <summary>Determines whether the left-hand side is less than or equal to than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is less than or equal to than the right.</returns>
     public static bool operator <=(Once<T> left, Once<T> right) => left.CompareTo(right) <= 0;
 
     /// <inheritdoc />
@@ -271,7 +297,7 @@ readonly
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
-        /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+        /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(None), Pure]
         public static implicit operator Enumerator(T value) => new(value);
 
