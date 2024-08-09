@@ -7,8 +7,10 @@ namespace Emik.Morsels;
 /// <summary>Provides prime numbers.</summary>
 public static class Primes
 {
+    /// <summary>The smallest prime number.</summary>
     public const short Min = 2;
 
+    /// <summary>The largest prime number for signed 16-bit numbers.</summary>
     public const short MaxInt16 = 32749;
 
     /// <summary>Gets all <see langword="short"/> prime numbers.</summary>
@@ -246,23 +248,21 @@ public static class Primes
                 32119, 32141, 32143, 32159, 32173, 32183, 32189, 32191, 32203, 32213, 32233, 32237, 32251, 32257, 32261,
                 32297, 32299, 32303, 32309, 32321, 32323, 32327, 32341, 32353, 32359, 32363, 32369, 32371, 32377, 32381,
                 32401, 32411, 32413, 32423, 32429, 32441, 32443, 32467, 32479, 32491, 32497, 32503, 32507, 32531, 32533,
-                32537, 32561, 32563, 32569, 32573, 32579, 32587, 32603, 32609, 32611, 32621, 32633, 32647,
-                32653, 32687,
+                32537, 32561, 32563, 32569, 32573, 32579, 32587, 32603, 32609, 32611, 32621, 32633, 32647, 32653, 32687,
                 32693, 32707, 32713, 32717, 32719, 32749,
             ]
         );
 
+    /// <summary>Performs the index operation.</summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
     [Pure, ValueRange(Min, MaxInt16)]
     public static short Index(int index) =>
-            Int16[index.Mod(
-                    Int16.
 #if NETCOREAPP || ROSLYN
-                            Length
+        Int16[index.Mod(Int16.Length)];
 #else
-                            Count
+        Int16[index.Mod(Int16.Count)];
 #endif
-            )];
-
     [Pure, ValueRange(Min, MaxInt16)]
     internal static short Index(Index index) => Index(index.IsFromEnd ? -index.Value - 1 : index.Value);
 }

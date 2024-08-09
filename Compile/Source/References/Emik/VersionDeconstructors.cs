@@ -3,7 +3,7 @@
 // ReSharper disable MissingIndent UsePositionalDeconstructionPattern
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable CS1574, CS1580
+
 /// <summary>Methods that deconstructs <see cref="Version"/> instances.</summary>
 static partial class VersionDeconstructors
 {

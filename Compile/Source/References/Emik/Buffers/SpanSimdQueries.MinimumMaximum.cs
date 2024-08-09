@@ -287,15 +287,13 @@ static partial class SpanSimdQueries
             Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #elif !NET8_0_OR_GREATER
         where T : struct
 #endif
-#pragma warning restore MA0051
     {
         // ReSharper disable once TooWideLocalVariableScope
         T value;

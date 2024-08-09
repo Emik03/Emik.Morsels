@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 namespace Emik.Morsels;
-
+#pragma warning disable IDE0032
 using static SmallList;
 using static Span;
 using static SplitMemoryFactory;
@@ -279,11 +279,10 @@ readonly
         where TAccumulator : allows ref struct
 #endif
     ;
-#pragma warning disable IDE0032
+
     readonly ReadOnlyMemory<TBody> _body = body;
 
     readonly ReadOnlyMemory<TSeparator> _separator = separator;
-#pragma warning restore IDE0032
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> struct.
@@ -613,9 +612,7 @@ readonly
     public partial struct Enumerator(ReadOnlyMemory<TBody> body, ReadOnlyMemory<TSeparator> separator)
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
-#pragma warning disable IDE0032
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
-#pragma warning restore IDE0032
 
         readonly ReadOnlyMemory<TBody> _original = body;
 
@@ -703,9 +700,8 @@ readonly
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
         readonly ReadOnlyMemory<TBody> _original = body;
-#pragma warning disable IDE0032
+
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
-#pragma warning restore IDE0032
 
         ReadOnlyMemory<TBody> _body = body, _current;
 
@@ -763,7 +759,7 @@ readonly
         )
         {
             var b = body.Span;
-            var ret = SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.MoveNext(sep.Span, ref b, out var c);
+            var ret = SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator.Move(sep.Span, ref b, out var c);
             current = c.AsMemory(body);
             body = b.AsMemory(body);
             return ret;

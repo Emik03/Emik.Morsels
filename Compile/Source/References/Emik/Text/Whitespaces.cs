@@ -22,7 +22,6 @@ static partial class Whitespaces
     /// <summary>All unicode characters that appear to be whitespace.</summary>
     public const string Combined = $"{Unicode}{Related}";
 #if NET8_0_OR_GREATER
-#pragma warning disable IDISP004
     /// <inheritdoc cref="Breaking"/>
     public static OnceMemoryManager<SearchValues<char>> BreakingSearch
     {
@@ -56,6 +55,5 @@ static partial class Whitespaces
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
         new(SearchValues.Create(Combined));
-#pragma warning restore IDISP004
 #endif
 }

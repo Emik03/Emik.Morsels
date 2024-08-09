@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System;
-#pragma warning disable SA1600, S3246
+
 #if NET20 || NET30 // ReSharper disable TypeParameterCanBeVariant
 /// <summary>Encapsulates a method that has no parameters and does not return a value.</summary>
 delegate void Action();

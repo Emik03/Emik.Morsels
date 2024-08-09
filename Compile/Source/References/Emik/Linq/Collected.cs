@@ -120,9 +120,7 @@ static partial class Collected
     /// <param name="enumerable">The enumerable to encapsulate.</param>
     /// <param name="count">The pre-computed count.</param>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
-#pragma warning disable IDE0044
     internal sealed class Collection<T>([ProvidesContext] IEnumerable<T> enumerable, [NonNegativeValue] int count) :
-#pragma warning restore IDE0044
         ICollection,
         ICollection<T>,
         IReadOnlyCollection<T>

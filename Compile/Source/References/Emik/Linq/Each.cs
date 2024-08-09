@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
+// ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 8603, 8604
+
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
 static partial class Each
 {
@@ -393,7 +394,7 @@ static partial class Each
         IIncrementOperators<T>
     {
         var isNegative = upper < default(T);
-        var abs = isNegative ? default(T) - upper : upper;
+        var abs = isNegative ? default(T)! - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return isNegative ? upper - i : i;
@@ -426,7 +427,7 @@ static partial class Each
     public static IEnumerable<TExternal> For<T, TExternal>([NonNegativeValue] this T upper, TExternal external)
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
-        var abs = upper < default(T) ? default(T) - upper : upper;
+        var abs = upper < default(T) ? default(T)! - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return external;
@@ -451,7 +452,7 @@ static partial class Each
     )
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
-        var abs = upper < default(T) ? default(T) - upper : upper;
+        var abs = upper < default(T) ? default(T)! - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return func();
@@ -477,7 +478,7 @@ static partial class Each
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var isNegative = upper < default(T);
-        var abs = isNegative ? default(T) - upper : upper;
+        var abs = isNegative ? default(T)! - upper : upper;
 
         for (T? i = default; i < abs; i++)
             yield return func(isNegative ? upper - i : i);

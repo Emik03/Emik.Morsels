@@ -96,10 +96,8 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IReadOnlyCollection<T>,
     IReadOnlyDictionary<bool, T>
 {
-#pragma warning disable SA1642
     /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
     /// <param name="value">The value representing both values.</param>
-#pragma warning restore SA1642
     public Split(T value)
         : this(value, value) { }
 

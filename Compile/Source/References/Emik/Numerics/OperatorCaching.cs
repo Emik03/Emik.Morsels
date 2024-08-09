@@ -2,12 +2,12 @@
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
 // ReSharper disable RedundantUsingDirective
 // ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-#pragma warning disable GlobalUsingsAnalyzer
-using Expression = System.Linq.Expressions.Expression;
 
 namespace Emik.Morsels;
 
-#pragma warning restore GlobalUsingsAnalyzer
+// ReSharper disable once RedundantNameQualifier
+using Expression = System.Linq.Expressions.Expression;
+
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
 static partial class OperatorCaching
 {
@@ -125,9 +125,7 @@ static partial class OperatorCaching
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
     // ReSharper disable once ClassNeverInstantiated.Global
-#pragma warning disable S1118
     public sealed partial class DirectOperators<T>
-#pragma warning restore S1118
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
 
@@ -148,20 +146,22 @@ static partial class OperatorCaching
                 IsSupported = false;
             }
         }
-#pragma warning disable RCS1158
+
         /// <summary>
         /// Gets a value indicating whether the functions can be used.
         /// <see cref="MinValue"/> can be used regardless of its output.
         /// </summary>
         [CLSCompliant(false)]
+#pragma warning disable RCS1158
         public static bool IsSupported
+#pragma warning restore RCS1158
         {
             [MemberNotNullWhen(true, nameof(Adder), nameof(Divider), nameof(Increment)),
              MethodImpl(MethodImplOptions.AggressiveInlining),
              Pure]
             get;
         } = true;
-#pragma warning restore RCS1158
+
         /// <summary>Gets the minimum value.</summary>
         // ReSharper disable once NullableWarningSuppressionIsUsed
         public static T MaxValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =

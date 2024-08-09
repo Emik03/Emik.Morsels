@@ -122,11 +122,9 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), MustDisposeResource, Pure]
-#if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
-#pragma warning disable CS8619
-#endif
+#pragma warning disable 8619 // Good job .NET 2.0 - 3.5 Nullable Analysis.
     public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
-
+#pragma warning restore 8619
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();

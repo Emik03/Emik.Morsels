@@ -1,5 +1,4 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8632, RCS1196
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
@@ -149,13 +148,11 @@ static partial class Peeks
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
-#pragma warning disable IDE0004
-        (Action<string>)Shout +
+        Shout +
 #if KTANE
-        (Action<string>)UnityEngine.Debug.Log +
+        UnityEngine.Debug.Log +
 #endif
-        (Action<string>)Console.WriteLine;
-#pragma warning restore IDE0004
+        Console.WriteLine;
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all the types currently loaded.</summary>
@@ -213,7 +210,9 @@ static partial class Peeks
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
     // ReSharper disable once InvokeAsExtensionMethod
+#pragma warning disable RCS1196
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
+#pragma warning restore RCS1196
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 #if RELEASE && !CSHARPREPL
 #if ROSLYN

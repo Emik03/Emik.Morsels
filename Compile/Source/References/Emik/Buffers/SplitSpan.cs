@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 namespace Emik.Morsels;
-#pragma warning disable RCS1158
+#pragma warning disable IDE0032, RCS1158
 using static SmallList;
 using static Span;
 using static SplitSpanFactory;
@@ -328,11 +328,9 @@ readonly
 #endif
     ;
 
-#pragma warning disable IDE0032, IDE0034
     readonly ReadOnlySpan<TBody> _body = body;
 
     readonly ReadOnlySpan<TSeparator> _separator = separator;
-#pragma warning restore IDE0032, IDE0034
 
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
     /// <param name="body">The line to split.</param>

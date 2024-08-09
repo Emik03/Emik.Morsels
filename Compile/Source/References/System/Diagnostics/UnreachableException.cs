@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET7_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-#pragma warning disable CA1064
 namespace System.Diagnostics;
 
 /// <summary>Exception thrown when the program executes an instruction that was thought to be unreachable.</summary>
@@ -36,7 +35,9 @@ sealed partial class UnreachableException : Exception
 
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
     UnreachableException(SerializationInfo info, StreamingContext context)
+#pragma warning disable SYSLIB0051
         : base(info, context) { }
+#pragma warning restore SYSLIB0051
 #endif
 }
 #endif

@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 namespace Emik.Morsels;
-
+#pragma warning disable IDE0032
 using static Span;
 using static SplitSpanFactory;
 
@@ -38,9 +38,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         partial struct Enumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
-#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-#pragma warning restore IDE0032
+
         ReadOnlySpan<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>

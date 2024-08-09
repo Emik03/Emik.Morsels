@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 namespace Emik.Morsels;
-#pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
+#pragma warning disable IDE0032
 using static Span;
 using static SplitSpanFactory;
 
@@ -40,9 +40,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
-#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-#pragma warning restore IDE0032
+
         ReadOnlySpan<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
@@ -91,11 +90,11 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// <param name="body">The span that contains the current state of the enumeration.</param>
         /// <param name="current">The current span.</param>
         /// <returns>
-        /// <see langword="true"/> if a step was able to be performed successfully;
+        /// <see langword="true"/> if a step was performed successfully;
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNext(
+        public static bool Move(
             scoped ReadOnlySpan<TSeparator> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
@@ -116,7 +115,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
+        public bool MoveNext() => Move(_separator, ref _body, out _current);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(

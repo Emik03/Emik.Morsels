@@ -2,7 +2,7 @@
 #if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
-#pragma warning disable 8500, IDE0044, MA0102, SA1137
+#pragma warning disable 8500
 
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity

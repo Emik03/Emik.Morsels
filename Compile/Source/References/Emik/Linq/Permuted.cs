@@ -94,8 +94,8 @@ static partial class Permuted
     static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
     {
         int count = lists.Count, index = 0, pos = 0;
-        var indices = count.AsUninitSmallList<int>();
-        var accumulator = count.AsUninitSmallList<T>();
+        var indices = SmallList<int>.Uninit(count);
+        var accumulator = SmallList<T>.Uninit(count);
 
         while (true)
         {

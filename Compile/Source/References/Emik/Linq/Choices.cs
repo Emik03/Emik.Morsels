@@ -114,9 +114,7 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-#pragma warning disable CA1710, IDE0250, SA1137 // ReSharper disable once BadPreprocessorIndent
     struct Choices<T>(IList<T>? n, int k) : ICollection<IList<T>>, IEquatable<Choices<T>>
-#pragma warning restore CA1710, IDE0250, SA1137
 {
     /// <summary>Provides the enumerator for the <see cref="Choices{T}"/> struct.</summary>
     /// <param name="n">The collection to choose from.</param>

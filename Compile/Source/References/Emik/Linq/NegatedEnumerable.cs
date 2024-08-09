@@ -2,13 +2,13 @@
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable CS1574, CS1580
+
 /// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
 static partial class NegatedEnumerable
 {
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
     /// <remarks><para>
-    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
+    /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
     /// Each duplicate appears exactly once within the returned value.
     /// </para></remarks>
     /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
@@ -24,7 +24,7 @@ static partial class NegatedEnumerable
 
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
     /// <remarks><para>
-    /// Filters out unique elements within an <see cref="Enumerable{T}"/>.
+    /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
     /// Each duplicate appears two or more times within the returned value.
     /// </para></remarks>
     /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
@@ -39,7 +39,7 @@ static partial class NegatedEnumerable
         source.GroupDuplicates(comparer).SelectMany(x => x);
 
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
-    /// <remarks><para>Filters out unique elements within an <see cref="Enumerable{T}"/>.</para></remarks>
+    /// <remarks><para>Filters out unique elements within an <see cref="IEnumerable{T}"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
     /// <param name="source">The source to filter.</param>
     /// <param name="comparer">The comparer to assess distinctiveness.</param>
@@ -59,9 +59,12 @@ static partial class NegatedEnumerable
     /// <inheritdoc cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.SkipWhile(Not1(predicate));
+        source.SkipWhile(x => !predicate(x));
 
-    /// <summary>Negated <see cref="Enumerable.SelectMany{T}(IEnumerable{T}, Func{T, IEnumerable{T}})"/>.</summary>
+    /// <summary>
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
+    /// but negated.
+    /// </summary>
     /// <remarks><para>
     /// Splits the <see cref="IEnumerable{T}"/> into multiple <see cref="IEnumerable{T}"/>
     /// instances in at most the specified length.
@@ -94,7 +97,7 @@ static partial class NegatedEnumerable
     /// <inheritdoc cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.TakeWhile(Not1(predicate));
+        source.TakeWhile(x => !predicate(x));
 
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
@@ -107,7 +110,7 @@ static partial class NegatedEnumerable
         [NoEnumeration] this IEnumerable<T> source,
         Func<T, int, bool> predicate
     ) =>
-        source.TakeWhile(Not2(predicate));
+        source.TakeWhile((x, y) => !predicate(x, y));
 
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
     /// <returns>
@@ -117,7 +120,7 @@ static partial class NegatedEnumerable
     /// <inheritdoc cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
-        source.Where(Not1(predicate));
+        source.Where(x => !predicate(x));
 
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
@@ -130,16 +133,13 @@ static partial class NegatedEnumerable
         [NoEnumeration] this IEnumerable<T> source,
         Func<T, int, bool> predicate
     ) =>
-        source.Where(Not2(predicate));
+        source.Where((x, y) => !predicate(x, y));
 
     static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
     {
         do
-        {
             yield return e.Current;
-
-            count--;
-        } while (count > 0 && e.MoveNext());
+        while (--count > 0 && e.MoveNext());
     }
 }
 #endif

@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 8604
+
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
 // ReSharper disable LoopCanBePartlyConvertedToQuery
 static partial class EachWithControlFlow

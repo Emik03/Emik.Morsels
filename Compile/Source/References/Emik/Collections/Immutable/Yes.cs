@@ -25,7 +25,7 @@ static partial class YesFactory
 
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
-        object IEnumerator.Current => value ?? Fallback;
+        object IEnumerator.Current => value ?? new object();
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
@@ -65,9 +65,6 @@ static partial class YesFactory
         [CollectionAccess(None), MustDisposeResource(false), Pure]
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
     }
-
-    /// <summary>Gets the fallback for when an enumeration returns <see langword="null"/>.</summary>
-    public static object Fallback { get; } = new();
 
     /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>

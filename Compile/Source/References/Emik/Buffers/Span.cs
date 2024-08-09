@@ -3,11 +3,10 @@
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable 8500
 // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
-#pragma warning disable 8500
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
 static partial class Span
@@ -342,6 +341,7 @@ static partial class Span
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
 
         if (IsReferenceOrContainsReferences<T>())

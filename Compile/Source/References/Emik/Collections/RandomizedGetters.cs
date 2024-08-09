@@ -2,7 +2,7 @@
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
 /// <summary>Extension methods for randomized getters.</summary>
 static partial class RandomizedGetters
 {
@@ -27,11 +27,9 @@ static partial class RandomizedGetters
                 continue;
 
             // Tuples might not necessarily be imported.
-#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
             var t = list[item];
             list[item] = list[j - 1];
             list[j - 1] = t;
-#pragma warning restore IDE0180
         }
 
         return list;
@@ -50,11 +48,9 @@ static partial class RandomizedGetters
                 continue;
 
             // Tuples might not necessarily be imported.
-#pragma warning disable IDE0180 // ReSharper disable once SwapViaDeconstruction
             var t = iterable[item];
             iterable[item] = iterable[j - 1];
             iterable[j - 1] = t;
-#pragma warning restore IDE0180
         }
 
         return iterable;

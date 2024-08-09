@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 1591, 9113, GlobalUsingsAnalyzer, SA1602
+#pragma warning disable 9113, GlobalUsingsAnalyzer
 // ReSharper disable ClassNeverInstantiated.Global RedundantUsingDirective.Global
 #if !NET452_OR_GREATER && !NETSTANDARD1_4_OR_GREATER && !NETCOREAPP
 global using NullGuardAttribute = NullGuard.NullGuardAttribute;
@@ -14,14 +14,11 @@ using static AttributeTargets;
 /// The <see cref="ValidationFlags"/> to use for the target this attribute is being applied to.
 /// </param>
 [AttributeUsage(Assembly | Class)]
-#pragma warning disable CA1019
 sealed partial class NullGuardAttribute(ValidationFlags flags) : Attribute;
-#pragma warning restore CA1019
+
 /// <summary>Used by <see cref="NullGuardAttribute"/> to target specific categories of members.</summary>
 [Flags]
-#pragma warning disable S2344
 enum ValidationFlags
-#pragma warning restore S2344
 {
     /// <summary>Does nothing.</summary>
     None = 0,

@@ -28,7 +28,7 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDISP010
+#pragma warning disable IDISP010 // You cannot call abstract base methods.
     protected override void Dispose(bool disposing)
 #pragma warning restore IDISP010
     {

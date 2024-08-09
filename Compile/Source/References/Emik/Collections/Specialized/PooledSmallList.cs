@@ -19,7 +19,7 @@ static class PooledSmallListBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> From<T>(ReadOnlySpan<T> span) => default(PooledSmallList<T>).Append(span);
 }
-#pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
+
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 [CollectionBuilder(typeof(PooledSmallListBuilder), nameof(PooledSmallListBuilder.From))]
@@ -278,7 +278,7 @@ ref
                 break;
         }
     }
-#pragma warning disable 809, S3877
+
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
@@ -286,7 +286,7 @@ ref
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-#pragma warning restore 809, S3877
+
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>

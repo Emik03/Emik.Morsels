@@ -1,5 +1,4 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632, SA1629, SYSLIB0003, GlobalUsingsAnalyzer
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 using SecurityAction = System.Security.Permissions.SecurityAction;
@@ -84,6 +83,7 @@ static partial class Exit
     /// <summary>Terminates this process and returns the exit code to the operating system.</summary>
     /// <typeparam name="T">Only used for type coercion.</typeparam>
     /// <param name="message">The message to print into the standard output/error, if specified.</param>
+    /// <param name="exitCode">The exit code.</param>
     /// <exception cref="SecurityException">
     /// The caller does not have sufficient security permission to perform this function.
     /// </exception>
@@ -95,9 +95,7 @@ static partial class Exit
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
     ]
-#pragma warning disable 1573
     static T With<T>(string? message, byte exitCode)
-#pragma warning restore 1573
     {
         if (message is not null)
             (exitCode is 0 ? Console.Out : Console.Error).WriteLine(message);

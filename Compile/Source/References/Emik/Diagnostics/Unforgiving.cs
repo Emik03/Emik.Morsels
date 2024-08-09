@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
-
 global using static Emik.Morsels.Unforgiving;
 
 // ReSharper disable once CheckNamespace RedundantUsingDirective.Global

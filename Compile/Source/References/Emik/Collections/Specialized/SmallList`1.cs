@@ -3,7 +3,7 @@
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 8500, MA0102, RCS1146
+
 using static CollectionAccessType;
 using static SmallList;
 using static Span;
@@ -54,7 +54,7 @@ partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(IEnumerator<T>? enumerator)
     {
-        if (enumerator is null || !enumerator.MoveNext())
+        if (enumerator?.MoveNext() is not true)
             return;
 
         _first = enumerator.Current;
@@ -220,6 +220,7 @@ partial struct SmallList<T> :
     {
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[0];
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
+#pragma warning disable MA0102
         set => this[0] = value;
     }
 
@@ -239,6 +240,7 @@ partial struct SmallList<T> :
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] readonly get => this[2];
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[2] = value;
+#pragma warning restore MA0102
     }
 
     /// <summary>Gets the rest of the elements.</summary>
@@ -554,29 +556,29 @@ partial struct SmallList<T> :
         switch (Count)
         {
             case 2:
-                SwapByRef(ref _first, ref _second);
+                SwapByRef(ref _first!, ref _second!);
                 break;
             case 3:
-                SwapByRef(ref _first, ref _third);
+                SwapByRef(ref _first!, ref _third!);
                 break;
             case 4:
-                Swap(ref _first, EnsureMutability(), 0);
-                SwapByRef(ref _second, ref _third);
+                Swap(ref _first!, EnsureMutability(), 0);
+                SwapByRef(ref _second!, ref _third!);
                 break;
             case 5:
-                Swap(ref _first, EnsureMutability(), 1);
-                Swap(ref _second, _rest, 0);
+                Swap(ref _first!, EnsureMutability(), 1);
+                Swap(ref _second!, _rest!, 0);
                 break;
             case >= 6 and var count:
-                Swap(ref _first, EnsureMutability(), count - 4);
-                Swap(ref _second, _rest, count - 5);
-                Swap(ref _third, _rest, count - 6);
+                Swap(ref _first!, EnsureMutability(), count - 4);
+                Swap(ref _second!, _rest!, count - 5);
+                Swap(ref _third!, _rest!, count - 6);
 
                 if (_rest is List<T> rest)
                     rest.Reverse(0, count - 6);
                 else
                     for (var i = 0; i < count / 2 - 3; i++)
-                        SwapItself(_rest, i, count);
+                        SwapItself(_rest!, i, count);
 
                 break;
         }
@@ -969,9 +971,7 @@ partial struct SmallList<T> :
         {
             { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
             { Count: not 0 } x => [.. x],
-#pragma warning disable IDE0004
-            _ => (IList<T>)[],
-#pragma warning restore IDE0004
+            _ => [],
         };
 
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>

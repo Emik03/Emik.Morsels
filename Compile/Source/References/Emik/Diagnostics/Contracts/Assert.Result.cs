@@ -130,9 +130,7 @@ abstract partial class Assert
             {
                 return new(Activator.CreateInstance(Setup, true) as Assert, Setup);
             }
-#pragma warning disable CA1031
             catch (Exception ex)
-#pragma warning restore CA1031
             {
                 return new(ex, Setup);
             }

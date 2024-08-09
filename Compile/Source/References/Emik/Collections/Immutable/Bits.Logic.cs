@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8500, CA1502, MA0051, IDE0250
+#pragma warning disable 8500, MA0051
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
@@ -93,7 +93,7 @@ readonly
             return EqZero(ptr);
     }
 #if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
-    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <summary>Clamps a value such that it is not smaller or larger than the defined amount.</summary>
     /// <param name="number">The bits to clamp.</param>
     /// <param name="min">The minimum accepted value.</param>
     /// <param name="max">The maximum accepted value.</param>
@@ -683,7 +683,7 @@ readonly
         return true;
     }
 
-    /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
+    /// <summary>Clamps a value such that it is not smaller or larger than the defined amount.</summary>
     /// <param name="number">The bits to clamp.</param>
     /// <param name="min">The minimum accepted value.</param>
     /// <param name="max">The maximum accepted value.</param>
