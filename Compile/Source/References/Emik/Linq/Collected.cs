@@ -168,30 +168,18 @@ static partial class Collected
         }
 
         /// <inheritdoc />
-#pragma warning disable RCS1163
         void ICollection<T>.Add(T? item) { }
-#pragma warning restore RCS1163
 
         /// <inheritdoc />
         void ICollection<T>.Clear() { }
 
         /// <inheritdoc />
         [Pure]
-        public bool Contains(T item)
-        {
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var next in enumerable)
-                if (EqualityComparer<T>.Default.Equals(next, item))
-                    return true;
-
-            return false;
-        }
+        public bool Contains(T item) => enumerable.Contains(item);
 
         /// <inheritdoc />
         [Pure]
-#pragma warning disable RCS1163
         bool ICollection<T>.Remove(T? item) => false;
-#pragma warning restore RCS1163
 
         /// <inheritdoc />
         [Pure]

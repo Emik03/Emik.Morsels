@@ -103,9 +103,13 @@ static partial class Peeks
     }
 #endif
 
+    /// <summary>The character often used to identify scripted assemblies.</summary>
+    public const char R = '\u211b';
+
     /// <summary>The escape sequence to clear the screen.</summary>
+    // ReSharper disable CanSimplifyStringEscapeSequence
     public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
-#if ROSLYN
+#if ROSLYN // ReSharper restore CanSimplifyStringEscapeSequence
     const string Name = nameof(DiagnosticSink);
 
     static readonly DiagnosticSink s_diagnosticSink = new();
@@ -115,7 +119,7 @@ static partial class Peeks
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     static readonly string s_path = Path.Combine(
         Path.GetTempPath(),
-        typeof(Assert).Assembly.GetName().Name is [not '\u211b', ..] name ? name : "\u211b"
+        typeof(Assert).Assembly.GetName().Name is [not R, ..] name ? name : $"{R}"
     ); // ReSharper disable once RedundantNameQualifier
 
     static readonly ITextFormatter s_json =

@@ -7,6 +7,15 @@ namespace Emik.Morsels;
 /// <summary>Methods that deconstructs <see cref="Version"/> instances.</summary>
 static partial class VersionDeconstructors
 {
+    /// <summary>Deconstructs this instance into the major version.</summary>
+    /// <remarks><para>
+    /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
+    /// </para></remarks>
+    /// <param name="version">The <see cref="Version"/> to deconstruct.</param>
+    /// <param name="major">The resulting major version.</param>
+    public static void Deconstruct(this Version? version, [NonNegativeValue] out int major) =>
+        major = version?.Major ?? 0;
+
     /// <summary>Deconstructs this instance into the major and minor versions.</summary>
     /// <remarks><para>
     /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
@@ -27,8 +36,8 @@ static partial class VersionDeconstructors
             return;
         }
 
-        major = default;
-        minor = default;
+        major = 0;
+        minor = 0;
     }
 
     /// <summary>Deconstructs this instance into the major, minor, and build versions.</summary>
@@ -54,9 +63,9 @@ static partial class VersionDeconstructors
             return;
         }
 
-        major = default;
-        minor = default;
-        build = default;
+        major = 0;
+        minor = 0;
+        build = 0;
     }
 
     /// <summary>Deconstructs this instance into the major, minor, build, and revision versions.</summary>
@@ -85,10 +94,10 @@ static partial class VersionDeconstructors
             return;
         }
 
-        major = default;
-        minor = default;
-        build = default;
-        revision = default;
+        major = 0;
+        minor = 0;
+        build = 0;
+        revision = 0;
     }
 
     /// <summary>
@@ -125,10 +134,10 @@ static partial class VersionDeconstructors
             return;
         }
 
-        major = default;
-        minor = default;
-        build = default;
-        majorRevision = default;
-        minorRevision = default;
+        major = 0;
+        minor = 0;
+        build = 0;
+        majorRevision = 0;
+        minorRevision = 0;
     }
 }

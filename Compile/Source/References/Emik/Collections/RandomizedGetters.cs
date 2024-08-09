@@ -11,7 +11,6 @@ static partial class RandomizedGetters
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
     /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static IList<T> Shuffle<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
@@ -39,7 +38,6 @@ static partial class RandomizedGetters
     }
 
     /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
     {
         selector ??= Rand();
@@ -73,14 +71,25 @@ static partial class RandomizedGetters
         [InstantHandle] Func<int, int, int>? selector = null
     )
     {
+        static T Fallback([InstantHandle] IEnumerable<T> iterable, [InstantHandle] Func<int, int, int> selector)
+        {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            using var list = iterable.ToPooledSmallList();
+            return list[selector(0, list.Length)];
+#else
+            var list = iterable.ToList();
+            return list[selector(0, list.Count)]
+#endif
+        }
+
         selector ??= Rand();
 
         return iterable switch
         {
             IList<T> list => list[selector(0, list.Count)],
             IReadOnlyList<T> list => list[selector(0, list.Count)],
-            _ when iterable.ToList() is var list => list[selector(0, list.Count)],
-            _ => throw Unreachable,
+            _ when iterable.TryCount() is { } count => iterable.ElementAt(selector(0, count)),
+            _ => Fallback(iterable, selector),
         };
     }
 

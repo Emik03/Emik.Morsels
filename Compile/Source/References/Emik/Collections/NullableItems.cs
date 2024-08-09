@@ -4,7 +4,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-#pragma warning disable 8619, CA1508
+#pragma warning disable 8619
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
 static partial class NullableItems
 {

@@ -48,19 +48,6 @@ static partial class SmallFactory
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
 
-    /// <inheritdoc cref="Emik.Morsels.PooledSmallList{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> ToPooledSmallList<T>(this Span<T> span) => new(span);
-
-    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="capacity">
-    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
-    /// </param>
-    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
-
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
     /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -78,35 +65,42 @@ static partial class SmallFactory
 #if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
             _ when !IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stackalloc<T>(it), // Stack allocation
 #endif
-            _ => it.AsPooledSmallList<T>(), // Heap allocation
+            _ => it, // Heap allocation
         };
     }
 #endif
 
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
+    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
+    /// <typeparam name="T">The type of the collection.</typeparam>
+    /// <param name="capacity">
+    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
+    /// </param>
+    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsSmallList<T>(this T value) => value;
+    public static PooledSmallList<T> ToPooledSmallList<T>(this int capacity)
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
+        =>
+            new(capacity);
 
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
-        where T1 : T2 =>
-        tuple;
+    /// <inheritdoc cref="Emik.Morsels.PooledSmallList{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static PooledSmallList<T> ToPooledSmallList<T>(this Span<T> span)
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
+        =>
+            new(span);
 
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
-        where T1 : T3
-        where T2 : T3 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
-
-    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
+    /// <inheritdoc cref="Emik.Morsels.PooledSmallList{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static PooledSmallList<T> ToPooledSmallList<T>(this IEnumerable<T>? enumerable)
+#if UNMANAGED_SPAN
+    where T : unmanaged
+#endif
+        =>
+            (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
 
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>

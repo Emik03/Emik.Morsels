@@ -39,7 +39,7 @@ static partial class SplitFactory
         [InstantHandle] Func<T, bool> predicate
     )
     {
-        var index = source.TakeWhile(Not1(predicate)).Count();
+        var index = source.TakeWhile(x => !predicate(x)).Count();
         return source.SplitAt(index);
     }
 

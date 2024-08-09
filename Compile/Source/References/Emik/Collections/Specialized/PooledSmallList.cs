@@ -170,9 +170,9 @@ ref
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+#pragma warning disable 8500
             fixed (PooledSmallList<T>* ptr = &this)
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+#pragma warning restore 8500
                 return ref *ptr;
         }
     }
@@ -349,8 +349,11 @@ ref
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T> collection)
+    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T>? collection)
     {
+        if (collection is null)
+            return this;
+
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
 

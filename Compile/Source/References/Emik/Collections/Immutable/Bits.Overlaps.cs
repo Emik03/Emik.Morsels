@@ -70,21 +70,15 @@ readonly
     {
         T t = default;
 
-        var collection = other
-#if WAWA
-           .ToList();
-#else
-           .ToICollection();
-#endif
+        var collection = other.ToICollection();
 
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
             if (collection.Contains(next))
                 Or(next, ref t);
             else
                 return false;
 
-        // ReSharper disable once LoopCanBeConvertedToQuery ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var next in collection)
             if (!Contains(next))
                 return true;
@@ -112,19 +106,8 @@ readonly
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
     {
-        var collection = other
-#if WAWA
-           .ToList();
-#else
-           .ToICollection();
-#endif
-
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var next in this)
-            if (!collection.Contains(next))
-                return false;
-
-        return true;
+        var collection = other.ToICollection();
+        return this.All(collection.Contains);
     }
 
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
