@@ -16,7 +16,7 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void And(in T read, ref T write)
+    public static unsafe void And(scoped in T read, scoped ref T write)
     {
         fixed (T* r = &read)
         fixed (T* w = &write)
@@ -27,7 +27,7 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void AndNot(in T read, ref T write)
+    public static unsafe void AndNot(scoped in T read, scoped ref T write)
     {
         fixed (T* r = &read)
         fixed (T* w = &write)
@@ -37,7 +37,7 @@ readonly
     /// <summary>Computes the Bitwise-NOT computation, writing it to the first argument.</summary>
     /// <param name="reference">The <typeparamref name="T"/> to read and write from.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Not(ref T reference)
+    public static unsafe void Not(scoped ref T reference)
     {
         fixed (T* ptr = &reference)
             Not(ptr);
@@ -47,7 +47,7 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Or(in T read, ref T write)
+    public static unsafe void Or(scoped in T read, scoped ref T write)
     {
         fixed (T* r = &read)
         fixed (T* w = &write)
@@ -58,7 +58,7 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Xor(in T read, ref T write)
+    public static unsafe void Xor(scoped in T read, scoped ref T write)
     {
         fixed (T* r = &read)
         fixed (T* w = &write)
@@ -73,7 +73,7 @@ readonly
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool Eq(in T left, in T right)
+    public static unsafe bool Eq(scoped in T left, scoped in T right)
     {
         fixed (T* l = &left)
         fixed (T* r = &right)
@@ -87,7 +87,7 @@ readonly
     /// points to a value with all zeros; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool EqZero(in T reference)
+    public static unsafe bool EqZero(scoped in T reference)
     {
         fixed (T* ptr = &reference)
             return EqZero(ptr);

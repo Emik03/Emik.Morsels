@@ -240,13 +240,13 @@ readonly
             return -1;
 
         var that = (Enumerator)this;
-#pragma warning disable S1994
+
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
                 return i;
             else if (that.Mask > mask || that.Index > index)
                 return -1;
-#pragma warning restore S1994
+
         return -1;
     }
 
@@ -284,7 +284,6 @@ readonly
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-#pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult Coerce<TResult>()
 #if KTANE
@@ -306,7 +305,7 @@ readonly
 
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
-#pragma warning disable DOC100
+
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
