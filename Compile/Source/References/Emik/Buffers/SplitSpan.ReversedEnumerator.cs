@@ -15,6 +15,21 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 
     /// <summary>
+    /// Returns itself but with the number of elements from the end specified skipped. This is evaluated eagerly.
+    /// </summary>
+    /// <param name="count">The number of elements to skip from the end.</param>
+    /// <returns>Itself but skipping from the end the parameter <paramref name="count"/> number of elements.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
+    {
+        Enumerator e = this;
+
+        for (; count > 0 && e.MoveNext(); count--) { }
+
+        return e.SplitSpan;
+    }
+
+    /// <summary>
     /// Represents the backwards enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
@@ -60,6 +75,15 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
+        }
+
+        /// <summary>
+        /// Reconstructs the <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> based on the current state.
+        /// </summary>
+        public readonly SplitSpan<TBody, TSeparator, TStrategy> SplitSpan
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get => new(_body, _separator);
         }
 
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>

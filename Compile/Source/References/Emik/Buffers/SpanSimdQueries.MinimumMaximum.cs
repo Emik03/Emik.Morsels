@@ -274,7 +274,7 @@ static partial class SpanSimdQueries
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static System.Numerics.Vector<T> LoadUnsafe<T>(in T source)
+    static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
 #if !NET8_0_OR_GREATER
         where T : struct
 #endif
@@ -289,7 +289,7 @@ static partial class SpanSimdQueries
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static T MinMax<T, TS>(this ReadOnlySpan<T> span)
+    static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #elif !NET8_0_OR_GREATER

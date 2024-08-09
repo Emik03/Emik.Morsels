@@ -130,7 +130,15 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<ushort> AsSpan(this ushort length) => SpanRange<ushort>(length + 1).UnsafelySkip(length);
-
+#if NET5_0_OR_GREATER
+    /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static ReadOnlySpan<Half> AsSpan(this Half length)
+    {
+        var i = (int)length;
+        return SpanRange<Half>(i).UnsafelySkip(i);
+    }
+#endif
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<T> MemoryRange<T>(this int length) => InAscendingOrder<T>.Memory(length);

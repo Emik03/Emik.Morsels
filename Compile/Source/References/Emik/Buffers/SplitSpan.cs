@@ -525,7 +525,7 @@ readonly
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {
-        var e = GetEnumerator();
+        Enumerator e = this;
         var eOther = other.GetEnumerator();
 
         while (e.MoveNext())

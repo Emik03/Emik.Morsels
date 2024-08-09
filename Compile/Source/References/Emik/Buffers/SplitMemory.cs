@@ -434,13 +434,6 @@ readonly
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
 
-    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool Equals<TOtherStrategy>(SplitMemory<TBody, TSeparator, TOtherStrategy> other) =>
-        typeof(TStrategy) == typeof(TOtherStrategy) &&
-        _body.Span.SequenceEqual(other._body.Span) &&
-        _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
@@ -528,6 +521,28 @@ readonly
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Skipped"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public readonly SplitMemory<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
+    {
+        Enumerator e = this;
+
+        for (; count > 0 && e.MoveNext(); count--) { }
+
+        return e.SplitMemory;
+    }
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SkippedLast"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public readonly SplitMemory<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
+    {
+        ReversedEnumerator e = this;
+
+        for (; count > 0 && e.MoveNext(); count--) { }
+
+        return e.SplitMemory;
+    }
+
     /// <inheritdoc />
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -593,7 +608,7 @@ readonly
     public readonly TBody[][] ToArrays() => SplitSpan.ToArrays();
 
     /// <summary>
-    /// Represents the enumeration object that views <see cref="SplitMemory{T, TSeparator, TStrategy}"/>.
+    /// Represents the enumeration object that views <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/>.
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -620,11 +635,18 @@ readonly
         public Enumerator(SplitMemory<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
 
-        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Body"/>
+        /// <inheritdoc cref="SplitMemory{TBody, TSeparator, TStrategy}.Body"/>
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
+        }
+
+        /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.SplitSpan"/>
+        public readonly SplitMemory<TBody, TSeparator, TStrategy> SplitMemory
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get => new(_body, _separator);
         }
 
         /// <inheritdoc />
@@ -639,7 +661,7 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
 
-        /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Separator"/>
+        /// <inheritdoc cref="SplitMemory{TBody, TSeparator, TStrategy}.Separator"/>
         public readonly ReadOnlyMemory<TSeparator> Separator
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
@@ -706,6 +728,13 @@ readonly
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
+        }
+
+        /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator.SplitSpan"/>
+        public readonly SplitMemory<TBody, TSeparator, TStrategy> SplitMemory
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get => new(_body, _separator);
         }
 
         /// <inheritdoc />
