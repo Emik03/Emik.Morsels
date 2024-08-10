@@ -215,7 +215,7 @@ static partial class MatrixFactory
             get => _listLazy?.Invoke() ?? _listEager;
 #pragma warning restore 8603
         }
-
+#if !WAWA
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
         /// by using the constructor <see cref="Matrix{T}(IList{T}, int)"/>.
@@ -267,7 +267,7 @@ static partial class MatrixFactory
         [Pure]
         public static implicit operator Matrix<T>((Func<IList<T>> List, Func<int> CountPerList) tuple) =>
             new(tuple.List, tuple.CountPerList);
-
+#endif
         /// <inheritdoc />
         public void Add(IList<T>? item)
         {
@@ -343,7 +343,7 @@ static partial class MatrixFactory
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 #endif
-
+#if !WAWA
     /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
@@ -352,9 +352,6 @@ static partial class MatrixFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
-#if WAWA
-        iterator is null ? null : new(iterator as IList<T> ?? [..iterator], countPerList);
-#else
         iterator is null ? null : new(iterator.ToIList(), countPerList);
 #endif
 
@@ -365,9 +362,18 @@ static partial class MatrixFactory
     /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, Func<int> countPerList) =>
+    public static Matrix<T>? AsMatrix<T>(
+        this
 #if WAWA
-        iterator is null ? null : new(iterator as IList<T> ?? [..iterator], countPerList);
+            IList<T>?
+#else
+            IEnumerable<T>?
+#endif
+            iterator,
+        Func<int> countPerList
+    ) =>
+#if WAWA
+        iterator is null ? null : new(iterator, countPerList);
 #else
         iterator is null ? null : new(iterator.ToIList(), countPerList);
 #endif
