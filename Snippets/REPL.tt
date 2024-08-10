@@ -301,7 +301,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         FullyQualifiedNone = "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)";
 
     var lines = Directory
-        .GetFiles(root, "*.cs", SearchOption.AllDirectories)
+        .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
+        .OrderBy(x => x, StringComparer.Ordinal)
         .Select(File.ReadAllText)
         .Select(x => x.Replace("namespace Emik.Morsels;", "").Replace("Emik.Morsels.", "").Replace("Whitespaces.", ""))
         .Select(x => x.Replace("CollectionAccess(None)", FullyQualifiedNone))
