@@ -262,7 +262,7 @@ static partial class Span
         where T : class
 #if CSHARPREPL
         =>
-            Unsafe.As<object, nuint>(ref _);
+            Unsafe.As<T, nuint>(ref _);
 #else
     {
         // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,

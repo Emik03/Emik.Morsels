@@ -62,8 +62,8 @@ static partial class NegatedEnumerable
         source.SkipWhile(x => !predicate(x));
 
     /// <summary>
-    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
-    /// but negated.
+    /// Negated
+    /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>.
     /// </summary>
     /// <remarks><para>
     /// Splits the <see cref="IEnumerable{T}"/> into multiple <see cref="IEnumerable{T}"/>
