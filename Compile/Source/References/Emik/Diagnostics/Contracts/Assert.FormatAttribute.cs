@@ -64,6 +64,18 @@ abstract partial class Assert
         /// <summary>Gets the template, before any substitution occurs.</summary>
         [Pure]
         public string Template => template;
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="FormatAttribute"/>
+        /// by using the constructor <see cref="FormatAttribute(string)"/>.
+        /// </summary>
+        /// <param name="template">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="FormatAttribute"/> by passing the parameter
+        /// <paramref name="template"/> to the constructor <see cref="FormatAttribute(string)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator FormatAttribute(string template) => new(template);
     }
 }
 #endif

@@ -216,6 +216,58 @@ static partial class MatrixFactory
 #pragma warning restore 8603
         }
 
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
+        /// by using the constructor <see cref="Matrix{T}(IList{T}, int)"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of Matrix{T} by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Matrix{T}(IList{T}, int)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Matrix<T>((IList<T> List, int CountPerList) tuple) =>
+            new(tuple.List, tuple.CountPerList);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
+        /// by using the constructor <see cref="Matrix{T}(IList{T}, Func{int})"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of Matrix{T} by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Matrix{T}(IList{T}, Func{int})"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Matrix<T>((IList<T> List, Func<int> CountPerList) tuple) =>
+            new(tuple.List, tuple.CountPerList);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
+        /// by using the constructor <see cref="Matrix{T}(Func{IList{T}}, int)"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Matrix{T}"/> by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Matrix{T}(Func{IList{T}}, int)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Matrix<T>((Func<IList<T>> List, int CountPerList) tuple) =>
+            new(tuple.List, tuple.CountPerList);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
+        /// by using the constructor <see cref="Matrix{T}(Func{IList{T}}, Func{int})"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Matrix{T}"/> by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Matrix{T}(Func{IList{T}}, Func{int})"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Matrix<T>((Func<IList<T>> List, Func<int> CountPerList) tuple) =>
+            new(tuple.List, tuple.CountPerList);
+
         /// <inheritdoc />
         public void Add(IList<T>? item)
         {

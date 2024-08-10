@@ -112,6 +112,20 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         [Pure]
         bool IList.IsReadOnly => false;
 
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="DeconstructionCollection.DeconstructionList"/> by using the constructor
+        /// <see cref="DeconstructionCollection.DeconstructionList(int)"/>.
+        /// </summary>
+        /// <param name="str">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="DeconstructionCollection.DeconstructionList"/>
+        /// by passing the parameter <paramref name="str"/> to the constructor
+        /// <see cref="DeconstructionCollection.DeconstructionList(int)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator DeconstructionList(int str) => new(str);
+
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -344,6 +358,20 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         [Pure]
         public override ICollection Serialized =>
             _list.Aggregate(new Dictionary<string, object?>(StringComparer.Ordinal), AddUnique);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="DeconstructionCollection.DeconstructionDictionary"/>
+        /// by using the constructor <see cref="DeconstructionCollection.DeconstructionDictionary(int)"/>.
+        /// </summary>
+        /// <param name="str">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="DeconstructionCollection.DeconstructionDictionary"/>
+        /// by passing the parameter <paramref name="str"/> to the constructor
+        /// <see cref="DeconstructionCollection.DeconstructionDictionary(int)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator DeconstructionDictionary(int str) => new(str);
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>

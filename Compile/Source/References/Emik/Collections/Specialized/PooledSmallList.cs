@@ -242,6 +242,18 @@ ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(PooledSmallList<T> left, PooledSmallList<T> right) => !(left == right);
 
+    /// <summary>
+    /// Implicitly converts the parameter by creating the new instance of <see cref="PooledSmallList{T}"/>
+    /// by using the constructor <see cref="Emik.Morsels.PooledSmallList{T}(int)"/>.
+    /// </summary>
+    /// <param name="capacity">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of <see cref="PooledSmallList{T}"/> by passing the parameter <paramref name="capacity"/>
+    /// to the constructor <see cref="Emik.Morsels.PooledSmallList{T}(int)"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator PooledSmallList<T>(int capacity) => new(capacity);
+
     /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
     /// <param name="span">The span.</param>
     /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>

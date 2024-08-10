@@ -85,6 +85,40 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             get => new(_body, _separator);
         }
 
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance
+        /// of <see cref="ReversedEnumerator"/> by using the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlySpan{TBody})"/>.
+        /// </summary>
+        /// <param name="body">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="ReversedEnumerator"/> by passing
+        /// the parameter <paramref name="body"/> to the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlySpan{TBody})"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator(
+            ReadOnlySpan<TBody> body
+        ) =>
+            new(body);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance
+        /// of <see cref="ReversedEnumerator"/> by using the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(SplitSpan{TBody, TSeparator, TStrategy})"/>.
+        /// </summary>
+        /// <param name="split">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="ReversedEnumerator"/> by passing
+        /// the parameter <paramref name="split"/> to the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(SplitSpan{TBody, TSeparator, TStrategy})"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator(
+            SplitSpan<TBody, TSeparator, TStrategy> split
+        ) =>
+            new(split);
+
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>
         /// <param name="sep">The separator span.</param>
         /// <param name="body">The span that contains the current state of the enumeration.</param>

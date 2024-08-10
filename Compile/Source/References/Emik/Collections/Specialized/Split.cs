@@ -173,6 +173,18 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     [Pure]
     IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
 
+    /// <summary>
+    /// Implicitly converts the parameter by creating the new instance of <see cref="Split{T}"/>
+    /// by using the constructor <see cref="Emik.Morsels.Split{T}(T, T)"/>.
+    /// </summary>
+    /// <param name="tuple">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of <see cref="Split{T}"/> by passing the parameter <paramref name="tuple"/>
+    /// to the constructor <see cref="Emik.Morsels.Split{T}(T, T)"/>.
+    /// </returns>
+    [Pure]
+    public static implicit operator Split<T>((T Truthy, T Falsy) tuple) => new(tuple.Truthy, tuple.Falsy);
+
     /// <inheritdoc />
     public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {

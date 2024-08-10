@@ -290,6 +290,19 @@ partial struct SmallList<T> :
     public static implicit operator SmallList<T>((T First, T Second, T Third, IList<T> List) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third, tuple.List);
 
+    /// <summary>
+    /// Implicitly converts the parameter by creating the new instance of <see cref="SmallList{T}"/>
+    /// by using the constructor <see cref="Emik.Morsels.SmallList{T}(T, T, T, T[])"/>.
+    /// </summary>
+    /// <param name="tuple">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of <see cref="SmallList{T}"/> by passing the parameter <paramref name="tuple"/>
+    /// to the constructor <see cref="Emik.Morsels.SmallList{T}(T, T, T, T[])"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator SmallList<T>((T First, T Second, T Third, T[] TheRest) tuple) =>
+        new(tuple.First, tuple.Second, tuple.Third, tuple.TheRest);
+
     /// <summary>Skips initialization of inlined elements.</summary>
     /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>

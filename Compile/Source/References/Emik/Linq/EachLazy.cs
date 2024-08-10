@@ -52,6 +52,66 @@ static partial class EachLazy
             _action = action;
         }
 
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Enumerable{T, TExternal}"/>
+        /// by using the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T})"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Enumerable{T, TExternal}"/> by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T})"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Enumerable<T, TExternal>(
+            (IEnumerable<T> Enumerable, TExternal External, Action<T> Action) tuple
+        ) =>
+            new(tuple.Enumerable, tuple.External, tuple.Action);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Enumerable{T, TExternal}"/>
+        /// by using the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, int})"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of Enumerable{T, TExternal} by passing the parameter <paramref name="tuple"/> to
+        /// the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, int})"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Enumerable<T, TExternal>(
+            (IEnumerable<T> Enumerable, TExternal External, Action<T, int> Action) tuple
+        ) =>
+            new(tuple.Enumerable, tuple.External, tuple.Action);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of <see cref="Enumerable{T, TExternal}"/>
+        /// by using the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, TExternal})"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Enumerable{T, TExternal}"/> by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, TExternal})"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Enumerable<T, TExternal>(
+            (IEnumerable<T> Enumerable, TExternal External, Action<T, TExternal> Action) tuple
+        ) =>
+            new(tuple.Enumerable, tuple.External, tuple.Action);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of Enumerable{T, TExternal} by using the
+        /// constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, int, TExternal})"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Enumerable{T, TExternal}"/> by passing the parameter <paramref name="tuple"/>
+        /// to the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, int, TExternal})"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Enumerable<T, TExternal>(
+            (IEnumerable<T> Enumerable, TExternal External, Action<T, int, TExternal> Action) tuple
+        ) =>
+            new(tuple.Enumerable, tuple.External, tuple.Action);
+
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), MustDisposeResource, Pure]
 #pragma warning disable IDISP004

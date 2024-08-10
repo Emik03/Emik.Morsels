@@ -450,6 +450,19 @@ readonly
     ) =>
         !left.Equals(right);
 
+    /// <summary>
+    /// Implicitly converts the parameter by creating the new instance of
+    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="Emik.Morsels.SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
+    /// </summary>
+    /// <param name="body">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of SplitSpan{TBody, TSeparator, TStrategy} by passing the parameter <paramref name="body"/>
+    /// to the constructor <see cref="Emik.Morsels.SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
+
     /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.</summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
