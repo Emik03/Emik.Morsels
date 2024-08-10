@@ -116,7 +116,8 @@ abstract partial class Assert
         public override string ToString() =>
             IsDefault ? "N/A" :
             Instantiated ? Succeeded ? "OK" : $"{Fail}{Assertion.Message}" :
-            HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" : "Not determined";
+            HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" :
+            "Yet to be determined";
 
         /// <summary>Executes the assertion and returns the new <see cref="Result"/>.</summary>
         /// <returns>The new instance of <see cref="Result"/> that contains the assertion results.</returns>
