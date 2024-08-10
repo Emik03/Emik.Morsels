@@ -484,7 +484,7 @@ static partial class Stringifier
             string source,
         string separator
     ) => // ReSharper disable once RedundantCast
-        source.Split([..separator], StringSplitOptions.RemoveEmptyEntries);
+        source.Split(separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.

@@ -12,7 +12,7 @@ using static Span;
 static partial class SmallFactory
 {
 #if NETCOREAPP3_1_OR_GREATER
-    /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
+    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
@@ -40,7 +40,7 @@ static partial class SmallFactory
         return true;
     }
 
-    /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
+    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
