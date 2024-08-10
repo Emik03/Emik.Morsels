@@ -11,12 +11,16 @@ static partial class ListMarshal
     static class ListCache<T>
     {
         /// <summary>Gets the converter.</summary>
-        public static Converter<List<T>, T[]> Converter { get; } = typeof(List<T>)
+        public static Converter<List<T>, T[]> Converter { get; } =
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+            typeof(List<T>)
            .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
            .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
             ? CreateGetter(method)
-            : x => [.. x];
-
+            :
+#endif
+            x => [.. x];
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
         /// <summary>Creates the getter to the inner array.</summary>
         /// <param name="field">The field to the list's array.</param>
         /// <returns>The getter to the inner array.</returns>
@@ -29,6 +33,7 @@ static partial class ListMarshal
             il.Emit(OpCodes.Ldfld, field);
             il.Emit(OpCodes.Ret);
             return (Converter<List<T>, T[]>)getter.CreateDelegate(typeof(Converter<List<T>, T[]>));
+#endif
         }
     }
 
@@ -57,5 +62,5 @@ static partial class ListMarshal
     /// <param name="list">The list to obtain the underlying array.</param>
     /// <returns>The <see cref="Array"/> of the parameter <paramref name="list"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T[] UnsafelyGetArray<T>(this List<T> list) => ListCache<T>.Converter(list);
+    public static T[] UnsafelyToArray<T>(this List<T> list) => ListCache<T>.Converter(list);
 }
