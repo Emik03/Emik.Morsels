@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
-#pragma warning disable CA1710, CA1815, IDE0250, IDE0251, MA0048, MA0102, SA1137
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -62,8 +61,13 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Once<T>([ProvidesContext] T value)
-    : IList<T>, IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IOrderedEnumerable<T>
+    partial struct Once<T>([ProvidesContext] T value) : IComparable<Once<T>>,
+    IEquatable<Once<T>>,
+    IList<T>,
+    IOrderedEnumerable<T>,
+    IReadOnlyList<T>,
+    IReadOnlySet<T>,
+    ISet<T>
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None), Pure]
@@ -101,7 +105,7 @@ readonly
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(None), Pure]
-    public static implicit operator Once<T>([ProvidesContext] Enumerator value) => value.Current;
+    public static explicit operator Once<T>([ProvidesContext] Enumerator value) => value.Current;
 
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -120,6 +124,44 @@ readonly
     /// <returns>The value that was passed in to this instance.</returns>
     [CollectionAccess(Read), Pure]
     public static implicit operator T(Once<T> value) => value.Current;
+
+    /// <summary>Determines whether both items are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both items are equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator ==(Once<T> left, Once<T> right) => left.Equals(right);
+
+    /// <summary>Determines whether both items are unequal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both items are not unequal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(Once<T> left, Once<T> right) => !left.Equals(right);
+
+    /// <summary>Determines whether the left-hand side is greater than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is greater than the right.</returns>
+    public static bool operator >(Once<T> left, Once<T> right) => left.CompareTo(right) > 0;
+
+    /// <summary>Determines whether the left-hand side is greater than or equal to the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is greater than or equal to the right.</returns>
+    public static bool operator >=(Once<T> left, Once<T> right) => left.CompareTo(right) >= 0;
+
+    /// <summary>Determines whether the left-hand side is less than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is less than the right.</returns>
+    public static bool operator <(Once<T> left, Once<T> right) => left.CompareTo(right) < 0;
+
+    /// <summary>Determines whether the left-hand side is less than or equal to than the right.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether the left-hand side is less than or equal to than the right.</returns>
+    public static bool operator <=(Once<T> left, Once<T> right) => left.CompareTo(right) <= 0;
 
     /// <inheritdoc />
     [CollectionAccess(Read)]
@@ -166,7 +208,7 @@ readonly
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other) =>
         HasValue
             ? other.Any()
-            : other.ToCollectionLazily() is { Count: > 1 } c && Overlaps(c);
+            : other.ToICollection() is { Count: > 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(Read), Pure]
@@ -179,7 +221,7 @@ readonly
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) =>
-        !HasValue || other.ToCollectionLazily() is { Count: <= 1 } c && Overlaps(c);
+        !HasValue || other.ToICollection() is { Count: <= 1 } c && Overlaps(c);
 
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
@@ -199,7 +241,28 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
+    public override bool Equals(object? other) => other is Once<T> once && Equals(once);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public bool Equals(Once<T> other) => EqualityComparer<T>.Default.Equals(value, other);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public int CompareTo(Once<T> other) => Comparer<T>.Default.Compare(value, other.Current);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public override int GetHashCode() =>
+        value is null ? -2 : unchecked(EqualityComparer<T>.Default.GetHashCode(value) * 37);
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
     public int IndexOf(T item) => Contains(item) ? 0 : -1;
+
+    /// <inheritdoc />
+    [CollectionAccess(Read), Pure]
+    public override string ToString() => value?.ToString() ?? "";
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
@@ -220,7 +283,7 @@ readonly
     [CollectionAccess(None), MustDisposeResource(false), Pure]
     IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
         Func<T, TKey> keySelector,
-        IComparer<TKey> comparer,
+        IComparer<TKey>? comparer,
         bool descending
     ) =>
         this;
@@ -247,7 +310,7 @@ readonly
 
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
-        /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
+        /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(None), Pure]
         public static implicit operator Enumerator(T value) => new(value);
 
@@ -255,7 +318,7 @@ readonly
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), Pure]
-        public static implicit operator T(Enumerator value) => value.Current;
+        public static explicit operator T(Enumerator value) => value.Current;
 
         /// <inheritdoc />
         [CollectionAccess(None)]

@@ -51,9 +51,7 @@ static partial class MemoryMarshal
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var ptr = span.Pointer;
 #else
-#pragma warning disable 8500
         fixed (TFrom* ptr = span)
-#pragma warning restore 8500
 #endif
             return new(ptr, toLength);
     }
@@ -89,9 +87,7 @@ static partial class MemoryMarshal
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var ptr = span.Pointer;
 #else
-#pragma warning disable 8500
         fixed (TFrom* ptr = span)
-#pragma warning restore 8500
 #endif
             return new(ptr, toLength);
     }

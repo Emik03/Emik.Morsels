@@ -27,7 +27,9 @@
 #define NETSTANDARD1_1_OR_GREATER
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
+#define NO_ALLOWS_REF_STRUCT
 #define CSHARPREPL
+#define DEBUG
 <# /*
 
 Load all:
@@ -285,17 +287,17 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static SecurityAction;" => "using static System.Security.Permissions.SecurityAction;",
         "using static CollectionAccessType;" => "using static JetBrains.Annotations.CollectionAccessType;",
         "using static SecurityPermissionFlag;" => "using static System.Security.Permissions.SecurityPermissionFlag;",
-        _ => x
+        _ => x,
     };
 
-    string[] typeDeclarations = { "ref", "sealed", "partial", "class", "delegate", "enum", "struct", "record" };
+    string[] typeDeclarations = ["ref", "sealed", "partial", "class", "delegate", "enum", "struct", "record"];
 
     string Publicize(string x) => typeDeclarations.Any(x.StartsWith) ? $"public {x}"  : x;
 
     var root = Path.Combine(Host.TemplateFile, "../../Compile/Source/References/Emik");
 
     const string
-        /* language=regexp */ ExtensionMethods = @"(?<=(?<=static\s*)partial\s*class).*?\{(.*?)\n\}",
+        /* language=regexp */ ExtensionMethods = @"static\s+partial\s+class[\s\S]+?\{([\s\S]*?)\n\}",
         FullyQualifiedNone = "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)";
 
     var lines = Directory
@@ -303,12 +305,12 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         .Select(File.ReadAllText)
         .Select(x => x.Replace("namespace Emik.Morsels;", "").Replace("Emik.Morsels.", "").Replace("Whitespaces.", ""))
         .Select(x => x.Replace("CollectionAccess(None)", FullyQualifiedNone))
-        .Select(x => Regex.Replace(x, ExtensionMethods, "$1", RegexOptions.Singleline))
-        .Select(x => x.Replace("static partial class", "").Replace("Skip.Init(out ", "Init(out "))
+        .Select(x => Regex.Replace(x, ExtensionMethods, "$1"))
+        .Select(x => x.Replace("static partial class", ""))
         .SelectMany(x => x.Split(Environment.NewLine.ToCharArray()))
         .Select(ToFullName)
         .Select(Publicize)
-        .OrderByDescending(x => Regex.IsMatch(x, @"^(global\s*)?using\s*.*?;$", RegexOptions.Singleline))
+        .OrderByDescending(x => Regex.IsMatch(x, @"^(global\s+)?using\s+[\s\S]*?;$"))
         .ThenByDescending(x => x.StartsWith("global"));
 
     var output = string.Join(Environment.NewLine, lines);
@@ -324,10 +326,6 @@ static partial class ManyQueries
     [MustUseReturnValue]
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
-
-/// <summary>Signifies to ignore this when determining potential interfaces that can be implemented.</summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Event | AttributeTargets.Field | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Struct)]
-sealed partial class NoStructuralTypingAttribute : Attribute;
 
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
@@ -363,4 +361,3 @@ static class Stringifier
 static class Morsels;
 
 CatchFatalExceptions = true;
-

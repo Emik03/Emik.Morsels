@@ -1,12 +1,12 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK
 #pragma warning disable GlobalUsingsAnalyzer
-
 extern alias ms;
-using Options = ms::System.Runtime.CompilerServices.MethodImplOptions;
 
 // ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
+
+using Options = ms::System.Runtime.CompilerServices.MethodImplOptions;
 
 /// <summary>
 /// Specifies constants that define the details of how a method is implemented.

@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Linq;
-
+#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
 #if !NET6_0_OR_GREATER
 /// <summary>The backport of the MinBy and MaxBy methods for <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumerableMinMax
@@ -45,13 +45,11 @@ static partial class EnumerableMinMax
     /// No key extracted from <paramref name="source" /> implements the <see cref="IComparable"/>
     /// or <see cref="IComparable{TKey}"/> interface.
     /// </exception>
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     public static TSource? MinBy<TSource, TKey>(
         this IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
         IComparer<TKey>? comparer
     )
-#pragma warning restore MA0051
     {
         comparer ??= Comparer<TKey>.Default;
 
@@ -159,13 +157,11 @@ static partial class EnumerableMinMax
     /// or <see cref="IComparable{TKey}"/> interface.
     /// </exception>
     /// <returns>The value with the maximum key in the sequence.</returns>
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
     public static TSource? MaxBy<TSource, TKey>(
         this IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
         IComparer<TKey>? comparer
     )
-#pragma warning restore MA0051
     {
         comparer ??= Comparer<TKey>.Default;
 

@@ -6,9 +6,7 @@ namespace Emik.Morsels;
 /// <summary>
 /// Methods that provide functions for enumerations of <see cref="Emik.Morsels.Assert.Result"/> instances.
 /// </summary>
-#pragma warning disable MA0048
 static partial class AssertResultEnumerableOperations
-#pragma warning restore MA0048
 {
     /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>
@@ -29,7 +27,7 @@ static partial class AssertResultEnumerableOperations
     /// <returns>The collected result of all assertions.</returns>
     [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
-        enumerable.Select(x => x.Run()).ToListLazily();
+        enumerable.Select(x => x.Run()).ToIList();
 }
 
 /// <inheritdoc cref="Emik.Morsels.Assert"/>
@@ -118,7 +116,8 @@ abstract partial class Assert
         public override string ToString() =>
             IsDefault ? "N/A" :
             Instantiated ? Succeeded ? "OK" : $"{Fail}{Assertion.Message}" :
-            HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" : "Not determined";
+            HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" :
+            "Yet to be determined";
 
         /// <summary>Executes the assertion and returns the new <see cref="Result"/>.</summary>
         /// <returns>The new instance of <see cref="Result"/> that contains the assertion results.</returns>
@@ -132,9 +131,7 @@ abstract partial class Assert
             {
                 return new(Activator.CreateInstance(Setup, true) as Assert, Setup);
             }
-#pragma warning disable CA1031
             catch (Exception ex)
-#pragma warning restore CA1031
             {
                 return new(ex, Setup);
             }

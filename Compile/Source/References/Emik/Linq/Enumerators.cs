@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable MA0048, IDISP005
+
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumeratorToEnumerable
 {
@@ -37,7 +37,7 @@ static partial class EnumeratorToEnumerable
     /// </summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
-    sealed partial class Enumerable<T>([HandlesResourceDisposal, ProvidesContext] IEnumerator<T> enumerator)
+    public sealed partial class Enumerable<T>([HandlesResourceDisposal, ProvidesContext] IEnumerator<T> enumerator)
         : IDisposable, IEnumerable<T>
     {
         /// <inheritdoc />
@@ -101,8 +101,8 @@ static partial class EnumeratorToEnumerable
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
     [MustDisposeResource, Pure]
-    public static IEnumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
-        new Enumerable<T>(enumerator);
+    public static Enumerable<T> AsEnumerable<T>([HandlesResourceDisposal] this IEnumerator<T> enumerator) =>
+        new(enumerator);
 #if !NET20 && !NET30 && !NET35
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>

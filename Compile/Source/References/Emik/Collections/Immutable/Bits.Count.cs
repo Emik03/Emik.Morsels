@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8500, IDE0250
+#pragma warning disable 8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
@@ -44,8 +44,7 @@ readonly
         }
     }
 
-#pragma warning disable MA0051 // ReSharper disable CognitiveComplexity
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable CognitiveComplexity
     static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
     {
         for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
@@ -101,7 +100,9 @@ readonly
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#pragma warning disable MA0051
     static unsafe int PopCount(T* value)
+#pragma warning restore MA0051
     {
         var ptr = (nuint*)value++;
         var sum = 0;

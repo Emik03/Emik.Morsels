@@ -16,23 +16,29 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     T _value = value;
 
     /// <summary>Gets the value.</summary>
-    public T Value
+    public ref T Value
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref _value;
     }
+
+    /// <summary>Wraps the <typeparamref name="T"/> instance into the <see cref="OnceMemoryManager{T}"/>.</summary>
+    /// <param name="value">The value to wrap.</param>
+    /// <returns>The wrapped value.</returns>
+    public static explicit operator OnceMemoryManager<T>(T value) => new(value);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDISP010, IDISP023
-    protected override void Dispose(bool disposing) => Unpin();
-#pragma warning restore IDISP010, IDISP023
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public override void Unpin()
+#pragma warning disable IDISP010 // You cannot call abstract base methods.
+    protected override void Dispose(bool disposing)
+#pragma warning restore IDISP010
     {
         if (_handle.IsAllocated)
             _handle.Free();
     }
+
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public override void Unpin() => Dispose(true);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]

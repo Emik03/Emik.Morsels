@@ -1,6 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP
-#pragma warning disable MA0008, SA1611, SA1615, SA1623, SA1642
 // ReSharper disable BadPreprocessorIndent
 // ReSharper disable once CheckNamespace StructCanBeMadeReadOnly
 namespace System;
@@ -19,12 +18,14 @@ partial struct Index : IEquatable<Index>
 {
     readonly int _value;
 
-    /// <summary>Construct an Index using a value and indicating if the index is from the start or from the end.</summary>
+    /// <summary>
+    /// Construct an Index using a value and indicating if the index is from the start or from the end.
+    /// </summary>
     /// <param name="value">The index value. it has to be zero or positive number.</param>
     /// <param name="fromEnd">Indicating if the index is from the start or from the end.</param>
     /// <remarks><para>
-    /// If the Index constructed from the end, index value 1 means pointing at the last element and index value 0 means
-    /// pointing at beyond last element.
+    /// If the Index constructed from the end, index value <c>1</c> means pointing at
+    /// the last element and index value 0 means pointing at beyond last element.
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Index([NonNegativeValue] int value, bool fromEnd = false) =>

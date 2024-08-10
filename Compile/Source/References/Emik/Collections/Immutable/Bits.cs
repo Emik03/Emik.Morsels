@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable 8500, CA1710, CA1815, IDE0250, IDE0250, IDE0251, MA0048, MA0102, RCS1085, SA1137
+#pragma warning disable 8500, IDE0251, MA0102
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
@@ -126,7 +126,7 @@ static partial class BitsFactory
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="bits">The item to use.</param>
-[StructLayout(LayoutKind.Auto), NoStructuralTyping]
+[StructLayout(LayoutKind.Auto)]
 #if CSHARPREPL
 public
 #endif
@@ -240,13 +240,13 @@ readonly
             return -1;
 
         var that = (Enumerator)this;
-#pragma warning disable S1994
+
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
                 return i;
             else if (that.Mask > mask || that.Index > index)
                 return -1;
-#pragma warning restore S1994
+
         return -1;
     }
 
@@ -284,7 +284,6 @@ readonly
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-#pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public unsafe TResult Coerce<TResult>()
 #if KTANE
@@ -306,7 +305,7 @@ readonly
 
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
-#pragma warning disable DOC100
+
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
@@ -416,7 +415,7 @@ readonly
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator T(Enumerator value) => value.Current;
+        public static explicit operator T(Enumerator value) => value.Current;
 
         /// <inheritdoc />
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]

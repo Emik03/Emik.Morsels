@@ -52,9 +52,7 @@ abstract partial class Assert
             {
                 return true;
             }
-#pragma warning disable CA1031
             catch (Exception e)
-#pragma warning restore CA1031
             {
                 return (message ??= Format(thatEx, e)) is var _ && false;
             }

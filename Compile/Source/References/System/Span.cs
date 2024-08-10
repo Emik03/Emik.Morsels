@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace StructCanBeMadeReadOnly
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 0660, 0661, 0809, 8500, CA1066, IDE0250, MA0048, MA0102, SA1137
+#pragma warning disable 8500
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
@@ -58,12 +58,10 @@ unsafe
     }
 
     /// <summary>Gets an empty <see cref="Span{T}"/> object.</summary>
-#pragma warning disable CA1000
     public static Span<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
-#pragma warning restore CA1000
 
     /// <summary>Gets a value indicating whether the current <see cref="Span{T}"/> is empty.</summary>
     public bool IsEmpty
@@ -257,13 +255,11 @@ unsafe
     /// <param name="length">The length of the slice from this buffer.</param>
     /// <exception cref="ArgumentOutOfRangeException">An out-of-range buffer is created.</exception>
     /// <returns>The <see cref="Span{T}"/> which is a slice of this buffer.</returns>
-#pragma warning disable CA2208, MA0015
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public Span<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start), start, null)
             : new((T*)Pointer + start, length);
-#pragma warning restore CA2208, MA0015
 
     /// <summary>Copies the contents of this span into a new array.</summary>
     /// <remarks><para>
@@ -321,13 +317,11 @@ unsafe
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-#pragma warning disable CA1034
     public
 #if !NO_REF_STRUCTS
         ref
 #endif
         partial struct Enumerator
-#pragma warning restore CA1034
     {
         readonly Span<T> _span;
 
@@ -422,12 +416,10 @@ unsafe
     }
 
     /// <summary>Gets an empty <see cref="ReadOnlySpan{T}"/> object.</summary>
-#pragma warning disable CA1000
     public static ReadOnlySpan<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
-#pragma warning restore CA1000
 
     /// <summary>Gets a value indicating whether the current <see cref="ReadOnlySpan{T}"/> is empty.</summary>
     public bool IsEmpty
@@ -602,13 +594,11 @@ unsafe
     /// <param name="length">The length of the slice from this buffer.</param>
     /// <exception cref="ArgumentOutOfRangeException">An out-of-range buffer is created.</exception>
     /// <returns>The <see cref="ReadOnlySpan{T}"/> which is a slice of this buffer.</returns>
-#pragma warning disable CA2208, MA0015
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public ReadOnlySpan<T> Slice([NonNegativeValue] int start, [NonNegativeValue] int length) =>
         (ulong)(uint)start + (uint)length > (uint)Length
             ? throw new ArgumentOutOfRangeException(nameof(start), start, null)
             : new((T*)Pointer + start, length);
-#pragma warning restore CA2208, MA0015
 
     /// <summary>Copies the contents of this span into a new array.</summary>
     /// <remarks><para>
@@ -667,13 +657,11 @@ unsafe
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
-#pragma warning disable CA1034
     public
 #if !NO_REF_STRUCTS
         ref
 #endif
         partial struct Enumerator
-#pragma warning restore CA1034
     {
         readonly ReadOnlySpan<T> _span;
 

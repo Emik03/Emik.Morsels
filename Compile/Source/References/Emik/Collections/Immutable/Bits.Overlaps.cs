@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8500, IDE0250
+#pragma warning disable 8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
@@ -19,7 +19,7 @@ readonly
     /// has a single bit set; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsSingle(in T item) =>
+    public static bool IsSingle(scoped in T item) =>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         0 switch
         {
@@ -70,21 +70,15 @@ readonly
     {
         T t = default;
 
-        var collection = other
-#if WAWA
-           .ToList();
-#else
-           .ToCollectionLazily();
-#endif
+        var collection = other.ToICollection();
 
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
         foreach (var next in this)
             if (collection.Contains(next))
                 Or(next, ref t);
             else
                 return false;
 
-        // ReSharper disable once LoopCanBeConvertedToQuery ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        // ReSharper disable once LoopCanBeConvertedToQuery
         foreach (var next in collection)
             if (!Contains(next))
                 return true;
@@ -112,19 +106,8 @@ readonly
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
     {
-        var collection = other
-#if WAWA
-           .ToList();
-#else
-           .ToCollectionLazily();
-#endif
-
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
-        foreach (var next in this)
-            if (!collection.Contains(next))
-                return false;
-
-        return true;
+        var collection = other.ToICollection();
+        return this.All(collection.Contains);
     }
 
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />

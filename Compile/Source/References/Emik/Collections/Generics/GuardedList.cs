@@ -7,9 +7,7 @@ using static CollectionAccessType;
 
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class GuardedFactory
-#pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="GuardedList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
@@ -18,7 +16,7 @@ static partial class GuardedFactory
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToListLazily());
+        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToIList());
 }
 #endif
 
@@ -28,7 +26,6 @@ static partial class GuardedFactory
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-[NoStructuralTyping]
 sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
 {
     /// <inheritdoc cref="IList{T}.this"/>
@@ -125,11 +122,9 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), MustDisposeResource, Pure]
-#if NETFRAMEWORK && !NET40_OR_GREATER // Good job .NET 2.0 - 3.5 Nullable Analysis.
-#pragma warning disable CS8619
-#endif
+#pragma warning disable 8619 // Good job .NET 2.0 - 3.5 Nullable Analysis.
     public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
-
+#pragma warning restore 8619
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
@@ -139,8 +134,8 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => list.ToString();
+    [CollectionAccess(Read), Pure]
+    public override string ToString() => list.ToString().OrEmpty();
 
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;

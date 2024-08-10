@@ -10,9 +10,7 @@ using FieldInfo = System.Reflection.FieldInfo;
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Provides the method needed for collection expressions in <see cref="PooledSmallList{T}"/>.</summary>
-#pragma warning disable MA0048, SA1600
 static class PooledSmallListBuilder
-#pragma warning restore MA0048, SA1600
 {
     /// <summary>Converts the buffer into an expandable buffer.</summary>
     /// <typeparam name="T">The type of span.</typeparam>
@@ -21,7 +19,7 @@ static class PooledSmallListBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> From<T>(ReadOnlySpan<T> span) => default(PooledSmallList<T>).Append(span);
 }
-#pragma warning disable CA1000, CA1065, CA1819, IDISP012, RCS1158
+
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 [CollectionBuilder(typeof(PooledSmallListBuilder), nameof(PooledSmallListBuilder.From))]
@@ -29,6 +27,9 @@ static class PooledSmallListBuilder
 ref
 #endif
     partial struct PooledSmallList<T>
+#if !NO_ALLOWS_REF_STRUCT
+    : IDisposable
+#endif
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -127,10 +128,11 @@ ref
             if (!IsUnmanagedHeap)
                 return 0;
 
+            var pointer = UnmanagedHeapPointer;
             _length = 0;
             _view = default;
             _rental = null;
-            return UnmanagedHeapPointer;
+            return pointer;
         }
     }
 
@@ -168,9 +170,9 @@ ref
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+#pragma warning disable 8500
             fixed (PooledSmallList<T>* ptr = &this)
-#pragma warning restore CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+#pragma warning restore 8500
                 return ref *ptr;
         }
     }
@@ -240,6 +242,18 @@ ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(PooledSmallList<T> left, PooledSmallList<T> right) => !(left == right);
 
+    /// <summary>
+    /// Implicitly converts the parameter by creating the new instance of <see cref="PooledSmallList{T}"/>
+    /// by using the constructor <see cref="Emik.Morsels.PooledSmallList{T}(int)"/>.
+    /// </summary>
+    /// <param name="capacity">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of <see cref="PooledSmallList{T}"/> by passing the parameter <paramref name="capacity"/>
+    /// to the constructor <see cref="Emik.Morsels.PooledSmallList{T}(int)"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator PooledSmallList<T>(int capacity) => new(capacity);
+
     /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
     /// <param name="span">The span.</param>
     /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
@@ -276,7 +290,7 @@ ref
                 break;
         }
     }
-#pragma warning disable 809, S3877
+
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
@@ -284,7 +298,7 @@ ref
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-#pragma warning restore 809, S3877
+
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
@@ -347,8 +361,11 @@ ref
 
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T> collection)
+    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T>? collection)
     {
+        if (collection is null)
+            return this;
+
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
 

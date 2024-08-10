@@ -3,22 +3,10 @@
 // ReSharper disable UnusedMember.Local
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
-#pragma warning disable CA1508
+#pragma warning disable 8619
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
 static partial class NullableItems
 {
-    /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
-    /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
-    /// <param name="iterable">The item to return with adjusted nullability.</param>
-    /// <returns>The parameter <paramref name="iterable"/>, with <c>ItemCanBeNullAttribute</c>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static IEnumerable<T?>? ItemCanBeEmptyNullable<T>(this IEnumerable<T>? iterable)
-        where T : struct =>
-        iterable?.Select(x => (T?)x);
-
-#pragma warning disable CS8619
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="iterable">The item to return with adjusted nullability.</param>
@@ -34,19 +22,6 @@ static partial class NullableItems
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
-
-#if !NET20 && !NET30
-    /// <summary>Returns the list if all items are non-null.</summary>
-    /// <typeparam name="T">The type of list.</typeparam>
-    /// <param name="list">The list to filter.</param>
-    /// <returns>
-    /// The parameter <paramref name="list"/> if all items are non-<see langword="null"/>,
-    /// otherwise <see langword="null"/>.
-    /// </returns>
-    [Pure]
-    public static IList<T>? ItemNotNull<T>(this IList<T?>? list) =>
-        list?.All(x => x is not null) ?? false ? list : null;
-#endif
 
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -71,5 +46,25 @@ static partial class NullableItems
     [Pure]
     [return: NotNullIfNotNull(nameof(set))]
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
-#pragma warning restore CS8619
+
+    /// <summary>Returns the list if all items are non-null.</summary>
+    /// <typeparam name="T">The type of list.</typeparam>
+    /// <param name="list">The list to filter.</param>
+    /// <returns>
+    /// The parameter <paramref name="list"/> if all items are non-<see langword="null"/>,
+    /// otherwise <see langword="null"/>.
+    /// </returns>
+    [Pure]
+    public static IList<T>? ItemNotNull<T>(this IList<T?>? list)
+    {
+        if (list is null)
+            return null;
+
+        // ReSharper disable once ForCanBeConvertedToForeach LoopCanBeConvertedToQuery
+        for (var i = 0; i < list.Count; i++)
+            if (list[i] is null)
+                return null;
+
+        return list;
+    }
 }

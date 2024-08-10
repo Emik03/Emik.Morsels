@@ -8,8 +8,7 @@
 // and creatively reworked.
 //
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-
-#pragma warning disable CA1200, CA1508, CA1710, CA1815, CA2208, CA5394, DOC100, DOC202, IDE0161, IDE0250, IDE0251, MA0012, MA0015, MA0048, MA0051, MA0097, MA0102, S1210, S3928, SA1129, SA1137, SA1141, SA1201, SA1202, SA1600, SA1611, SA1623, SA1642, SA1649
+#pragma warning disable 8604, CA2208, DOC100, DOC202, MA0015, MA0051, MA0097
 namespace System
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER || NETCOREAPP && !NETCOREAPP2_0_OR_GREATER
@@ -34,9 +33,7 @@ namespace System
     }
 #endif
 #if NETFRAMEWORK && !NET47_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER || NETCOREAPP && !NETCOREAPP2_0_OR_GREATER
-#pragma warning disable SA1403
     namespace Runtime.CompilerServices
-#pragma warning restore SA1403
     {
         /// <summary>This interface is required for types that want to be indexed into by dynamic patterns.</summary>
         partial interface ITuple
@@ -117,7 +114,7 @@ namespace System
     /// The System.ValueTuple types differ from the System.Tuple types in that:
     /// - they are structs rather than classes,
     /// - they are mutable rather than readonly, and
-    /// - their members (such as Item1, Item2, etc) are fields rather than properties.
+    /// - their members (such as Item1, Item2, etc.) are fields rather than properties.
     /// </summary>
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
@@ -591,7 +588,7 @@ namespace System
     /// </summary>
     /// <typeparam name="T1">The type of the tuple's first component.</typeparam>
     /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -784,7 +781,7 @@ namespace System
     /// <typeparam name="T1">The type of the tuple's first component.</typeparam>
     /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
     /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -997,7 +994,7 @@ namespace System
     /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
     /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
     /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1233,7 +1230,7 @@ namespace System
     /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
     /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
     /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1491,7 +1488,7 @@ namespace System
     /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
     /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
     /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -1773,7 +1770,7 @@ namespace System
     /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
     /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
     /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -2085,7 +2082,7 @@ namespace System
     /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
     /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
     /// <typeparam name="TRest">The type of the tuple's eighth component.</typeparam>
-    [NoImplicitOperator, NoStructuralTyping]
+    [NoImplicitOperator]
 #if !NETSTANDARD1_0 && !NETSTANDARD1_1 && !NETSTANDARD1_2 && !NETSTANDARD1_3 && !NETSTANDARD1_4 && !NETSTANDARD1_5 && !NETSTANDARD1_6 && !NETCOREAPP1_0 && !NETCOREAPP1_1
     [Serializable]
 #endif
@@ -2094,7 +2091,7 @@ namespace System
     readonly
 #endif
         partial struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> :
-            IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
+        IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>,
 #if !NET20 && !NET30 && !NET35
         IStructuralEquatable,
         IStructuralComparable,

@@ -2,7 +2,7 @@
 #if !NET8_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System;
-#pragma warning disable CS8500
+#pragma warning disable 8500
 /// <summary>The backport of Shuffle methods for <see cref="Random"/>.</summary>
 static partial class RandomShuffle
 {
@@ -21,9 +21,7 @@ static partial class RandomShuffle
         fixed (T* t = values)
             Shuffle(that, new Span<T>(t, values.Length));
 #else
-#pragma warning disable IDE0022
         Shuffle(that, values.AsSpan());
-#pragma warning restore IDE0022
 #endif
     }
 

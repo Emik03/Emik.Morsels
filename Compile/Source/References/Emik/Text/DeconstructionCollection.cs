@@ -3,9 +3,8 @@
 namespace Emik.Morsels;
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable 9107, MA0048
+#pragma warning disable 9107
 static partial class DeconstructionCollectionExtensions
-#pragma warning restore MA0048
 {
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
@@ -37,12 +36,10 @@ static partial class DeconstructionCollectionExtensions
 
         if (next is not DeconstructionCollection x)
         {
-            // ReSharper disable once InvocationIsSkipped
             System.Diagnostics.Debug.Assert(!assertion, "!assertion");
             return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
         }
 
-        // ReSharper disable once InvocationIsSkipped
         System.Diagnostics.Debug.Assert(assertion, "assertion");
 
         for (var i = 0; recurseLength > 0 && i < recurseLength && x.TryRecurse(i, ref visitLength, seen); i++) { }
@@ -114,6 +111,20 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <inheritdoc />
         [Pure]
         bool IList.IsReadOnly => false;
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="DeconstructionCollection.DeconstructionList"/> by using the constructor
+        /// <see cref="DeconstructionCollection.DeconstructionList(int)"/>.
+        /// </summary>
+        /// <param name="str">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="DeconstructionCollection.DeconstructionList"/>
+        /// by passing the parameter <paramref name="str"/> to the constructor
+        /// <see cref="DeconstructionCollection.DeconstructionList(int)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator DeconstructionList(int str) => new(str);
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
@@ -348,6 +359,20 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         public override ICollection Serialized =>
             _list.Aggregate(new Dictionary<string, object?>(StringComparer.Ordinal), AddUnique);
 
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="DeconstructionCollection.DeconstructionDictionary"/>
+        /// by using the constructor <see cref="DeconstructionCollection.DeconstructionDictionary(int)"/>.
+        /// </summary>
+        /// <param name="str">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="DeconstructionCollection.DeconstructionDictionary"/>
+        /// by passing the parameter <paramref name="str"/> to the constructor
+        /// <see cref="DeconstructionCollection.DeconstructionDictionary(int)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator DeconstructionDictionary(int str) => new(str);
+
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -539,6 +564,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         public override IEnumerator GetEnumerator() => ((IDictionary)this).GetEnumerator();
 
         /// <inheritdoc />
+        // ReSharper disable once UsageOfDefaultStructEquality
         void IDictionary.Remove(object key) => _list.Remove(_list.Find(Eq(key)));
 
         /// <inheritdoc />
@@ -591,9 +617,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             {
                 return next.GetValue(value, null);
             }
-#pragma warning disable CA1031
             catch (Exception ex)
-#pragma warning restore CA1031
             {
                 return value is not Exception && TryReflectivelyCollect(ex, str, ref visit, out var x, seen) ? x : ex;
             }

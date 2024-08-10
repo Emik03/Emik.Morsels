@@ -2,7 +2,6 @@
 
 // ReSharper disable CheckNamespace EmptyNamespace
 namespace System.Collections.Generic;
-#pragma warning disable CA1710, SA1649, MA0048
 #if NETFRAMEWORK && !NET45_OR_GREATER
 /// <summary>Provides a read-only, covariant view of a generic list.</summary>
 /// <typeparam name="T">The type of item on the list.</typeparam>

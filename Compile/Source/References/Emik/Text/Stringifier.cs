@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
-#pragma warning disable 1696, SA1137, SA1216
 #if WAWA
 namespace Wawa.Modules;
 #else
@@ -29,7 +28,6 @@ static partial class Stringifier
 #if !WAWA
     const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
 #endif // ReSharper disable UnusedMember.Local
-#pragma warning disable CA1823, IDE0051
     const string
         Apology = "I am so sorry that you have to deal with double pointers, but this cannot be supported.",
         BitFlagSeparator = " | ",
@@ -50,7 +48,6 @@ static partial class Stringifier
         True = "true",
         Unsupported = $"!<{nameof(NotSupportedException)}>",
         UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
-#pragma warning restore CA1823, IDE0051
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, bool>
 #if !WAWA
@@ -155,7 +152,7 @@ static partial class Stringifier
     public static string? CollapseToSingleLine(this string? expression, string? prefix = null)
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped in ReadOnlySpan<char> next)
+        static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
         {
             var trimmed = next.Trim();
 
@@ -171,14 +168,13 @@ static partial class Stringifier
            .Trim()
            .ToString();
 #else
-#pragma warning disable IDE0004
         return expression
           ?.Collapse() // ReSharper disable once RedundantCast
-           .Split((char[])['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+           .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+            // ReSharper disable once RedundantSuppressNullableWarningExpression
            .Select(x => x.Trim())!
            .Prepend(prefix)
            .Conjoin("");
-#pragma warning restore IDE0004
 #endif
     }
 
@@ -194,8 +190,8 @@ static partial class Stringifier
         (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var found ? found : 0)
 #else
         Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
-#endif
-            is var trim
+#endif // ReSharper disable once BadPreprocessorIndent
+        is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
 #if NET7_0_OR_GREATER
@@ -289,7 +285,6 @@ static partial class Stringifier
         string separator = ",;",
         string indent = "    "
     )
-#pragma warning disable CA1508
     {
         var seen = false;
         var nest = 0;
@@ -312,7 +307,6 @@ static partial class Stringifier
 
         return $"{sb}";
     }
-#pragma warning restore CA1508
 #endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
@@ -490,9 +484,7 @@ static partial class Stringifier
             string source,
         string separator
     ) => // ReSharper disable once RedundantCast
-#pragma warning disable IDE0004
-        source.Split((char[])[..separator], StringSplitOptions.RemoveEmptyEntries);
-#pragma warning restore IDE0004
+        source.Split(separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
 
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
@@ -534,11 +526,9 @@ static partial class Stringifier
 #if !WAWA
         this
 #endif
-#pragma warning disable SA1114, RCS1163
             T? source,
         int depth,
         bool useQuotes = false
-#pragma warning restore SA1114, RCS1163
     ) =>
         source switch
         {
@@ -578,9 +568,7 @@ static partial class Stringifier
             ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
             IEnumerable x => $"[{EnumeratorStringifier(x.GetEnumerator(), depth - 1, useQuotes)}]",
 #if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-#pragma warning disable IDISP004
             ITuple x => $"({EnumeratorStringifier(x.AsEnumerable().GetEnumerator(), depth - 1, useQuotes)})",
-#pragma warning restore IDISP004
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
             IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
@@ -820,21 +808,21 @@ static partial class Stringifier
 #endif
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-#pragma warning disable IDE0057
+
     static void Push(char c, scoped ref Span<char> span)
     {
         span[0] = c; // ReSharper disable once ReplaceSliceWithRangeIndexer
-        span = span.Slice(1);
+        span = span.UnsafelySkip(1);
     }
 
-    // ReSharper disable InvocationIsSkipped RedundantAssignment
+    // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);
         System.Diagnostics.Debug.Assert(it, "TryFormat"); // ReSharper disable once ReplaceSliceWithRangeIndexer
-        span = span.Slice(slice);
+        span = span.UnsafelySkip(slice);
     }
-#pragma warning restore IDE0057
+
     // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {
@@ -868,7 +856,7 @@ static partial class Stringifier
                 break;
         }
 
-        System.Diagnostics.Debug.Assert(span.IsEmpty, nameof(Span<char>.IsEmpty));
+        System.Diagnostics.Debug.Assert(span.IsEmpty, "span is drained");
     }
 
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
@@ -1010,10 +998,9 @@ static partial class Stringifier
         // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
-#pragma warning disable 8600, 8603 // Will never be null, we have access to this function.
+
         if (source.GetType() is var t && t != typeof(T))
-            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, [source, depth, false]);
-#pragma warning restore 8600, 8603
+            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, [source, depth, false])!;
 
         // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         return UseStringifier(source, depth);
@@ -1063,7 +1050,7 @@ static partial class Stringifier
 #if WAWA
            .ToList();
 #else
-           .ToCollectionLazily();
+           .ToICollection();
 #endif
         var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
@@ -1077,12 +1064,12 @@ static partial class Stringifier
 #else
     static Expression GetMethodCaller<TMember>(
 #endif
+#pragma warning restore CA1859
         TMember info,
         ParameterExpression exInstance,
         ParameterExpression exDepth,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
     )
-#pragma warning restore CA1859
         where TMember : MemberInfo
     {
         var type = selector(info);

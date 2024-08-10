@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable InvertIf
-#pragma warning disable IDE0059
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
@@ -14,10 +13,7 @@ static partial class Force
     public static void Enumerate([InstantHandle] this IEnumerable? iterable)
     {
         if (iterable is not null)
-            foreach (var unused in iterable)
-            {
-                // Intentionally left empty for enumerables with side effects.
-            }
+            foreach (var _ in iterable) { }
     }
 
     /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
@@ -26,9 +22,6 @@ static partial class Force
     public static void Enumerate<T>([InstantHandle] this IEnumerable<T>? iterable)
     {
         if (iterable is not null)
-            foreach (var unused in iterable)
-            {
-                // Intentionally left empty for enumerables with side effects.
-            }
+            foreach (var _ in iterable) { }
     }
 }

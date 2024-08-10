@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse InvocationIsSkipped RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
+// ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 namespace Emik.Morsels;
 
 /// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
@@ -68,19 +68,17 @@ static partial class TryTake
     /// <returns>The last item, or the parameter <paramref name="fallback"/>.</returns>
     [MustUseReturnValue]
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
-#pragma warning disable IDE0056
         iterable switch
         {
-            string str => str.Length is 0 ? fallback : Reinterpret<T>(str[str.Length - 1]),
+            string str => str is [.., var last] ? Reinterpret<T>(last) : fallback,
 #if NETCOREAPP || ROSLYN
-            ImmutableArray<T> array => array.IsDefaultOrEmpty ? fallback : array[array.Length - 1],
+            ImmutableArray<T> array => array is [.., var last] ? last : fallback,
 #endif
-            IReadOnlyList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
-            IList<T> list => list.Count is 0 ? fallback : list[list.Count - 1],
-            _ when iterable.TryGetNonEnumeratedCount(out var count) => count is 0 ? fallback : iterable.Last(),
+            IReadOnlyList<T> list => list is [.., var last] ? last : fallback,
+            IList<T> list => list is [.., var last] ? last : fallback,
+            _ when iterable.TryCount() is { } count => count is 0 ? fallback : iterable.Last(),
             _ => iterable.EnumerateOr(fallback),
         };
-#pragma warning restore IDE0056
 #endif
 
     /// <summary>Gets a specific item from a collection.</summary>
@@ -215,13 +213,18 @@ static partial class TryTake
     }
 #endif
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once UnusedMember.Local
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
         return *(T*)&c;
 #pragma warning restore 8500
+#else
+        return Unsafe.As<char, T>(ref c);
+#endif
     }
 }

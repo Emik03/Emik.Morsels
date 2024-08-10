@@ -6,9 +6,7 @@ namespace Emik.Morsels;
 using static SplitFactory;
 
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class SplitFactory
-#pragma warning restore MA0048
 {
     /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
     public static bool[] Booleans { get; } = [true, false];
@@ -39,7 +37,7 @@ static partial class SplitFactory
         [InstantHandle] Func<T, bool> predicate
     )
     {
-        var index = source.TakeWhile(Not1(predicate)).Count();
+        var index = source.TakeWhile(x => !predicate(x)).Count();
         return source.SplitAt(index);
     }
 
@@ -60,9 +58,7 @@ static partial class SplitFactory
         List<T> t = [], f = [];
 
         foreach (var item in source)
-#pragma warning disable RCS1235 // While AddRange is faster, the item is required for context.
             (predicate(item) ? t : f).Add(item);
-#pragma warning restore RCS1235
 
         return new(t, f);
     }
@@ -100,10 +96,8 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     IReadOnlyCollection<T>,
     IReadOnlyDictionary<bool, T>
 {
-#pragma warning disable SA1642
     /// <summary>Initializes a new instance of the <see cref="Split{T}"/> class.</summary>
     /// <param name="value">The value representing both values.</param>
-#pragma warning restore SA1642
     public Split(T value)
         : this(value, value) { }
 
@@ -178,6 +172,18 @@ sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <inheritdoc />
     [Pure]
     IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
+
+    /// <summary>
+    /// Implicitly converts the parameter by creating the new instance of <see cref="Split{T}"/>
+    /// by using the constructor <see cref="Emik.Morsels.Split{T}(T, T)"/>.
+    /// </summary>
+    /// <param name="tuple">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of <see cref="Split{T}"/> by passing the parameter <paramref name="tuple"/>
+    /// to the constructor <see cref="Emik.Morsels.Split{T}(T, T)"/>.
+    /// </returns>
+    [Pure]
+    public static implicit operator Split<T>((T Truthy, T Falsy) tuple) => new(tuple.Truthy, tuple.Falsy);
 
     /// <inheritdoc />
     public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)

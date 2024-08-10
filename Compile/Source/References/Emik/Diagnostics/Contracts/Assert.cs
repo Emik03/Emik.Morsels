@@ -17,7 +17,7 @@ abstract partial class Assert(
 )
 {
 #if !CSHARPREPL
-    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToListLazily();
+    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToIList();
 #endif
 
     /// <summary>Initializes a new instance of the <see cref="Emik.Morsels.Assert"/> class.</summary>
@@ -201,7 +201,6 @@ abstract partial class Assert(
     [Pure]
     public static int Compare<T>(T x, T y) => Comparer<T>.Default.Compare(x, y);
 #if NET7_0_OR_GREATER
-#pragma warning disable RCS1158
     /// <summary>Creates the assertion that two values must be equal to each other within an error of margin.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="margin">The lossy value to which both instances are considered equal.</param>
@@ -211,7 +210,6 @@ abstract partial class Assert(
         where T : INumber<T> =>
         [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
             T.Abs(x - y) <= T.Abs(margin);
-#pragma warning restore RCS1158
 #else
     /// <summary>Creates the assertion that two items must be equal to each other within an error of margin.</summary>
     /// <param name="margin">The lossy value to which both instances are considered equal.</param>

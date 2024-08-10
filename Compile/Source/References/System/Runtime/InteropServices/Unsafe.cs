@@ -1,6 +1,6 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer, IDE0060, SA1600, RCS1163
-#if NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0
+#pragma warning disable GlobalUsingsAnalyzer
+#if NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0 // ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 
 static class Unsafe
@@ -273,7 +273,7 @@ static unsafe class Unsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ref T Add<T>(ref T source, IntPtr elementOffset)
+    public static ref T Add<T>(ref T source, nint elementOffset)
     {
         Ldarg(nameof(source));
         Ldarg(nameof(elementOffset));
@@ -295,7 +295,7 @@ static unsafe class Unsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ref T AddByteOffset<T>(ref T source, IntPtr byteOffset)
+    public static ref T AddByteOffset<T>(ref T source, nint byteOffset)
     {
         Ldarg(nameof(source));
         Ldarg(nameof(byteOffset));
@@ -337,7 +337,7 @@ static unsafe class Unsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ref T Subtract<T>(ref T source, IntPtr elementOffset)
+    public static ref T Subtract<T>(ref T source, nint elementOffset)
     {
         Ldarg(nameof(source));
         Ldarg(nameof(elementOffset));
@@ -359,7 +359,7 @@ static unsafe class Unsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ref T SubtractByteOffset<T>(ref T source, IntPtr byteOffset)
+    public static ref T SubtractByteOffset<T>(ref T source, nint byteOffset)
     {
         Ldarg(nameof(source));
         Ldarg(nameof(byteOffset));
@@ -377,12 +377,12 @@ static unsafe class Unsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static IntPtr ByteOffset<T>(ref T origin, ref T target)
+    public static nint ByteOffset<T>(ref T origin, ref T target)
     {
         Ldarg(nameof(target));
         Ldarg(nameof(origin));
         Sub();
-        return Return<IntPtr>();
+        return Return<nint>();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

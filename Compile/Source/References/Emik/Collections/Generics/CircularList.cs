@@ -7,9 +7,7 @@ using static CollectionAccessType;
 
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class CircularFactory
-#pragma warning restore MA0048
 {
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
@@ -17,8 +15,8 @@ static partial class CircularFactory
     /// <returns>A <see cref="CircularList{T}"/> of <paramref name="iterable"/>.</returns>
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
-    public static CircularList<T>? ToCircularLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToListLazily());
+    public static CircularList<T>? ToCircular<T>(this IEnumerable<T>? iterable) =>
+        iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToIList());
 }
 #endif
 
@@ -28,7 +26,6 @@ static partial class CircularFactory
 /// </summary>
 /// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
 /// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-[NoStructuralTyping]
 sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
 {
     /// <inheritdoc cref="IList{T}.this"/>
@@ -88,10 +85,10 @@ sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
 
     /// <inheritdoc />
-    [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
-    public override string? ToString() => list.ToString();
+    [CollectionAccess(Read), Pure]
+    public override string ToString() => list.ToString().OrEmpty();
 
     // ReSharper disable once ConditionIsAlwaysTrueOrFalse
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    int Mod(int index) => Count is not 0 and var i ? index.Mod(i) : throw CannotBeEmpty;
+    int Mod(int index) => Count is not 0 and var count ? index.Mod(count) : throw CannotBeEmpty;
 }

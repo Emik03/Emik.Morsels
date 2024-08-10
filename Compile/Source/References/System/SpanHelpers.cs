@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable CheckNamespace InvocationIsSkipped
+// ReSharper disable once CheckNamespace
 namespace System;
 
 // ReSharper disable CognitiveComplexity
-#pragma warning disable 8500, CA1502, MA0051, SA1405
+#pragma warning disable 8500, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
@@ -19,7 +19,8 @@ static partial class SpanHelpers
     public static unsafe bool SequenceEqual<T>(T* first, T* second, int length)
         where T : IEquatable<T>?
     {
-        Debug.Assert(length >= 0);
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
+        System.Diagnostics.Debug.Assert(length >= 0, "length >= 0");
 
         if (first == second)
             goto Equal;
@@ -201,7 +202,6 @@ static partial class SpanHelpers
         // ReSharper disable CompareNonConstrainedGenericWithNull
         if (default(T) is not null || value is not null)
         {
-#pragma warning disable 8602, S2259
             Debug.Assert(value is not null);
 
             while (length >= 8)
@@ -262,7 +262,6 @@ static partial class SpanHelpers
                 index += 1;
                 length--;
             }
-#pragma warning restore 8602, S2259
         }
         else
         {
@@ -301,7 +300,7 @@ static partial class SpanHelpers
         return (int)(index + 7);
     }
 
-    /// <summary>Gets the index of where the any of the items exist in the buffer.</summary>
+    /// <summary>Gets the index of where any of the items exist in the buffer.</summary>
     /// <typeparam name="T">The type of buffer.</typeparam>
     /// <param name="searchSpace">The buffer to compare from.</param>
     /// <param name="searchSpaceLength">The buffer's length.</param>
@@ -330,9 +329,7 @@ static partial class SpanHelpers
             }
         else
 #endif // ReSharper disable once BadPreprocessorIndent
-#pragma warning disable S2681, SA1137
             for (var i = 0; i < searchSpaceLength; i++)
-#pragma warning restore S2681, SA1137
             {
                 var obj = searchSpace[i];
 

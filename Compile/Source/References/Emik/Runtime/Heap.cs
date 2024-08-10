@@ -24,9 +24,7 @@ static partial class Heap
             action();
             return null;
         }
-#pragma warning disable CA1031
         catch (Exception ex)
-#pragma warning restore CA1031
         {
             return ex;
         }
@@ -43,9 +41,7 @@ static partial class Heap
         {
             return (func(), null);
         }
-#pragma warning disable CA1031
         catch (Exception ex)
-#pragma warning restore CA1031
         {
             return (default, ex);
         }

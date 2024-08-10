@@ -41,7 +41,7 @@ static partial class MemoryExtensions
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).StartsWith(value);
+            span.ReadOnly().StartsWith(value);
 
     /// <summary>
     /// Determines whether two sequences are equal by comparing the
@@ -73,7 +73,7 @@ static partial class MemoryExtensions
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).SequenceEqual(other);
+            span.ReadOnly().SequenceEqual(other);
 
     /// <summary>Determines whether this span starts with the specified value.</summary>
     /// <typeparam name="T">The type of span and value.</typeparam>
@@ -107,7 +107,7 @@ static partial class MemoryExtensions
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).StartsWith(value);
+            span.ReadOnly().StartsWith(value);
 
     /// <summary>
     /// Searches for the specified value and returns the index of its first occurrence.
@@ -154,7 +154,7 @@ static partial class MemoryExtensions
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).IndexOf(value);
+            span.ReadOnly().IndexOf(value);
 
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -165,7 +165,7 @@ static partial class MemoryExtensions
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).IndexOf(value);
+            span.ReadOnly().IndexOf(value);
 
     /// <summary>
     /// Searches for the specified value and returns the index of its last occurrence.
@@ -199,6 +199,6 @@ static partial class MemoryExtensions
         where T : IEquatable<T>?
 #endif
         =>
-            ((ReadOnlySpan<T>)span).IndexOf(value);
+            span.ReadOnly().IndexOf(value);
 }
 #endif

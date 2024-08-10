@@ -9,12 +9,10 @@ using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
 
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#pragma warning disable MA0048
 static partial class SmallFactory
-#pragma warning restore MA0048
 {
 #if NETCOREAPP3_1_OR_GREATER
-    /// <inheritdoc cref="global::System.MemoryExtensions.Contains"/>
+    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
@@ -42,11 +40,33 @@ static partial class SmallFactory
         return true;
     }
 
-    /// <inheritdoc cref="global::System.MemoryExtensions.IndexOf"/>
+    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
+
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="it">The length of the buffer.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static PooledSmallList<T> Alloc<T>(this in int it)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+    {
+        return it switch
+        {
+            <= 0 => default, // No allocation
+#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+            _ when !IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stackalloc<T>(it), // Stack allocation
+#endif
+            _ => it, // Heap allocation
+        };
+    }
+#endif
 
     /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
@@ -55,61 +75,30 @@ static partial class SmallFactory
     /// </param>
     /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> AsPooledSmallList<T>(this int capacity) => new(capacity);
-
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>See <see cref="StackallocSize"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="it">The length of the buffer.</param>
-    /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe PooledSmallList<T> Alloc<T>(this in int it)
+    public static PooledSmallList<T> ToPooledSmallList<T>(this int capacity)
 #if UNMANAGED_SPAN
-        where T : unmanaged
+    where T : unmanaged
 #endif
-    {
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static Span<T> Stack(int length)
-        {
-            var ptr = stackalloc byte[InBytes<T>(length)];
-            return new(ptr, InBytes<T>(length));
-        }
+        =>
+            new(capacity);
 
-        return it switch
-        {
-            <= 0 => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
-            _ when IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stack(it), // Stack allocation
+    /// <inheritdoc cref="Emik.Morsels.PooledSmallList{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static PooledSmallList<T> ToPooledSmallList<T>(this Span<T> span)
+#if UNMANAGED_SPAN
+    where T : unmanaged
 #endif
-            _ => it.AsPooledSmallList<T>(), // Heap allocation
-        };
-    }
+        =>
+            new(span);
+
+    /// <inheritdoc cref="Emik.Morsels.PooledSmallList{T}(Span{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static PooledSmallList<T> ToPooledSmallList<T>(this IEnumerable<T>? enumerable)
+#if UNMANAGED_SPAN
+    where T : unmanaged
 #endif
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(T)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsSmallList<T>(this T value) => value;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T2> AsSmallList<T1, T2>(this (T1 First, T2 Second) tuple)
-        where T1 : T2 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.op_Implicit(ValueTuple{T, T, T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T3> AsSmallList<T1, T2, T3>(this (T1 First, T2 Second, T3 Third) tuple)
-        where T1 : T3
-        where T2 : T3 =>
-        tuple;
-
-    /// <inheritdoc cref="SmallList{T}.Uninit"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsUninitSmallList<T>(this int length) => SmallList<T>.Uninit(length);
-
-    /// <inheritdoc cref="SmallList{T}.Zeroed"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SmallList<T> AsZeroedSmallList<T>(this int length) => SmallList<T>.Zeroed(length);
+        =>
+            (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
 
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>

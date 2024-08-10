@@ -12,9 +12,8 @@ using FieldInfo = System.Reflection.FieldInfo;
 static partial class EnumStrings
 {
     const string ParameterName = "value";
-#pragma warning disable CA2208, MA0015
+
     static readonly ConstantExpression s_parameterName = Constant(ParameterName, typeof(string));
-#pragma warning restore CA2208, MA0015
 
     static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,

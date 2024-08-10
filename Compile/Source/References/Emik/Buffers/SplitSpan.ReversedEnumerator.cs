@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf InvocationIsSkipped RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 namespace Emik.Morsels;
-#pragma warning disable 8618, 9193, CA1823, IDE0250, MA0071, MA0102, RCS1158, SA1137
+#pragma warning disable IDE0032
 using static Span;
 using static SplitSpanFactory;
 
@@ -15,7 +15,22 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 
     /// <summary>
-    /// Represents the enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
+    /// Returns itself but with the number of elements from the end specified skipped. This is evaluated eagerly.
+    /// </summary>
+    /// <param name="count">The number of elements to skip from the end.</param>
+    /// <returns>Itself but skipping from the end the parameter <paramref name="count"/> number of elements.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
+    {
+        Enumerator e = this;
+
+        for (; count > 0 && e.MoveNext(); count--) { }
+
+        return e.SplitSpan;
+    }
+
+    /// <summary>
+    /// Represents the backwards enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
     /// </summary>
     [StructLayout(LayoutKind.Auto)]
     [method: MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -25,9 +40,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
-#pragma warning disable IDE0032
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-#pragma warning restore IDE0032
+
         ReadOnlySpan<TBody> _body = body, _current;
 
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
@@ -62,17 +76,60 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
 
+        /// <summary>
+        /// Reconstructs the <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> based on the current state.
+        /// </summary>
+        public readonly SplitSpan<TBody, TSeparator, TStrategy> SplitSpan
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get => new(_body, _separator);
+        }
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance
+        /// of <see cref="ReversedEnumerator"/> by using the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlySpan{TBody})"/>.
+        /// </summary>
+        /// <param name="body">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="ReversedEnumerator"/> by passing
+        /// the parameter <paramref name="body"/> to the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlySpan{TBody})"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator(
+            ReadOnlySpan<TBody> body
+        ) =>
+            new(body);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance
+        /// of <see cref="ReversedEnumerator"/> by using the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(SplitSpan{TBody, TSeparator, TStrategy})"/>.
+        /// </summary>
+        /// <param name="split">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="ReversedEnumerator"/> by passing
+        /// the parameter <paramref name="split"/> to the constructor
+        /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(SplitSpan{TBody, TSeparator, TStrategy})"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator(
+            SplitSpan<TBody, TSeparator, TStrategy> split
+        ) =>
+            new(split);
+
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>
         /// <param name="sep">The separator span.</param>
         /// <param name="body">The span that contains the current state of the enumeration.</param>
         /// <param name="current">The current span.</param>
         /// <returns>
-        /// <see langword="true"/> if a step was able to be performed successfully;
+        /// <see langword="true"/> if a step was performed successfully;
         /// <see langword="false"/> if the end of the collection is reached.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MoveNext(
-            scoped in ReadOnlySpan<TSeparator> sep,
+        public static bool Move(
+            scoped ReadOnlySpan<TSeparator> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         ) =>
@@ -80,26 +137,23 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             {
                 _ when body.IsEmpty && (current = default) is var _ => false,
                 _ when sep.IsEmpty => (current = body) is var _ && (body = default) is var _,
-                _ when typeof(TStrategy) == typeof(MatchAll) =>
-                    MoveNextAll(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAll) => MoveNextAll(To<TBody>.From(sep), ref body, out current),
 #if NET8_0_OR_GREATER
                 _ when typeof(TStrategy) == typeof(MatchAny) && typeof(TSeparator) == typeof(SearchValues<TBody>) =>
                     MoveNextAny(To<SearchValues<TBody>>.From(sep), ref body, out current),
 #endif
-                _ when typeof(TStrategy) == typeof(MatchAny) =>
-                    MoveNextAny(To<TBody>.From(sep), ref body, out current),
-                _ when typeof(TStrategy) == typeof(MatchOne) =>
-                    MoveNextOne(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchAny) => MoveNextAny(To<TBody>.From(sep), ref body, out current),
+                _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
 
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
+        public bool MoveNext() => Move(_separator, ref _body, out _current);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
-            scoped in ReadOnlySpan<TBody> sep,
+            scoped ReadOnlySpan<TBody> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
@@ -120,7 +174,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             int lower = 0, upper = body.Length - sep.Length;
 
             for (; lower < upper; lower++)
-                if (UnsafelyTake(UnsafelyAdvance(body, lower), sep.Length).SequenceEqual(sep))
+                if (body.UnsafelySkip(lower).UnsafelyTake(sep.Length).SequenceEqual(sep))
                     break;
 
             if (lower == upper)
@@ -137,27 +191,25 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 case var i when i == body.Length - sep.Length:
                     if (body.Length != sep.Length)
                     {
-                        body = UnsafelyTake(body, i);
+                        body = body.UnsafelyTake(i);
                         goto Retry;
                     }
 
                     current = default;
                     return false;
                 case var i:
-                    current = UnsafelyAdvance(body, i + sep.Length);
-                    body = UnsafelyTake(body, i);
+                    current = body.UnsafelySkip(i + sep.Length);
+                    body = body.UnsafelyTake(i);
                     return true;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable MA0051
         static bool MoveNextAny(
-            scoped in ReadOnlySpan<TBody> sep,
+            scoped ReadOnlySpan<TBody> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
-#pragma warning restore MA0051
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
@@ -169,14 +221,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return false;
                 case var i when i == body.Length - 1: break;
                 case var i:
-                    body = UnsafelyTake(body, i + 1);
+                    body = body.UnsafelyTake(i + 1);
                     break;
             }
 
             if (body.LastIndexOfAny(sep) is not -1 and var length)
             {
-                current = UnsafelyAdvance(body, length + 1);
-                body = UnsafelyTake(body, length);
+                current = body.UnsafelySkip(length + 1);
+                body = body.UnsafelyTake(length);
                 return true;
             }
 
@@ -207,8 +259,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
             if (max is not -1)
             {
-                current = UnsafelyAdvance(body, max + 1);
-                body = UnsafelyTake(body, max);
+                current = body.UnsafelySkip(max + 1);
+                body = body.UnsafelyTake(max);
                 return true;
             }
 
@@ -221,7 +273,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
-            scoped in ReadOnlySpan<SearchValues<TBody>> sep,
+            scoped ReadOnlySpan<SearchValues<TBody>> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
@@ -237,14 +289,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return false;
                 case var i when i == body.Length - 1: break;
                 case var i:
-                    body = UnsafelyTake(body, i + 1);
+                    body = body.UnsafelyTake(i + 1);
                     break;
             }
 
             if (body.LastIndexOfAny(single) is not -1 and var length)
             {
-                current = UnsafelyAdvance(body, length + 1);
-                body = UnsafelyTake(body, length);
+                current = body.UnsafelySkip(length + 1);
+                body = body.UnsafelyTake(length);
                 return true;
             }
 
@@ -255,21 +307,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextOne(
-            scoped in ReadOnlySpan<TBody> sep,
+            scoped ReadOnlySpan<TBody> sep,
             scoped ref ReadOnlySpan<TBody> body,
             out ReadOnlySpan<TBody> current
         )
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchOne), "TStrategy is MatchOne");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            ref var single = ref MemoryMarshal.GetReference(sep);
-#else
-            var single = sep[0];
-#endif
-#if !NET7_0_OR_GREATER
-        Retry:
-#endif
+            var single = sep.UnsafelyIndex(0);
 #if NET7_0_OR_GREATER
             switch (body.LastIndexOfAnyExcept(single))
             {
@@ -278,14 +323,14 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return false;
                 case var i when i == body.Length - 1: break;
                 case var offset:
-                    body = UnsafelyTake(body, offset + 1);
+                    body = body.UnsafelyTake(offset + 1);
                     break;
             }
 
             if (body.IndexOf(single) is not -1 and var length)
             {
-                current = UnsafelyAdvance(body, length + 1);
-                body = UnsafelyTake(body, length);
+                current = body.UnsafelySkip(length + 1);
+                body = body.UnsafelyTake(length);
                 return true;
             }
 
@@ -293,6 +338,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             body = default;
             return true;
 #else
+        Retry:
+
             switch (body.LastIndexOf(single))
             {
                 case -1:
@@ -309,7 +356,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     current = default;
                     return false;
                 case var i:
-                    current = UnsafelyAdvance(body, i);
+                    current = UnsafelySkip(body, i);
                     body = UnsafelyTake(body, i - 1);
                     return true;
             }

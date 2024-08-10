@@ -224,14 +224,14 @@
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-        <NoWarn>$(NoWarn);AsyncifyInvocation;CS0419;CS1574;CS1580;CS3001;CS3002;CS3003;CS3009;CS3024;CS8601;CS8604;CS8669;CS8767;CS9124</NoWarn>
+        <NoWarn>$(NoWarn);AsyncifyInvocation;419;1574;1580;3001;3002;3003;3009;3024;8601;8604;8669;8767;9124</NoWarn>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
-        <NoWarn>$(NoWarn);CA1707;CS1591;CS1595;MA0048;NUnit2005;SA1600;SA1649</NoWarn>
+        <NoWarn>$(NoWarn);1591;1595;CA1707;NUnit2005;SA1600</NoWarn>
     </PropertyGroup>
     <!-- Use separate copy of Celeste if one is specified. -->
     <PropertyGroup Condition="$(CelesteLegacy) != '' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">

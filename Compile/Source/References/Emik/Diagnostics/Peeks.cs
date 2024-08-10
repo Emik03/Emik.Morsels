@@ -1,13 +1,10 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable CS8632, RCS1196
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Provides methods to use callbacks within a statement.</summary>
-#pragma warning disable MA0048
 static partial class Peeks
-#pragma warning restore MA0048
 {
 #if !RELEASE
 #if ROSLYN // ReSharper disable once RedundantExtendsListEntry
@@ -103,9 +100,13 @@ static partial class Peeks
     }
 #endif
 
+    /// <summary>The character often used to identify scripted assemblies.</summary>
+    public const char R = '\u211b';
+
     /// <summary>The escape sequence to clear the screen.</summary>
+    // ReSharper disable CanSimplifyStringEscapeSequence
     public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
-#if ROSLYN
+#if ROSLYN // ReSharper restore CanSimplifyStringEscapeSequence
     const string Name = nameof(DiagnosticSink);
 
     static readonly DiagnosticSink s_diagnosticSink = new();
@@ -115,7 +116,7 @@ static partial class Peeks
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     static readonly string s_path = Path.Combine(
         Path.GetTempPath(),
-        typeof(Assert).Assembly.GetName().Name is [not '\u211b', ..] name ? name : "\u211b"
+        typeof(Assert).Assembly.GetName().Name is [not R, ..] name ? name : $"{R}"
     ); // ReSharper disable once RedundantNameQualifier
 
     static readonly ITextFormatter s_json =
@@ -147,13 +148,11 @@ static partial class Peeks
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
 #else
-#pragma warning disable IDE0004
         (Action<string>)Shout +
 #if KTANE
-        (Action<string>)UnityEngine.Debug.Log +
+        UnityEngine.Debug.Log +
 #endif
-        (Action<string>)Console.WriteLine;
-#pragma warning restore IDE0004
+        Console.WriteLine;
 #endif
 #if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <summary>Gets all the types currently loaded.</summary>
@@ -182,7 +181,7 @@ static partial class Peeks
 #pragma warning restore CS1574
     public static void Shout(string message)
     {
-        // ReSharper disable once InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 #pragma warning disable S6670
@@ -211,7 +210,9 @@ static partial class Peeks
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
     // ReSharper disable once InvokeAsExtensionMethod
+#pragma warning disable RCS1196
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
+#pragma warning restore RCS1196
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 #if RELEASE && !CSHARPREPL
 #if ROSLYN

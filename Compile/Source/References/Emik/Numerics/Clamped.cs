@@ -72,6 +72,11 @@ static partial class Clamped
         (value & value - T.One) == T.Zero && value > T.Zero;
 #endif
 
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
+    // ReSharper disable RedundantUnsafeContext
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
+
     /// <summary>Round the given integral value up to a power of 2.</summary>
     /// <remarks><para>
     /// The fallback implementation is based on
@@ -102,6 +107,11 @@ static partial class Clamped
 #endif
 
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
+    // ReSharper disable RedundantUnsafeContext
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe ulong RoundUpToPowerOf2(this long value) => RoundUpToPowerOf2(unchecked((ulong)value));
+
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this ulong value)
 #if NET6_0_OR_GREATER
@@ -123,6 +133,11 @@ static partial class Clamped
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe nuint RoundUpToPowerOf2(this nint value) => RoundUpToPowerOf2(unchecked((nuint)value));
+
+    /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
+    // ReSharper disable RedundantUnsafeContext
+    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
 #if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
 #pragma warning disable IDE0004 // ReSharper disable once RedundantCast
@@ -132,116 +147,6 @@ static partial class Clamped
         sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 #endif
 #if NET7_0_OR_GREATER
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
-#pragma warning disable MA0051
-    public static T RoundUpToPowerOf2<T>(this T value)
-#pragma warning restore MA0051
-        where T : IBitwiseOperators<T, T, T>, IDecrementOperators<T>, IIncrementOperators<T>, IShiftOperators<T, int, T>
-    {
-        if (typeof(T) == typeof(BigInteger))
-            return ((BigInteger)(object)value).IsZero ||
-                ((BigInteger)(object)value).IsOne ||
-                (BigInteger)(object)value == BigInteger.MinusOne
-                    ? value
-                    : (T)(object)(BigInteger.Pow(
-                            2,
-                            (int)BigInteger.Log2(BigInteger.Abs((BigInteger)(object)value) - 1) + 1
-                        ) *
-                        ((BigInteger)(object)value).Sign);
-
-        --value;
-        value |= value >>> 1;
-        value |= value >>> 2;
-        value |= value >>> 4;
-
-        if (Unsafe.SizeOf<T>() > 1 << 0)
-            value |= value >>> (8 << 0);
-
-        if (Unsafe.SizeOf<T>() > 1 << 1)
-            value |= value >>> (8 << 1);
-
-        if (Unsafe.SizeOf<T>() > 1 << 2)
-            value |= value >>> (8 << 2);
-
-        if (Unsafe.SizeOf<T>() > 1 << 3)
-            value |= value >>> (8 << 3);
-
-        if (Unsafe.SizeOf<T>() > 1 << 4)
-            value |= value >>> (8 << 4);
-
-        if (Unsafe.SizeOf<T>() > 1 << 5)
-            value |= value >>> (8 << 5);
-
-        if (Unsafe.SizeOf<T>() > 1 << 6)
-            value |= value >>> (8 << 6);
-
-        if (Unsafe.SizeOf<T>() > 1 << 7)
-            value |= value >>> (8 << 7);
-
-        if (Unsafe.SizeOf<T>() > 1 << 8)
-            value |= value >>> (8 << 8);
-
-        if (Unsafe.SizeOf<T>() > 1 << 9)
-            value |= value >>> (8 << 9);
-
-        if (Unsafe.SizeOf<T>() > 1 << 10)
-            value |= value >>> (8 << 10);
-
-        if (Unsafe.SizeOf<T>() > 1 << 11)
-            value |= value >>> (8 << 11);
-
-        if (Unsafe.SizeOf<T>() > 1 << 12)
-            value |= value >>> (8 << 12);
-
-        if (Unsafe.SizeOf<T>() > 1 << 13)
-            value |= value >>> (8 << 13);
-
-        if (Unsafe.SizeOf<T>() > 1 << 14)
-            value |= value >>> (8 << 14);
-
-        if (Unsafe.SizeOf<T>() > 1 << 15)
-            value |= value >>> (8 << 15);
-
-        if (Unsafe.SizeOf<T>() > 1 << 16)
-            value |= value >>> (8 << 16);
-
-        if (Unsafe.SizeOf<T>() > 1 << 17)
-            value |= value >>> (8 << 17);
-
-        if (Unsafe.SizeOf<T>() > 1 << 18)
-            value |= value >>> (8 << 18);
-
-        if (Unsafe.SizeOf<T>() > 1 << 19)
-            value |= value >>> (8 << 19);
-
-        if (Unsafe.SizeOf<T>() > 1 << 20)
-            value |= value >>> (8 << 20);
-
-        if (Unsafe.SizeOf<T>() > 1 << 21)
-            value |= value >>> (8 << 21);
-
-        if (Unsafe.SizeOf<T>() > 1 << 22)
-            value |= value >>> (8 << 22);
-
-        if (Unsafe.SizeOf<T>() > 1 << 23)
-            value |= value >>> (8 << 23);
-
-        if (Unsafe.SizeOf<T>() > 1 << 24)
-            value |= value >>> (8 << 24);
-
-        if (Unsafe.SizeOf<T>() > 1 << 25)
-            value |= value >>> (8 << 25);
-
-        if (Unsafe.SizeOf<T>() > 1 << 26)
-            value |= value >>> (8 << 26);
-
-        if (Unsafe.SizeOf<T>() > 1 << 27)
-            value |= value >>> (8 << 27);
-
-        return ++value;
-    }
-
     /// <summary>Clamps a value such that it is no smaller or larger than the defined amount.</summary>
     /// <typeparam name="T">The type of numeric value for comparisons.</typeparam>
     /// <param name="number">The number to clip.</param>

@@ -50,7 +50,7 @@ static partial class ConcurrentKeyboard
     /// <paramref name="keys"/> and <paramref name="mods"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState ToState(this in ReadOnlySpan<Keys> keys, KeyMods mods = KeyMods.None)
+    public static KeyboardState ToState(this scoped in ReadOnlySpan<Keys> keys, KeyMods mods = KeyMods.None)
     {
         KeyboardState output = default;
         var reader = MemoryMarshal.Cast<Keys, int>(keys);
@@ -81,8 +81,8 @@ static partial class ConcurrentKeyboard
     /// <paramref name="keys"/> and <paramref name="mods"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState ToState(this Span<Keys> keys, KeyMods mods = KeyMods.None) =>
-        ((ReadOnlySpan<Keys>)keys).ToState(mods);
+    public static KeyboardState ToState(this scoped in Span<Keys> keys, KeyMods mods = KeyMods.None) =>
+        keys.ReadOnly().ToState(mods);
 
     /// <summary>Gets the current set of key modifiers that are active.</summary>
     /// <returns>The <see cref="KeyMods"/> representing the current modifiers active.</returns>

@@ -2,7 +2,7 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 8604
+
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
 // ReSharper disable LoopCanBePartlyConvertedToQuery
 static partial class EachWithControlFlow
@@ -115,7 +115,7 @@ static partial class EachWithControlFlow
         [InstantHandle] Func<T, ControlFlow> func
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollection();
 
         foreach (var item in list)
             if (func(item) is ControlFlow.Break)
@@ -143,7 +143,7 @@ static partial class EachWithControlFlow
         [InstantHandle] Func<T, TExternal, ControlFlow> func
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollection();
 
         foreach (var item in list)
             if (func(item, external) is ControlFlow.Break)
@@ -168,7 +168,7 @@ static partial class EachWithControlFlow
         [InstantHandle] Func<T, int, ControlFlow> func
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollection();
         var i = 0;
 
         foreach (var item in list)
@@ -197,7 +197,7 @@ static partial class EachWithControlFlow
         [InstantHandle] Func<T, int, TExternal, ControlFlow> func
     )
     {
-        var list = iterable.ToCollectionLazily();
+        var list = iterable.ToICollection();
         var i = 0;
 
         foreach (var item in list)
@@ -421,9 +421,7 @@ static partial class EachWithControlFlow
 }
 
 /// <summary>Determines control flow for loops in <see cref="Each"/>.</summary>
-#pragma warning disable MA0048
 enum ControlFlow : byte
-#pragma warning restore MA0048
 {
     /// <summary>The value indicating that the loop should continue.</summary>
     Continue,

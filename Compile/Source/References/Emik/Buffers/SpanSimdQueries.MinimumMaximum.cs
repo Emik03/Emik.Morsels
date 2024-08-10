@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace EmptyNamespace
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 1574, 1580, 1581, 1584, S1199 // ReSharper disable once RedundantUsingDirective
-using static SpanQueries;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-#pragma warning disable MA0048
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression
 static partial class SpanSimdQueries
-#pragma warning restore MA0048
 {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
@@ -278,7 +274,7 @@ static partial class SpanSimdQueries
         };
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static System.Numerics.Vector<T> LoadUnsafe<T>(in T source)
+    static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
 #if !NET8_0_OR_GREATER
         where T : struct
 #endif
@@ -291,15 +287,13 @@ static partial class SpanSimdQueries
             Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
-    static T MinMax<T, TS>(this ReadOnlySpan<T> span)
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+    static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
 #elif !NET8_0_OR_GREATER
         where T : struct
 #endif
-#pragma warning restore MA0051
     {
         // ReSharper disable once TooWideLocalVariableScope
         T value;
@@ -316,11 +310,11 @@ static partial class SpanSimdQueries
         )
 #endif
         {
-            value = span[0];
+            value = span.UnsafelyIndex(0);
 
             for (var i = 1; i < span.Length; i++)
-                if (Compare<T, TS>(span[i], value))
-                    value = span[i];
+                if (span.UnsafelyIndex(i) is var next && Compare<T, TS>(next, value))
+                    value = next;
 
             return value;
         }
