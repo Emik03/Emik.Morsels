@@ -111,6 +111,49 @@ abstract partial class Assert
         [Pure]
         string Fail => Setup is null ? "Assertion failed! " : $"Assertion {Setup.Name} failed! ";
 
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="Result"/> by using the constructor
+        /// <see cref="Assert.Result(Type)"/>.
+        /// </summary>
+        /// <param name="setup">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Result"/>
+        /// by passing the parameter <paramref name="setup"/> to the constructor
+        /// <see cref="Assert.Result(Type)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Result(Type setup) => new(setup);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="Result"/> by using the constructor
+        /// <see cref="global::Emik.Morsels.Assert.Result(global::Emik.Morsels.Assert, global::System.Type)"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Result"/>
+        /// by passing the parameter <paramref name="tuple"/> to the constructor
+        /// <see cref="global::Emik.Morsels.Assert.Result(global::Emik.Morsels.Assert, global::System.Type)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Result((Assert Assertion, Type Setup) tuple) =>
+            new(tuple.Assertion, tuple.Setup);
+
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="Result"/> by using the constructor
+        /// <see cref="global::Emik.Morsels.Assert.Result(global::System.Exception, global::System.Type)"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Result"/>
+        /// by passing the parameter <paramref name="tuple"/> to the constructor
+        /// <see cref="global::Emik.Morsels.Assert.Result(global::System.Exception, global::System.Type)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Result((Exception Error, Type Setup) tuple) => new(tuple.Error, tuple.Setup);
+
         /// <inheritdoc />
         [Pure]
         public override string ToString() =>
