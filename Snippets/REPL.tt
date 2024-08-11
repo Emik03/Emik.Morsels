@@ -306,6 +306,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
     static string QualifyCollectionAccess(string x)
         => x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)");
 
+    static bool HasContent(string x) => !string.IsNullOrWhiteSpace(x);
+
     static bool IsGlobal(string x) => x.StartsWith("global");
 
     Regex extensionMethods = new(@"static\s+partial\s+class[\s\S]+?\{([\s\S]*?)\n\}", RegexOptions.Compiled);
@@ -318,7 +320,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
     char[] newLines = ['\n', '\r'];
 
-    string[] SplitByNewLine(string x) => x.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+    string[] SplitByNewLine(string x) => x.Split(newLines);
 
     string[] typeDeclarations = ["ref", "sealed", "partial", "class", "delegate", "enum", "struct", "record", "union"];
 
@@ -338,6 +340,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         .Select(ToFullName)
         .Select(Publicize)
         .Select(RemoveComments)
+        .Where(HasContent)
         .OrderByDescending(IsUsingStatement)
         .ThenByDescending(IsGlobal);
 
