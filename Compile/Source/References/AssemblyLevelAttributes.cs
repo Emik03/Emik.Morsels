@@ -4,3 +4,6 @@
 #else
 [assembly: CLSCompliant(true)]
 #endif
+#if ROSLYN
+[assembly: NullGuard(ValidationFlags.None)]
+#endif
