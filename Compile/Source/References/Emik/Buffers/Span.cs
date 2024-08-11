@@ -39,8 +39,7 @@ static partial class Span
                 sizeof(TFrom) >= sizeof(TTo) &&
 #endif
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
-                    IsReferenceOrContainsReferences<TFrom>() &&
-                    IsReferenceOrContainsReferences<TTo>());
+                    !IsReferenceOrContainsReferences<TFrom>() && !IsReferenceOrContainsReferences<TTo>());
 #endif
             /// <summary>
             /// Gets the error that occurs when converting between types would cause undefined behavior.
