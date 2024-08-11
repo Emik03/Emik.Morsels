@@ -248,44 +248,35 @@ using static System.Linq.Expressions.Expression;
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 // ReSharper disable once CheckNamespace EmptyNamespace
 
-
-
-
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
 /// <param name="value">The value to encapsulate.</param>
 public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 {
     GCHandle _handle;
-
-    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
+   
     T _value = value;
-
     /// <summary>Gets the value.</summary>
     public ref T Value
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref _value;
     }
-
     /// <summary>Wraps the <typeparamref name="T"/> instance into the <see cref="OnceMemoryManager{T}"/>.</summary>
     /// <param name="value">The value to wrap.</param>
     /// <returns>The wrapped value.</returns>
     public static explicit operator OnceMemoryManager<T>(T value) => new(value);
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable IDISP010 // You cannot call abstract base methods.
+#pragma warning disable IDISP010
     protected override void Dispose(bool disposing)
 #pragma warning restore IDISP010
     {
         if (_handle.IsAllocated)
             _handle.Free();
     }
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override void Unpin() => Dispose(true);
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public override unsafe MemoryHandle Pin(int elementIndex = 0) =>
@@ -295,28 +286,20 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
                 (void*)(_handle.IsAllocated ? _handle : _handle = GCHandle.Alloc(_value, GCHandleType.Pinned))
                .AddrOfPinnedObject()
             );
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override Span<T> GetSpan() => Ref(ref _value);
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 // ReSharper disable once RedundantNameQualifier
-
-
 
     /// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
     /// <typeparam name="T">The type of array to rent.</typeparam>
     public struct Rented<T> : IDisposable
     {
         T[]? _array;
-
         /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
         /// <param name="length">The length of the array to retrieve.</param>
         /// <param name="span">
@@ -324,18 +307,15 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         /// </param>
         public Rented(in int length, out Span<T> span) =>
             span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
-
         /// <inheritdoc />
         void IDisposable.Dispose()
         {
             if (_array is null)
                 return;
-
             ArrayPool<T>.Shared.Return(_array);
             _array = null;
         }
     }
-
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
     /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -350,26 +330,21 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             it switch
             {
-                <= 0 when (span = default) is var _ => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+                <= 0 when (span = default) is var _ => default,
+#if !CSHARPREPL
                 _ when !IsReferenceOrContainsReferences<T>() &&
                     IsStack<T>(it) &&
-                    (span = Stackalloc<T>(it)) is var _ => default, // Stack allocation
+                    (span = Stackalloc<T>(it)) is var _ => default,
 #endif
-                _ => new(it, out span), // Heap allocation
+                _ => new(it, out span),
             };
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
-
 #pragma warning disable 8500
 // ReSharper disable once RedundantNameQualifier RedundantUsingDirective
-
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-
     /// <summary>Provides reinterpret span methods.</summary>
     /// <typeparam name="TTo">The type to convert to.</typeparam>
     public static class To<TTo>
@@ -413,12 +388,10 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             [Pure]
             static bool IsReinterpretable(Type first, Type second) =>
                 first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
-
             [Pure]
             static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
 #endif
         }
-
         /// <summary>
         /// Converts a <see cref="ReadOnlySpan{T}"/> of type <typeparamref name="TFrom"/>
         /// to a <see cref="ReadOnlySpan{T}"/> of type <see name="TTo"/> in <see cref="To{TTo}"/>.
@@ -466,7 +439,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
 #endif
     }
-
     /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
     /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes from
@@ -477,7 +449,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// vulnerability if you aren't careful. Use this constant to determine if you should use a heap allocation.
     /// </para></remarks>
     public const int MaxStackalloc = 1 << 11;
-
     /// <summary>Sets the reference to the address within the null range.</summary>
     /// <remarks><para>
     /// This is a highly unsafe function. The runtime reserves the first 2kiB for null-behaving values, which means a
@@ -502,33 +473,27 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         Unsafe.As<T?, nuint>(ref reference) = address;
 #endif
     }
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>
         left.AsSpan().Equals(right, StringComparison.OrdinalIgnoreCase);
-
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this IMemoryOwner<char> left, scoped ReadOnlySpan<char> right) =>
         left.Memory.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
-
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this Memory<char> left, scoped ReadOnlySpan<char> right) =>
         left.Span.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
-
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this scoped Span<char> left, scoped ReadOnlySpan<char> right) =>
         left.ReadOnly().Equals(right, StringComparison.OrdinalIgnoreCase);
-
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this ReadOnlyMemory<char> left, scoped ReadOnlySpan<char> right) =>
         left.Span.Equals(right, StringComparison.OrdinalIgnoreCase);
-
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this scoped ReadOnlySpan<char> left, scoped ReadOnlySpan<char> right) =>
@@ -542,7 +507,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         IEqualityComparer<T>? comparer = null
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
-
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(
@@ -557,7 +521,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
         where T : IEquatable<T>? =>
         span.Span.SequenceEqual(other.Span);
-
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
@@ -576,7 +539,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
-
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.
@@ -593,7 +555,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             InBytes<T>(length) <= MaxStackalloc;
-
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
     /// <param name="length">The amount of items.</param>
@@ -624,9 +585,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             Unsafe.As<T, nuint>(ref _);
 #else
     {
-        // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
-        // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
-        // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+       
+       
+       
         IL.Emit.Ldarg_0();
         return IL.Return<nuint>();
     }
@@ -663,14 +624,12 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<T> ReadOnly<T>(this Memory<T> memory) => memory;
 #endif
-
     /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <typeparam name="T">The type of span.</typeparam>
     /// <param name="span">The span to convert.</param>
     /// <returns>The <see cref="ReadOnlySpan{T}"/> of the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> ReadOnly<T>(this Span<T> span) => span;
-
     /// <summary>Creates a new <see cref="Span{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -682,7 +641,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #else
         MemoryMarshal.CreateSpan(ref reference, 1);
 #endif
-
     /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
     /// <typeparam name="TTo">The destination type.</typeparam>
@@ -692,7 +650,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+#if !CSHARPREPL
     /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
@@ -700,17 +658,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+       
         System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-
         if (IsReferenceOrContainsReferences<T>())
             throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-
         var ptr = stackalloc byte[InBytes<T>(length)];
         return new(ptr, length);
     }
 #endif
-
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
     /// <param name="source">The read-only reference to reinterpret.</param>
@@ -747,11 +702,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             tail = default;
             return;
         }
-
         head = memory.Span.UnsafelyIndex(0);
         tail = memory[1..];
     }
-
     /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="memory">The memory to split.</param>
@@ -769,12 +722,10 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             tail = default;
             return;
         }
-
         head = memory.Span.UnsafelyIndex(0);
         tail = memory[1..];
     }
 #endif
-
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -792,11 +743,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             tail = default;
             return;
         }
-
         head = span.UnsafelyIndex(0);
         tail = span.UnsafelySkip(1);
     }
-
     /// <summary>Separates the head from the tail of a <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -814,7 +763,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             tail = default;
             return;
         }
-
         head = span.UnsafelyIndex(0);
         tail = span.UnsafelySkip(1);
     }
@@ -829,7 +777,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
-
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
@@ -868,7 +815,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             span.ReadOnly().IndexOfAny(values);
-
     /// <summary>
     /// Searches for the first index of any of the specified values similar
     /// to calling IndexOf several times with the logical OR operator.
@@ -903,7 +849,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #else
         origin.IndexOf(ref *(T*)target.Pointer);
 #endif
-
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
@@ -933,7 +878,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             owner.Memory.Nth(range);
-
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="span">The <see cref="ReadOnlyMemory{T}"/> to get an item from.</param>
@@ -946,7 +890,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.Slice(off, len) : default;
-
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="span">The <see cref="Memory{T}"/> to get an item from.</param>
@@ -959,7 +902,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.Slice(off, len) : default;
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="owner">The <see cref="IMemoryOwner{T}"/> to get an item from.</param>
@@ -972,7 +914,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             owner.Memory.Nth(index);
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="ReadOnlyMemory{T}"/> to get an item from.</param>
@@ -985,7 +926,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)index < (uint)memory.Length ? memory.Span[index] : default;
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="owner">The <see cref="IMemoryOwner{T}"/> to get an item from.</param>
@@ -998,7 +938,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             owner.Memory.Nth(index);
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="ReadOnlyMemory{T}"/> to get an item from.</param>
@@ -1013,7 +952,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             index.GetOffset(memory.Length) is var o && (uint)o < (uint)memory.Length
                 ? memory.Span.UnsafelyIndex(o)
                 : default;
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="owner">The <see cref="IMemoryOwner{T}"/> to get an item from.</param>
@@ -1026,7 +964,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             owner.Memory.NthLast(index);
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="ReadOnlyMemory{T}"/> to get an item from.</param>
@@ -1039,7 +976,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)(index - 1) < (uint)memory.Length ? memory.Span[memory.Length - index] : default;
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
@@ -1052,7 +988,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)index < (uint)memory.Length ? memory.Span.UnsafelyIndex(index) : default;
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
@@ -1067,7 +1002,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             index.GetOffset(memory.Length) is var off && (uint)off < (uint)memory.Length
                 ? memory.Span.UnsafelyIndex(off)
                 : default;
-
     /// <summary>Gets a specific item from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="memory">The <see cref="Memory{T}"/> to get an item from.</param>
@@ -1081,7 +1015,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             (uint)(index - 1) < (uint)memory.Length ? memory.Span.UnsafelyIndex(memory.Length - index) : default;
 #endif
-
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
@@ -1094,7 +1027,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.UnsafelySlice(off, len) : default;
-
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
@@ -1107,7 +1039,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             range.TryGetOffsetAndLength(span.Length, out var off, out var len) ? span.UnsafelySlice(off, len) : default;
-
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
@@ -1120,7 +1051,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
-
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
@@ -1133,7 +1063,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
-
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
@@ -1146,7 +1075,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
-
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
@@ -1159,7 +1087,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)index < (uint)span.Length ? span.UnsafelyIndex(index) : default;
-
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
@@ -1172,7 +1099,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             index.GetOffset(span.Length) is var o && (uint)o < (uint)span.Length ? span.UnsafelyIndex(o) : default;
-
     /// <summary>Gets a specific item from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="Span{T}"/> to get an item from.</param>
@@ -1185,7 +1111,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             (uint)(index - 1) < (uint)span.Length ? span.UnsafelyIndex(span.Length - index) : default;
-
     /// <inheritdoc cref="Span{T}.this"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int index)
@@ -1197,7 +1122,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         return body[index];
 #endif
     }
-
     /// <inheritdoc cref="Enumerable.Skip{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> UnsafelySkip<T>(this ReadOnlySpan<T> body, [NonNegativeValue] int start)
@@ -1208,7 +1132,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
         return UnsafelySlice(body, start, body.Length - start);
     }
-
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> UnsafelySlice<T>(
@@ -1227,7 +1150,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         return body.Slice(start, length);
 #endif
     }
-
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> UnsafelyTake<T>(this ReadOnlySpan<T> body, [NonNegativeValue] int end)
@@ -1238,7 +1160,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
         return UnsafelySlice(body, 0, end);
     }
-
     /// <inheritdoc cref="Span{T}.this"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T UnsafelyIndex<T>(this scoped Span<T> body, [NonNegativeValue] int index)
@@ -1253,7 +1174,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         return body[index];
 #endif
     }
-
     /// <inheritdoc cref="Enumerable.Skip{T}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> UnsafelySkip<T>(this Span<T> body, [NonNegativeValue] int start)
@@ -1264,7 +1184,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         System.Diagnostics.Debug.Assert((uint)start <= (uint)body.Length, "start is in range");
         return UnsafelySlice(body, start, body.Length - start);
     }
-
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> UnsafelySlice<T>(
@@ -1283,7 +1202,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         return body.Slice(start, length);
 #endif
     }
-
     /// <inheritdoc cref="Enumerable.Take{T}(IEnumerable{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Span<T> UnsafelyTake<T>(this Span<T> body, [NonNegativeValue] int end)
@@ -1294,19 +1212,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
         return UnsafelySlice(body, 0, end);
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace
-
-
 // ReSharper disable once RedundantUsingDirective
-
 
 
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
-
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this scoped Span<T> span)
@@ -1327,7 +1240,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             span.Span.Average();
 #endif
-
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
@@ -1341,7 +1253,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             Divider(span.Sum(), span.Length);
-
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this scoped Span<T> span)
@@ -1362,7 +1273,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             span.Span.Sum();
 #endif
-
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
@@ -1387,18 +1297,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         if (typeof(T).IsEnum)
             return UnderlyingSum(span);
-
         T sum = default!;
-
         foreach (var value in span)
             checked
             {
                 sum = Adder(sum, value);
             }
-
         return sum;
     }
-
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -1429,7 +1335,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             Average(span.Span, converter);
 #endif
-
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -1449,7 +1354,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             Divider(span.Sum(converter), span.Length);
-
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -1480,7 +1384,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             span.Span.Sum(converter);
 #endif
-
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -1500,13 +1403,10 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
     {
         TResult sum = default!;
-
         foreach (var x in span)
             sum = Adder(sum, converter(x));
-
         return sum;
     }
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1516,7 +1416,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             span.Memory.Span.ReadOnly().Average();
-
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this Memory<T> span)
@@ -1526,7 +1425,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             span.Span.ReadOnly().Average();
 #endif
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1536,7 +1434,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             span.Memory.Span.ReadOnly().Sum();
-
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this Memory<T> span)
@@ -1561,7 +1458,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             span.Memory.Span.ReadOnly().Average(converter);
-
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -1592,7 +1488,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             span.Memory.Span.Sum(converter);
-
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -1636,74 +1531,56 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         ref var ptr = ref MemoryMarshal.GetReference(span);
         var length = (nuint)span.Length;
         var accumulator = System.Numerics.Vector<T>.Zero;
-
         System.Numerics.Vector<T> overflowTestVector = new(MinValue<T>());
-
         nuint index = 0;
         var limit = length - (nuint)System.Numerics.Vector<T>.Count * 4;
-
         do
         {
             var data = LoadUnsafe(ref ptr, index);
             var accumulator2 = accumulator + data;
             var overflowTracking = (accumulator2 ^ accumulator) & (accumulator2 ^ data);
-
             data = LoadUnsafe(ref ptr, index + (nuint)System.Numerics.Vector<T>.Count);
             accumulator = accumulator2 + data;
             overflowTracking |= (accumulator ^ accumulator2) & (accumulator ^ data);
-
             data = LoadUnsafe(ref ptr, index + (nuint)System.Numerics.Vector<T>.Count * 2);
             accumulator2 = accumulator + data;
             overflowTracking |= (accumulator2 ^ accumulator) & (accumulator2 ^ data);
-
             data = LoadUnsafe(ref ptr, index + (nuint)System.Numerics.Vector<T>.Count * 3);
             accumulator = accumulator2 + data;
             overflowTracking |= (accumulator ^ accumulator2) & (accumulator ^ data);
-
             if ((overflowTracking & overflowTestVector) != System.Numerics.Vector<T>.Zero)
                 throw new OverflowException();
-
             index += (nuint)System.Numerics.Vector<T>.Count * 4;
         } while (index < limit);
-
         limit = length - (nuint)System.Numerics.Vector<T>.Count;
-
         if (index < limit)
         {
             var overflowTracking = System.Numerics.Vector<T>.Zero;
-
             do
             {
                 var data = LoadUnsafe(ref ptr, index);
                 var accumulator2 = accumulator + data;
                 overflowTracking |= (accumulator2 ^ accumulator) & (accumulator2 ^ data);
                 accumulator = accumulator2;
-
                 index += (nuint)System.Numerics.Vector<T>.Count;
             } while (index < limit);
-
             if ((overflowTracking & overflowTestVector) != System.Numerics.Vector<T>.Zero)
                 throw new OverflowException();
         }
-
         T result = default!;
-
         for (var i = 0; i < System.Numerics.Vector<T>.Count; i++)
             checked
             {
                 result = Adder(result, accumulator[i]);
             }
-
         while (index < length)
         {
             checked
             {
                 result = Adder(result, Unsafe.Add(ref ptr, index));
             }
-
             index++;
         }
-
         return result;
     }
 #endif
@@ -1724,15 +1601,10 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             _ => throw Unreachable,
         };
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1742,7 +1614,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             MinMax<T, SMax>(enumerable.Memory.Span);
-
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this Memory<T> enumerable)
@@ -1752,7 +1623,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, SMax>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
@@ -1773,7 +1643,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, SMax>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -1793,7 +1662,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             MinMax<T, SMin>(enumerable.Memory.Span);
-
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this Memory<T> enumerable)
@@ -1803,7 +1671,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, SMin>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
@@ -1824,7 +1691,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, SMin>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -1847,7 +1713,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Memory.Span, keySelector);
-
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -1860,7 +1725,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
-
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -1887,7 +1751,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
-
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -1913,7 +1776,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Memory.Span, keySelector);
-
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -1926,7 +1788,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
-
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -1953,7 +1814,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
-
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -1967,7 +1827,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static bool Compare<T, TS>(T l, T r) =>
         0 switch
@@ -2013,7 +1872,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -2021,9 +1880,8 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         where T : struct
 #endif
     {
-        // ReSharper disable once TooWideLocalVariableScope
+       
         T value;
-
         if (span.IsEmpty)
             return default!;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
@@ -2037,11 +1895,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         {
             value = span.UnsafelyIndex(0);
-
             for (var i = 1; i < span.Length; i++)
                 if (span.UnsafelyIndex(i) is var next && Compare<T, TS>(next, value))
                     value = next;
-
             return value;
         }
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
@@ -2049,7 +1905,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
         current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!;
-
         for (;
             Unsafe.IsAddressLessThan(ref current, ref lastVectorStart);
             current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
@@ -2059,16 +1914,13 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
                 _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(current)),
                 _ => throw Unreachable,
             };
-
         best = 0 switch
         {
             _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(lastVectorStart)),
             _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(lastVectorStart)),
             _ => throw Unreachable,
         };
-
         value = best[0];
-
         for (var i = 1; i < System.Numerics.Vector<T>.Count; i++)
             if (0 switch
             {
@@ -2077,11 +1929,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
                 _ => throw Unreachable,
             })
                 value = best[i];
-
         return value;
 #endif
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     static T MinMax<T, TResult, TS>(
         this scoped ReadOnlySpan<T> enumerable,
@@ -2096,7 +1946,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var bestValue = enumerable[0];
         var bestKey = converter(bestValue);
-
         for (var i = 1; i < enumerable.Length; i++)
             if (converter(enumerable[i]) is var next &&
                 0 switch
@@ -2114,7 +1963,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         ref var current = ref Unsafe.Add(ref bestValue, 1);
         ref var last = ref Unsafe.Add(ref bestValue, enumerable.Length);
         var bestKey = converter(bestValue);
-
         for (; Unsafe.IsAddressLessThan(ref current, ref last); current = ref Unsafe.Add(ref current, 1)!)
             if (converter(current) is var next &&
                 0 switch
@@ -2130,22 +1978,15 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         return bestValue;
     }
-
     struct SMin;
-
     struct SMax;
-
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace RedundantUsingDirective
 
 
-
-
-
 /// <summary>Contains extension methods for fast SIMD operations.</summary>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-
     /// <summary>Determines whether the type is a numeric primitive.</summary>
     /// <typeparam name="T">The type to test.</typeparam>
     /// <returns>Whether the type parameter <typeparamref name="T"/> is a primitive representing a number.</returns>
@@ -2171,20 +2012,16 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
-
     /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source, int index) => Range(source.Memory.Span, index);
-
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source) => Range(source.Span);
-
     /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source, int index) => Range(source.Span, index);
 #endif
-
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
@@ -2202,12 +2039,10 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             case var length:
                 if (!IsNumericPrimitive<T>() && !IsSupported<T>())
                     _ = Fail<T>();
-
                 SpanRange<T>(length).CopyTo(source);
                 return source;
         }
     }
-
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
@@ -2219,50 +2054,38 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     {
         if (source.Length is 0)
             return source;
-
         if (!IsNumericPrimitive<T>() && !IsSupported<T>())
             _ = Fail<T>();
-
         SpanRange<T>(index + source.Length).UnsafelySkip(index).CopyTo(source);
         return source;
     }
-
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<byte> AsMemory(this byte length) => MemoryRange<byte>(length + 1)[length..];
-
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<char> AsMemory(this char length) => MemoryRange<char>(length + 1)[length..];
-
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<sbyte> AsMemory(this sbyte length) => MemoryRange<sbyte>(length + 1)[length..];
-
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<short> AsMemory(this short length) => MemoryRange<short>(length + 1)[length..];
-
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<ushort> AsMemory(this ushort length) => MemoryRange<ushort>(length + 1)[length..];
-
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<byte> AsSpan(this byte length) => SpanRange<byte>(length + 1).UnsafelySkip(length);
-
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<char> AsSpan(this char length) => SpanRange<char>(length + 1).UnsafelySkip(length);
-
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<sbyte> AsSpan(this sbyte length) => SpanRange<sbyte>(length + 1).UnsafelySkip(length);
-
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<short> AsSpan(this short length) => SpanRange<short>(length + 1).UnsafelySkip(length);
-
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<ushort> AsSpan(this ushort length) => SpanRange<ushort>(length + 1).UnsafelySkip(length);
@@ -2278,18 +2101,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <inheritdoc cref="InAscendingOrder{T}.Memory"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<T> MemoryRange<T>(this int length) => InAscendingOrder<T>.Memory(length);
-
     /// <inheritdoc cref="InAscendingOrder{T}.Span"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlySpan<T> SpanRange<T>(this int length) => InAscendingOrder<T>.Span(length);
-
     static class InAscendingOrder<T>
     {
-        // Vector512<T> is the largest vector type.
+       
         const int InitialCapacity = 512;
-
         static T[] s_values = [];
-
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
         /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
@@ -2301,12 +2120,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         {
             if (typeof(T) == typeof(char))
                 return To<T>.From(length.SpanRange<ushort>());
-
             ReadOnlySpan<T> original = s_values;
-
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
-
             var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
             Span<T> span = replacement;
             original.CopyTo(span);
@@ -2314,7 +2130,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             s_values = replacement;
             return span.UnsafelyTake(length);
         }
-
         /// <summary>Gets the read-only span containing the set of values up to the specified parameter.</summary>
         /// <param name="length">The amount of items required.</param>
         /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
@@ -2326,17 +2141,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         {
             if (typeof(T) == typeof(char))
                 return Unsafe.As<ReadOnlyMemory<ushort>, ReadOnlyMemory<T>>(ref AsRef(length.MemoryRange<ushort>()));
-
             _ = Span(length);
             return new(s_values, 0, length);
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Populate(scoped Span<T> span)
         {
             ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
             ref var end = ref Unsafe.Add(ref start, span.Length);
-
             for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
             {
                 start = Unsafe.Subtract(ref start, 1);
@@ -2345,20 +2157,15 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         }
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-
 #pragma warning disable IDE0032
 
 
 
 
-
 /// <summary>Methods to split spans into multiple spans.</summary>
-
     /// <summary>
     /// Defines the values for <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> without a compile-time strategy.
     /// </summary>
@@ -2368,29 +2175,24 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     {
         /// <summary>Gets the body.</summary>
         public ReadOnlyMemory<TBody> Body { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
         /// <summary>Gets the separator.</summary>
         public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
-
     /// <inheritdoc cref="SplitSpanFactory.SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAny> SplitAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
         new(span, separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAny> SplitAny<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitAny(separator);
-
     /// <inheritdoc cref="SplitSpanFactory.SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAll> SplitAll<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
         new(span, separator);
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAll> SplitAll<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
@@ -2405,7 +2207,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     )
         where T : IEquatable<T> =>
         new(span, separator.Memory);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
@@ -2420,98 +2221,79 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         new(span, separator.Memory);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this ReadOnlyMemory<byte> span, byte separator) =>
         new(span, separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this Memory<char> span, char separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this ReadOnlyMemory<char> span, char separator) =>
         new(span, separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<sbyte, sbyte, MatchOne> SplitOn(this Memory<sbyte> span, sbyte separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<sbyte, sbyte, MatchOne> SplitOn(this ReadOnlyMemory<sbyte> span, sbyte separator) =>
         new(span, separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<short, short, MatchOne> SplitOn(this Memory<short> span, short separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<short, short, MatchOne> SplitOn(this ReadOnlyMemory<short> span, short separator) =>
         new(span, separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<ushort, ushort, MatchOne> SplitOn(this Memory<ushort> span, ushort separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<ushort, ushort, MatchOne> SplitOn(this ReadOnlyMemory<ushort> span, ushort separator) =>
         new(span, separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this string span, char separator) =>
         new(span.AsMemory(), separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAny> SplitAny(this string span, string separator) =>
         span.AsMemory().SplitAny(separator.AsMemory());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAny> SplitAny(this string span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitAny(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAny> SplitAny(this ReadOnlyMemory<char> span, string separator) =>
         span.SplitAny(separator.AsMemory());
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAll> SplitAll(this string span, string separator) =>
         span.AsMemory().SplitAll(separator.AsMemory());
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAll> SplitAll(this string span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitAll(separator);
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAll> SplitAll(this ReadOnlyMemory<char> span, string separator) =>
         span.SplitAll(separator.AsMemory());
-
     /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -2522,7 +2304,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitLines(this string span) =>
         span.AsMemory().SplitLines();
-
     /// <inheritdoc cref="SplitSpanFactory.SplitSpanLines"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -2537,7 +2318,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #else
         new(span, Breaking.AsMemory());
 #endif
-
     /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -2548,7 +2328,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitLines(this Memory<char> span) =>
         span.ReadOnly().SplitLines();
-
     /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -2559,7 +2338,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitWhitespace(this string span) =>
         span.AsMemory().SplitWhitespace();
-
     /// <inheritdoc cref="SplitSpanFactory.SplitSpanWhitespace"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -2574,7 +2352,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #else
         new(span, Unicode.AsMemory());
 #endif
-
     /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -2585,7 +2362,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitWhitespace(this Memory<char> span) =>
         span.ReadOnly().SplitWhitespace();
-
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -2595,7 +2371,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     ) =>
         span.AsMemory().SplitOn(separator);
 #endif
-
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="TBody">The type of element from the span.</typeparam>
 /// <typeparam name="TSeparator">The type of separator.</typeparam>
@@ -2625,11 +2400,8 @@ readonly
         where TAccumulator : allows ref struct
 #endif
     ;
-
     readonly ReadOnlyMemory<TBody> _body = body;
-
     readonly ReadOnlyMemory<TSeparator> _separator = separator;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> struct.
     /// </summary>
@@ -2637,66 +2409,55 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitMemory(ReadOnlyMemory<TBody> body)
         : this(body, default) { }
-
     /// <inheritdoc />
     public readonly ReadOnlyMemory<TBody> Body
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.First"/>
     public readonly ReadOnlyMemory<TBody> First
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Last"/>
     public readonly ReadOnlyMemory<TBody> Last
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
-
     /// <inheritdoc />
     public readonly ReadOnlyMemory<TSeparator> Separator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Single"/>
     public readonly ReadOnlyMemory<TBody> Single
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
     }
-
     /// <summary>Gets itself as <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/>.</summary>
     public readonly SplitSpan<TBody, TSeparator, TStrategy> SplitSpan
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => new(_body.Span, _separator.Span);
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+           
             if (index < 0)
                 throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
-
             var e = GetEnumerator();
-
             for (var i = 0; i <= index; i++)
                 if (!e.MoveNext())
                     return default;
-
             return e.Current;
         }
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
@@ -2706,24 +2467,18 @@ readonly
             if (index.Value is var value && !index.IsFromEnd)
             {
                 var forwards = GetEnumerator();
-
                 for (var i = 0; i <= value; i++)
                     if (!forwards.MoveNext())
                         return default;
-
                 return forwards.Current;
             }
-
             var backwards = GetReversedEnumerator();
-
             for (var i = 0; i <= value; i++)
                 if (!backwards.MoveNext())
                     return default;
-
             return backwards.Current;
         }
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(
@@ -2731,7 +2486,6 @@ readonly
         SplitMemory<TBody, TSeparator, TStrategy> right
     ) =>
         left.Equals(right);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(
@@ -2739,7 +2493,6 @@ readonly
         SplitMemory<TBody, TSeparator, TStrategy> right
     ) =>
         !left.Equals(right);
-
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of
     /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
@@ -2753,7 +2506,6 @@ readonly
     /// </returns>
     [Pure]
     public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>(ReadOnlyMemory<TBody> body) => new(body);
-
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of
     /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
@@ -2770,7 +2522,6 @@ readonly
         (ReadOnlyMemory<TBody> Body, ReadOnlyMemory<TSeparator> Separator) tuple
     ) =>
         new(tuple.Body, tuple.Separator);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Deconstruct"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out ReadOnlyMemory<TBody> head, out SplitMemory<TBody, TSeparator, TStrategy> tail)
@@ -2781,11 +2532,9 @@ readonly
             tail = default;
             return;
         }
-
         head = e.Current;
         tail = new(e.Body, _separator);
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
@@ -2796,18 +2545,15 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
-
     /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals(object? obj) =>
         obj is SplitMemory<TBody, TSeparator, TStrategy> other && Equals(other);
-
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Equals(SplitMemory<TBody, TSeparator, TStrategy> other) =>
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
@@ -2818,41 +2564,32 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int Count()
     {
         var e = GetEnumerator();
         var count = 0;
-
         while (e.MoveNext())
             count++;
-
         return count;
     }
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override int GetHashCode() =>
         unchecked(typeof(SplitMemory<TBody, TSeparator, TStrategy>).GetHashCode() * 7);
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() => SplitSpan.ToString();
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToString(ReadOnlySpan{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string ToString(ReadOnlyMemory<TBody> divider) => ToString(divider.Span);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToString(ReadOnlySpan{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string ToString(scoped ReadOnlySpan<TBody> divider) => SplitSpan.ToString(divider);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToStringArray"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string[] ToStringArray() => SplitSpan.ToStringArray();
-
     /// <summary>Copies the values to a new <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/>.</summary>
     /// <returns>
     /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
@@ -2861,70 +2598,53 @@ readonly
     public readonly ReadOnlyMemory<TBody>[] ToArrayMemories()
     {
         using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
-
         foreach (var next in this)
             ret.Append(next);
-
         return ret.View.ToArray();
     }
-
     /// <inheritdoc cref="ToArrayMemories(ReadOnlyMemory{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReadOnlyMemory<TBody>[] ToArrayMemories(ReadOnlyMemory<TBody> divider)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-
         using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
         ret.Append(e.Current);
-
         while (e.MoveNext())
         {
             ret.Append(divider);
             ret.Append(e.Current);
         }
-
         return ret.View.ToArray();
     }
-
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
-
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Skipped"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public readonly SplitMemory<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
     {
         Enumerator e = this;
-
         for (; count > 0 && e.MoveNext(); count--) { }
-
         return e.SplitMemory;
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SkippedLast"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public readonly SplitMemory<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
     {
         ReversedEnumerator e = this;
-
         for (; count > 0 && e.MoveNext(); count--) { }
-
         return e.SplitMemory;
     }
-
     /// <inheritdoc />
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     IEnumerator<ReadOnlyMemory<TBody>> IEnumerable<ReadOnlyMemory<TBody>>.GetEnumerator() => GetEnumerator();
-
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
     /// <param name="seed">The accumulator.</param>
@@ -2940,13 +2660,10 @@ readonly
 #endif
     {
         var accumulator = seed;
-
         foreach (var next in this)
             accumulator = func(accumulator, next);
-
         return accumulator;
     }
-
     /// <inheritdoc cref="SplitSpan{TBody,TSeparator,TStrategy}.Aggregate{TAccumulator}(TAccumulator, SplitSpan{TBody, TSeparator, TStrategy}.Accumulator{TAccumulator})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     public readonly TAccumulator Aggregate<TAccumulator>(
@@ -2958,29 +2675,22 @@ readonly
 #endif
     {
         var accumulator = seed;
-
         foreach (var next in this)
             accumulator = func(accumulator, next);
-
         return accumulator;
     }
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray()"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray() => SplitSpan.ToArray();
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray(ReadOnlySpan{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray(ReadOnlyMemory<TBody> divider) => ToArray(divider.Span);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArray(ReadOnlySpan{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray(scoped ReadOnlySpan<TBody> divider) => SplitSpan.ToArray(divider);
-
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ToArrays"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[][] ToArrays() => SplitSpan.ToArrays();
-
     /// <summary>
     /// Represents the enumeration object that views <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/>.
     /// </summary>
@@ -2990,56 +2700,46 @@ readonly
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
-
         readonly ReadOnlyMemory<TBody> _original = body;
-
         ReadOnlyMemory<TBody> _body = body, _current;
-
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="body">The body.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(ReadOnlyMemory<TBody> body)
             : this(body, default) { }
-
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="split">The enumerable to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(SplitMemory<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
-
         /// <inheritdoc cref="SplitMemory{TBody, TSeparator, TStrategy}.Body"/>
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
-
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.SplitSpan"/>
         public readonly SplitMemory<TBody, TSeparator, TStrategy> SplitMemory
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get => new(_body, _separator);
         }
-
         /// <inheritdoc />
         readonly object IEnumerator.Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
-
         /// <inheritdoc />
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
-
         /// <inheritdoc cref="SplitMemory{TBody, TSeparator, TStrategy}.Separator"/>
         public readonly ReadOnlyMemory<TSeparator> Separator
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="Enumerator"/> by using the constructor
@@ -3056,7 +2756,6 @@ readonly
             (ReadOnlyMemory<TBody> Body, ReadOnlyMemory<TSeparator> Separator) tuple
         ) =>
             new(tuple.Body, tuple.Separator);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="Enumerator"/> by using the constructor
@@ -3073,7 +2772,6 @@ readonly
             ReadOnlyMemory<TBody> body
         ) =>
             new(body);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="Enumerator"/> by using the constructor
@@ -3090,7 +2788,6 @@ readonly
             SplitMemory<TBody, TSeparator, TStrategy> split
         ) =>
             new(split);
-
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Move(
@@ -3105,20 +2802,16 @@ readonly
             body = b.AsMemory(body);
             return ret;
         }
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly void IDisposable.Dispose() { }
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void IEnumerator.Reset() => _body = _original;
     }
-
     /// <summary>
     /// Represents the enumeration object that views <see cref="SplitMemory{T, TSeparator, TStrategy}"/>.
     /// </summary>
@@ -3128,56 +2821,46 @@ readonly
         : IEnumerator<ReadOnlyMemory<TBody>>
     {
         readonly ReadOnlyMemory<TBody> _original = body;
-
         readonly ReadOnlyMemory<TSeparator> _separator = separator;
-
         ReadOnlyMemory<TBody> _body = body, _current;
-
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
         /// <param name="body">The body.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReversedEnumerator(ReadOnlyMemory<TBody> body)
             : this(body, default) { }
-
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
         /// <param name="split">The enumerable to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReversedEnumerator(SplitMemory<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
-
         /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Body"/>
         public readonly ReadOnlyMemory<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
-
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator.SplitSpan"/>
         public readonly SplitMemory<TBody, TSeparator, TStrategy> SplitMemory
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get => new(_body, _separator);
         }
-
         /// <inheritdoc />
         readonly object IEnumerator.Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
-
         /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public readonly ReadOnlyMemory<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
-
         /// <inheritdoc cref="SplitMemory{T, TSeparator, TStrategy}.Separator"/>
         public readonly ReadOnlyMemory<TSeparator> Separator
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
@@ -3194,7 +2877,6 @@ readonly
             (ReadOnlyMemory<TBody> Body, ReadOnlyMemory<TSeparator> Separator) tuple
         ) =>
             new(tuple.Body, tuple.Separator);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
@@ -3211,7 +2893,6 @@ readonly
             ReadOnlyMemory<TBody> body
         ) =>
             new(body);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
@@ -3228,7 +2909,6 @@ readonly
             SplitMemory<TBody, TSeparator, TStrategy> split
         ) =>
             new(split);
-
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool MoveNext(
@@ -3243,29 +2923,21 @@ readonly
             body = b.AsMemory(body);
             return ret;
         }
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => MoveNext(_separator, ref _body, out _current);
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly void IDisposable.Dispose() { }
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void IEnumerator.Reset() => _body = _original;
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
-
 #pragma warning disable IDE0032
-
 
 
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
@@ -3274,7 +2946,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
-
     /// <summary>Returns itself but with the number of elements specified skipped. This is evaluated eagerly.</summary>
     /// <param name="count">The number of elements to skip.</param>
     /// <returns>Itself but skipping the parameter <paramref name="count"/> number of elements.</returns>
@@ -3282,12 +2953,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public readonly SplitSpan<TBody, TSeparator, TStrategy> Skipped([NonNegativeValue] int count)
     {
         Enumerator e = this;
-
         for (; count > 0 && e.MoveNext(); count--) { }
-
         return e.SplitSpan;
     }
-
     /// <summary>
     /// Represents the forwards enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
     /// </summary>
@@ -3300,41 +2968,34 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         partial struct Enumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-
         ReadOnlySpan<TBody> _body = body, _current;
-
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="body">The body.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(ReadOnlySpan<TBody> body)
             : this(body, default) { }
-
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="split">The enumerable to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator(SplitSpan<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
-
         /// <inheritdoc cref="SplitSpan{T, TSeparator, TStrategy}.Body"/>
         public readonly ReadOnlySpan<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
-
         /// <inheritdoc cref="IEnumerator.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
-
         /// <inheritdoc cref="SplitSpan{T, TSeparator, TStrategy}.Separator"/>
         public readonly ReadOnlySpan<TSeparator> Separator
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
-
         /// <summary>
         /// Reconstructs the <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> based on the current state.
         /// </summary>
@@ -3343,7 +3004,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get => new(_body, _separator);
         }
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="Enumerator"/> by using the constructor
@@ -3358,7 +3018,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.Enumerator(ReadOnlySpan<TBody> body) =>
             new(body);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="Enumerator"/> by using the constructor
@@ -3375,7 +3034,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             SplitSpan<TBody, TSeparator, TStrategy> split
         ) =>
             new(split);
-
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>
         /// <param name="sep">The separator span.</param>
         /// <param name="body">The span that contains the current state of the enumeration.</param>
@@ -3403,11 +3061,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
-
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
-
         /// <summary>
         /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
         /// </summary>
@@ -3435,10 +3091,8 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         {
             Unsafe.SkipInit(out ret);
-
             if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
                 return SameLength(ref other, ref reader, ref otherReader, ref ret);
-
             if (length < otherLength)
             {
                 if (!reader.SequenceEqual(otherReader.UnsafelyTake(length)) || !MoveNext())
@@ -3446,23 +3100,19 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     ret = false;
                     return true;
                 }
-
                 reader = Current;
                 otherReader = otherReader.UnsafelySkip(length);
                 return false;
             }
-
             if (!reader.UnsafelyTake(otherLength).SequenceEqual(otherReader) || !other.MoveNext())
             {
                 ret = false;
                 return true;
             }
-
             reader = reader.UnsafelyTake(otherLength);
             otherReader = other.Current;
             return false;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
             scoped ReadOnlySpan<TBody> sep,
@@ -3473,7 +3123,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAll), "TStrategy is MatchAll");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
         Retry:
-
             switch (body.IndexOf(sep))
             {
                 case -1:
@@ -3486,7 +3135,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                         body = body.UnsafelySkip(sep.Length);
                         goto Retry;
                     }
-
                     current = default;
                     return false;
                 case var i:
@@ -3495,7 +3143,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return true;
             }
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
             scoped ReadOnlySpan<TBody> sep,
@@ -3516,21 +3163,17 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     body = body.UnsafelySkip(i);
                     break;
             }
-
             if (body.IndexOfAny(sep) is not -1 and var length)
             {
                 current = body.UnsafelyTake(length);
                 body = body.UnsafelySkip(length + 1);
                 return true;
             }
-
             current = body;
             body = default;
 #else
         Retry:
-
             var min = int.MaxValue;
-
             foreach (var next in sep)
                 switch (body.IndexOf(next))
                 {
@@ -3541,27 +3184,23 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                             body = body.UnsafelySkip(1);
                             goto Retry;
                         }
-
                         current = default;
                         return false;
                     case var i when i < min:
                         min = i;
                         continue;
                 }
-
             if (min is not int.MaxValue)
             {
                 current = body.UnsafelyTake(min);
                 body = body.UnsafelySkip(min + 1);
                 return true;
             }
-
             current = body;
             body = default;
 #endif
             return true;
         }
-
 #if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
@@ -3573,7 +3212,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
             var single = sep.UnsafelyIndex(0);
-
             switch (body.IndexOfAnyExcept(single))
             {
                 case -1:
@@ -3584,14 +3222,12 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     body = body.UnsafelySkip(offset);
                     break;
             }
-
             if (body.IndexOfAny(single) is not -1 and var length)
             {
                 current = body.UnsafelyTake(length);
                 body = body.UnsafelySkip(length + 1);
                 return true;
             }
-
             current = body;
             body = default;
             return true;
@@ -3618,20 +3254,17 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     body = body.UnsafelySkip(offset);
                     break;
             }
-
             if (body.IndexOf(single) is not -1 and var length)
             {
                 current = body.UnsafelyTake(length);
                 body = body.UnsafelySkip(length + 1);
                 return true;
             }
-
             current = body;
             body = default;
             return true;
 #else
         Retry:
-
             switch (body.IndexOf(single))
             {
                 case -1:
@@ -3644,7 +3277,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                         body = body.UnsafelySkip(1);
                         goto Retry;
                     }
-
                     current = default;
                     return false;
                 case var i:
@@ -3654,7 +3286,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             }
 #endif
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
             ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
@@ -3671,33 +3302,25 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 ret = false;
                 return true;
             }
-
             if (!MoveNext())
             {
                 ret = !other.MoveNext();
                 return true;
             }
-
             if (!other.MoveNext())
             {
                 ret = false;
                 return true;
             }
-
             reader = Current;
             otherReader = other.Current;
             return false;
         }
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
-
 #pragma warning disable IDE0032
-
 
 
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
@@ -3706,7 +3329,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
-
     /// <summary>
     /// Returns itself but with the number of elements from the end specified skipped. This is evaluated eagerly.
     /// </summary>
@@ -3716,12 +3338,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public readonly SplitSpan<TBody, TSeparator, TStrategy> SkippedLast([NonNegativeValue] int count)
     {
         Enumerator e = this;
-
         for (; count > 0 && e.MoveNext(); count--) { }
-
         return e.SplitSpan;
     }
-
     /// <summary>
     /// Represents the backwards enumeration object that views <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.
     /// </summary>
@@ -3734,41 +3353,34 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         partial struct ReversedEnumerator(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
     {
         readonly ReadOnlySpan<TSeparator> _separator = separator;
-
         ReadOnlySpan<TBody> _body = body, _current;
-
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
         /// <param name="body">The body.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReversedEnumerator(ReadOnlySpan<TBody> body)
             : this(body, default) { }
-
         /// <summary>Initializes a new instance of the <see cref="ReversedEnumerator"/> struct.</summary>
         /// <param name="split">The enumerable to enumerate.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReversedEnumerator(SplitSpan<TBody, TSeparator, TStrategy> split)
             : this(split._body, split._separator) { }
-
         /// <inheritdoc cref="SplitSpan{T, TSeparator, TStrategy}.Body"/>
         public readonly ReadOnlySpan<TBody> Body
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
-
         /// <inheritdoc cref="IEnumerator.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
         }
-
         /// <inheritdoc cref="SplitSpan{T, TSeparator, TStrategy}.Separator"/>
         public readonly ReadOnlySpan<TSeparator> Separator
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _separator = value;
         }
-
         /// <summary>
         /// Reconstructs the <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> based on the current state.
         /// </summary>
@@ -3777,7 +3389,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get => new(_body, _separator);
         }
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
@@ -3794,7 +3405,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             ReadOnlySpan<TBody> body
         ) =>
             new(body);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
@@ -3811,7 +3421,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             SplitSpan<TBody, TSeparator, TStrategy> split
         ) =>
             new(split);
-
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>
         /// <param name="sep">The separator span.</param>
         /// <param name="body">The span that contains the current state of the enumeration.</param>
@@ -3839,11 +3448,9 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
-
         /// <inheritdoc cref="IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
             scoped ReadOnlySpan<TBody> sep,
@@ -3853,27 +3460,22 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         {
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAll), "TStrategy is MatchAll");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
-
             if (sep.Length < body.Length)
             {
                 current = default;
                 return false;
             }
-
         Retry:
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             switch (body.LastIndexOf(sep))
 #else
             int lower = 0, upper = body.Length - sep.Length;
-
             for (; lower < upper; lower++)
                 if (body.UnsafelySkip(lower).UnsafelyTake(sep.Length).SequenceEqual(sep))
                     break;
-
             if (lower == upper)
                 lower = -1;
-
-            // The worst way to suppress warnings about inlining variables.
+           
             switch (+lower)
 #endif
             {
@@ -3887,7 +3489,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                         body = body.UnsafelyTake(i);
                         goto Retry;
                     }
-
                     current = default;
                     return false;
                 case var i:
@@ -3896,7 +3497,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     return true;
             }
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
             scoped ReadOnlySpan<TBody> sep,
@@ -3917,21 +3517,17 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     body = body.UnsafelyTake(i + 1);
                     break;
             }
-
             if (body.LastIndexOfAny(sep) is not -1 and var length)
             {
                 current = body.UnsafelySkip(length + 1);
                 body = body.UnsafelyTake(length);
                 return true;
             }
-
             current = body;
             body = default;
 #else
         Retry:
-
             var max = -1;
-
             foreach (var next in sep)
                 switch (body.LastIndexOf(next))
                 {
@@ -3942,27 +3538,23 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                             body = UnsafelyTake(body, body.Length - 1);
                             goto Retry;
                         }
-
                         current = default;
                         return false;
                     case var i when i > max:
                         max = i;
                         continue;
                 }
-
             if (max is not -1)
             {
                 current = body.UnsafelySkip(max + 1);
                 body = body.UnsafelyTake(max);
                 return true;
             }
-
             current = body;
             body = default;
 #endif
             return true;
         }
-
 #if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(
@@ -3974,7 +3566,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
             System.Diagnostics.Debug.Assert(typeof(TStrategy) == typeof(MatchAny), "TStrategy is MatchAny");
             System.Diagnostics.Debug.Assert(!sep.IsEmpty, "separator is non-empty");
             ref var single = ref MemoryMarshal.GetReference(sep);
-
             switch (body.LastIndexOfAnyExcept(single))
             {
                 case -1:
@@ -3985,14 +3576,12 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     body = body.UnsafelyTake(i + 1);
                     break;
             }
-
             if (body.LastIndexOfAny(single) is not -1 and var length)
             {
                 current = body.UnsafelySkip(length + 1);
                 body = body.UnsafelyTake(length);
                 return true;
             }
-
             current = body;
             body = default;
             return true;
@@ -4019,20 +3608,17 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     body = body.UnsafelyTake(offset + 1);
                     break;
             }
-
             if (body.IndexOf(single) is not -1 and var length)
             {
                 current = body.UnsafelySkip(length + 1);
                 body = body.UnsafelyTake(length);
                 return true;
             }
-
             current = body;
             body = default;
             return true;
 #else
         Retry:
-
             switch (body.LastIndexOf(single))
             {
                 case -1:
@@ -4045,7 +3631,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                         body = UnsafelyTake(body, 1);
                         goto Retry;
                     }
-
                     current = default;
                     return false;
                 case var i:
@@ -4057,28 +3642,19 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         }
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
-
 #pragma warning disable IDE0032, RCS1158
 
 
 
-
 /// <summary>Methods to split spans into multiple spans.</summary>
-
     /// <summary>The type that indicates to match all elements.</summary>
     public struct MatchAll;
-
     /// <summary>The type that indicates to match any element.</summary>
     public struct MatchAny;
-
     /// <summary>The type that indicates to match exactly one element.</summary>
     public struct MatchOne;
-
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -4093,7 +3669,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             new(span, separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAny> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
@@ -4104,7 +3679,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.ReadOnly().SplitAny(separator);
-
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -4119,7 +3693,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             new(span, separator);
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchAll> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
@@ -4139,7 +3712,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     )
         where T : IEquatable<T> =>
         new(span, In(separator));
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
@@ -4160,7 +3732,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             new(span, In(separator));
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
@@ -4172,52 +3743,42 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         =>
             span.ReadOnly().SplitOn(separator);
 #endif
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<byte, byte, MatchOne> SplitOn(this ReadOnlySpan<byte> span, byte separator) =>
         new(span, separator.AsSpan());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<byte, byte, MatchOne> SplitOn(this Span<byte> span, byte separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitOn(this ReadOnlySpan<char> span, char separator) =>
         new(span, separator.AsSpan());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitOn(this Span<char> span, char separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this ReadOnlySpan<sbyte> span, sbyte separator) =>
         new(span, separator.AsSpan());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this Span<sbyte> span, sbyte separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<short, short, MatchOne> SplitOn(this ReadOnlySpan<short> span, short separator) =>
         new(span, separator.AsSpan());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<short, short, MatchOne> SplitOn(this Span<short> span, short separator) =>
         span.ReadOnly().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this ReadOnlySpan<ushort> span, ushort separator) =>
         new(span, separator.AsSpan());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this Span<ushort> span, ushort separator) =>
@@ -4227,37 +3788,30 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
         span.AsSpan().SplitOn(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAny> SplitSpanAny(this string span, string separator) =>
         span.AsSpan().SplitAny(separator.AsSpan());
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAny> SplitAny(this string span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAny(separator);
-
     /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAny> SplitAny(this ReadOnlySpan<char> span, string separator) =>
         span.SplitAny(separator.AsSpan());
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAll> SplitSpanAll(this string span, string separator) =>
         span.AsSpan().SplitAll(separator.AsSpan());
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAll> SplitAll(this string span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitAll(separator);
-
     /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAll> SplitAll(this ReadOnlySpan<char> span, string separator) =>
         span.SplitAll(separator.AsSpan());
-
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -4268,7 +3822,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         MatchAny> SplitSpanLines(this string span) =>
         span.AsSpan().SplitLines();
-
     /// <summary>Splits a span by line breaks.</summary>
     /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
     /// <param name="span">The span to split.</param>
@@ -4286,7 +3839,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #else
         new(span, Breaking.AsSpan());
 #endif
-
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -4297,7 +3849,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         MatchAny> SplitLines(this Span<char> span) =>
         span.ReadOnly().SplitLines();
-
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -4308,7 +3859,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         MatchAny> SplitSpanWhitespace(this string span) =>
         span.AsSpan().SplitWhitespace();
-
     /// <summary>Splits a span by whitespace.</summary>
     /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
     /// <param name="span">The span to split.</param>
@@ -4326,7 +3876,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #else
         new(span, Unicode.AsSpan());
 #endif
-
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -4347,7 +3896,6 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     ) =>
         span.AsSpan().SplitOn(separator);
 #endif
-
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="TBody">The type of element from the span.</typeparam>
 /// <typeparam name="TSeparator">The type of separator.</typeparam>
@@ -4385,57 +3933,47 @@ readonly
         where TAccumulator : allows ref struct
 #endif
     ;
-
     readonly ReadOnlySpan<TBody> _body = body;
-
     readonly ReadOnlySpan<TSeparator> _separator = separator;
-
     /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
     /// <param name="body">The line to split.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SplitSpan(ReadOnlySpan<TBody> body)
         : this(body, default) { }
-
     /// <summary>Gets the error thrown by this type.</summary>
     public static NotSupportedException Error
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => new($"Unrecognized type: {typeof(TStrategy).Name}");
     }
-
     /// <summary>Gets the line to split.</summary>
     public readonly ReadOnlySpan<TBody> Body
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
     }
-
     /// <summary>Gets the first element.</summary>
     public readonly ReadOnlySpan<TBody> First
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
-
     /// <summary>Gets the last element.</summary>
     public readonly ReadOnlySpan<TBody> Last
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
     }
-
     /// <summary>Gets the separator.</summary>
     public readonly ReadOnlySpan<TSeparator> Separator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
     }
-
     /// <summary>Gets the single element.</summary>
     public readonly ReadOnlySpan<TBody> Single
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
     }
-
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
     /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
@@ -4444,20 +3982,16 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+           
             if (index < 0)
                 throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
-
             var e = GetEnumerator();
-
             for (var i = 0; i <= index; i++)
                 if (!e.MoveNext())
                     return default;
-
             return e.Current;
         }
     }
-
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
     public readonly ReadOnlySpan<TBody> this[Index index]
@@ -4468,24 +4002,18 @@ readonly
             if (index.Value is var value && !index.IsFromEnd)
             {
                 var forwards = GetEnumerator();
-
                 for (var i = 0; i <= value; i++)
                     if (!forwards.MoveNext())
                         return default;
-
                 return forwards.Current;
             }
-
             var backwards = GetReversedEnumerator();
-
             for (var i = 0; i <= value; i++)
                 if (!backwards.MoveNext())
                     return default;
-
             return backwards.Current;
         }
     }
-
     /// <summary>Determines whether both splits are equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -4496,7 +4024,6 @@ readonly
         scoped SplitSpan<TBody, TSeparator, TStrategy> right
     ) =>
         left.Equals(right);
-
     /// <summary>Determines whether both splits are not equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -4507,7 +4034,6 @@ readonly
         scoped SplitSpan<TBody, TSeparator, TStrategy> right
     ) =>
         !left.Equals(right);
-
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of
     /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> by using the constructor
@@ -4520,7 +4046,6 @@ readonly
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
-
     /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.</summary>
     /// <param name="head">The first element of this enumeration.</param>
     /// <param name="tail">The rest of this enumeration.</param>
@@ -4533,11 +4058,9 @@ readonly
             tail = default;
             return;
         }
-
         head = e.Current;
         tail = new(e.Body, _separator);
     }
-
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
@@ -4555,28 +4078,22 @@ readonly
     {
         if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
             return !otherE.MoveNext();
-
         if (!otherE.MoveNext())
             return false;
-
         ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
-
         while (true)
-#pragma warning disable 9080 // Dangerous!
+#pragma warning disable 9080
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
 #pragma warning restore 9080
                 return ret;
     }
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
     public readonly override bool Equals(object? obj) => false;
-
     /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Equals(scoped SplitSpan<TBody, TSeparator, TStrategy> other) =>
         _body.SequenceEqual(other._body) && _separator.SequenceEqual(other._separator);
-
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
@@ -4594,30 +4111,23 @@ readonly
     {
         Enumerator e = this;
         var eOther = other.GetEnumerator();
-
         while (e.MoveNext())
             if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current))
                 return false;
-
         return !eOther.MoveNext();
     }
-
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int Count()
     {
         var count = 0;
-
         for (var e = GetEnumerator(); e.MoveNext(); count++) { }
-
         return count;
     }
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
@@ -4628,7 +4138,6 @@ readonly
 #else
             : throw new NotSupportedException();
 #endif
-
     /// <summary>
     /// Converts the elements of the collection to a <see cref="string"/> representation,
     /// using the specified divider between elements.
@@ -4641,41 +4150,31 @@ readonly
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         if (GetEnumerator() is var e && !e.MoveNext())
             return "";
-
         using var ret = 4.Alloc<TBody>();
         ret.Append(e.Current);
-
         while (e.MoveNext())
         {
             ret.Append(divider);
             ret.Append(e.Current);
         }
-
         return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
 #else
         var e = GetEnumerator();
-
         if (!e.MoveNext())
             return "";
-
         List<TBody> ret = [];
-
         foreach (var next in e.Current)
             ret.Add(next);
-
         while (e.MoveNext())
         {
             foreach (var next in divider)
                 ret.Add(next);
-
             foreach (var next in e.Current)
                 ret.Add(next);
         }
-
         return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
 #endif
     }
-
     /// <summary>Copies the values to a new <see cref="string"/> <see cref="Array"/>.</summary>
     /// <returns>The <see cref="string"/> <see cref="Array"/> containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -4683,21 +4182,16 @@ readonly
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         using var ret = 4.Alloc<string>();
-
         foreach (var next in this)
             ret.Append(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-
         return ret.View.ToArray();
 #else
         List<string> ret = [];
-
         foreach (var next in this)
             ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-
         return [.. ret];
 #endif
     }
-
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
     /// <param name="seed">The accumulator.</param>
@@ -4713,13 +4207,10 @@ readonly
 #endif
     {
         var accumulator = seed;
-
         foreach (var next in this)
             accumulator = func(accumulator, next);
-
         return accumulator;
     }
-
     /// <summary>Copies the values to a new flattened array.</summary>
     /// <returns>The array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -4727,22 +4218,17 @@ readonly
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         using var ret = 4.Alloc<TBody>();
-
         foreach (var next in this)
             ret.Append(next);
-
         return ret.View.ToArray();
 #else
         List<TBody> ret = [];
-
         foreach (var next in this)
             foreach (var element in next)
                 ret.Add(element);
-
         return [.. ret];
 #endif
     }
-
     /// <summary>Copies the values to a new flattened array.</summary>
     /// <param name="divider">The separator between each element.</param>
     /// <returns>The array containing the copied values of this instance.</returns>
@@ -4752,39 +4238,30 @@ readonly
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-
         using var ret = 4.Alloc<TBody>();
         ret.Append(e.Current);
-
         while (e.MoveNext())
         {
             ret.Append(divider);
             ret.Append(e.Current);
         }
-
         return ret.View.ToArray();
 #else
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-
         List<TBody> ret = [];
-
         foreach (var next in e.Current)
             ret.Add(next);
-
         while (e.MoveNext())
         {
             foreach (var next in divider)
                 ret.Add(next);
-
             foreach (var next in e.Current)
                 ret.Add(next);
         }
-
         return [.. ret];
 #endif
     }
-
     /// <summary>Copies the values to a new nested array.</summary>
     /// <returns>The nested array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -4792,22 +4269,17 @@ readonly
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         using var ret = 4.Alloc<TBody[]>();
-
         foreach (var next in this)
             ret.Append(next.ToArray());
-
         return ret.View.ToArray();
 #else
         List<TBody[]> ret = [];
-
         foreach (var next in this)
             ret.Add(next.ToArray());
-
         return [.. ret];
 #endif
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe StringBuilder StringBuilderAccumulator(StringBuilder builder, scoped ReadOnlySpan<TBody> span)
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         =>
@@ -4817,7 +4289,6 @@ readonly
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
             for (var i = 0; i < span.Length; i++)
                 builder.Append(((char*)span.Pointer)[i]);
-
             return builder;
 #else
 #pragma warning disable 8500
@@ -4832,16 +4303,10 @@ readonly
         };
 #endif
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
-
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
-
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="CircularList{T}"/>.</param>
@@ -4851,7 +4316,6 @@ readonly
     public static CircularList<T>? ToCircular<T>(this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToIList());
 #endif
-
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.
@@ -4867,73 +4331,53 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
         [CollectionAccess(Read)] get => list[Mod(index)];
         [CollectionAccess(ModifyExistingContent)] set => list[Mod(index)] = value;
     }
-
     /// <inheritdoc/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => list.IsReadOnly;
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
     public int Count => list.Count;
-
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
     public void Add(T item) => list.Add(item);
-
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
     public void Clear() => list.Clear();
-
     /// <inheritdoc/>
     [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
-
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
     public void Insert(int index, T item) => list.Insert(Mod(index), item);
-
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
     public void RemoveAt(int index) => list.RemoveAt(Mod(index));
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
     public bool Contains(T item) => list.Contains(item);
-
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
     public bool Remove(T item) => list.Remove(item);
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T item) => list.IndexOf(item);
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public override string ToString() => list.ToString().OrEmpty();
-
-    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+   
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Mod(int index) => Count is not 0 and var count ? index.Mod(count) : throw CannotBeEmpty;
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace NullnessAnnotationConflictWithJetBrainsAnnotations
-
-
-
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="ClampedList{T}"/>.</summary>
-
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClampedList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="ClampedList{T}"/>.</param>
@@ -4943,7 +4387,6 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
     public static ClampedList<T>? ToClamped<T>(this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as ClampedList<T> ?? new(iterable.ToIList());
 #endif
-
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>
@@ -4958,72 +4401,52 @@ public sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IL
         [CollectionAccess(Read)] get => list[Clamp(index)];
         [CollectionAccess(ModifyExistingContent)] set => list[Clamp(index)] = value;
     }
-
     /// <inheritdoc/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => list.IsReadOnly;
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
     public int Count => list.Count;
-
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
     public void Add(T item) => list.Add(item);
-
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
     public void Clear() => list.Clear();
-
     /// <inheritdoc/>
     [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
-
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
     public void Insert(int index, T item) => list.Insert(Clamp(index), item);
-
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
     public void RemoveAt(int index) => list.RemoveAt(Clamp(index));
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
     public bool Contains(T item) => list.Contains(item);
-
     /// <inheritdoc/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
     public bool Remove(T item) => list.Remove(item);
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T item) => list.IndexOf(item);
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public override string ToString() => list.ToString().OrEmpty();
-
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
-
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
-
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="GuardedList{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="GuardedList{T}"/>.</param>
@@ -5033,7 +4456,6 @@ public sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IL
     public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToIList());
 #endif
-
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
 /// an out of range value will always give the <see langword="default"/> value.
@@ -5054,21 +4476,16 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                 list[index] = value;
         }
     }
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool IsReadOnly => list.IsReadOnly;
-
     /// <inheritdoc />
     bool ICollection<T?>.IsReadOnly => IsReadOnly;
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
     public int Count => list.Count;
-
     /// <inheritdoc />
     int ICollection<T?>.Count => Count;
-
     /// <inheritdoc cref="ICollection{T}.Add"/>
     [CollectionAccess(UpdatedContent)]
     public void Add(T? item)
@@ -5076,11 +4493,9 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         if (item is not null)
             list.Add(item);
     }
-
     /// <inheritdoc cref="ICollection{T}.Clear"/>
     [CollectionAccess(ModifyExistingContent)]
     public void Clear() => list.Clear();
-
     /// <inheritdoc cref="ICollection{T}.CopyTo"/>
     [CollectionAccess(Read)]
     public void CopyTo(T?[] array, int arrayIndex)
@@ -5088,7 +4503,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         if (Count <= array.Length - arrayIndex)
             list.CopyTo(array as T[], arrayIndex);
     }
-
     /// <inheritdoc/>
     [CollectionAccess(UpdatedContent)]
     public void Insert(int index, T? item)
@@ -5096,7 +4510,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         if (item is not null && IsIn(index))
             list.Insert(index, item);
     }
-
     /// <inheritdoc/>
     [CollectionAccess(ModifyExistingContent)]
     public void RemoveAt(int index)
@@ -5104,64 +4517,48 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         if (IsIn(index))
             list.RemoveAt(index);
     }
-
     /// <inheritdoc />
     void ICollection<T?>.Add(T? item) => Add(item);
-
     /// <inheritdoc />
     void ICollection<T?>.Clear() => Clear();
-
     /// <inheritdoc />
     void ICollection<T?>.CopyTo(T?[] array, int arrayIndex) => CopyTo(array, arrayIndex);
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
     public bool Contains(T? item) => item is not null && list.Contains(item);
-
     /// <inheritdoc cref="ICollection{T}.Remove"/>
     [CollectionAccess(Read | ModifyExistingContent), Pure]
     public bool Remove(T? item) => item is not null && list.Remove(item);
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     bool ICollection<T?>.Contains(T? item) => Contains(item);
-
     /// <inheritdoc />
     [CollectionAccess(Read | ModifyExistingContent), Pure]
     bool ICollection<T?>.Remove(T? item) => Remove(item);
-
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [CollectionAccess(Read), Pure]
     public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
-
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), MustDisposeResource, Pure]
-#pragma warning disable 8619 // Good job .NET 2.0 - 3.5 Nullable Analysis.
+#pragma warning disable 8619
     public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
 #pragma warning restore 8619
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
-
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public override string ToString() => list.ToString().OrEmpty();
-
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool IsIn(int index) => index >= 0 && index < Count;
 }
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
-
     /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
     /// <typeparam name="T">The type of item within the list.</typeparam>
     public sealed partial class Matrix<T> : IList<IList<T>>
@@ -5177,56 +4574,47 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                 [Pure] get => matrix.List[Count * ordinal + index];
                 set => matrix.List[Count * ordinal + index] = value;
             }
-
             /// <inheritdoc />
             public bool IsReadOnly
             {
                 [Pure] get => matrix.List.IsReadOnly;
             }
-
             /// <inheritdoc />
             public int Count
             {
                 [Pure] get => matrix.CountPerList;
             }
-
             /// <inheritdoc />
             public void Add(T item) => matrix.List.Insert(Count * (ordinal + 1), item);
-
             /// <inheritdoc />
             public void Clear()
             {
                 for (int i = 0, count = Count; i < count; i++)
                     matrix.List.RemoveAt(count * ordinal);
             }
-
             /// <inheritdoc />
             public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
             {
                 for (int i = 0, count = Count; i < count; i++)
                     array[arrayIndex + i] = matrix.List[count * ordinal + i];
             }
-
             /// <inheritdoc />
             public void Insert([NonNegativeValue] int index, T item)
             {
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+               
                 if (Count is var count && index >= 0 && index < count)
                     matrix.List.Insert(Count * ordinal + index, item);
             }
-
             /// <inheritdoc />
             public void RemoveAt([NonNegativeValue] int index)
             {
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+               
                 if (Count is var count && index >= 0 && index < count)
                     matrix.List.RemoveAt(Count * ordinal + index);
             }
-
             /// <inheritdoc />
             [Pure]
             public bool Contains(T item) => IndexOf(item) is not -1;
-
             /// <inheritdoc />
             public bool Remove(T item)
             {
@@ -5236,10 +4624,8 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                         matrix.List.RemoveAt(view);
                         return true;
                     }
-
                 return false;
             }
-
             /// <inheritdoc />
             [Pure, ValueRange(-1, int.MaxValue)]
             public int IndexOf(T item)
@@ -5247,10 +4633,8 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                 for (int i = 0, count = Count; i < count; i++)
                     if (EqualityComparer<T>.Default.Equals(matrix.List[count * ordinal + i], item))
                         return i;
-
                 return -1;
             }
-
             /// <inheritdoc />
             [Pure]
             public IEnumerator<T> GetEnumerator()
@@ -5258,27 +4642,21 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                 var count = Count;
                 return matrix.List.Skip(count * ordinal).Take(count).GetEnumerator();
             }
-
             /// <inheritdoc />
             [Pure]
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
-
         readonly int _countPerListEager;
-
         readonly Func<int>? _countPerListLazy;
-
         readonly IList<T>? _listEager;
-
         readonly Func<IList<T>>? _listLazy;
-
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
         /// <param name="countPerList">The length per count.</param>
         public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
         {
-            // Explicitly check, in case someone ignores the warning, or uses a variable.
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+           
+           
             _countPerListEager = countPerList > 0
                 ? countPerList
                 : throw new ArgumentOutOfRangeException(
@@ -5286,10 +4664,8 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                     countPerList,
                     "Value must be at least 1."
                 );
-
             _listEager = list;
         }
-
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
         /// <param name="countPerList">The length per count.</param>
@@ -5298,14 +4674,13 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
             _countPerListLazy = countPerList;
             _listEager = list;
         }
-
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
         /// <param name="countPerList">The length per count.</param>
         public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
         {
-            // Explicitly check, in case someone ignores the warning, or uses a variable.
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+           
+           
             _countPerListEager = countPerList > 0
                 ? countPerList
                 : throw new ArgumentOutOfRangeException(
@@ -5313,10 +4688,8 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
                     countPerList,
                     "Value must be at least 1."
                 );
-
             _listLazy = list;
         }
-
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
         /// <param name="countPerList">The length per count.</param>
@@ -5325,7 +4698,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
             _countPerListLazy = countPerList;
             _listLazy = list;
         }
-
         /// <inheritdoc cref="IList{T}.this"/>
         public IList<T> this[[NonNegativeValue] int index]
         {
@@ -5342,32 +4714,28 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
             set => List[Count * x + y] = value;
         }
 #endif
-
         /// <inheritdoc />
         public bool IsReadOnly
         {
             [Pure] get => List.IsReadOnly;
         }
-
         /// <inheritdoc cref="ICollection{T}.Count" />
         [NonNegativeValue]
         public int Count
         {
             [Pure] get => List.Count / CountPerList;
         }
-
         /// <summary>Gets the amount of items per list.</summary>
         public int CountPerList
         {
             [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
         }
-
         /// <summary>Gets the encapsulated list.</summary>
         [ProvidesContext]
         public IList<T> List
         {
             [Pure]
-#pragma warning disable 8603 // Unreachable.
+#pragma warning disable 8603
             get => _listLazy?.Invoke() ?? _listEager;
 #pragma warning restore 8603
         }
@@ -5384,7 +4752,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         [Pure]
         public static implicit operator Matrix<T>((IList<T> List, int CountPerList) tuple) =>
             new(tuple.List, tuple.CountPerList);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
         /// by using the constructor <see cref="Matrix{T}(IList{T}, Func{int})"/>.
@@ -5397,7 +4764,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         [Pure]
         public static implicit operator Matrix<T>((IList<T> List, Func<int> CountPerList) tuple) =>
             new(tuple.List, tuple.CountPerList);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
         /// by using the constructor <see cref="Matrix{T}(Func{IList{T}}, int)"/>.
@@ -5410,7 +4776,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         [Pure]
         public static implicit operator Matrix<T>((Func<IList<T>> List, int CountPerList) tuple) =>
             new(tuple.List, tuple.CountPerList);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
         /// by using the constructor <see cref="Matrix{T}(Func{IList{T}}, Func{int})"/>.
@@ -5429,71 +4794,57 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
         {
             if (item is null)
                 return;
-
-            // ReSharper disable once ForCanBeConvertedToForeach
+           
             for (int i = 0, count = item.Count; i < count; i++)
                 List.Add(item[i]);
         }
-
         /// <inheritdoc />
         public void Clear() => List.Clear();
-
         /// <inheritdoc />
         [Pure]
         public bool Contains(IList<T>? item) => IndexOf(item) is not -1;
-
         /// <inheritdoc />
         public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
         {
             for (var i = 0; i < Count; i++)
                 array[arrayIndex + i] = this[i];
         }
-
         /// <inheritdoc />
         public void Insert([NonNegativeValue] int index, IList<T>? item)
         {
             if (item is not null)
                 this[index] = item;
         }
-
         /// <inheritdoc />
         public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
-
         /// <inheritdoc />
         public bool Remove(IList<T>? item)
         {
             if (item is null)
                 return false;
-
             for (int i = 0, count = Count; i < count; i++)
                 if (this[i].SequenceEqual(item))
                 {
                     RemoveAt(i);
                     return true;
                 }
-
             return false;
         }
-
         /// <inheritdoc />
         [Pure, ValueRange(-1, int.MaxValue)]
         public int IndexOf(IList<T>? item)
         {
             if (item is null)
                 return -1;
-
             for (int i = 0, count = Count; i < count; i++)
                 if (this[i].SequenceEqual(item))
                     return i;
-
             return -1;
         }
-
         /// <inheritdoc />
         [Pure]
         public IEnumerator<IList<T>> GetEnumerator() =>
             Enumerable.Range(0, Count).Select(IList<T> (x) => new Slice(this, x)).GetEnumerator();
-
         /// <inheritdoc />
         [Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -5510,7 +4861,6 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
         iterator is null ? null : new(iterator.ToIList(), countPerList);
 #endif
-
     /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
@@ -5533,12 +4883,9 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
 #else
         iterator is null ? null : new(iterator.ToIList(), countPerList);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable 8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
-
-
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -5559,7 +4906,6 @@ readonly
                 return Nth(ptr, index);
         }
     }
-
     /// <inheritdoc cref="IList{T}.this"/>
     T IList<T>.this[[NonNegativeValue] int index]
     {
@@ -5567,7 +4913,6 @@ readonly
         get => this[index];
         [CollectionAccess(CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)] set { }
     }
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(CollectionAccessType.Read)]
     public unsafe int Count
@@ -5579,8 +4924,7 @@ readonly
                 return PopCount(ptr);
         }
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
     {
         for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
@@ -5588,20 +4932,17 @@ readonly
                 x -= i;
             else
                 break;
-
         for (; sizeof(T) % sizeof(nuint) >= sizeof(ulong) && ptr <= upper - sizeof(ulong); ptr += sizeof(ulong))
             if (BitOperations.PopCount(*(ulong*)ptr) is var i && i <= x)
                 x -= i;
             else
                 break;
-
         for (; sizeof(T) % sizeof(ulong) >= sizeof(uint) && ptr <= upper - sizeof(uint); ptr += sizeof(uint))
             if (BitOperations.PopCount(*(uint*)ptr) is var i && i <= x)
                 x -= i;
             else
                 break;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe byte Find(ref byte* ptr, in byte* upper, int x)
     {
@@ -5609,32 +4950,23 @@ readonly
         {
             if ((*ptr & 1) is not 0 && x-- is 0)
                 return 1;
-
             if ((*ptr & 1 << 1) is not 0 && x-- is 0)
                 return 1 << 1;
-
             if ((*ptr & 1 << 2) is not 0 && x-- is 0)
                 return 1 << 2;
-
             if ((*ptr & 1 << 3) is not 0 && x-- is 0)
                 return 1 << 3;
-
             if ((*ptr & 1 << 4) is not 0 && x-- is 0)
                 return 1 << 4;
-
             if ((*ptr & 1 << 5) is not 0 && x-- is 0)
                 return 1 << 5;
-
             if ((*ptr & 1 << 6) is not 0 && x-- is 0)
                 return 1 << 6;
-
             if ((*ptr & 1 << 7) is not 0 && x-- is 0)
                 return 1 << 7;
         }
-
         return 0;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static unsafe int PopCount(T* value)
@@ -5642,7 +4974,6 @@ readonly
     {
         var ptr = (nuint*)value++;
         var sum = 0;
-
         if (sizeof(T) / (sizeof(nuint) * 16) > 0)
         {
             for (; ptr <= (nuint*)value - 16; ptr += 16)
@@ -5662,11 +4993,9 @@ readonly
                     BitOperations.PopCount(ptr[13]) +
                     BitOperations.PopCount(ptr[14]) +
                     BitOperations.PopCount(ptr[15]);
-
             if (sizeof(T) % sizeof(nuint) * 16 is 0)
                 return sum;
         }
-
         if (sizeof(T) % (sizeof(nuint) * 16) / (sizeof(nuint) * 8) > 0)
         {
             for (; ptr <= (nuint*)value - 8; ptr += 8)
@@ -5678,11 +5007,9 @@ readonly
                     BitOperations.PopCount(ptr[5]) +
                     BitOperations.PopCount(ptr[6]) +
                     BitOperations.PopCount(ptr[7]);
-
             if (sizeof(T) % sizeof(nuint) * 8 is 0)
                 return sum;
         }
-
         if (sizeof(T) % (sizeof(nuint) * 8) / (sizeof(nuint) * 4) > 0)
         {
             for (; ptr <= (nuint*)value - 4; ptr += 4)
@@ -5690,48 +5017,37 @@ readonly
                     BitOperations.PopCount(ptr[1]) +
                     BitOperations.PopCount(ptr[2]) +
                     BitOperations.PopCount(ptr[3]);
-
             if (sizeof(T) % sizeof(nuint) * 4 is 0)
                 return sum;
         }
-
         if (sizeof(T) % (sizeof(nuint) * 4) / (sizeof(nuint) * 2) > 0)
         {
             for (; ptr <= (nuint*)value - 2; ptr += 2)
                 sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
-
             if (sizeof(T) % sizeof(nuint) * 2 is 0)
                 return sum;
         }
-
         if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
         {
             for (; ptr < value; ptr++)
                 sum += BitOperations.PopCount(*ptr);
-
             if (sizeof(T) % sizeof(nuint) is 0)
                 return sum;
         }
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return sum;
-
         if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
         {
             for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
                 sum += BitOperations.PopCount(*ptr);
-
             if (sizeof(T) % sizeof(nuint) is 0)
                 return sum;
         }
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return sum;
-
         return sum + PopCountRemainder((byte*)ptr);
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe int TrailingZeroCount(nuint value)
 #if NET7_0_OR_GREATER
         =>
@@ -5739,17 +5055,14 @@ readonly
 #else
     {
         const int BitsInUInt = BitsInByte * sizeof(uint);
-
         for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
             if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
                 return j + i * BitsInUInt;
-
         return sizeof(nuint) * BitsInByte;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static int Map([ValueRange(0, 1u << 31)] uint value) =>
-        value switch // Always a power of two.
+        value switch
         {
             0 => 32,
             1 << 0 => 0,
@@ -5787,7 +5100,6 @@ readonly
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
         };
 #endif
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static unsafe int PopCountRemainder(byte* remainder) =>
         BitOperations.PopCount(
@@ -5803,7 +5115,6 @@ readonly
                 _ => throw new InvalidOperationException("sizeof(T) is assumed to be within [1, 7]."),
             }
         );
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Create(T* p, byte* ptr, byte i)
     {
@@ -5811,28 +5122,22 @@ readonly
         ((byte*)&t)[ptr - (byte*)p] = i;
         return t;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T Nth(T* p, [NonNegativeValue] int index)
     {
         var x = index;
         var ptr = (byte*)p;
         var upper = (byte*)(p + 1);
-
         if (sizeof(T) >= sizeof(uint))
             MovePopCount(ref ptr, upper, ref x);
-
         return Find(ref ptr, upper, x) is not 0 and var i
             ? Create(p, ptr, i)
             : throw new ArgumentOutOfRangeException(nameof(index), index, null);
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable 8500, MA0051
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
-
-
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -5852,7 +5157,6 @@ readonly
         fixed (T* w = &write)
             And(r, w);
     }
-
     /// <summary>Computes the Bitwise-AND-NOT computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
@@ -5863,7 +5167,6 @@ readonly
         fixed (T* w = &write)
             AndNot(r, w);
     }
-
     /// <summary>Computes the Bitwise-NOT computation, writing it to the first argument.</summary>
     /// <param name="reference">The <typeparamref name="T"/> to read and write from.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -5872,7 +5175,6 @@ readonly
         fixed (T* ptr = &reference)
             Not(ptr);
     }
-
     /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
@@ -5883,7 +5185,6 @@ readonly
         fixed (T* w = &write)
             Or(r, w);
     }
-
     /// <summary>Computes the Bitwise-XOR computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
@@ -5894,7 +5195,6 @@ readonly
         fixed (T* w = &write)
             Xor(r, w);
     }
-
     /// <summary>Determines whether both references of <typeparamref name="T"/> contain the same bits.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -5909,7 +5209,6 @@ readonly
         fixed (T* r = &right)
             return Eq(l, r);
     }
-
     /// <summary>Determines whether both references of <typeparamref name="T"/> contain the same bits.</summary>
     /// <param name="reference">The reference to determine if it is zeroed.</param>
     /// <returns>
@@ -5935,7 +5234,6 @@ readonly
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref readonly T Clamp(in T number, in T min, in T max) => ref Max(Min(number, max), min);
-
     /// <summary>Returns the reference that contains the greater bits.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -5950,7 +5248,6 @@ readonly
         fixed (T* w = &right)
             return ref Unsafe.AsRef<T>(Max(r, w));
     }
-
     /// <summary>Returns the reference that contains the lesser bits.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -5966,7 +5263,6 @@ readonly
             return ref Unsafe.AsRef<T>(Min(r, w));
     }
 #endif
-
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -5980,7 +5276,6 @@ readonly
         {
             for (; l <= upper - 64; l += 64, r += 64)
                 *(Vector512<byte>*)r = Vector512.BitwiseAnd(Vector512.Load(l), Vector512.Load(r));
-
             if (sizeof(T) % 64 is 0)
                 return;
         }
@@ -5990,57 +5285,43 @@ readonly
         {
             for (; l <= upper - 32; l += 32, r += 32)
                 *(Vector256<byte>*)r = Vector256.BitwiseAnd(Vector256.Load(l), Vector256.Load(r));
-
             if (sizeof(T) % 32 is 0)
                 return;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
                 *(Vector128<byte>*)r = Vector128.BitwiseAnd(Vector128.Load(l), Vector128.Load(r));
-
             if (sizeof(T) % 16 is 0)
                 return;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
                 *(Vector64<byte>*)r = Vector64.BitwiseAnd(Vector64.Load(l), Vector64.Load(r));
-
             if (sizeof(T) % 8 is 0)
                 return;
         }
 #endif
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             *(nuint*)r = *(nuint*)l & *(nuint*)r;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
             *(ulong*)r = *(ulong*)l & *(ulong*)r;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
             *(uint*)r = *(uint*)l & *(uint*)r;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
             *(ushort*)r = (ushort)(*(ushort*)l & *(ushort*)r);
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return;
-
         for (; l < upper; l++, r++)
             *r = (byte)(*l & *r);
     }
-
     /// <summary>Computes the Bitwise-AND-NOT computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -6054,7 +5335,6 @@ readonly
         {
             for (; l <= upper - 64; l += 64, r += 64)
                 *(Vector512<byte>*)r = Vector512.AndNot(Vector512.Load(l), Vector512.Load(r));
-
             if (sizeof(T) % 64 is 0)
                 return;
         }
@@ -6064,57 +5344,43 @@ readonly
         {
             for (; l <= upper - 32; l += 32, r += 32)
                 *(Vector256<byte>*)r = Vector256.AndNot(Vector256.Load(l), Vector256.Load(r));
-
             if (sizeof(T) % 32 is 0)
                 return;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
                 *(Vector128<byte>*)r = Vector128.AndNot(Vector128.Load(l), Vector128.Load(r));
-
             if (sizeof(T) % 16 is 0)
                 return;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
                 *(Vector64<byte>*)r = Vector64.AndNot(Vector64.Load(l), Vector64.Load(r));
-
             if (sizeof(T) % 8 is 0)
                 return;
         }
 #endif
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             *(nuint*)r = *(nuint*)l & ~*(nuint*)r;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
             *(ulong*)r = *(ulong*)l & ~*(ulong*)r;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
             *(uint*)r = *(uint*)l & ~*(uint*)r;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
             *(ushort*)r = (ushort)(*(ushort*)l & ~*(ushort*)r);
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return;
-
         for (; l < upper; l++, r++)
             *r = (byte)(*l & ~*r);
     }
-
     /// <summary>Computes the Bitwise-NOT computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="ptr">The <typeparamref name="T"/> to read and write from.</param>
@@ -6127,7 +5393,6 @@ readonly
         {
             for (; x <= upper - 64; x += 64)
                 *(Vector512<byte>*)x = Vector512.OnesComplement(Vector512.Load(x));
-
             if (sizeof(T) % 64 is 0)
                 return;
         }
@@ -6137,57 +5402,43 @@ readonly
         {
             for (; x <= upper - 32; x += 32)
                 *(Vector256<byte>*)x = Vector256.OnesComplement(Vector256.Load(x));
-
             if (sizeof(T) % 32 is 0)
                 return;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; x <= upper - 16; x += 16)
                 *(Vector128<byte>*)x = Vector128.OnesComplement(Vector128.Load(x));
-
             if (sizeof(T) % 16 is 0)
                 return;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; x <= upper - 8; x += 8)
                 *(Vector64<byte>*)x = Vector64.OnesComplement(Vector64.Load(x));
-
             if (sizeof(T) % 8 is 0)
                 return;
         }
 #endif
         for (; x <= upper - sizeof(nuint); x += sizeof(nuint))
             *(nuint*)x = ~*(nuint*)x;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
-
         for (; x <= upper - sizeof(ulong); x += sizeof(ulong))
             *(ulong*)x = ~*(ulong*)x;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return;
-
         for (; x <= upper - sizeof(uint); x += sizeof(uint))
             *(uint*)x = ~*(uint*)x;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return;
-
         for (; x <= upper - sizeof(ushort); x += sizeof(ushort))
             *(ushort*)x = (ushort)~*(ushort*)x;
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return;
-
         for (; x < upper; x++)
             *x = (byte)~*x;
     }
-
     /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -6201,7 +5452,6 @@ readonly
         {
             for (; l <= upper - 64; l += 64, r += 64)
                *(Vector512<byte>*)r = Vector512.BitwiseOr(Vector512.Load(l), Vector512.Load(r));
-
             if (sizeof(T) % 64 is 0)
                 return;
         }
@@ -6211,57 +5461,43 @@ readonly
         {
             for (; l <= upper - 32; l += 32, r += 32)
                 *(Vector256<byte>*)r = Vector256.BitwiseOr(Vector256.Load(l), Vector256.Load(r));
-
             if (sizeof(T) % 32 is 0)
                 return;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
                 *(Vector128<byte>*)r = Vector128.BitwiseOr(Vector128.Load(l), Vector128.Load(r));
-
             if (sizeof(T) % 16 is 0)
                 return;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
                 *(Vector64<byte>*)r = Vector64.BitwiseOr(Vector64.Load(l), Vector64.Load(r));
-
             if (sizeof(T) % 8 is 0)
                 return;
         }
 #endif
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             *(nuint*)r = *(nuint*)l | *(nuint*)r;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
             *(ulong*)r = *(ulong*)l | *(ulong*)r;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
             *(uint*)r = *(uint*)l | *(uint*)r;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
             *(ushort*)r = (ushort)(*(ushort*)l | *(ushort*)r);
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return;
-
         for (; l < upper; l++, r++)
             *r = (byte)(*l | *r);
     }
-
     /// <summary>Computes the Bitwise-XOR computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -6275,7 +5511,6 @@ readonly
         {
             for (; l <= upper - 64; l += 64, r += 64)
                 *(Vector512<byte>*)r = Vector512.Xor(Vector512.Load(l), Vector512.Load(r));
-
             if (sizeof(T) % 64 is 0)
                 return;
         }
@@ -6285,57 +5520,43 @@ readonly
         {
             for (; l <= upper - 32; l += 32, r += 32)
                 *(Vector256<byte>*)r = Vector256.Xor(Vector256.Load(l), Vector256.Load(r));
-
             if (sizeof(T) % 32 is 0)
                 return;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
                 *(Vector128<byte>*)r = Vector128.Xor(Vector128.Load(l), Vector128.Load(r));
-
             if (sizeof(T) % 16 is 0)
                 return;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
                 *(Vector64<byte>*)r = Vector64.Xor(Vector64.Load(l), Vector64.Load(r));
-
             if (sizeof(T) % 8 is 0)
                 return;
         }
 #endif
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             *(nuint*)r = *(nuint*)l ^ *(nuint*)r;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
             *(ulong*)r = *(ulong*)l ^ *(ulong*)r;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
             *(uint*)r = *(uint*)l ^ *(uint*)r;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
             *(ushort*)r = (ushort)(*(ushort*)l ^ *(ushort*)r);
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return;
-
         for (; l < upper; l++, r++)
             *r = (byte)(*l ^ *r);
     }
-
     /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="left">The left-hand side.</param>
@@ -6354,7 +5575,6 @@ readonly
             for (; l <= upper - 64; l += 64, r += 64)
                 if (!Vector512.EqualsAll(Vector512.Load(l), Vector512.Load(r)))
                     return false;
-
             if (sizeof(T) % 64 is 0)
                 return true;
         }
@@ -6365,27 +5585,22 @@ readonly
             for (; l <= upper - 32; l += 32, r += 32)
                 if (!Vector256.EqualsAll(Vector256.Load(l), Vector256.Load(r)))
                     return false;
-
             if (sizeof(T) % 32 is 0)
                 return true;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; l <= upper - 16; l += 16, r += 16)
                 if (!Vector128.EqualsAll(Vector128.Load(l), Vector128.Load(r)))
                     return false;
-
             if (sizeof(T) % 16 is 0)
                 return true;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; l <= upper - 8; l += 8, r += 8)
                 if (!Vector64.EqualsAll(Vector64.Load(l), Vector64.Load(r)))
                     return false;
-
             if (sizeof(T) % 8 is 0)
                 return true;
         }
@@ -6393,38 +5608,28 @@ readonly
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
             if (*(nuint*)l != *(nuint*)r)
                 return false;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return true;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
             if (*(ulong*)l != *(ulong*)r)
                 return false;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return true;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
             if (*(uint*)l != *(uint*)r)
                 return false;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return true;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
             if (*(ushort*)l != *(ushort*)r)
                 return false;
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return true;
-
         for (; l < upper; l++, r++)
             if (*l != *r)
                 return false;
-
         return true;
     }
-
     /// <summary>Determines whether the pointer of <typeparamref name="T"/> contains all zeros.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="ptr">The pointer to determine if it is zeroed.</param>
@@ -6442,7 +5647,6 @@ readonly
             for (; x <= upper - 64; x += 64)
                 if (!Vector512.EqualsAll(Vector512.Load(x), Vector512<byte>.Zero))
                     return false;
-
             if (sizeof(T) % 64 is 0)
                 return true;
         }
@@ -6453,27 +5657,22 @@ readonly
             for (; x <= upper - 32; x += 32)
                 if (!Vector256.EqualsAll(Vector256.Load(x), Vector256<byte>.Zero))
                     return false;
-
             if (sizeof(T) % 32 is 0)
                 return true;
         }
-
         if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
         {
             for (; x <= upper - 16; x += 16)
                 if (!Vector128.EqualsAll(Vector128.Load(x), Vector128<byte>.Zero))
                     return false;
-
             if (sizeof(T) % 16 is 0)
                 return true;
         }
-
         if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
         {
             for (; x <= upper - 8; x += 8)
                 if (!Vector64.EqualsAll(Vector64.Load(x), Vector64<byte>.Zero))
                     return false;
-
             if (sizeof(T) % 8 is 0)
                 return true;
         }
@@ -6481,38 +5680,28 @@ readonly
         for (; x <= upper - sizeof(nuint); x += sizeof(nuint))
             if (*(nuint*)x is not 0)
                 return false;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return true;
-
         for (; x <= upper - sizeof(ulong); x += sizeof(ulong))
             if (*(ulong*)x is not 0)
                 return false;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return true;
-
         for (; x <= upper - sizeof(uint); x += sizeof(uint))
             if (*(uint*)x is not 0)
                 return false;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return true;
-
         for (; x <= upper - sizeof(ushort); x += sizeof(ushort))
             if (*(ushort*)x is not 0)
                 return false;
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return true;
-
         for (; x < upper; x++)
             if (*x is not 0)
                 return false;
-
         return true;
     }
-
     /// <summary>Clamps a value such that it is not smaller or larger than the defined amount.</summary>
     /// <param name="number">The bits to clamp.</param>
     /// <param name="min">The minimum accepted value.</param>
@@ -6525,7 +5714,6 @@ readonly
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe T* Clamp(T* number, T* min, T* max) => Max(Min(number, max), min);
-
     /// <summary>Returns the pointer that contains the greater bits.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="left">The left-hand side.</param>
@@ -6538,42 +5726,31 @@ readonly
     public static unsafe T* Max(T* left, T* right)
     {
         byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
-
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint))
             if (*(nuint*)l != *(nuint*)r)
                 return *(nuint*)l >= *(nuint*)r ? left : right;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return left;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong))
             if (*(ulong*)l != *(ulong*)r)
                 return *(ulong*)l >= *(ulong*)r ? left : right;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return left;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint))
             if (*(uint*)l != *(uint*)r)
                 return *(uint*)l >= *(uint*)r ? left : right;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return left;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort))
             if (*(ushort*)l != *(ushort*)r)
                 return *(ushort*)l >= *(ushort*)r ? left : right;
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return left;
-
         for (; l < upper; l++)
             if (*l != *r)
                 return *l >= *r ? left : right;
-
         return left;
     }
-
     /// <summary>Returns the pointer that contains the lesser bits.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="left">The left-hand side.</param>
@@ -6586,48 +5763,35 @@ readonly
     public static unsafe T* Min(T* left, T* right)
     {
         byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
-
         for (; l <= upper - sizeof(nuint); l += sizeof(nuint))
             if (*(nuint*)l != *(nuint*)r)
                 return *(nuint*)l <= *(nuint*)r ? left : right;
-
         if (sizeof(T) % sizeof(nuint) is 0)
             return left;
-
         for (; l <= upper - sizeof(ulong); l += sizeof(ulong))
             if (*(ulong*)l != *(ulong*)r)
                 return *(ulong*)l <= *(ulong*)r ? left : right;
-
         if (sizeof(T) % sizeof(ulong) is 0)
             return left;
-
         for (; l <= upper - sizeof(uint); l += sizeof(uint))
             if (*(uint*)l != *(uint*)r)
                 return *(uint*)l <= *(uint*)r ? left : right;
-
         if (sizeof(T) % sizeof(uint) is 0)
             return left;
-
         for (; l <= upper - sizeof(ushort); l += sizeof(ushort))
             if (*(ushort*)l != *(ushort*)r)
                 return *(ushort*)l <= *(ushort*)r ? left : right;
-
         if (sizeof(T) % sizeof(ushort) is 0)
             return left;
-
         for (; l < upper; l++)
             if (*l != *r)
                 return *l <= *r ? left : right;
-
         return left;
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable 8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
-
-
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -6677,56 +5841,45 @@ readonly
 #else
         (Enumerator)item is var e && e.MoveNext() && !e.MoveNext();
 #endif
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Contains(T item)
     {
         if (!IsSingle(item))
             return false;
-
         And(_value, ref item);
         return !EqZero(item);
     }
-
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-
         var collection = other.ToICollection();
-
         foreach (var next in this)
             if (collection.Contains(next))
                 Or(next, ref t);
             else
                 return false;
-
-        // ReSharper disable once LoopCanBeConvertedToQuery
+       
         foreach (var next in collection)
             if (!Contains(next))
                 return true;
-
         return false;
     }
-
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-
-        // ReSharper disable once LoopCanBeConvertedToQuery
+       
         foreach (var next in other)
             if (Contains(next))
                 Or(next, ref t);
             else
                 return false;
-
         return !Eq(_value, t);
     }
-
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other)
@@ -6734,40 +5887,29 @@ readonly
         var collection = other.ToICollection();
         return this.All(collection.Contains);
     }
-
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) => other.All(Contains);
-
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Any(Contains);
-
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool SetEquals([InstantHandle] IEnumerable<T> other)
     {
         T t = default;
-
         foreach (var next in other)
             if (IsSingle(next))
                 Or(next, ref t);
             else
                 return false;
-
         return Eq(_value, t);
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
 #pragma warning disable 8500, IDE0251, MA0102
-
-
-
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
-
     /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -6781,7 +5923,6 @@ readonly
 #endif
         =>
             source;
-
     /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -6795,13 +5936,10 @@ readonly
 #endif
     {
         T t = default;
-
         foreach (var next in source)
             Bits<T>.And(next, ref t);
-
         return t;
     }
-
     /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -6815,10 +5953,8 @@ readonly
 #endif
     {
         T t = default;
-
         foreach (var next in source)
             Bits<T>.AndNot(next, ref t);
-
         return t;
     }
 #if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
@@ -6830,7 +5966,6 @@ readonly
     public static T BitwiseMax<T>(this IEnumerable<T> source)
         where T : unmanaged =>
         source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
-
     /// <summary>Returns the reference that contains the least bits.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -6840,7 +5975,6 @@ readonly
         where T : unmanaged =>
         source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
 #endif
-
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -6854,13 +5988,10 @@ readonly
 #endif
     {
         T t = default;
-
         foreach (var next in source)
             Bits<T>.Or(next, ref t);
-
         return t;
     }
-
     /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -6874,13 +6005,10 @@ readonly
 #endif
     {
         T t = default;
-
         foreach (var next in source)
             Bits<T>.Xor(next, ref t);
-
         return t;
     }
-
 /// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="bits">The item to use.</param>
@@ -6899,48 +6027,40 @@ readonly
 #endif
 {
     static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
-
-    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
+   
     readonly T _value = bits;
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     bool ICollection<T>.IsReadOnly
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
     }
-
     /// <summary>Gets the item to use.</summary>
-    [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
+    [CollectionAccess(Read), ProvidesContext]
     public readonly T Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
     }
-
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
-
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
-
     /// <summary>Implicitly calls <see cref="Current"/>.</summary>
     /// <param name="value">The value to call <see cref="Current"/>.</param>
     /// <returns>The value that was passed in to this instance.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator Enumerator([ProvidesContext] Bits<T> value) => value.Current;
-
     /// <summary>Implicitly calls <see cref="Current"/>.</summary>
     /// <param name="value">The value to call <see cref="Current"/>.</param>
     /// <returns>The value that was passed in to this instance.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator T(Bits<T> value) => value.Current;
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void CopyTo(T[] array, int arrayIndex)
@@ -6948,47 +6068,36 @@ readonly
         foreach (var next in this)
             array[arrayIndex++] = next;
     }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ICollection<T>.Add(T item) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ICollection<T>.Clear() { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IList<T>.Insert(int index, T item) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void IList<T>.RemoveAt(int index) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ISet<T>.UnionWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool ICollection<T>.Remove(T item) => false;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     bool ISet<T>.Add(T item) => false;
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int IndexOf(T item)
@@ -6996,33 +6105,26 @@ readonly
         if ((Enumerator)item is var e && !e.MoveNext() ||
             e.Mask is var mask && e.Index is var index && e.MoveNext())
             return -1;
-
         var that = (Enumerator)this;
-
         for (var i = 0; that.MoveNext(); i++)
             if (that.Mask == mask && that.Index == index)
                 return i;
             else if (that.Mask > mask || that.Index > index)
                 return -1;
-
         return -1;
     }
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
-
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetEnumerator() => _value;
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -7036,9 +6138,9 @@ readonly
     /// <example>
     /// <para>Visual description of how the coercion works:</para>
     /// <code lang="C#"><![CDATA[
-    /// var bits = ((ushort)0b0101_0110).AsBits(); // 0b0000_1111_0101_0110
-    /// var padding = bits.Coerce<int>(); // 0b0000_0000_0000_0000_0000_1111_0101_0110
-    /// var truncation = bits.Coerce<byte>(); // 0b0101_0110
+    /// var bits = ((ushort)0b0101_0110).AsBits();
+    /// var padding = bits.Coerce<int>();
+    /// var truncation = bits.Coerce<byte>();
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
@@ -7057,13 +6159,10 @@ readonly
             *(T*)&ret = value;
             return ret;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Read(T value) => *(TResult*)&value;
-
         return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
     }
-
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
     /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
@@ -7073,9 +6172,9 @@ readonly
     /// <example>
     /// <para>Visual description of how the coercion works:</para>
     /// <code lang="C#"><![CDATA[
-    /// var bits = ((ushort)0b0101_0110).AsBits(); // 0b0000_1111_0101_0110
-    /// var padding = bits.Coerce<int>(); // 0b0000_1111_0101_0110_0000_0000_0000_0000
-    /// var truncation = bits.Coerce<byte>(); // 0b0000_1111
+    /// var bits = ((ushort)0b0101_0110).AsBits();
+    /// var padding = bits.Coerce<int>();
+    /// var truncation = bits.Coerce<byte>();
     /// ]]></code></example></remarks>
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
@@ -7095,23 +6194,18 @@ readonly
             ((T*)(&ret + 1))[-1] = value;
             return ret;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
-
         return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
             sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
     }
-
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
         const int Start = -1;
-
         readonly T _value = value;
-
         /// <summary>Gets the current mask.</summary>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public nuint Mask
@@ -7119,7 +6213,6 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
-
         /// <summary>Gets the current index.</summary>
         [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public nint Index
@@ -7127,21 +6220,18 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         } = Start;
-
         /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
         [CollectionAccess(Read)]
         public readonly Bits<T> AsBits
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
         }
-
         /// <summary>Gets the underlying value that is being enumerated.</summary>
         [CollectionAccess(Read)]
         public readonly T AsValue
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
         }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public readonly unsafe T Current
@@ -7154,31 +6244,26 @@ readonly
                 return t;
             }
         }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         readonly object IEnumerator.Current
         {
-            // ReSharper disable once AssignNullToNotNullAttribute
+           
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
         }
-
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
         /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static implicit operator Enumerator(T value) => new(value);
-
         /// <summary>Implicitly calls <see cref="Current"/>.</summary>
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static explicit operator T(Enumerator value) => value.Current;
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
         readonly void IDisposable.Dispose() { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
@@ -7186,29 +6271,24 @@ readonly
             Index = Start;
             Mask = 0;
         }
-
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe bool MoveNext()
         {
             Mask <<= 1;
-
             if (Mask is 0)
             {
                 Index++;
                 Mask++;
             }
-
             fixed (T* ptr = &_value)
                 if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
                     sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
                     return true;
-
             Index = sizeof(T) / sizeof(nuint);
             Mask = FalsyMask();
             return false;
         }
-
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public readonly override string ToString()
@@ -7216,7 +6296,6 @@ readonly
             var that = this;
             return that.ToRemainingString();
         }
-
         /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
         /// <returns>The <see cref="string"/> result of this instance.</returns>
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
@@ -7225,63 +6304,47 @@ readonly
             var ptr = stackalloc char[s_typeSize];
             new Span<char>(ptr, s_typeSize).Fill('0');
             var last = ptr + s_typeSize - 1;
-
             while (MoveNext())
                 *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
-
             return new(ptr, 0, s_typeSize);
         }
-
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
-
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
-
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindNativelySized(T* ptr)
         {
-            // This check is normally unreachable, however it protects against out-of-bounds
-            // reads if this enumerator instance was created through unsafe means.
+           
+           
             if (Index < 0)
                 return false;
-
             for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
                 for (; Mask is not 0; Mask <<= 1)
                     if (IsNonZero(ptr))
                         return true;
-
             return false;
         }
-
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool FindRest(T* ptr)
         {
-            // This check is normally unreachable, however it protects against out-of-bounds
-            // reads if this enumerator instance was created through unsafe means.
+           
+           
             if (Index != sizeof(T) / sizeof(nuint))
                 return false;
-
             for (; (Mask & LastRest()) is not 0; Mask <<= 1)
                 if (IsNonZero(ptr))
                     return true;
-
             return false;
         }
-
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
-
-
-
 /// <summary>Extension methods that act as factories for <see cref="Once{T}"/>.</summary>
-
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -7289,7 +6352,6 @@ readonly
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
     public static Once<T> Yield<T>(this T source, bool condition = true) => condition ? source : [];
-
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -7297,7 +6359,6 @@ readonly
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
     public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? source : [];
-
     /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -7305,7 +6366,6 @@ readonly
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
     public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? source : [];
-
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -7314,7 +6374,6 @@ readonly
     public static Once<T> YieldValued<T>(this T? source)
         where T : class =>
         source is null ? [] : source;
-
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -7323,7 +6382,6 @@ readonly
     public static Once<T> YieldValued<T>(this T? source)
         where T : struct =>
         source.HasValue ? source.Value : [];
-
 /// <summary>A factory for creating iterator types that yields an item once.</summary>
 /// <typeparam name="T">The type of the item to yield.</typeparam>
 /// <param name="value">The item to use.</param>
@@ -7345,23 +6403,18 @@ readonly
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ICollection<T>.IsReadOnly => true;
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     int IReadOnlyCollection<T>.Count => HasValue ? 1 : 0;
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     int ICollection<T>.Count => HasValue ? 1 : 0;
-
     /// <summary>Gets a value indicating whether this is a default value.</summary>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure] // ReSharper disable once ReplaceAutoPropertyWithComputedProperty
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public bool HasValue { get; } = true;
-
     /// <summary>Gets the item to use.</summary>
     [CollectionAccess(Read), ProvidesContext, Pure]
     public T Current => value;
-
     /// <inheritdoc cref="IList{T}.this"/>
     [Pure]
     T IList<T>.this[int _]
@@ -7369,189 +6422,150 @@ readonly
         [CollectionAccess(Read)] get => value;
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
     }
-
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(Read), Pure]
     T IReadOnlyList<T>.this[int _] => value;
-
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public static explicit operator Once<T>([ProvidesContext] Enumerator value) => value.Current;
-
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
     /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public static implicit operator Once<T>([ProvidesContext] T value) => new(value);
-
     /// <summary>Implicitly calls <see cref="Current"/>.</summary>
     /// <param name="value">The value to call <see cref="Current"/>.</param>
     /// <returns>The value that was passed in to this instance.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     public static implicit operator Enumerator([ProvidesContext] Once<T> value) => value.Current;
-
     /// <summary>Implicitly calls <see cref="Current"/>.</summary>
     /// <param name="value">The value to call <see cref="Current"/>.</param>
     /// <returns>The value that was passed in to this instance.</returns>
     [CollectionAccess(Read), Pure]
     public static implicit operator T(Once<T> value) => value.Current;
-
     /// <summary>Determines whether both items are equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both items are equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(Once<T> left, Once<T> right) => left.Equals(right);
-
     /// <summary>Determines whether both items are unequal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both items are not unequal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(Once<T> left, Once<T> right) => !left.Equals(right);
-
     /// <summary>Determines whether the left-hand side is greater than the right.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether the left-hand side is greater than the right.</returns>
     public static bool operator >(Once<T> left, Once<T> right) => left.CompareTo(right) > 0;
-
     /// <summary>Determines whether the left-hand side is greater than or equal to the right.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether the left-hand side is greater than or equal to the right.</returns>
     public static bool operator >=(Once<T> left, Once<T> right) => left.CompareTo(right) >= 0;
-
     /// <summary>Determines whether the left-hand side is less than the right.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether the left-hand side is less than the right.</returns>
     public static bool operator <(Once<T> left, Once<T> right) => left.CompareTo(right) < 0;
-
     /// <summary>Determines whether the left-hand side is less than or equal to than the right.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether the left-hand side is less than or equal to than the right.</returns>
     public static bool operator <=(Once<T> left, Once<T> right) => left.CompareTo(right) <= 0;
-
     /// <inheritdoc />
     [CollectionAccess(Read)]
     public void CopyTo(T[] array, int arrayIndex) => array[arrayIndex] = value;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ICollection<T>.Add(T? item) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ICollection<T>.Clear() { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void IList<T>.Insert(int index, T? item) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void IList<T>.RemoveAt(int index) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     void ISet<T>.UnionWith(IEnumerable<T>? other) { }
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(Read), Pure]
     public bool Contains(T item) => EqualityComparer<T>.Default.Equals(value, item);
-
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsProperSubsetOf([InstantHandle] IEnumerable<T> other) =>
         HasValue
             ? other.Any()
             : other.ToICollection() is { Count: > 1 } c && Overlaps(c);
-
     /// <inheritdoc cref="ISet{T}.IsProperSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsProperSupersetOf([InstantHandle] IEnumerable<T> other) => HasValue && !other.Any();
-
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSubsetOf([InstantHandle] IEnumerable<T> other) => !HasValue || Overlaps(other);
-
     /// <inheritdoc cref="ISet{T}.IsSupersetOf" />
     [CollectionAccess(Read), Pure]
     public bool IsSupersetOf([InstantHandle] IEnumerable<T> other) =>
         !HasValue || other.ToICollection() is { Count: <= 1 } c && Overlaps(c);
-
     /// <inheritdoc cref="ISet{T}.Overlaps" />
     [CollectionAccess(Read), Pure]
     public bool Overlaps([InstantHandle] IEnumerable<T> other) => other.Contains(value);
-
     /// <inheritdoc cref="ISet{T}.SetEquals" />
     [CollectionAccess(Read), Pure]
     public bool SetEquals([InstantHandle] IEnumerable<T> other) => HasValue ? !other.Any() : other.SequenceEqual(this);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ICollection<T>.Remove(T? item) => false;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     bool ISet<T>.Add(T? item) => false;
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public override bool Equals(object? other) => other is Once<T> once && Equals(once);
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public bool Equals(Once<T> other) => EqualityComparer<T>.Default.Equals(value, other);
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public int CompareTo(Once<T> other) => Comparer<T>.Default.Compare(value, other.Current);
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public override int GetHashCode() =>
         value is null ? -2 : unchecked(EqualityComparer<T>.Default.GetHashCode(value) * 37);
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public int IndexOf(T item) => Contains(item) ? 0 : -1;
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public override string ToString() => value?.ToString() ?? "";
-
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MustDisposeResource(false), Pure]
     public Enumerator GetEnumerator() => HasValue ? new(value) : default;
-
     /// <inheritdoc />
     [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(Read), MustDisposeResource(false), Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
     IOrderedEnumerable<T> IOrderedEnumerable<T>.CreateOrderedEnumerable<TKey>(
@@ -7560,63 +6574,47 @@ readonly
         bool descending
     ) =>
         this;
-
     /// <summary>An enumerator over <see cref="Once{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
         static readonly object s_fallback = new();
-
-        // ReSharper disable once ConvertToConstant.Local
+       
         readonly bool _hasValue = true;
-
         bool _canMove = true;
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public readonly T Current => value;
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         readonly object IEnumerator.Current => value ?? s_fallback;
-
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
         /// <returns>A new instance of <see cref="Once{T}"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
         public static implicit operator Enumerator(T value) => new(value);
-
         /// <summary>Implicitly calls <see cref="Current"/>.</summary>
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), Pure]
         public static explicit operator T(Enumerator value) => value.Current;
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         readonly void IDisposable.Dispose() { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public bool MoveNext() => _canMove && !(_canMove = false);
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public void Reset() => _canMove = _hasValue;
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
-
 #if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for read-only lists.</summary>
-
     /// <summary>Encapsulates an <see cref="IList{T}"/> and make all mutating methods a no-op.</summary>
     /// <typeparam name="T">The type of element in the list.</typeparam>
     /// <param name="list">The list to encapsulate.</param>
@@ -7625,11 +6623,9 @@ readonly
         /// <inheritdoc />
         [Pure]
         public bool IsReadOnly => true;
-
         /// <inheritdoc cref="ICollection{T}.Count"/>
         [CollectionAccess(Read), Pure]
         public int Count => list.Count;
-
         /// <inheritdoc cref="IList{T}.this" />
         [Pure]
         public T this[int index]
@@ -7637,52 +6633,40 @@ readonly
             [CollectionAccess(Read)] get => list[index];
             [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)] set { }
         }
-
         /// <inheritdoc />
         [CollectionAccess(Read)]
         public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         void ICollection<T>.Add(T? item) { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         void ICollection<T>.Clear() { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         void IList<T>.Insert(int index, T? item) { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         void IList<T>.RemoveAt(int index) { }
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public bool Contains(T item) => list.Contains(item);
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
         bool ICollection<T>.Remove(T? item) => false;
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public int IndexOf(T item) => list.IndexOf(item);
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public override string ToString() => list.ToString() ?? "";
     }
-
     /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to a read-only list.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a read-only list.</param>
@@ -7694,16 +6678,9 @@ readonly
             ? null
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace StructCanBeMadeReadOnly
-
-
-
-
 /// <summary>Extension methods that act as factories for <see cref="Yes{T}"/>.</summary>
-
     /// <summary>A factory for creating iterator types that yield the same item forever.</summary>
     /// <typeparam name="T">The type of the item to yield.</typeparam>
     /// <param name="value">The item to use.</param>
@@ -7717,65 +6694,51 @@ readonly
         /// <inheritdoc />
         [CollectionAccess(Read), ProvidesContext, Pure]
         public T Current => value;
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         object IEnumerator.Current => value ?? new object();
-
         /// <summary>Implicitly calls the constructor.</summary>
         /// <param name="value">The value to pass into the constructor.</param>
         /// <returns>A new instance of <see cref="Yes{T}"/> with <paramref name="value"/> passed in.</returns>
         [CollectionAccess(Read), Pure]
         public static implicit operator Yes<T>([ProvidesContext] T value) => new(value);
-
         /// <summary>Implicitly calls <see cref="Current"/>.</summary>
         /// <param name="value">The value to call <see cref="Current"/>.</param>
         /// <returns>The value that was passed in to this instance.</returns>
         [CollectionAccess(Read), Pure]
         public static implicit operator T(Yes<T> value) => value.Current;
-
         /// <summary>Returns itself.</summary>
         /// <remarks><para>Used to allow <see langword="foreach"/> to be used on <see cref="Yes{T}"/>.</para></remarks>
         /// <returns>Itself.</returns>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
         public Yes<T> GetEnumerator() => this;
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         void IDisposable.Dispose() { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         void IEnumerator.Reset() { }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
         bool IEnumerator.MoveNext() => true;
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MustDisposeResource(false), Pure]
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
     }
-
     /// <summary>Creates a <see cref="Yes{T}"/> from an item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The <see cref="Yes{T}"/> instance that can be yielded forever.</returns>
     [Pure]
     public static Yes<T> Forever<T>(this T source) => source;
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable UnusedMember.Local
 // ReSharper disable once CheckNamespace
-
 #pragma warning disable 8619
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
-
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="iterable">The item to return with adjusted nullability.</param>
@@ -7783,7 +6746,6 @@ readonly
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static IEnumerable<T?>? ItemCanBeNull<T>(this IEnumerable<T>? iterable) => iterable;
-
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="iterator">The item to return with adjusted nullability.</param>
@@ -7791,7 +6753,6 @@ readonly
     [Pure]
     [return: NotNullIfNotNull(nameof(iterator))]
     public static IEnumerator<T?>? ItemCanBeNull<T>(this IEnumerator<T>? iterator) => iterator;
-
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="collection">The item to return with adjusted nullability.</param>
@@ -7799,7 +6760,6 @@ readonly
     [Pure]
     [return: NotNullIfNotNull(nameof(collection))]
     public static IReadOnlyCollection<T?>? ItemCanBeNull<T>(this IReadOnlyCollection<T>? collection) => collection;
-
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="list">The item to return with adjusted nullability.</param>
@@ -7807,7 +6767,6 @@ readonly
     [Pure]
     [return: NotNullIfNotNull(nameof(list))]
     public static IReadOnlyList<T?>? ItemCanBeNull<T>(this IReadOnlyList<T>? list) => list;
-
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
     /// <param name="set">The item to return with adjusted nullability.</param>
@@ -7815,7 +6774,6 @@ readonly
     [Pure]
     [return: NotNullIfNotNull(nameof(set))]
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
-
     /// <summary>Returns the list if all items are non-null.</summary>
     /// <typeparam name="T">The type of list.</typeparam>
     /// <param name="list">The list to filter.</param>
@@ -7828,22 +6786,17 @@ readonly
     {
         if (list is null)
             return null;
-
-        // ReSharper disable once ForCanBeConvertedToForeach LoopCanBeConvertedToQuery
+       
         for (var i = 0; i < list.Count; i++)
             if (list[i] is null)
                 return null;
-
         return list;
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-#pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
+#pragma warning disable IDE0180
 /// <summary>Extension methods for randomized getters.</summary>
-
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
@@ -7856,50 +6809,40 @@ readonly
     {
         selector ??= Rand();
         var list = iterable.ToIList();
-
         for (var j = list.Count; j >= 1; j--)
         {
             var item = selector(0, j);
-
             if (item >= j - 1)
                 continue;
-
-            // Tuples might not necessarily be imported.
+           
             var t = list[item];
             list[item] = list[j - 1];
             list[j - 1] = t;
         }
-
         return list;
     }
-
     /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
     public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
     {
         selector ??= Rand();
-
         for (var j = iterable.Length; j >= 1; j--)
         {
             var item = selector(0, j);
-
             if (item >= j - 1)
                 continue;
-
-            // Tuples might not necessarily be imported.
+           
             var t = iterable[item];
             iterable[item] = iterable[j - 1];
             iterable[j - 1] = t;
         }
-
         return iterable;
     }
-
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
     /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [MustUseReturnValue]
     public static T PickRandom<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
@@ -7915,9 +6858,7 @@ readonly
             return list[selector(0, list.Count)]
 #endif
         }
-
         selector ??= Rand();
-
         return iterable switch
         {
             IList<T> list => list[selector(0, list.Count)],
@@ -7926,12 +6867,10 @@ readonly
             _ => Fallback(iterable, selector),
         };
     }
-
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
     public static T PickRandom<T>([InstantHandle] this scoped Span<T> iterable, Func<int, int, int>? selector = null) =>
         iterable.ReadOnly().PickRandom(selector);
-
     /// <inheritdoc cref="PickRandom{T}(IEnumerable{T}, Func{int, int, int})" />
     [MustUseReturnValue]
     public static T PickRandom<T>(
@@ -7942,7 +6881,6 @@ readonly
         selector ??= Rand();
         return iterable[selector(0, iterable.Length)];
     }
-
     [Pure]
     static Func<int, int, int> Rand() =>
 #if KTANE
@@ -7950,23 +6888,17 @@ readonly
 #elif NET6_0_OR_GREATER
         Random.Shared.Next;
 #else
-        // ReSharper disable once RedundantNameQualifier
+       
         new Random().Next;
 #endif
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
-
 #pragma warning disable 8500
-
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
-
     const string E = "Value must be non-negative and less than the length.";
-
     const StringComparison DefaultCharComparer = StringComparison.Ordinal;
-
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -7974,7 +6906,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double Jaro(this string? left, string? right) =>
         string.Equals(left, right, DefaultCharComparer) ? 1 : left.Jaro(right, EqualityComparer<char>.Default);
-
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -7985,7 +6916,6 @@ readonly
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         Jaro(left, right, static x => x.Length, static (x, i) => x[i], comparer);
-
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
@@ -7994,7 +6924,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double Jaro(this string? left, string? right, IEqualityComparer<char>? comparer) =>
         left.Jaro(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
     /// <remarks><para>Like <see cref="Jaro(string, string)"/>, but with a bias to common sub-slices.</para></remarks>
     /// <param name="left">The left-hand side.</param>
@@ -8003,7 +6932,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik(this string? left, string? right) =>
         string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroEmik(right, EqualityComparer<char>.Default);
-
     /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro(string, string, Func{char, char, bool})"/>, but with a bias to common sub-slices.
@@ -8017,7 +6945,6 @@ readonly
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         JaroEmik(left, right, static x => x.Length, static (x, i) => x[i], comparer);
-
     /// <summary>Calculates the Jaro-Emik similarity between two strings.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro(string, string, IEqualityComparer{char})"/>, but with a bias to common sub-slices.
@@ -8029,7 +6956,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik(this string? left, string? right, IEqualityComparer<char>? comparer) =>
         left.JaroEmik(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
     /// <remarks><para>Like <see cref="Jaro(string, string)"/>, but with a bias to common prefixes.</para></remarks>
     /// <param name="left">The left-hand side.</param>
@@ -8038,7 +6964,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler(this string? left, string? right) =>
         string.Equals(left, right, DefaultCharComparer) ? 1 : left.JaroWinkler(right, EqualityComparer<char>.Default);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro(string, string, Func{char, char, bool})"/>, but with a bias to common prefixes.
@@ -8056,7 +6981,6 @@ readonly
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         JaroWinkler(left, right, static x => x.Length, static (x, i) => x[i], comparer);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two strings.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro(string, string, IEqualityComparer{char})"/>, but with a bias to common prefixes.
@@ -8072,7 +6996,6 @@ readonly
         IEqualityComparer<char>? comparer
     ) =>
         left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8080,7 +7003,6 @@ readonly
     /// <returns>Between 0.0 and 1.0 (higher value means more similar).</returns>
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this IList<T>? left, IList<T>? right) => left.Jaro(right, EqualityComparer<T>.Default);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8092,7 +7014,6 @@ readonly
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8102,7 +7023,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double Jaro<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.Jaro(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(IList{T}, IList{T})"/>, but with a bias to common sub-slices.
@@ -8114,7 +7034,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik<T>(this IList<T>? left, IList<T>? right) =>
         left.Jaro(right, EqualityComparer<T>.Default);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(IList{T}, IList{T}, Func{T, T, bool})"/>, but with a bias to common sub-slices.
@@ -8133,7 +7052,6 @@ readonly
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         Jaro(left, right, static x => x.Count, static (x, i) => x[i], comparer);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(IList{T}, IList{T}, IEqualityComparer{T})"/>, but with a bias to common sub-slices.
@@ -8146,7 +7064,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroEmik<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.Jaro(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(IList{T}, IList{T})"/>, but with a bias to common prefixes.
@@ -8158,7 +7075,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right) =>
         left.JaroWinkler(right, EqualityComparer<T>.Default);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(IList{T}, IList{T}, Func{T, T, bool})"/>, but with a bias to common prefixes.
@@ -8177,7 +7093,6 @@ readonly
         ReferenceEquals(left, right) ? 1 :
         left is null || right is null ? 0 :
         JaroWinkler(left, right, static x => x.Count, static (x, i) => x[i], comparer);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(IList{T}, IList{T}, IEqualityComparer{T})"/>, but with a bias to common prefixes.
@@ -8190,7 +7105,6 @@ readonly
     [Pure, ValueRange(0, 1)]
     public static double JaroWinkler<T>(this IList<T>? left, IList<T>? right, IEqualityComparer<T>? comparer) =>
         left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8208,7 +7122,6 @@ readonly
 #endif
         =>
             left.Jaro(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8222,7 +7135,6 @@ readonly
 #endif
         =>
             left.ReadOnly().Jaro(right, comparer);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8239,7 +7151,7 @@ readonly
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
+       
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var l = left.Pointer;
         var r = right.Pointer;
@@ -8255,7 +7167,6 @@ readonly
                 comparer
             );
     }
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="left">The left-hand side.</param>
@@ -8273,7 +7184,6 @@ readonly
 #endif
         =>
             left.ReadOnly().Jaro(right, comparer);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -8295,7 +7205,6 @@ readonly
 #endif
         =>
             left.JaroEmik(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -8317,7 +7226,6 @@ readonly
 #endif
         =>
             left.ReadOnly().JaroEmik(right, comparer);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
@@ -8338,7 +7246,7 @@ readonly
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
+       
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var l = left.Pointer;
         var r = right.Pointer;
@@ -8354,7 +7262,6 @@ readonly
                 comparer
             );
     }
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
@@ -8376,7 +7283,6 @@ readonly
 #endif
         =>
             left.ReadOnly().JaroEmik(right, comparer);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -8398,7 +7304,6 @@ readonly
 #endif
         =>
             left.JaroWinkler(right, comparer is null ? null : comparer.Equals);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>,
@@ -8420,7 +7325,6 @@ readonly
 #endif
         =>
             left.ReadOnly().JaroWinkler(right, comparer);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(ReadOnlySpan{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
@@ -8441,7 +7345,7 @@ readonly
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
+       
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         var l = left.Pointer;
         var r = right.Pointer;
@@ -8457,7 +7361,6 @@ readonly
                 comparer
             );
     }
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T}(Span{T}, ReadOnlySpan{T}, Func{T, T, bool})"/>,
@@ -8479,7 +7382,6 @@ readonly
 #endif
         =>
             left.ReadOnly().JaroWinkler(right, comparer);
-
     /// <summary>Calculates the Jaro similarity between two sequences.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <typeparam name="TItem">The type of item within the sequence.</typeparam>
@@ -8498,7 +7400,6 @@ readonly
         [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         Jaro(left, right, counter(left), counter(right), indexer, comparer);
-
     /// <summary>Calculates the Jaro similarity between two instances.</summary>
     /// <typeparam name="T">The type of instance.</typeparam>
     /// <typeparam name="TItem">The type of item within the instance.</typeparam>
@@ -8519,7 +7420,6 @@ readonly
         [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         JaroInner(left, right, leftLength, rightLength, indexer, comparer ?? EqualityComparer<TItem>.Default.Equals);
-
     /// <summary>Calculates the Jaro-Emik similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T, TItem}(T, T, Func{T, int}, Func{T, int, TItem}, Func{TItem, TItem, bool})"/>,
@@ -8542,7 +7442,6 @@ readonly
         [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         JaroEmik(left, right, counter(left), counter(right), indexer, comparer);
-
     /// <summary>Calculates the Jaro-Emik similarity between two instances.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T, TItem}(T, T, int, int, Func{T, int, TItem}, Func{TItem, TItem, bool})"/>,
@@ -8568,17 +7467,12 @@ readonly
     )
     {
         comparer ??= EqualityComparer<TItem>.Default.Equals;
-
         var jaro = JaroInner(left, right, leftLength, rightLength, indexer, comparer);
-
         if (leftLength is 0 || rightLength is 0)
             return jaro;
-
         var slice = Slice(left, right, leftLength, rightLength, indexer, comparer) * Grade(leftLength, rightLength);
-
         return Math.Max(jaro, slice);
     }
-
     /// <summary>Calculates the Jaro-Winkler similarity between two sequences.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T, TItem}(T, T, Func{T, int}, Func{T, int, TItem}, Func{TItem, TItem, bool})"/>,
@@ -8601,7 +7495,6 @@ readonly
         [InstantHandle] Func<TItem, TItem, bool>? comparer = null
     ) =>
         JaroWinkler(left, right, counter(left), counter(right), indexer, comparer);
-
     /// <summary>Calculates the Jaro-Winkler similarity between two instances.</summary>
     /// <remarks><para>
     /// Like <see cref="Jaro{T, TItem}(T, T, int, int, Func{T, int, TItem}, Func{TItem, TItem, bool})"/>,
@@ -8627,14 +7520,11 @@ readonly
     )
     {
         comparer ??= EqualityComparer<TItem>.Default.Equals;
-
         var jaroDistance = JaroInner(left, right, leftLength, rightLength, indexer, comparer);
         var prefixLength = NumberOfEquals(left, right, leftLength, rightLength, indexer, comparer);
         var distance = JaroWinklerDistance(jaroDistance, prefixLength);
-
         return Math.Min(distance, 1);
     }
-
     [MustUseReturnValue, ValueRange(0, 1)]
     static double JaroAllocated<T, TItem>(
         scoped Span<byte> visited,
@@ -8649,7 +7539,6 @@ readonly
         int rightPreviousIndex = 0, transpositionCount = 0;
         double matchCount = 0;
         visited.Clear();
-
         for (var i = 0; i < leftLength; i++)
             if (InBounds(leftLength, rightLength, i))
                 rightPreviousIndex = Next(
@@ -8665,10 +7554,8 @@ readonly
                     ref matchCount,
                     ref transpositionCount
                 );
-
         return matchCount is 0 ? 0 : JaroDistance(leftLength, rightLength, matchCount, transpositionCount);
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, ValueRange(0, 1)]
     static double JaroInner<T, TItem>(
         T left,
@@ -8681,14 +7568,11 @@ readonly
     {
         if (leftLength is 0 || rightLength is 0)
             return (leftLength is 0 && rightLength is 0).ToByte();
-
         if (leftLength is 1 && rightLength is 1)
             return EqualsAt(left, right, 0, 0, comparer, indexer).ToByte();
-
         using var _ = rightLength.Alloc<byte>(out var span);
         return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
         scoped Span<byte> visited,
@@ -8708,19 +7592,14 @@ readonly
         {
             if (!ShouldProceed(visited, left, right, leftLength, rightLength, leftIndex, rightIndex, comparer, indexer))
                 continue;
-
             visited[rightIndex]++;
             matchCount++;
-
             if (rightIndex < rightPreviousIndex)
                 transpositionCount++;
-
             return rightIndex;
         }
-
         return rightPreviousIndex;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     static bool ShouldProceed<T, TItem>(
         Span<byte> visited,
@@ -8736,7 +7615,6 @@ readonly
         InBounds(aLen, bLen, leftIndex, rightIndex) &&
         visited[rightIndex] is 0 &&
         EqualsAt(leftLength, rightLength, leftIndex, rightIndex, comparer, indexer);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     static bool EqualsAt<T, TItem>(
         T left,
@@ -8747,7 +7625,6 @@ readonly
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer
     ) =>
         comparer(indexer(left, leftIndex), indexer(right, rightIndex));
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, ValueRange(0, 1)]
     static double Slice<T, TItem>(
         T left,
@@ -8760,26 +7637,19 @@ readonly
     {
         var score = 0;
         var isLeftSmaller = leftLength < rightLength;
-
         var small = isLeftSmaller ? left : right;
         var smallLength = isLeftSmaller ? leftLength : rightLength;
-
         var big = isLeftSmaller ? right : left;
         var bigLength = isLeftSmaller ? rightLength : leftLength;
-
         for (var i = 0; i < bigLength; i++)
         {
             var highestPossibleScore = Math.Min(bigLength - i - 1, smallLength);
-
             if (score >= highestPossibleScore)
                 break;
-
             score = SliceInner(big, small, bigLength, smallLength, indexer, comparer, i, score);
         }
-
         return (double)score / smallLength;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int SliceInner<T, TItem>(
         T big,
@@ -8793,16 +7663,13 @@ readonly
     )
     {
         var lower = -1;
-
         for (var j = 0; j < smallLength && i + j < bigLength; j++)
             if (EqualsAt(big, small, i + j, j, comparer, indexer))
                 score = Math.Max(score, j - lower);
             else
                 lower = j;
-
         return score;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int NumberOfEquals<T, TItem>(
         T left,
@@ -8814,14 +7681,11 @@ readonly
     )
     {
         var sharedLength = Math.Min(leftLength, rightLength);
-
         for (var sharedIndex = 0; sharedIndex < sharedLength; sharedIndex++)
             if (!EqualsAt(left, right, sharedIndex, sharedIndex, comparer, indexer))
                 return sharedIndex;
-
         return sharedLength;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static bool InBounds(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -8829,7 +7693,6 @@ readonly
         [NonNegativeValue] int leftIndex
     ) =>
         MinBound(leftLength, rightLength, leftIndex) <= MaxBound(leftLength, rightLength, leftIndex);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static bool InBounds(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -8839,7 +7702,6 @@ readonly
     ) =>
         MinBound(leftLength, rightLength, leftIndex) <= rightIndex &&
         rightIndex <= MaxBound(leftLength, rightLength, leftIndex);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int MaxBound(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -8847,7 +7709,6 @@ readonly
         [NonNegativeValue] int leftIndex
     ) =>
         Math.Min(SearchRange(leftLength, rightLength) + leftIndex, rightLength - 1);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int MinBound(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -8857,14 +7718,12 @@ readonly
         SearchRange(leftLength, rightLength) < leftIndex
             ? Math.Max(0, leftIndex - SearchRange(leftLength, rightLength))
             : 0;
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
     static int SearchRange(
         [ValueRange(2, int.MaxValue)] int leftLength,
         [ValueRange(2, int.MaxValue)] int rightLength
     ) =>
         Math.Max(leftLength, rightLength) / 2 - 1;
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroDistance(
         [ValueRange(2, int.MaxValue)] int leftLength,
@@ -8873,15 +7732,12 @@ readonly
         [NonNegativeValue] int transpositionCount
     ) =>
         1 / 3.0 * (matchCount / leftLength + matchCount / rightLength + (matchCount - transpositionCount) / matchCount);
-
     [MustUseReturnValue, ValueRange(0, 1)]
     static double Grade([NonNegativeValue] int leftLength, [NonNegativeValue] int rightLength) =>
         1 - 1.0 / Math.Min(leftLength + 1, rightLength + 1);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(0, 1)]
     static double JaroWinklerDistance([ValueRange(0, 1)] double jaroDistance, [NonNegativeValue] int prefixLength) =>
         jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
-
     /// <summary>Represents a pointer with a length.</summary>
     [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
@@ -8902,20 +7758,14 @@ readonly
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get => (uint)i < (uint)Length ? ((T*)pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
         }
-
         /// <summary>Gets the length.</summary>
         public int Length => length;
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
-
 /// <summary>Provides the deconstruction to extract the head and tail of a collection.</summary>
-
     /// <summary>Represents a list with no head.</summary>
     /// <typeparam name="T">The type of list to encapsulate.</typeparam>
     public sealed partial class HeadlessList<T>([ProvidesContext] IList<T> list) : IList<T>
@@ -8927,23 +7777,18 @@ readonly
             get => index is not -1 ? list[index + 1] : throw new ArgumentOutOfRangeException(nameof(index));
             set => list[index + 1] = index is not -1 ? value : throw new ArgumentOutOfRangeException(nameof(index));
         }
-
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
         public bool IsReadOnly => list.IsReadOnly;
-
         /// <inheritdoc cref="ICollection{T}.Count" />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
         public int Count => list.Count - 1;
-
         /// <inheritdoc />
         [CollectionAccess(UpdatedContent)]
         public void Add(T item) => list.Add(item);
-
         /// <inheritdoc />
         [CollectionAccess(ModifyExistingContent)]
         public void Clear() => list.Clear();
-
         /// <inheritdoc />
         [CollectionAccess(Read)]
         public void CopyTo(T[] array, int arrayIndex)
@@ -8951,25 +7796,20 @@ readonly
             for (var i = 0; i < Count && arrayIndex + i < array.Length; i++)
                 array[arrayIndex + i] = this[i];
         }
-
         /// <inheritdoc />
         [CollectionAccess(UpdatedContent)]
         public void Insert(int index, T item) =>
             list.Insert(index is not -1 ? index + 1 : throw new ArgumentOutOfRangeException(nameof(index)), item);
-
         /// <inheritdoc />
         [CollectionAccess(ModifyExistingContent)]
         public void RemoveAt(int index) =>
             list.RemoveAt(index is not -1 ? index + 1 : throw new ArgumentOutOfRangeException(nameof(index)));
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public bool Contains(T item) => list.Contains(item);
-
         /// <inheritdoc />
         [CollectionAccess(Read | ModifyExistingContent), Pure]
         public bool Remove(T item) => list.Remove(item);
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public int IndexOf(T item) =>
@@ -8979,7 +7819,6 @@ readonly
                 -1 => -1,
                 var x => x - 1,
             };
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         IEnumerator IEnumerable.GetEnumerator()
@@ -8988,7 +7827,6 @@ readonly
             ret.MoveNext();
             return ret;
         }
-
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public IEnumerator<T> GetEnumerator()
@@ -8997,25 +7835,20 @@ readonly
             ret.MoveNext();
             return ret;
         }
-
         /// <inheritdoc />
-        [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
+        [CollectionAccess(Read), Pure]
         public override string? ToString() => list.ToString();
-
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
         int Find(T item)
         {
             var count = list.Count - 1;
-
             for (var i = 0; i < count; i++)
                 if (EqualityComparer<T>.Default.Equals(list[i + 1], item))
                     return i;
-
             return -1;
         }
     }
 #endif
-
     /// <summary>Separates the head from the tail of an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="collection">The enumerable to split.</param>
@@ -9030,7 +7863,6 @@ readonly
         head = collection is null ? default : collection.FirstOrDefault();
         tail = collection.Tail();
     }
-
     /// <summary>Gets the tail of the <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="collection">The collection to extract the tail from.</param>
@@ -9040,14 +7872,10 @@ readonly
     [Pure]
     [return: NotNullIfNotNull(nameof(collection))]
     public static HeadlessList<T>? Tail<T>(this IList<T>? collection) => collection is null ? null : new(collection);
-
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantNameQualifier RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace EmptyNamespace
-
-
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
-
 
 
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -9061,7 +7889,6 @@ static class PooledSmallListBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> From<T>(ReadOnlySpan<T> span) => default(PooledSmallList<T>).Append(span);
 }
-
 /// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
 /// <typeparam name="T">The type of the collection.</typeparam>
 [CollectionBuilder(typeof(PooledSmallListBuilder), nameof(PooledSmallListBuilder.From))]
@@ -9077,18 +7904,13 @@ public ref
 #endif
 {
     const int Inlined = 0, UnmanagedHeap = 1, ArrayPool = 2;
-
     [NonNegativeValue]
     int _length;
-
     Span<T> _view;
-
     T[]? _rental;
-
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList() { }
-
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="capacity">
     /// The initial allocation, which puts it on the heap immediately but can save future resizing.
@@ -9099,24 +7921,20 @@ public ref
         MakeRoom(capacity);
         _length = 0;
     }
-
     /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <param name="view">The view to hold as the initial value.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList(Span<T> view) => _view = view;
-
     /// <inheritdoc cref="Span{T}.Empty"/>
     public static PooledSmallList<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
     }
-
     /// <inheritdoc cref="Span{T}.IsEmpty"/>
     public readonly bool IsEmpty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View.IsEmpty;
     }
-
     /// <summary>Gets a value indicating whether the elements are inlined.</summary>
     [CLSCompliant(false)]
     public readonly bool IsInlined
@@ -9126,7 +7944,6 @@ public ref
          Pure]
         get => _rental is null;
     }
-
     /// <summary>Gets a value indicating whether the elements are using the unmanaged heap.</summary>
     [CLSCompliant(false)]
     public readonly bool IsUnmanagedHeap
@@ -9135,7 +7952,6 @@ public ref
          Pure]
         get => _rental.ToAddress() is UnmanagedHeap;
     }
-
     /// <summary>Gets a value indicating whether the elements are inlined.</summary>
     [CLSCompliant(false)]
     public readonly bool IsArrayPool
@@ -9145,7 +7961,6 @@ public ref
          Pure]
         get => _rental.ToAddress() >= ArrayPool;
     }
-
     /// <inheritdoc cref="Span{T}.Length"/>
     public int Length
     {
@@ -9159,7 +7974,6 @@ public ref
             _length = newLength;
         }
     }
-
     /// <summary>Gets and transfers responsibility of disposing the inner unmanaged array to the caller.</summary>
     public unsafe nint DangerouslyTransferOwnershipUnmanaged
     {
@@ -9169,7 +7983,6 @@ public ref
         {
             if (!IsUnmanagedHeap)
                 return 0;
-
             var pointer = UnmanagedHeapPointer;
             _length = 0;
             _view = default;
@@ -9177,13 +7990,11 @@ public ref
             return pointer;
         }
     }
-
     /// <summary>Gets the buffer.</summary>
     public readonly Span<T> View
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _view[.._length];
     }
-
     /// <inheritdoc cref="ICollection{T}.Clear"/>
     public PooledSmallList<T> Reset
     {
@@ -9194,7 +8005,6 @@ public ref
             return this;
         }
     }
-
     /// <summary>Gets the entire exposed view.</summary>
     public PooledSmallList<T> Stretched
     {
@@ -9205,7 +8015,6 @@ public ref
             return this;
         }
     }
-
     /// <summary>Gets the mutable reference to the <see cref="PooledSmallList{T}"/>.</summary>
     public unsafe ref PooledSmallList<T> AsRef
     {
@@ -9218,14 +8027,12 @@ public ref
                 return ref *ptr;
         }
     }
-
     /// <summary>Gets the inner heap array, or a copy of the inlined array.</summary>
     public readonly T[] ToArrayLazily
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => IsArrayPool ? _rental : _view.ToArray();
     }
-
     /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
     public T[]? DangerouslyTransferOwnership
     {
@@ -9235,7 +8042,6 @@ public ref
         {
             if (!IsArrayPool)
                 return null;
-
             var rental = _rental;
             _length = 0;
             _view = default;
@@ -9243,47 +8049,39 @@ public ref
             return rental;
         }
     }
-
     readonly unsafe nint UnmanagedHeapPointer
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => (nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(_view));
     }
-
     /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
     public readonly Span<T> this[[NonNegativeValue] int start, [NonNegativeValue] int length]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View.Slice(start, length);
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View.Slice(start, length));
     }
-
     /// <inheritdoc cref="Span{T}.this"/>
     public readonly Span<T> this[Range range]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View[range];
         [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View[range]);
     }
-
     /// <inheritdoc cref="Span{T}.this"/>
     public readonly ref T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
     }
-
     /// <inheritdoc cref="Span{T}.this"/>
     public readonly ref T this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
     }
-
     /// <inheritdoc cref="Span{T}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(PooledSmallList<T> left, PooledSmallList<T> right) => left.View == right.View;
-
     /// <inheritdoc cref="Span{T}.op_Inequality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(PooledSmallList<T> left, PooledSmallList<T> right) => !(left == right);
-
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of <see cref="PooledSmallList{T}"/>
     /// by using the constructor <see cref="PooledSmallList{T}(int)"/>.
@@ -9295,19 +8093,16 @@ public ref
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator PooledSmallList<T>(int capacity) => new(capacity);
-
     /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
     /// <param name="span">The span.</param>
     /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator PooledSmallList<T>(Span<T> span) => new(span);
-
     /// <inheritdoc cref="AsSpan{TRef}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static PooledSmallList<T> From<TRef>(ref TRef reference)
         where TRef : struct =>
         AsSpan(ref reference);
-
     /// <summary>Reinterprets the reference as the continuous buffer of <typeparamref name="T"/>.</summary>
     /// <typeparam name="TRef">The generic representing the continuous buffer of <typeparamref name="T"/>.</typeparam>
     /// <param name="reference">The reference.</param>
@@ -9316,7 +8111,6 @@ public ref
     public static Span<T> AsSpan<TRef>(ref TRef reference)
         where TRef : struct =>
         Validate<TRef>.AsSpan(ref reference);
-
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void Dispose()
@@ -9332,20 +8126,16 @@ public ref
                 break;
         }
     }
-
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override bool Equals(object? obj) => throw Unreachable;
-
     /// <inheritdoc />
     [DoesNotReturn, Obsolete("Will always throw", true)]
     public readonly override int GetHashCode() => throw Unreachable;
-
     /// <inheritdoc cref="Span{T}.ToString"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
         typeof(T) == typeof(char) ? View.ToString() : View.ToArray().Conjoin();
-
     /// <inheritdoc cref="ICollection{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Append(T item)
@@ -9355,7 +8145,6 @@ public ref
             _view[_length++] = item;
             return this;
         }
-
         if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9364,14 +8153,12 @@ public ref
             Swap(unmanaged);
             return this;
         }
-
         var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement);
         replacement[_length++] = item;
         Swap(replacement);
         return this;
     }
-
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Append(scoped ReadOnlySpan<T> collection)
@@ -9382,7 +8169,6 @@ public ref
             _length += collection.Length;
             return this;
         }
-
         if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9392,7 +8178,6 @@ public ref
             Swap(unmanaged);
             return this;
         }
-
         var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement);
         collection.CopyTo(replacement.AsSpan()[_length..]);
@@ -9400,23 +8185,18 @@ public ref
         Swap(replacement);
         return this;
     }
-
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Append([InstantHandle] IEnumerable<T>? collection)
     {
         if (collection is null)
             return this;
-
         if (collection.TryGetNonEnumeratedCount(out var count))
             MakeRoom(count);
-
         foreach (var x in collection)
             Append(x);
-
         return this;
     }
-
     /// <inheritdoc cref="ICollection{T}.Add"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Prepend(T item)
@@ -9428,7 +8208,6 @@ public ref
             _view[0] = item;
             return this;
         }
-
         if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9438,7 +8217,6 @@ public ref
             Swap(unmanaged);
             return this;
         }
-
         var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement.AsSpan()[1..]);
         replacement[0] = item;
@@ -9446,7 +8224,6 @@ public ref
         Swap(replacement);
         return this;
     }
-
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Prepend(scoped ReadOnlySpan<T> collection)
@@ -9458,7 +8235,6 @@ public ref
             collection.CopyTo(_view);
             return this;
         }
-
         if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9468,7 +8244,6 @@ public ref
             Swap(unmanaged);
             return this;
         }
-
         var replacement = ArrayPool<T>.Shared.Rent(length);
         _view.CopyTo(replacement.AsSpan()[collection.Length..]);
         collection.CopyTo(replacement);
@@ -9476,11 +8251,9 @@ public ref
         Swap(replacement);
         return this;
     }
-
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
-
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Insert([NonNegativeValue] int offset, T item)
@@ -9490,7 +8263,6 @@ public ref
             Copy(offset, item, _view);
             return this;
         }
-
         if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9498,13 +8270,11 @@ public ref
             Swap(unmanaged);
             return this;
         }
-
         var replacement = ArrayPool<T>.Shared.Rent(length);
         Copy(offset, item, replacement);
         Swap(replacement);
         return this;
     }
-
     /// <inheritdoc cref="IList{T}.Insert"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> collection)
@@ -9514,7 +8284,6 @@ public ref
             Copy(index, collection, _view);
             return this;
         }
-
         if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9522,32 +8291,25 @@ public ref
             Swap(unmanaged);
             return this;
         }
-
         var replacement = ArrayPool<T>.Shared.Rent(length);
         Copy(index, collection, replacement);
         Swap(replacement);
         return this;
     }
-
     /// <inheritdoc cref="List{T}.AddRange"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
     {
         if (collection.TryCount() is { } count)
             MakeRoom(count);
-
         using var e = collection.GetEnumerator();
-
         for (var i = index; e.MoveNext(); i++)
             Insert(i, e.Current);
-
         return this;
     }
-
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
-
     /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified offset and length.</summary>
     /// <param name="offset">The offset of the slice to remove.</param>
     /// <param name="length">The length of the slice to remove.</param>
@@ -9559,7 +8321,6 @@ public ref
         _length -= length;
         return this;
     }
-
     /// <inheritdoc cref="IList{T}.RemoveAt"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public PooledSmallList<T> RemoveAt(Index index)
@@ -9568,7 +8329,6 @@ public ref
         RemoveAt(offset, 1);
         return this;
     }
-
     /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified range.</summary>
     /// <param name="range">The range of the slice to remove.</param>
     /// <returns>Itself.</returns>
@@ -9579,7 +8339,6 @@ public ref
         RemoveAt(offset, length);
         return this;
     }
-
     /// <summary>Shrinks the collection.</summary>
     /// <param name="amount">The amount of elements to shrink.</param>
     /// <returns>Itself.</returns>
@@ -9589,28 +8348,23 @@ public ref
         Length -= amount;
         return this;
     }
-
     /// <inheritdoc cref="Span{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Span<T>.Enumerator GetEnumerator() => View.GetEnumerator();
-
     /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
     /// <param name="i">The index.</param>
     /// <returns>The element, or default.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ref T Nth([NonNegativeValue] int i) => // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+    public readonly ref T Nth([NonNegativeValue] int i) =>
         ref i >= 0 && i < _length ? ref _view[i] : ref Unsafe.NullRef<T>();
-
     /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
     /// <param name="i">The index.</param>
     /// <returns>The element, or default.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ref T Nth(Index i) => ref Nth(i.GetOffset(_length));
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe Span<T> Rent([NonNegativeValue] int length, [NonNegativeValue] int bytes) =>
         new((void*)Marshal.AllocHGlobal(bytes), length);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Copy([NonNegativeValue] int offset, T insertion, scoped Span<T> destination)
     {
@@ -9627,11 +8381,9 @@ public ref
                 View[..offset].CopyTo(destination);
                 break;
         }
-
         destination[offset] = insertion;
         _length++;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Copy([NonNegativeValue] int offset, scoped ReadOnlySpan<T> insertion, scoped Span<T> destination)
     {
@@ -9651,35 +8403,28 @@ public ref
                 View[..offset].CopyTo(destination);
                 break;
         }
-
         _length += insertion.Length;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void Swap(T[] replacement)
     {
         if (IsArrayPool)
             ArrayPool<T>.Shared.Return(_rental);
-
         _view = _rental = replacement;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     unsafe void Swap(Span<T> replacement)
     {
         if (IsUnmanagedHeap)
             Marshal.FreeHGlobal((nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(_view)));
-
         UnsafelySetNullishTo(out _rental, 1);
         _view = replacement;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void MakeRoom([NonNegativeValue] int by)
     {
         if (HasRoom(by))
             return;
-
         if (CanAllocateInUnmanagedHeap(by, out var length, out var bytes))
         {
             var unmanaged = Rent(length, bytes);
@@ -9692,34 +8437,26 @@ public ref
             View.CopyTo(replacement);
             Swap(replacement);
         }
-
         _length += by;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
     {
         length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
-
         if (IsReferenceOrContainsReferences<T>())
         {
             Unsafe.SkipInit(out bytes);
             return false;
         }
-
         bytes = length * Unsafe.SizeOf<T>();
-
         if (length >= 0 && bytes >= 0)
             return true;
-
-        // Swaps to ArrayPool.
+       
         Marshal.FreeHGlobal(UnmanagedHeapPointer);
         return false;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool HasRoom(int by) => _length + by <= _view.Length;
-
     /// <summary>Validator of generics representing the continuous buffer over the element type.</summary>
     /// <typeparam name="TRef">The generic representing the continuous buffer over the element type.</typeparam>
     public static class Validate<TRef>
@@ -9727,20 +8464,17 @@ public ref
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static Validate() => Go(typeof(TRef));
-
         /// <summary>Gets the inlined length.</summary>
         [NonNegativeValue]
         public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
-
         /// <summary>Reinterprets the reference as the continuous buffer over the element type.</summary>
         /// <param name="reference">The reference.</param>
         /// <returns>The span.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         public static Span<T> AsSpan(ref TRef reference) =>
             MemoryMarshal.CreateSpan(ref Unsafe.As<TRef, T>(ref reference), InlinedLength);
-
-        // ReSharper disable once SuggestBaseTypeForParameter
+       
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Go(Type type) =>
             type
@@ -9748,7 +8482,6 @@ public ref
                .Where(x => x.FieldType is var y && y != typeof(T) && (!y.IsValueType || y != x.DeclaringType && Go(y)))
                .Select(Throw)
                .Any();
-
         [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Throw(FieldInfo _) =>
             throw new TypeLoadException(
@@ -9757,18 +8490,12 @@ public ref
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
-
-
 // ReSharper disable once RedundantNameQualifier
 
-
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-
 #if NETCOREAPP3_1_OR_GREATER
     /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -9790,20 +8517,16 @@ public ref
         where T : IEquatable<T>?
     {
         var i = span.IndexOf(item);
-
         if (i is -1)
             return false;
-
         span.RemoveAt(i);
         return true;
     }
-
     /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
         where T : IEquatable<T>? =>
         span.View.IndexOf(item);
-
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
     /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -9817,15 +8540,14 @@ public ref
     {
         return it switch
         {
-            <= 0 => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
-            _ when !IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stackalloc<T>(it), // Stack allocation
+            <= 0 => default,
+#if !CSHARPREPL
+            _ when !IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stackalloc<T>(it),
 #endif
-            _ => it, // Heap allocation
+            _ => it,
         };
     }
 #endif
-
     /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="capacity">
@@ -9839,7 +8561,6 @@ public ref
 #endif
         =>
             new(capacity);
-
     /// <inheritdoc cref="PooledSmallList{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
     public static PooledSmallList<T> ToPooledSmallList<T>(this Span<T> span)
@@ -9848,7 +8569,6 @@ public ref
 #endif
         =>
             new(span);
-
     /// <inheritdoc cref="PooledSmallList{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
     public static PooledSmallList<T> ToPooledSmallList<T>(this IEnumerable<T>? enumerable)
@@ -9857,7 +8577,6 @@ public ref
 #endif
         =>
             (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
-
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
@@ -9865,24 +8584,17 @@ public ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? default : [..iterable];
-
     /// <summary>Mutates the enumerator; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterator">The collection to turn into a <see cref="SmallList{T}"/>.</param>
     /// <returns>A <see cref="SmallList{T}"/> of <paramref name="iterator"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable RedundantUnsafeContext RedundantUsingDirective
 // ReSharper disable once CheckNamespace
 
-
-
-
 /// <summary>Factory methods for creating inlined <see cref="SmallList{T}"/> instances.</summary>
-
     /// <summary>Number of items to keep inline for <see cref="SmallList{T}"/>.</summary>
     /// <remarks><para>
     /// And Saint Attila raised the <see cref="SmallList{T}"/> up on high, saying, "O Lord, bless this Thy
@@ -9902,20 +8614,17 @@ public ref
     /// (Adapted from Rhai)
     /// </a></para></remarks>
     public const int InlinedLength = 3;
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>() => [];
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first) => first;
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
@@ -9923,7 +8632,6 @@ public ref
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first, T second) => new(first, second);
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 3 elements.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
@@ -9932,7 +8640,6 @@ public ref
     /// <returns>The created <see cref="SmallList{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first, T second, T third) => new(first, second, third);
-
     /// <summary>Creates a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <typeparam name="T">The type of element in the <see cref="SmallList{T}"/>.</typeparam>
     /// <param name="first">The first element.</param>
@@ -9943,14 +8650,9 @@ public ref
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> Create<T>(T first, T second, T third, params T[] rest) =>
         new(first, second, third, rest);
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
-
-
-
 
 
 /// <summary>Inlines 3 elements before falling back on the heap with an expandable <see cref="IList{T}"/>.</summary>
@@ -9964,24 +8666,20 @@ public partial struct SmallList<T> :
     IList<T>,
     IReadOnlyList<T>
 {
-    // DO NOT PLACE _rest BELOW GENERICS;
-    // Doing so will cause only unmanaged generics to be mapped before the object,
-    // leading to inconsistent mapping of memory when dereferencing pointers in HeadSpan functions.
-    // See the following link for a lengthier explanation and example:
+   
+   
+   
+   
     //
-    // ReSharper disable CommentTypo
-    // https://sharplab.io/#v2:EYLgtghglgdgPgYgA4CcIHNIAIDuEUyzpYAmUAzhMADYCmWAHAKwAMLAsAFBcACLWPAIwA6AEoBXGABcoYWsICS02igD2SAMoqAblADGtcgG5e/IQDYBIidNnylUleq0pdB8sIAyEAJ6rxUgDSsCQm3JwA9BFYALIQMBi0JLiqKADW5FgQmbQAHki0eo4kIFxRWADkAILAqtq0FVgotACO4lDNmfFYqgBmveS0UljAhRDig1hSABb0qsAAVoXDeqpymb0d5FLCZdEVAEK01Ko4jc1tHYZYMKo9/YPDo3rjkzNzi8tYq+tZvY4oXbhbT4LK1eoaKQoLAAXhutBwWBqdVoAB4hCwAHwACgARJsUNtcQAaLC4warGAkXEASjCIOhoxOOEh0LhMARWCOzPRgixeIJRNJ5MKqiptLCXEklF6tC4AG8uFhlVhsdiMQAqGkAMioKNZNIA2gwALqKGDkApFPEACVoEGSfS5x1OvKxuCgM3uAyGWBYuRYDAlSpVas1OqZpwNhpYZqUluWtvtjt6SPBaIxmI9Xr6PuG/rYwc4AF8uHssABVGCQBLoJJYCi4WbNKazBswSnkCiODs+LDUKCGUqRfbI+qNHCpDKt+iUORZTKjXqpeTlw4us5ZajUe5ZLDkcQkEi0GBNVrtTrex5+0iGJCe+ijIi3vTUfD1wU7MucBlglEOWF4URMc0VgKQcUEUkACY6S4X9IxwAD2U5blXTAiDoNg8JpQgWUFRDZU1TArVdXTBwjSguMLStKQkwdXcQNRdDs2mK9fQLIMsJVVVsWIiMN3ImMqITa1cTteinVQnAmOkLMcE9Vjc2vAsWCLAisHKAB5B52IDBgUnSchSS7Dt6EY5j4mSKSZPArIW22FBxCKcQ0G3Hx1PKKBj1sF4d1uHBSWPS0HxfN80BkMUehQY9oUcbdnz8cQeneFB5MGIFuKI6QSIQwTKPNETaLE5Nd2s5j5JzHT8z0otS3CQ1WScqRvES2itDaE8ZAgagaRNLgHKatMUVRAAVHERqwT9SQmikxRIGl8M4bj5iWIoAH4sAAfU6YZkJwbEsPUkaNs2z9AKmrbZqpQCrtCLg6q4BqoSalr/Da89Oqgbrev656imdHkxuxCaLpm0UqQWzhFSWlVjq2s64Quzbbpu8G7vCZbPnWradsAjl9qw4sgA==
-    // ReSharper restore CommentTypo
-
+   
+   
+   
     [ProvidesContext]
     IList<T>? _rest;
-
     T? _first, _second, _third;
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with no elements.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList() { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SmallList{T}"/> struct.
     /// Collects the enumerable; allocating the heaped list lazily.
@@ -9990,7 +8688,6 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList([InstantHandle] IEnumerable<T>? enumerable)
         : this(enumerable?.GetEnumerator()) { }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="SmallList{T}"/> struct.
     /// Mutates the enumerator; allocating the heaped list lazily.
@@ -10001,40 +8698,30 @@ public partial struct SmallList<T> :
     {
         if (enumerator?.MoveNext() is not true)
             return;
-
         _first = enumerator.Current;
-
         if (!enumerator.MoveNext())
         {
             UnsafelySetNullishTo(out _rest, 1);
             return;
         }
-
         _second = enumerator.Current;
-
         if (!enumerator.MoveNext())
         {
             UnsafelySetNullishTo(out _rest, 2);
             return;
         }
-
         _third = enumerator.Current;
-
         if (!enumerator.MoveNext())
         {
             _rest = [];
             return;
         }
-
         List<T> list = [];
-
         do
             list.Add(enumerator.Current);
         while (enumerator.MoveNext());
-
         _rest = list;
     }
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 1 element.</summary>
     /// <param name="first">The first element.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -10043,7 +8730,6 @@ public partial struct SmallList<T> :
         _first = first;
         UnsafelySetNullishTo(out _rest, 1);
     }
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 2 elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
@@ -10054,7 +8740,6 @@ public partial struct SmallList<T> :
         _second = second;
         UnsafelySetNullishTo(out _rest, 2);
     }
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with 3 elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
@@ -10062,7 +8747,6 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third)
         : this(first, second, third, []) { }
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
@@ -10076,7 +8760,6 @@ public partial struct SmallList<T> :
         _third = third;
         _rest = rest;
     }
-
     /// <summary>Initializes a new instance of the <see cref="SmallList{T}"/> struct with arbitrary elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
@@ -10085,38 +8768,32 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SmallList(T first, T second, T third, params T[] rest)
         : this(first, second, third, (IList<T>)rest) { }
-
     /// <summary>Gets the empty list.</summary>
     public static SmallList<T> Empty
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)] get => default;
     }
-
     /// <summary>Gets a value indicating whether determines whether the collection is empty.</summary>
     public readonly bool IsEmpty
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _rest is null;
     }
-
     /// <inheritdoc />
     public readonly bool IsReadOnly
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => false;
     }
-
     /// <inheritdoc cref="ICollection{T}.Count" />
     public readonly int Count
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get => _rest.ToAddress() < InlinedLength ? (int)_rest.ToAddress() : _rest!.Count + InlinedLength;
     }
-
     /// <summary>Gets the number of head elements used.</summary>
     public readonly int HeadCount
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Math.Min(Count, 3);
     }
-
     /// <summary>Gets the deep clone of this instance.</summary>
     public readonly SmallList<T> Cloned
     {
@@ -10128,7 +8805,6 @@ public partial struct SmallList<T> :
             return clone;
         }
     }
-
     /// <inheritdoc cref="IList{T}.this" />
     public T this[int index]
     {
@@ -10136,7 +8812,6 @@ public partial struct SmallList<T> :
         readonly get
         {
             BoundsCheck(index, out _);
-
             return index switch
             {
                 0 => _first!,
@@ -10149,7 +8824,6 @@ public partial struct SmallList<T> :
         set
         {
             BoundsCheck(index, out _);
-
             _ = index switch
             {
                 0 => _first = value,
@@ -10159,7 +8833,6 @@ public partial struct SmallList<T> :
             };
         }
     }
-
     /// <summary>Gets or sets the first element.</summary>
     public T First
     {
@@ -10168,7 +8841,6 @@ public partial struct SmallList<T> :
 #pragma warning disable MA0102
         set => this[0] = value;
     }
-
     /// <summary>Gets or sets the second element.</summary>
     [CollectionAccess(Read), Pure]
     public T Second
@@ -10177,7 +8849,6 @@ public partial struct SmallList<T> :
         [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
         set => this[1] = value;
     }
-
     /// <summary>Gets or sets the third element.</summary>
     [CollectionAccess(Read), Pure]
     public T Third
@@ -10187,54 +8858,46 @@ public partial struct SmallList<T> :
         set => this[2] = value;
 #pragma warning restore MA0102
     }
-
     /// <summary>Gets the rest of the elements.</summary>
     public readonly IList<T>? Rest
     {
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), ProvidesContext, Pure]
         get => _rest.ToAddress() < InlinedLength ? null : _rest;
     }
-
     /// <summary>Determines whether both sequence are equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both sequences are equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator ==(SmallList<T> left, SmallList<T> right) => left.Equals(right);
-
     /// <summary>Determines whether both sequence are not equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether both sequences are not equal.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(SmallList<T> left, SmallList<T> right) => !left.Equals(right);
-
     /// <summary>Creates the collection with 1 item in it.</summary>
     /// <param name="value">The single item to use.</param>
     /// <returns>The collection with 1 item.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>(T value) => new(value);
-
     /// <summary>Creates the collection with 2 items in it.</summary>
     /// <param name="tuple">The tuple containing 2 items to destructure and use.</param>
     /// <returns>The collection with 2 items.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second) tuple) => new(tuple.First, tuple.Second);
-
     /// <summary>Creates the collection with 3 items in it.</summary>
     /// <param name="tuple">The tuple containing 3 items to destructure and use.</param>
     /// <returns>The collection with 3 items.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third);
-
     /// <summary>Creates the collection with 3 or more items in it.</summary>
     /// <param name="tuple">The tuple containing 3 or more items to destructure and use.</param>
     /// <returns>The collection with 3 or more items.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third, IList<T> List) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third, tuple.List);
-
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of <see cref="SmallList{T}"/>
     /// by using the constructor <see cref="SmallList{T}(T, T, T, T[])"/>.
@@ -10247,7 +8910,6 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator SmallList<T>((T First, T Second, T Third, T[] TheRest) tuple) =>
         new(tuple.First, tuple.Second, tuple.Third, tuple.TheRest);
-
     /// <summary>Skips initialization of inlined elements.</summary>
     /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
@@ -10258,7 +8920,6 @@ public partial struct SmallList<T> :
         RestFromLength(length, out output._rest);
         return output;
     }
-
     /// <summary>Skips initialization of unreachable inlined elements.</summary>
     /// <param name="length">The length of the <see cref="SmallList{T}"/>.</param>
     /// <returns>The <see cref="SmallList{T}"/> of length <paramref name="length"/>.</returns>
@@ -10266,7 +8927,6 @@ public partial struct SmallList<T> :
     public static SmallList<T> Zeroed(int length)
     {
         var output = Uninit(length);
-
         switch (length)
         {
             case >= 3:
@@ -10279,10 +8939,8 @@ public partial struct SmallList<T> :
                 output._first = default;
                 break;
         }
-
         return output;
     }
-
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Add(T item)
@@ -10305,7 +8963,6 @@ public partial struct SmallList<T> :
                 break;
         }
     }
-
     /// <summary>Adds the elements of the specified collection to the end of the <see cref="SmallList{T}"/>.</summary>
     /// <param name="collection">
     /// The collection whose elements should be added to the end of the <see cref="SmallList{T}"/>.
@@ -10315,30 +8972,24 @@ public partial struct SmallList<T> :
     {
         if (collection?.ToICollection() is not { Count: var count and not 0 } c)
             return;
-
         if (InlinedLength - HeadCount is var stackExpand && stackExpand is not 0)
         {
             using var e = c.GetEnumerator();
-
             for (var i = 0; i < stackExpand; i++)
                 if (e.MoveNext())
                     Add(e.Current);
                 else
                     return;
         }
-
         if (count <= stackExpand)
             return;
-
         var rest = _rest as List<T> ?? [.. _rest!];
         rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollection());
         _rest = rest;
     }
-
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear() => _rest = null;
-
     /// <summary>Copies all values onto the destination.</summary>
     /// <param name="list">The destination.</param>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -10349,20 +9000,16 @@ public partial struct SmallList<T> :
     {
         if (Count is var count && count is 0)
             return;
-
         list.BoundsCheck(count - 1, out _);
-
-        // Takes advantage of fallthrough in switch-cases.
+       
         switch (count)
         {
             case > InlinedLength:
                 IList<T>
                     from = _rest!,
                     to = list._rest!;
-
                 for (var i = 0; i < from.Count; i++)
                     to[i] = from[i];
-
                 goto case 3;
             case 3:
                 list._third = _third;
@@ -10375,12 +9022,11 @@ public partial struct SmallList<T> :
                 break;
         }
     }
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
-        // Takes advantage of fallthrough in switch-cases.
+       
         switch (Count)
         {
             case > InlinedLength:
@@ -10397,14 +9043,12 @@ public partial struct SmallList<T> :
                 break;
         }
     }
-
     /// <summary>Deconstructs this instance with its properties.</summary>
     /// <param name="head">The first three elements.</param>
     /// <param name="tail">The remaining elements.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out (T? First, T? Second, T? Third) head, out IList<T> tail) =>
         (head, tail) = ((_first, _second, _third), Rest ?? []);
-
     /// <summary>Deconstructs this instance with the 3 first elements.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
@@ -10412,7 +9056,6 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out T? first, out T? second, out T? third) =>
         (first, second, third) = (_first, _second, _third);
-
     /// <summary>Deconstructs this instance with its properties.</summary>
     /// <param name="first">The first element.</param>
     /// <param name="second">The second element.</param>
@@ -10421,13 +9064,11 @@ public partial struct SmallList<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public readonly void Deconstruct(out T? first, out T? second, out T? third, out IList<T> rest) =>
         (first, second, third, rest) = (_first, _second, _third, Rest ?? []);
-
     /// <inheritdoc />
     [CollectionAccess(UpdatedContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Insert(int index, T item)
     {
         BoundsCheck(index, out var count);
-
         switch (count)
         {
             case 0:
@@ -10443,7 +9084,6 @@ public partial struct SmallList<T> :
                 EnsureMutability().Insert(0, _third!);
                 break;
         }
-
         switch (index)
         {
             case 0:
@@ -10460,33 +9100,27 @@ public partial struct SmallList<T> :
                 break;
         }
     }
-
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void RemoveAt(int index)
     {
         BoundsCheck(index, out var count);
-
         if (index is 0)
             _first = _second;
-
         if (index is 0 or 1)
             _second = _third;
-
         if (index < InlinedLength && _rest is [var head, ..])
             _third = head;
-
         if (count > InlinedLength)
             EnsureMutability().RemoveAt(Math.Max(index - InlinedLength, 0));
         else
             UnsafelySetNullishTo(out _rest, (byte)count);
     }
-
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    // ReSharper disable once CognitiveComplexity
+   
     public void Reverse()
     {
-#pragma warning disable IDE0180 // ReSharper disable SwapViaDeconstruction
+#pragma warning disable IDE0180
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void SwapByRef(ref T left, ref T right)
         {
@@ -10494,7 +9128,6 @@ public partial struct SmallList<T> :
             left = right;
             right = temp;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Swap(ref T left, in IList<T> right, int index)
         {
@@ -10502,7 +9135,6 @@ public partial struct SmallList<T> :
             left = right[index];
             right[index] = temp;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void SwapItself(in IList<T> list, int index, int count)
         {
@@ -10510,7 +9142,7 @@ public partial struct SmallList<T> :
             list[count - index - 4] = list[index];
             list[count - index - 4] = temp;
         }
-#pragma warning restore IDE0180 // ReSharper restore SwapViaDeconstruction
+#pragma warning restore IDE0180
         switch (Count)
         {
             case 2:
@@ -10531,17 +9163,14 @@ public partial struct SmallList<T> :
                 Swap(ref _first!, EnsureMutability(), count - 4);
                 Swap(ref _second!, _rest!, count - 5);
                 Swap(ref _third!, _rest!, count - 6);
-
                 if (_rest is List<T> rest)
                     rest.Reverse(0, count - 6);
                 else
                     for (var i = 0; i < count / 2 - 3; i++)
                         SwapItself(_rest!, i, count);
-
                 break;
         }
     }
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Contains(T item) =>
@@ -10552,7 +9181,6 @@ public partial struct SmallList<T> :
             2 => Eq(_first, item) || Eq(_second, item) || Eq(_third, item),
             _ => Eq(_first, item) || Eq(_second, item) || Eq(_third, item) || _rest!.Contains(item),
         };
-
     /// <summary>Determines whether the item exists in the collection.</summary>
     /// <param name="item">The item to check.</param>
     /// <param name="comparer">The comparer to use.</param>
@@ -10569,11 +9197,9 @@ public partial struct SmallList<T> :
                 comparer.Equals(_third!, item) ||
                 _rest!.Contains(item, comparer),
         };
-
     /// <inheritdoc cref="object.Equals(object)"/>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals([NotNullWhen(true)] object? obj) => obj is SmallList<T> other && Equals(other);
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Equals(SmallList<T> other) =>
@@ -10582,7 +9208,6 @@ public partial struct SmallList<T> :
         Eq(_second, other._second) &&
         Eq(_third, other._third) &&
         (other.Rest is [_, ..] rest ? Rest?.SequenceEqual(rest) ?? false : other.Rest is null);
-
     /// <inheritdoc />
     [CollectionAccess(ModifyExistingContent), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Remove(T item)
@@ -10597,10 +9222,8 @@ public partial struct SmallList<T> :
                     UnsafelySetNullishTo(out _rest, 1);
                     return (_first = _second) is var _;
                 }
-
                 if (!Eq(_second, item))
                     return false;
-
                 UnsafelySetNullishTo(out _rest, 1);
                 return true;
             default:
@@ -10609,7 +9232,6 @@ public partial struct SmallList<T> :
                     Eq(_third, item) ? RemoveHead() : EnsureMutability().Remove(item);
         }
     }
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override int GetHashCode()
@@ -10618,7 +9240,6 @@ public partial struct SmallList<T> :
         {
             const int Prime = 397;
             var hashCode = Prime;
-
             switch (Count)
             {
                 case > InlinedLength:
@@ -10634,11 +9255,9 @@ public partial struct SmallList<T> :
                     hashCode = hashCode * Prime ^ EqualityComparer<T?>.Default.GetHashCode(_first!);
                     break;
             }
-
             return hashCode;
         }
     }
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int IndexOf(T item) =>
@@ -10655,7 +9274,6 @@ public partial struct SmallList<T> :
                 Eq(_third, item) ? 2 :
                 _rest!.IndexOf(item) is var i && i is -1 ? i : i + 3,
         };
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() =>
@@ -10671,16 +9289,13 @@ public partial struct SmallList<T> :
             _ => $"[{_first}, {_second}, {_third}, {_rest}]",
 #endif
         };
-
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator" />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
-
     /// <summary>Gets the enumeration object that returns the values in reversed order.</summary>
     /// <returns>The backwards enumerator.</returns>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     public readonly Enumerator GetReversedEnumerator() => new(this, true);
-
     /// <summary>Forms a slice out of the current list that begins at a specified index.</summary>
     /// <param name="start">The index at which to begin the slice.</param>
     /// <returns>
@@ -10703,20 +9318,15 @@ public partial struct SmallList<T> :
         var count = Count;
         start = Math.Max(start, 0);
         length = Math.Min(length, count - start);
-
         if (length <= 0)
             return default;
-
         if (start is 0 && length == count)
             return Cloned;
-
         Unsafe.SkipInit(out SmallList<T> output);
-
         if (length >= InlinedLength && _rest?.Skip(start).Take(length - InlinedLength).ToList() is { } list)
             output._rest = list;
         else
             RestFromLength(length, out output._rest);
-
         switch (length)
         {
             case >= 3:
@@ -10729,7 +9339,6 @@ public partial struct SmallList<T> :
                     1 => _third,
                     _ => _rest![start - 2],
                 };
-
                 goto case 1;
             case 1:
                 output._first = start switch
@@ -10739,13 +9348,10 @@ public partial struct SmallList<T> :
                     2 => _third,
                     _ => _rest![start - 3],
                 };
-
                 break;
         }
-
         return output;
     }
-
     /// <summary>Gets the first element of the list that optionally matches the <see cref="Predicate{T}"/>.</summary>
     /// <param name="predicate">The predicate to use as a filter.</param>
     /// <returns>The first element of the list that matches the parameter <paramref name="predicate"/>.</returns>
@@ -10753,15 +9359,12 @@ public partial struct SmallList<T> :
     {
         if (predicate is null)
             return IsEmpty ? default : First;
-
-        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+       
         foreach (var next in this)
             if (predicate(next))
                 return next;
-
         return default;
     }
-
     /// <summary>Gets the last element of the list that optionally matches the <see cref="Predicate{T}"/>.</summary>
     /// <param name="predicate">The predicate to use as a filter.</param>
     /// <returns>The last element of the list that matches the parameter <paramref name="predicate"/>.</returns>
@@ -10776,94 +9379,72 @@ public partial struct SmallList<T> :
                 3 => Third,
                 _ => Rest![Rest.Count - 1],
             };
-
         using var e = GetReversedEnumerator();
-
         while (e.MoveNext())
             if (predicate(e.Current))
                 return e.Current;
-
         return default;
     }
 #if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly TypeCode IConvertible.GetTypeCode() => TypeCode.Object;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly bool IConvertible.ToBoolean(IFormatProvider? provider) => !IsEmpty;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly byte IConvertible.ToByte(IFormatProvider? provider) => unchecked((byte)Count);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly char IConvertible.ToChar(IFormatProvider? provider) => unchecked((char)Count);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly DateTime IConvertible.ToDateTime(IFormatProvider? provider) => new(Count, DateTimeKind.Utc);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly decimal IConvertible.ToDecimal(IFormatProvider? provider) => Count;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly double IConvertible.ToDouble(IFormatProvider? provider) => Count;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly short IConvertible.ToInt16(IFormatProvider? provider) => unchecked((short)Count);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly int IConvertible.ToInt32(IFormatProvider? provider) => Count;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly long IConvertible.ToInt64(IFormatProvider? provider) => Count;
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly sbyte IConvertible.ToSByte(IFormatProvider? provider) => unchecked((sbyte)Count);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly float IConvertible.ToSingle(IFormatProvider? provider) => Count;
-
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly string IConvertible.ToString(IFormatProvider? provider) => ToString();
-
     /// <inheritdoc />
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     readonly object IConvertible.ToType(Type conversionType, IFormatProvider? provider) =>
         throw new InvalidOperationException();
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ushort IConvertible.ToUInt16(IFormatProvider? provider) => unchecked((ushort)Count);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly uint IConvertible.ToUInt32(IFormatProvider? provider) => unchecked((uint)Count);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ulong IConvertible.ToUInt64(IFormatProvider? provider) => unchecked((ulong)Count);
 #endif
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void RestFromLength(int length, out IList<T>? rest)
     {
@@ -10872,7 +9453,6 @@ public partial struct SmallList<T> :
         else
             rest = new T[length - InlinedLength];
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void RestFromLengthWithoutAllocations(int length, out IList<T>? rest)
     {
@@ -10895,20 +9475,16 @@ public partial struct SmallList<T> :
                 break;
         }
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static bool Eq(T? x, T? y) => x is null ? y is null : y is not null && EqualityComparer<T>.Default.Equals(x, y);
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     readonly void BoundsCheck(int index, [ValueRange(1, int.MaxValue)] out int count)
     {
         count = Count;
-
         if (unchecked((uint)index >= count))
             throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be between 0 and {count - 1}");
     }
-
-    // ReSharper disable once UnusedParameter.Local
+   
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     bool RemoveHead(in T? _ = default)
     {
@@ -10919,31 +9495,24 @@ public partial struct SmallList<T> :
         }
         else
             UnsafelySetNullishTo(out _rest, 2);
-
         return true;
     }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     IList<T> EnsureMutability() =>
         _rest = _rest switch
         {
-            { IsReadOnly: false, Count: not 0 } x => x, // ReSharper disable once RedundantAssignment
+            { IsReadOnly: false, Count: not 0 } x => x,
             { Count: not 0 } x => [.. x],
             _ => [],
         };
-
     /// <summary>An enumerator over <see cref="SmallList{T}"/>.</summary>
     [StructLayout(LayoutKind.Auto)]
     public struct Enumerator : IEnumerator<T>
     {
         readonly bool _isReversed;
-
         readonly int _count;
-
         readonly SmallList<T> _list;
-
         int _state = -1;
-
         /// <summary>Initializes a new instance of the <see cref="Enumerator"/> struct.</summary>
         /// <param name="list">The <see cref="SmallList{T}"/> to enumerate over.</param>
         /// <param name="isReversed">Determines whether to go backwards.</param>
@@ -10954,24 +9523,19 @@ public partial struct SmallList<T> :
             _isReversed = isReversed;
             _count = list.Count;
         }
-
         /// <inheritdoc />
         public T Current { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; private set; } = default!;
-
         /// <inheritdoc />
         readonly object? IEnumerator.Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
         }
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Dispose() { }
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _state = -1;
-
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() =>
@@ -10985,19 +9549,13 @@ public partial struct SmallList<T> :
             }) is var _;
     }
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
 #if !NET20 && !NET30
 
-
 /// <summary>Extension methods that act as factories for <see cref="Split{T}"/>.</summary>
-
     /// <summary>Gets all booleans, in the order defined by <see cref="Split{T}"/>.</summary>
     public static bool[] Booleans { get; } = [true, false];
-
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a number.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -11009,7 +9567,6 @@ public partial struct SmallList<T> :
     [Pure]
     public static Split<IEnumerable<T>> SplitAt<T>(this ICollection<T> source, [NonNegativeValue] int count) =>
         new(source.Take(count), source.Skip(count));
-
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -11027,7 +9584,6 @@ public partial struct SmallList<T> :
         var index = source.TakeWhile(x => !predicate(x)).Count();
         return source.SplitAt(index);
     }
-
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -11043,13 +9599,10 @@ public partial struct SmallList<T> :
     )
     {
         List<T> t = [], f = [];
-
         foreach (var item in source)
             (predicate(item) ? t : f).Add(item);
-
         return new(t, f);
     }
-
     /// <summary>Splits an <see cref="IEnumerable{T}"/> in two based on a method provided.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="source">The collection to split.</param>
@@ -11065,14 +9618,11 @@ public partial struct SmallList<T> :
     )
     {
         SmallList<T> t = [], f = [];
-
         foreach (var item in source)
             (predicate(item) ? t : f).Add(item);
-
         return new(t, f);
     }
 #endif
-
 /// <summary>Represents a fixed collection of 2 items.</summary>
 /// <typeparam name="T">The type of item in the collection.</typeparam>
 /// <param name="truthy">The value representing a <see langword="true"/> value.</param>
@@ -11086,11 +9636,9 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <param name="value">The value representing both values.</param>
     public Split(T value)
         : this(value, value) { }
-
     /// <summary>Gets <see cref="Truthy"/> and <see cref="Falsy"/> within an array, in that order.</summary>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public T[] Array => [truthy, falsy];
-
     /// <summary>Gets or sets the value representing a <see langword="false"/> value.</summary>
     [Pure]
     public T Falsy
@@ -11098,7 +9646,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         get => falsy;
         set => falsy = value;
     }
-
     /// <summary>Gets or sets the value representing a <see langword="true"/> value.</summary>
     [Pure]
     public T Truthy
@@ -11106,35 +9653,27 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         get => truthy;
         set => truthy = value;
     }
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
     [Pure]
     bool ICollection<T>.IsReadOnly => false;
-
     /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int ICollection<T>.Count => 2;
-
     /// <inheritdoc />
     [Pure]
     public ICollection<T> Values => this;
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly" />
     [Pure]
     bool ICollection<KeyValuePair<bool, T>>.IsReadOnly => false;
-
     /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int ICollection<KeyValuePair<bool, T>>.Count => 2;
-
     /// <inheritdoc />
     [Pure]
     ICollection<bool> IDictionary<bool, T>.Keys => Booleans;
-
     /// <inheritdoc cref="Array"/>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public KeyValuePair<bool, T>[] ArrayPair => [new(true, truthy), new(false, falsy)];
-
     /// <inheritdoc cref="IDictionary{TKey, TValue}.this" />
     [Pure]
     public T this[bool key]
@@ -11142,23 +9681,18 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         get => key ? truthy : falsy;
         set => _ = key ? truthy = value : falsy = value;
     }
-
     /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int IReadOnlyCollection<T>.Count => 2;
-
     /// <inheritdoc cref="ICollection{T}.Count" />
     [Pure, ValueRange(2)]
     int IReadOnlyCollection<KeyValuePair<bool, T>>.Count => 2;
-
     /// <inheritdoc />
     [Pure]
     IEnumerable<bool> IReadOnlyDictionary<bool, T>.Keys => Booleans;
-
     /// <inheritdoc />
     [Pure]
     IEnumerable<T> IReadOnlyDictionary<bool, T>.Values => Values;
-
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of <see cref="Split{T}"/>
     /// by using the constructor <see cref="Split{T}(T, T)"/>.
@@ -11170,58 +9704,46 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// </returns>
     [Pure]
     public static implicit operator Split<T>((T Truthy, T Falsy) tuple) => new(tuple.Truthy, tuple.Falsy);
-
     /// <inheritdoc />
     public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
     {
         array[arrayIndex] = truthy;
         array[arrayIndex + 1] = falsy;
     }
-
     /// <inheritdoc />
     [Pure]
     public bool Contains(T item) =>
         EqualityComparer<T>.Default.Equals(truthy, item) || EqualityComparer<T>.Default.Equals(falsy, item);
-
     /// <inheritdoc />
     [Pure]
     public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)Array).GetEnumerator();
-
     /// <inheritdoc />
     void ICollection<T>.Add(T item) { }
-
     /// <inheritdoc cref="ICollection{T}.Clear" />
     void ICollection<T>.Clear() { }
-
     /// <inheritdoc />
     [Pure]
     bool ICollection<T>.Remove(T item) => false;
-
     /// <inheritdoc />
     [Pure]
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     public void Add(bool key, T value) => _ = key ? truthy = value : falsy = value;
-
     /// <inheritdoc />
-    // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
+   
     public void Add(KeyValuePair<bool, T> item) => _ = item.Key ? truthy = item.Value : falsy = item.Value;
-
     /// <inheritdoc />
     public void CopyTo(KeyValuePair<bool, T>[] array, [NonNegativeValue] int arrayIndex)
     {
         array[arrayIndex] = new(true, truthy);
         array[arrayIndex + 1] = new(false, falsy);
     }
-
     /// <inheritdoc />
-    [Pure] // ReSharper disable once NullnessAnnotationConflictWithJetBrainsAnnotations
+    [Pure]
     public bool Contains(KeyValuePair<bool, T> item) =>
         item.Key
             ? EqualityComparer<T>.Default.Equals(truthy, item.Value)
             : EqualityComparer<T>.Default.Equals(falsy, item.Value);
-
     /// <inheritdoc cref="IDictionary{TKey, TValue}.TryGetValue" />
     [Pure]
     public bool TryGetValue(bool key, out T value)
@@ -11229,31 +9751,24 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         value = key ? truthy : falsy;
         return true;
     }
-
     /// <inheritdoc cref="ICollection{T}.Clear" />
     void ICollection<KeyValuePair<bool, T>>.Clear() { }
-
     /// <inheritdoc />
     [Pure]
     bool ICollection<KeyValuePair<bool, T>>.Remove(KeyValuePair<bool, T> item) => false;
-
     /// <inheritdoc />
     [Pure]
     bool IDictionary<bool, T>.Remove(bool key) => false;
-
     /// <inheritdoc cref="IDictionary{TKey, TValue}.ContainsKey" />
     [Pure]
     bool IDictionary<bool, T>.ContainsKey(bool key) => true;
-
     /// <inheritdoc />
     [Pure]
     IEnumerator<KeyValuePair<bool, T>> IEnumerable<KeyValuePair<bool, T>>.GetEnumerator() =>
         ((IEnumerable<KeyValuePair<bool, T>>)ArrayPair).GetEnumerator();
-
     /// <inheritdoc cref="IReadOnlyDictionary{TKey, TValue}.ContainsKey" />
     [Pure]
     bool IReadOnlyDictionary<bool, T>.ContainsKey(bool key) => true;
-
     /// <summary>Deconstructs a <see cref="Split{T}"/> into its components.</summary>
     /// <param name="t">The value to get assigned as <see cref="Truthy"/>.</param>
     /// <param name="f">The value to get assigned as <see cref="Falsy"/>.</param>
@@ -11262,19 +9777,13 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         t = truthy;
         f = falsy;
     }
-
     /// <inheritdoc />
     [Pure]
     public override string ToString() => $"Split({truthy}, {falsy})";
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods for nullable types and booleans.</summary>
-
 #if NET7_0_OR_GREATER
     /// <summary>Converts <see cref="bool"/> to <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of number to convert to.</typeparam>
@@ -11305,7 +9814,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     )
         where TDerived : TBase =>
         first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault : first.SequenceEqual(second);
-
     /// <summary>Determines whether two sequences are equal according to an equality comparer.</summary>
     /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
     /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
@@ -11325,7 +9833,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         where TDerived : TBase =>
         first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
         comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
-
     /// <summary>Determines whether two sequences are equal according to an equality comparer.</summary>
     /// <typeparam name="TDerived">The type of element in the compared array.</typeparam>
     /// <typeparam name="TBase">The type of element contained by the collection.</typeparam>
@@ -11346,7 +9853,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
         comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
 #endif
-
 #if !NET20 && !NET30
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
@@ -11357,7 +9863,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 #pragma warning disable 8619
         iterable?.Where(x => x is not null) ?? [];
 #pragma warning restore 8619
-
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
@@ -11369,12 +9874,9 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? [];
 #pragma warning restore 8629
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {
@@ -11385,28 +9887,21 @@ abstract partial class Assert
     {
         /// <summary>The value that is substituted for the function body of the assertion.</summary>
         public const string Assertion = "!!";
-
         /// <summary>The value that is substituted for the function body of the first parameter's factory.</summary>
         public const string XFactory = "@x";
-
         /// <summary>The value that is substituted for first parameter.</summary>
         public const string XValue = "#x";
-
         /// <summary>The value that is substituted for the function body of the second parameter's factory.</summary>
         public const string YFactory = "@y";
-
         /// <summary>The value that is substituted for second parameter.</summary>
         public const string YValue = "#y";
-
         /// <summary>Gets the default formatter.</summary>
         [Pure]
         public static FormatAttribute Default { get; } = new($"Expected {Assertion} to be true.");
-
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameter.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         [Pure]
         public string this[string assertion] => Template.Replace(Assertion, assertion.Collapse());
-
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
@@ -11416,7 +9911,6 @@ abstract partial class Assert
             xFactory.Collapse() is var factory && xValue.Stringify() is var value
                 ? this[assertion, factory, value, factory, value]
                 : throw Unreachable;
-
         /// <summary>Returns the formatted <see cref="Template"/> by inserting the parameters.</summary>
         /// <param name="assertion">The value to replace <see cref="Assertion"/> with.</param>
         /// <param name="xFactory">The value to replace <see cref="XFactory"/> with.</param>
@@ -11432,11 +9926,9 @@ abstract partial class Assert
                .Replace(YFactory, yFactory.Collapse())
                .Replace(YValue, yValue.Stringify())
                .ToString();
-
         /// <summary>Gets the template, before any substitution occurs.</summary>
         [Pure]
         public string Template => template;
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="FormatAttribute"/>
         /// by using the constructor <see cref="FormatAttribute(string)"/>.
@@ -11451,16 +9943,12 @@ abstract partial class Assert
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>
 /// Methods that provide functions for enumerations of <see cref="Assert.Result"/> instances.
 /// </summary>
-
     /// <summary>Eagerly executes all asserts of the passed in enumerator.</summary>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to execute.</param>
     /// <returns>The collected result of all assertions.</returns>
@@ -11468,20 +9956,16 @@ abstract partial class Assert
     public static IList<Assert.Result> RunAll(this IEnumerator<Assert.Result> enumerator)
     {
         SmallList<Assert.Result> collected = [];
-
         while (enumerator.MoveNext())
             collected.Add(enumerator.Current.Run());
-
         return collected;
     }
-
     /// <summary>Eagerly executes all asserts of the passed in enumerable.</summary>
     /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to execute.</param>
     /// <returns>The collected result of all assertions.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public static IList<Assert.Result> RunAll([InstantHandle] this IEnumerable<Assert.Result> enumerable) =>
         enumerable.Select(x => x.Run()).ToIList();
-
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {
@@ -11491,7 +9975,6 @@ abstract partial class Assert
         /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
         /// <param name="setup">The setup to store.</param>
         public Result(Type? setup = null) => Setup = setup;
-
         /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
         /// <param name="assertion">The assertion to store.</param>
         /// <param name="setup">The setup to store.</param>
@@ -11500,7 +9983,6 @@ abstract partial class Assert
             Assertion = assertion;
             Setup = setup ?? assertion?.GetType();
         }
-
         /// <summary>Initializes a new instance of the <see cref="Result"/> struct.</summary>
         /// <param name="error">The error to store.</param>
         /// <param name="setup">The setup to store.</param>
@@ -11509,60 +9991,46 @@ abstract partial class Assert
             Error = error;
             Setup = setup;
         }
-
         /// <summary>Gets a value indicating whether <see cref="Assertion"/> has failed.</summary>
         [MemberNotNullWhen(false, nameof(Assertion)), Pure]
         public bool Failed => !Succeeded;
-
         /// <summary>Gets a value indicating whether <see cref="Error"/> is set.</summary>
         [MemberNotNullWhen(true, nameof(Error)), Pure]
         public bool HasError => Error is not null;
-
         /// <summary>Gets a value indicating whether this <see cref="Result"/> has executed.</summary>
         [Pure]
         public bool HasExecuted => !IsDefault;
-
         /// <summary>Gets a value indicating whether <see cref="Assertion"/> was successfully instantiated.</summary>
         [MemberNotNullWhen(true, nameof(Assertion)), Pure]
         public bool Instantiated => Assertion is not null;
-
         /// <summary>Gets a value indicating whether this <see cref="Result"/> is the default instance.</summary>
         [Pure]
         public bool IsDefault => Assertion is null && Error is null && Setup is null;
-
         /// <summary>Gets a value indicating whether <see cref="Assertion"/> has succeeded.</summary>
         [MemberNotNullWhen(true, nameof(Assertion)), Pure]
         public bool Succeeded => Instantiated && Assertion.Message is null;
-
         /// <summary>Gets the message of the assertion.</summary>
         [Pure]
         public string? Message => Instantiated ? Assertion.Message : null;
-
         /// <summary>Gets the name of the assertion type.</summary>
         [Pure]
         public string Name => Setup.UnfoldedFullName();
-
         /// <summary>Gets the assertion that ran.</summary>
         [Pure]
         public Assert? Assertion { get; }
-
         /// <summary>Gets the error that was thrown while instantiating <see cref="Assertion"/>.</summary>
         [Pure]
         public Exception? Error { get; }
-
         /// <summary>Gets the default instance.</summary>
         [Pure]
         public Result Default => default;
-
         /// <summary>Gets the type that was attempted to be instantiated.</summary>
         [Pure]
         public Type? Setup { get; }
-
         /// <summary>Gets the fail message.</summary>
         /// <returns>The fail message.</returns>
         [Pure]
         string Fail => Setup is null ? "Assertion failed! " : $"Assertion {Setup.Name} failed! ";
-
         /// <inheritdoc />
         [Pure]
         public override string ToString() =>
@@ -11570,7 +10038,6 @@ abstract partial class Assert
             Instantiated ? Succeeded ? "OK" : $"{Fail}{Assertion.Message}" :
             HasError ? $"{Fail}Unexpectedly threw {Error.GetType().UnfoldedFullName()}: {Error}" :
             "Yet to be determined";
-
         /// <summary>Executes the assertion and returns the new <see cref="Result"/>.</summary>
         /// <returns>The new instance of <see cref="Result"/> that contains the assertion results.</returns>
         [MustUseReturnValue]
@@ -11578,7 +10045,6 @@ abstract partial class Assert
         {
             if (Setup is null)
                 return default;
-
             try
             {
                 return new(Activator.CreateInstance(Setup, true) as Assert, Setup);
@@ -11591,12 +10057,9 @@ abstract partial class Assert
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {
@@ -11610,7 +10073,6 @@ abstract partial class Assert
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(that, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Func<object> that,
@@ -11621,12 +10083,9 @@ abstract partial class Assert
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {
@@ -11649,7 +10108,6 @@ abstract partial class Assert
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(Try(that, ref message, thatEx), message, thatEx) { }
-
         /// <inheritdoc cref="Assert.Throws{TException}(Action, string, string)"/>
         protected Throws(
             [InstantHandle] Func<object> that,
@@ -11657,7 +10115,6 @@ abstract partial class Assert
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(Try(() => that(), ref message, thatEx), message, thatEx) { }
-
         /// <summary>Invokes the callback, expecting <typeparamref name="TException"/> to be thrown.</summary>
         /// <param name="that">The condition that must throw <typeparamref name="TException"/>.</param>
         /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
@@ -11681,14 +10138,12 @@ abstract partial class Assert
                 return (message ??= Format(thatEx, e)) is var _ && false;
             }
         }
-
         /// <summary>Creates the formatted error message.</summary>
         /// <param name="thatEx">The context of where the error came from.</param>
         /// <param name="e">The caught exception, if one exists.</param>
         /// <returns>The formatted error message.</returns>
         static string Format(string thatEx, Exception? e = null) =>
             $"Expected {thatEx.Collapse()} to throw {typeof(TException).UnfoldedName()}, instead received {Format(e)}.";
-
         /// <summary>Formats the exception.</summary>
         /// <param name="e">The caught exception, if one exists.</param>
         /// <returns>The formatted exception.</returns>
@@ -11703,12 +10158,9 @@ abstract partial class Assert
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Defines the base class for an assertion, where a function is expected to return true.</summary>
 /// <param name="that">The condition that must be true.</param>
 /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
@@ -11725,7 +10177,6 @@ abstract partial class Assert(
 #if !CSHARPREPL
     static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToIList();
 #endif
-
     /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
     /// <param name="that">The condition that must be true.</param>
     /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
@@ -11736,7 +10187,6 @@ abstract partial class Assert(
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(Update(that, that, ref message, f => f?[thatEx]), message, thatEx) { }
-
     /// <summary>Gets the amount of available assertions.</summary>
     [Pure]
     public static int Length =>
@@ -11745,7 +10195,6 @@ abstract partial class Assert(
 #else
         s_assertions.Count;
 #endif
-
     /// <summary>
     /// Gets the enumeration responsible for running every <see cref="Assert"/> instance
     /// defined in the current <see cref="Assembly"/>, and returning every instance of a failed assert.
@@ -11762,15 +10211,12 @@ abstract partial class Assert(
         s_assertions
 #endif
            .Select(x => new Result(x));
-
     /// <summary>Gets the message of the assertion if it failed, or null.</summary>
     [Pure]
     public string? Message { get; } = that ? null : message ?? FormatAttribute.Default[thatEx];
-
     /// <summary>Gets the name of the assertion.</summary>
     [Pure]
     public string Name => GetType().UnfoldedFullName();
-
     /// <summary>Assertion that the enumerable must contain an item.</summary>
     /// <param name="x">The enumerable that must contain an item.</param>
     /// <returns>Whether the parameter <paramref name="x"/> contains an item.</returns>
@@ -11778,7 +10224,6 @@ abstract partial class Assert(
     public static bool Any([InstantHandle] IEnumerable x)
     {
         var e = x.GetEnumerator();
-
         try
         {
             return e.MoveNext();
@@ -11788,19 +10233,16 @@ abstract partial class Assert(
             (e as IDisposable)?.Dispose();
         }
     }
-
     /// <summary>Assertion that the enumerable must be empty.</summary>
     /// <param name="x">The enumerable that must be empty.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is empty.</returns>
     [Format("Expected @x to be an empty collection, received #x."), Pure]
     public static bool Empty([InstantHandle] IEnumerable x) => !Any(x);
-
     /// <summary>Assertion that the enumerable must be null or empty.</summary>
     /// <param name="x">The enumerable that must be null or empty.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is null or empty.</returns>
     [Format("Expected @x to be null or empty, received #x."), Pure]
     public static bool EmptyOrNull([InstantHandle, NotNullWhen(false)] IEnumerable? x) => x is null || !Any(x);
-
     /// <summary>Updates the value of the referenced parameter if the provided assertion fails.</summary>
     /// <param name="exposure">The exposed <see cref="Delegate"/> used to get metadata from.</param>
     /// <param name="that">The condition that must be true.</param>
@@ -11815,7 +10257,6 @@ abstract partial class Assert(
         [InstantHandle] Converter<FormatAttribute?, string?> formatter
     ) =>
         that() || (message ??= formatter(exposure.Method.GetCustomAttribute<FormatAttribute>())) is var _ && false;
-
     /// <summary>Assertion that both parameters must contain the same items.</summary>
     /// <typeparam name="T">The type of items to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11824,7 +10265,6 @@ abstract partial class Assert(
     [Format("Expected @x to have the same items as @y, received #x and #y."), Pure]
     public static bool SequenceEqualTo<T>([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
         x.SequenceEqual(y);
-
     /// <summary>Assertion that both parameters must be equal.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11832,7 +10272,6 @@ abstract partial class Assert(
     /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> are the same.</returns>
     [Format("Expected @x to be equal to @y, received #x and #y."), Pure]
     public static bool EqualTo<T>(T x, T y) => EqualityComparer<T>.Default.Equals(x, y);
-
     /// <summary>Assertion that the left-hand side must be greater than the right-hand side.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11840,7 +10279,6 @@ abstract partial class Assert(
     /// <returns>Whether the parameter <paramref name="x"/> is greater than <paramref name="y"/>.</returns>
     [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y."), Pure]
     public static bool GreaterThan<T>(T x, T y) => Compare(x, y) > 0;
-
     /// <summary>Assertion that the left-hand side must be greater than or equal to the right-hand side.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11848,7 +10286,6 @@ abstract partial class Assert(
     /// <returns>Whether the parameter <paramref name="x"/> is greater than or equal to <paramref name="y"/>.</returns>
     [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y."), Pure]
     public static bool GreaterThanOrEqualTo<T>(T x, T y) => Compare(x, y) >= 0;
-
     /// <summary>Assertion that the left-hand side must be less than the right-hand side.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11856,7 +10293,6 @@ abstract partial class Assert(
     /// <returns>Whether the parameter <paramref name="x"/> is less than <paramref name="y"/>.</returns>
     [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y."), Pure]
     public static bool LessThan<T>(T x, T y) => Compare(x, y) < 0;
-
     /// <summary>Assertion that the left-hand side must be less than or equal to the right-hand side.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11864,33 +10300,28 @@ abstract partial class Assert(
     /// <returns>Whether the parameter <paramref name="x"/> is less than or equal to <paramref name="y"/>.</returns>
     [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y."), Pure]
     public static bool LessThanOrEqualTo<T>(T x, T y) => Compare(x, y) <= 0;
-
     /// <summary>Assertion that the enumerable must not be null.</summary>
     /// <param name="x">The value that must not be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
     [Format("Expected @x to be not null, received null."), Pure]
     public static bool NotNull([NotNullWhen(true)] object? x) => x is not null;
-
     /// <summary>Assertion that the enumerable must not be null.</summary>
     /// <typeparam name="T">The type of value to do the null check on.</typeparam>
     /// <param name="x">The value that must not be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
     [Format("Expected @x to be not null, received null."), Pure]
     public static bool NotNull<T>([NotNullWhen(true)] T x) => x is not null;
-
     /// <summary>Assertion that the enumerable must be null.</summary>
     /// <param name="x">The value that must be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
     [Format("Expected @x to be null, received #x."), Pure]
     public static bool Null([NotNullWhen(false)] object? x) => x is null;
-
     /// <summary>Assertion that the enumerable must be null.</summary>
     /// <typeparam name="T">The type of value to do the null check on.</typeparam>
     /// <param name="x">The value that must be null.</param>
     /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
     [Format("Expected @x to be null, received #x."), Pure]
     public static bool Null<T>([NotNullWhen(false)] T x) => x is null;
-
     /// <summary>Assertion that both parameters must not be equal.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11898,7 +10329,6 @@ abstract partial class Assert(
     /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> are not the same.</returns>
     [Format("Expected @x to not be equal to @y, received #x."), Pure]
     public static bool UnequalTo<T>(T x, T y) => !EqualTo(x, y);
-
     /// <summary>Compares the two instances. This method is used for any comparing assertion methods.</summary>
     /// <typeparam name="T">The type of values to compare.</typeparam>
     /// <param name="x">The left-hand side.</param>
@@ -11924,25 +10354,21 @@ abstract partial class Assert(
     public static Func<float, float, bool> RoughlyEqualTo(float margin) =>
         [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
             Math.Abs(x - y) <= Math.Abs(margin);
-
     /// <inheritdoc cref="RoughlyEqualTo(float)"/>
     [Pure]
     public static Func<double, double, bool> RoughlyEqualTo(double margin) =>
         [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
             Math.Abs(x - y) <= Math.Abs(margin);
-
     /// <inheritdoc cref="RoughlyEqualTo(float)"/>
     [Pure]
     public static Func<decimal, decimal, bool> RoughlyEqualTo(decimal margin) =>
         [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
             Math.Abs(x - y) <= Math.Abs(margin);
 #endif
-
     /// <summary>Executes every assertion and gets all of the assertions that failed.</summary>
     /// <returns>All assertions that failed.</returns>
     [Pure]
     public static IEnumerable<string> AllMessages() => Runner.RunAll().Where(x => x.Failed).Select(x => $"{x}");
-
     /// <summary>Creates the assertion that the value must be within a certain range.</summary>
     /// <param name="range">The range of values to accept. The range is considered to be inclusive on both ends.</param>
     /// <returns>The assertion that determines whether a value is within the specific range.</returns>
@@ -11961,7 +10387,6 @@ abstract partial class Assert(
         [Format("Expected @x to be approximately within the range, received #x.")](x) =>
             int.CreateSaturating(x) is var i && i >= range.Start.Value && i <= range.End.Value;
 #endif
-
     /// <summary>Creates the assertion that the value must be within a certain range.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="low">The inclusive lower boundary.</param>
@@ -11971,7 +10396,6 @@ abstract partial class Assert(
     public static Predicate<T> InRangeOf<T>(T low, T high) =>
         [Format("Expected @x to be approximately within the range, received #x.")](x) =>
             GreaterThanOrEqualTo(x, low) && LessThanOrEqualTo(x, high);
-
     /// <summary>Creates the assertion that the parameter must contain specific items.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="items">The items that will be eventually compared to.</param>
@@ -11979,18 +10403,15 @@ abstract partial class Assert(
     [Pure]
     public static Predicate<IEnumerable<T>> Structured<T>(params T[] items) =>
         [Format("Expected @x to have fixed specific items, received #x.")](x) => SequenceEqualTo(x, items);
-
     /// <summary>Returns the parameter.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="items">The items that will be returned directly.</param>
     /// <returns>The parameter <paramref name="items"/>.</returns>
     [Pure]
     public static T[] Params<T>(params T[] items) => items;
-
     /// <inheritdoc />
     [Pure]
     public override string ToString() => new Result(this, GetType()).ToString();
-
     /// <summary>
     /// Determines whether the type implements <see cref="Assert"/> and can be instantiated.
     /// </summary>
@@ -12001,7 +10422,6 @@ abstract partial class Assert(
         type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
         ParameterlessConstructor(type) is not null &&
         type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
-
     /// <summary>Gets the parameterless constructor, ignoring possible exceptions thrown.</summary>
     /// <param name="type">The type to get the parameterless exception from.</param>
     /// <returns>
@@ -12022,12 +10442,9 @@ abstract partial class Assert(
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
@@ -12045,7 +10462,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : base(Update(that, () => that(it), ref message, f => f?[thatEx, itEx, it]), message, thatEx) { }
-
     /// <summary>Initializes a new instance of the <see cref="Assert{T}"/> class.</summary>
     /// <param name="x">The first context value.</param>
     /// <param name="y">The second context value.</param>
@@ -12064,7 +10480,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : base(Update(that, () => that(x, y), ref message, f => f?[thatEx, xEx, x, yEx, y]), message, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, Predicate{T}, string, string, string)"/>
     protected Assert(
         [InstantHandle] Predicate<T> that,
@@ -12074,7 +10489,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(it, that, message, itEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, Predicate{T}, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T> it,
@@ -12084,7 +10498,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(it(), that, message, itEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, Predicate{T}, string, string, string)"/>
     protected Assert(
         [InstantHandle] Predicate<T> that,
@@ -12094,7 +10507,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(it(), that, message, itEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         T x,
@@ -12106,7 +10518,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x, y, that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T, T, bool> that,
@@ -12118,7 +10529,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x, y, that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         T x,
@@ -12130,7 +10540,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x, y(), that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T> x,
@@ -12142,7 +10551,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x(), y, that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T> x,
@@ -12154,7 +10562,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x(), y(), that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T> x,
@@ -12166,7 +10573,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x(), y(), that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T> x,
@@ -12178,7 +10584,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x(), y, that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         T x,
@@ -12190,7 +10595,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x, y(), that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T, T, bool> that,
@@ -12202,7 +10606,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x(), y(), that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T, T, bool> that,
@@ -12214,7 +10617,6 @@ abstract partial class Assert<T>
         [CallerArgumentExpression(nameof(that))] string thatEx = ""
     )
         : this(x(), y, that, message, xEx, yEx, thatEx) { }
-
     /// <inheritdoc cref="Assert{T}(T, T, Func{T, T, bool}, string, string, string, string)"/>
     protected Assert(
         [InstantHandle] Func<T, T, bool> that,
@@ -12228,12 +10630,9 @@ abstract partial class Assert<T>
         : this(x, y(), that, message, xEx, yEx, thatEx) { }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
@@ -12248,7 +10647,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(that, x, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Converter<T, object> that,
@@ -12257,7 +10655,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(that, x, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             T x,
@@ -12266,7 +10663,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(x, that, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             T x,
@@ -12275,7 +10671,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(x, that, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Action<T> that,
@@ -12284,7 +10679,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(that, x, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Converter<T, object> that,
@@ -12293,7 +10687,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(that, x, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Func<T> x,
@@ -12302,7 +10695,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(x, that, message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Func<T> x,
@@ -12314,12 +10706,9 @@ abstract partial class Assert<T>
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
@@ -12335,7 +10724,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Converter<T, object> that,
@@ -12344,7 +10732,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             T x,
@@ -12353,7 +10740,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             T x,
@@ -12362,7 +10748,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Action<T> that,
@@ -12371,7 +10756,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x()), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Converter<T, object> that,
@@ -12380,7 +10764,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x()), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Func<T> x,
@@ -12389,7 +10772,6 @@ abstract partial class Assert<T>
             [CallerArgumentExpression(nameof(that))] string thatEx = ""
         )
             : base(() => that(x()), message, thatEx) { }
-
         /// <inheritdoc />
         protected Throws(
             [InstantHandle] Func<T> x,
@@ -12401,12 +10783,9 @@ abstract partial class Assert<T>
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Defines the base class for an assertion, where a value is expected to return true.</summary>
 /// <typeparam name="T">The type of value to assert with.</typeparam>
 abstract partial class Assert<T> : Assert
@@ -12414,70 +10793,53 @@ abstract partial class Assert<T> : Assert
     /// <inheritdoc cref="Assert.EqualTo{T}"/>
     [Format("Expected @x to be equal to @y, received #x and #y.")]
     public static bool EqualTo(T x, T y) => EqualTo<T>(x, y);
-
     /// <inheritdoc cref="Assert.GreaterThan{T}"/>
     [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y.")]
     public static bool GreaterThan(T x, T y) => GreaterThan<T>(x, y);
-
     /// <inheritdoc cref="Assert.GreaterThanOrEqualTo{T}"/>
     [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y.")]
     public static bool GreaterThanOrEqualTo(T x, T y) => GreaterThanOrEqualTo<T>(x, y);
-
     /// <inheritdoc cref="Assert.LessThan{T}"/>
     [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y.")]
     public static bool LessThan(T x, T y) => LessThan<T>(x, y);
-
     /// <inheritdoc cref="Assert.LessThanOrEqualTo{T}"/>
     [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y.")]
     public static bool LessThanOrEqualTo(T x, T y) => LessThanOrEqualTo<T>(x, y);
-
     /// <inheritdoc cref="Assert.NotNull{T}"/>
     [Format("Expected @x to be not null, received null.")]
     public static bool NotNull(T x) => NotNull<T>(x);
-
     /// <inheritdoc cref="Assert.Null{T}"/>
     [Format("Expected @x to be null, received #x.")]
     public static bool Null(T x) => Null<T>(x);
-
     /// <inheritdoc cref="Assert.SequenceEqualTo{T}"/>
     [Format("Expected @x to have the same items as @y, received #x and #y.")]
     public static bool SequenceEqualTo([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
         SequenceEqualTo<T>(x, y);
-
     /// <inheritdoc cref="Assert.UnequalTo{T}"/>
     [Format("Expected @x to not be equal to @y, received #x.")]
     public static bool UnequalTo(T x, T y) => UnequalTo<T>(x, y);
-
     /// <inheritdoc cref="Assert.Compare{T}"/>
     [Pure]
     public static int Compare(T x, T y) => Compare<T>(x, y);
-
     /// <inheritdoc cref="Assert.InRangeOf{T}(T, T)"/>
     [Pure]
     public static Predicate<T> InRangeOf(T low, T high) => InRangeOf<T>(low, high);
-
     /// <inheritdoc cref="Assert.Structured{T}"/>
     [Pure]
     public static Predicate<IEnumerable<T>> Structured(params T[] expected) => Structured<T>(expected);
-
     /// <inheritdoc cref="Assert.Params{T}"/>
     [Pure]
     public static T[] Params(params T[] items) => Params<T>(items);
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 #endif
-
 // ReSharper disable once CheckNamespace
-
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
 #endif
-
 /// <summary>Provides methods for exiting the program.</summary>
-
     /// <remarks><para>This method represents the exit code 0, indicating success.</para></remarks>
     /// <inheritdoc cref="With{T}"/>
     [ContractAnnotation("=> halt"),
@@ -12488,7 +10850,6 @@ abstract partial class Assert<T> : Assert
 #endif
     ]
     public static Exception Success(string? message = null) => With<Exception>(message, 0);
-
     /// <remarks><para>This method represents the exit code 1, indicating failure.</para></remarks>
     /// <inheritdoc cref="With{T}"/>
     [ContractAnnotation("=> halt"),
@@ -12499,7 +10860,6 @@ abstract partial class Assert<T> : Assert
 #endif
     ]
     public static Exception Failure(string? message = null) => With<Exception>(message, 1);
-
     /// <remarks><para>This method represents the exit code 2, indicating invalid parameters.</para></remarks>
     /// <inheritdoc cref="With{T}"/>
     [ContractAnnotation("=> halt"),
@@ -12510,7 +10870,6 @@ abstract partial class Assert<T> : Assert
 #endif
     ]
     public static Exception Usage(string? message = null) => With<Exception>(message, 2);
-
     /// <typeparam name="T">Only used for type coercion.</typeparam>
     /// <inheritdoc cref="Success"/>
     [ContractAnnotation("=> halt"),
@@ -12521,7 +10880,6 @@ abstract partial class Assert<T> : Assert
 #endif
     ]
     public static T Success<T>(string? message = null) => With<T>(message, 0);
-
     /// <typeparam name="T">Only used for type coercion.</typeparam>
     /// <inheritdoc cref="Failure"/>
     [ContractAnnotation("=> halt"),
@@ -12532,7 +10890,6 @@ abstract partial class Assert<T> : Assert
 #endif
     ]
     public static T Failure<T>(string? message = null) => With<T>(message, 1);
-
     /// <typeparam name="T">Only used for type coercion.</typeparam>
     /// <inheritdoc cref="Usage"/>
     [ContractAnnotation("=> halt"),
@@ -12543,7 +10900,6 @@ abstract partial class Assert<T> : Assert
 #endif
     ]
     public static T Usage<T>(string? message = null) => With<T>(message, 2);
-
     /// <summary>Terminates this process and returns the exit code to the operating system.</summary>
     /// <typeparam name="T">Only used for type coercion.</typeparam>
     /// <param name="message">The message to print into the standard output/error, if specified.</param>
@@ -12563,21 +10919,15 @@ abstract partial class Assert<T> : Assert
     {
         if (message is not null)
             (exitCode is 0 ? Console.Out : Console.Error).WriteLine(message);
-
         Environment.Exit(exitCode);
         throw Unreachable;
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods to use callbacks within a statement.</summary>
-
 #if !RELEASE
-#if ROSLYN // ReSharper disable once RedundantExtendsListEntry
+#if ROSLYN
     /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
     public sealed partial class DiagnosticSink : ILogEventSink
     {
@@ -12586,32 +10936,24 @@ abstract partial class Assert<T> : Assert
         {
             /// <summary>The maximum number of arguments when called from <see cref="Peeks.Do{T}"/>.</summary>
             const int UsualMaxCapacity = 5;
-
             readonly List<string> _list = new(UsualMaxCapacity);
-
             readonly StringBuilder _builder = new();
-
             int _index;
-
             /// <summary>Gets the message template.</summary>
             public string Template => $"{_builder}";
-
             /// <summary>Gets the list of property names.</summary>
             public IReadOnlyList<string> Names => _list;
-
             /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
             /// <param name="accumulator">The accumulator.</param>
             /// <param name="token">The token to process.</param>
             /// <returns>The parameter <paramref name="accumulator"/>.</returns>
             public static Accumulator Next(Accumulator accumulator, MessageTemplateToken token) =>
                 accumulator.Next(token);
-
             /// <summary>Deconstructs the <see cref="Accumulator"/>.</summary>
             /// <param name="template">The message template.</param>
             /// <param name="names">The list of property names. </param>
             public void Deconstruct(out string template, out IReadOnlyList<string> names) =>
                 (template, names) = (Template, Names);
-
             /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
             /// <param name="token">The token to process.</param>
             /// <returns>Itself.</returns>
@@ -12622,28 +10964,22 @@ abstract partial class Assert<T> : Assert
                     _builder.Append(text);
                     return this;
                 }
-
                 if (token is not PropertyToken property)
                     throw Unreachable;
-
                 _builder.Append('{').Append(_index++).Append('}');
                 _list.Add(property.PropertyName);
                 return this;
             }
         }
-
         /// <summary>Gets the logged diagnostics.</summary>
         [Pure]
         public ConcurrentQueue<Diagnostic> UnreportedDiagnostics { get; } = [];
-
         /// <summary>Gets or sets the additional locations.</summary>
         [Pure]
         public IEnumerable<Location>? AdditionalLocations { get; set; }
-
         /// <summary>Gets or sets the location.</summary>
         [Pure]
         public Location Location { get; set; } = Location.None;
-
         /// <inheritdoc />
         public void Emit(LogEvent logEvent)
         {
@@ -12652,10 +10988,8 @@ abstract partial class Assert<T> : Assert
             DiagnosticDescriptor descriptor = new(Name, $"{s_guid}", template, Name, level, true);
             var args = list.Select(x => (object?)logEvent.Properties[x]).ToArray();
             var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
-
             UnreportedDiagnostics.Enqueue(diagnostic);
         }
-
         static DiagnosticSeverity ToDiagnosticSeverity(LogEventLevel level) =>
             level switch
             {
@@ -12669,32 +11003,27 @@ abstract partial class Assert<T> : Assert
             };
     }
 #endif
-
     /// <summary>The character often used to identify scripted assemblies.</summary>
     public const char R = '\u211b';
-
     /// <summary>The escape sequence to clear the screen.</summary>
-    // ReSharper disable CanSimplifyStringEscapeSequence
+   
     public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
-#if ROSLYN // ReSharper restore CanSimplifyStringEscapeSequence
+#if ROSLYN
     const string Name = nameof(DiagnosticSink);
-
     static readonly DiagnosticSink s_diagnosticSink = new();
-
     static readonly Guid s_guid = Guid.NewGuid();
 #endif
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     static readonly string s_path = Path.Combine(
         Path.GetTempPath(),
         typeof(Assert).Assembly.GetName().Name is [not R, ..] name ? name : $"{R}"
-    ); // ReSharper disable once RedundantNameQualifier
-
+    );
     static readonly ITextFormatter s_json =
 #if CSHARPREPL
         new JsonFormatter();
 #else
         new CompactJsonFormatter();
-#endif // ReSharper disable once RedundantNameQualifier
+#endif
     static readonly Serilog.Core.Logger
         s_clef = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File(s_json, $"{s_path}.clef").CreateLogger(),
 #if ROSLYN
@@ -12710,10 +11039,9 @@ abstract partial class Assert<T> : Assert
     static Peeks() => File.Create(s_debugFile).Dispose();
 #endif
 #endif
-
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
-    // ReSharper disable RedundantCast
-    // ReSharper disable once EventNeverSubscribedTo.Global
+   
+   
     public static event Action<string> OnWrite =
 #if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
         Shout;
@@ -12734,7 +11062,6 @@ abstract partial class Assert<T> : Assert
     /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
     [Pure]
     public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
-
     /// <summary>Gets the placeholder diagnostic.</summary>
     [Pure]
     public static DiagnosticDescriptor Bare { get; } = new(Name, $"{s_guid}", "", Name, DiagnosticSeverity.Error, true);
@@ -12751,7 +11078,7 @@ abstract partial class Assert<T> : Assert
 #pragma warning restore CS1574
     public static void Shout(string message)
     {
-        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
+       
         System.Diagnostics.Debug.WriteLine(message);
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 #pragma warning disable S6670
@@ -12763,7 +11090,6 @@ abstract partial class Assert<T> : Assert
             File.AppendAllText(s_debugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
 #endif
     }
-
     /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
     /// <param name="message">The value to send a message.</param>
     /// <exception cref="InvalidOperationException">
@@ -12779,7 +11105,7 @@ abstract partial class Assert<T> : Assert
     /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
     /// every callback has been manually removed as it is always valid by default.
     /// </exception>
-    // ReSharper disable once InvokeAsExtensionMethod
+   
 #pragma warning disable RCS1196
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 #pragma warning restore RCS1196
@@ -12790,7 +11116,6 @@ abstract partial class Assert<T> : Assert
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Location Mark(this Location location, [UsedImplicitly] params Location[]? additionalLocations) =>
         location;
-
     /// <summary>Marks the location in the next set of lints.</summary>
     /// <param name="location">The primary location.</param>
     /// <param name="additionalLocations">Additional locations.</param>
@@ -12799,7 +11124,6 @@ abstract partial class Assert<T> : Assert
     public static Location Mark(this Location location, [UsedImplicitly] IEnumerable<Location>? additionalLocations) =>
         location;
 #endif
-
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
@@ -12817,7 +11141,6 @@ abstract partial class Assert<T> : Assert
         [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Debug<T>(
@@ -12832,7 +11155,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Debug<T>(
@@ -12847,7 +11169,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
@@ -12867,7 +11188,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Debug<T>(
@@ -12882,7 +11202,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -12894,7 +11213,6 @@ abstract partial class Assert<T> : Assert
         [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Error<T>(
@@ -12909,7 +11227,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Error<T>(
@@ -12924,7 +11241,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
@@ -12944,7 +11260,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Error<T>(
@@ -12959,7 +11274,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -12971,7 +11285,6 @@ abstract partial class Assert<T> : Assert
         [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Fatal<T>(
@@ -12986,7 +11299,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Fatal<T>(
@@ -13001,7 +11313,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
@@ -13021,7 +11332,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Fatal<T>(
@@ -13036,7 +11346,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -13048,7 +11357,6 @@ abstract partial class Assert<T> : Assert
         [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Info<T>(
@@ -13063,7 +11371,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Info<T>(
@@ -13078,7 +11385,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
@@ -13098,7 +11404,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Info<T>(
@@ -13113,7 +11418,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -13125,7 +11429,6 @@ abstract partial class Assert<T> : Assert
         [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Verbose<T>(
@@ -13140,7 +11443,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Verbose<T>(
@@ -13155,7 +11457,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
@@ -13175,7 +11476,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Verbose<T>(
@@ -13190,7 +11490,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -13202,7 +11501,6 @@ abstract partial class Assert<T> : Assert
         [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Warn<T>(
@@ -13217,7 +11515,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Warn<T>(
@@ -13232,7 +11529,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
@@ -13252,7 +11548,6 @@ abstract partial class Assert<T> : Assert
 #endif
         =>
             x;
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<T> Warn<T>(
@@ -13272,7 +11567,6 @@ abstract partial class Assert<T> : Assert
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     public static Location Mark(this Location location, params Location[]? additionalLocations) =>
         Mark(location, (IEnumerable<Location>?)additionalLocations);
-
     /// <summary>Marks the location in the next set of lints.</summary>
     /// <param name="location">The primary location.</param>
     /// <param name="additionalLocations">Additional locations.</param>
@@ -13284,7 +11578,6 @@ abstract partial class Assert<T> : Assert
         return location;
     }
 #endif
-
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
@@ -13309,7 +11602,6 @@ abstract partial class Assert<T> : Assert
         [CallerLineNumber] int line = default
     ) =>
         Do(x, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
@@ -13329,7 +11621,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -13349,7 +11640,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -13374,7 +11664,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
@@ -13394,7 +11683,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
     public static T Error<T>(
@@ -13409,7 +11697,6 @@ abstract partial class Assert<T> : Assert
         [CallerLineNumber] int line = default
     ) =>
         Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Error<T>(
         this Span<T> value,
@@ -13429,7 +11716,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> value,
@@ -13449,7 +11735,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -13474,7 +11759,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
-
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> value,
@@ -13494,7 +11778,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
     public static T Fatal<T>(
@@ -13509,7 +11792,6 @@ abstract partial class Assert<T> : Assert
         [CallerLineNumber] int line = default
     ) =>
         Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Fatal<T>(
         this Span<T> value,
@@ -13529,7 +11811,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> value,
@@ -13549,7 +11830,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -13574,7 +11854,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
-
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> value,
@@ -13594,7 +11873,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
     public static T Info<T>(
@@ -13609,7 +11887,6 @@ abstract partial class Assert<T> : Assert
         [CallerLineNumber] int line = default
     ) =>
         Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Info<T>(
         this Span<T> value,
@@ -13629,7 +11906,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> value,
@@ -13649,7 +11925,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -13674,7 +11949,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
-
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> value,
@@ -13694,7 +11968,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
     public static T Verbose<T>(
@@ -13709,7 +11982,6 @@ abstract partial class Assert<T> : Assert
         [CallerLineNumber] int line = default
     ) =>
         Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Verbose<T>(
         this Span<T> value,
@@ -13729,7 +12001,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> value,
@@ -13749,7 +12020,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -13774,7 +12044,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
-
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> value,
@@ -13794,7 +12063,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
     public static T Warn<T>(
@@ -13809,7 +12077,6 @@ abstract partial class Assert<T> : Assert
         [CallerLineNumber] int line = default
     ) =>
         Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Warn<T>(
         this Span<T> value,
@@ -13829,7 +12096,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> value,
@@ -13849,7 +12115,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -13874,7 +12139,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
-
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Warn<T>(
         this ReadOnlySpan<T> value,
@@ -13894,7 +12158,6 @@ abstract partial class Assert<T> : Assert
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
-
     static T Do<T>(
         T value,
         [InstantHandle] Converter<T, object?>? map,
@@ -13923,7 +12186,6 @@ abstract partial class Assert<T> : Assert
 #endif
                 _ => value,
             };
-
         var x = (map ?? Memory)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
@@ -13941,7 +12203,6 @@ abstract partial class Assert<T> : Assert
 #endif
             return value;
         }
-
         s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
 #if ROSLYN
         s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, y);
@@ -13986,13 +12247,10 @@ abstract partial class Assert<T> : Assert
         const string
             Indent = "\n        ",
             Of = $"{Indent}of ";
-
         if (!(filter ?? (_ => true))(value))
             return value;
-
         logger ??= Write;
-
-        // ReSharper disable ExplicitCallerInfoArgument InvokeAsExtensionMethod RedundantNameQualifier
+       
         var stringified = (map ?? (x => x))(value) switch
         {
             var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
@@ -14000,13 +12258,11 @@ abstract partial class Assert<T> : Assert
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
-
         var logExpression = shouldLogExpression ? expression.CollapseToSingleLine(Of) : "";
         var log = $"{stringified}{logExpression}{Indent}at {member} in {path.FileName()}:line {line}";
         logger(log);
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     [return: NotNullIfNotNull(nameof(value))]
     public static T Debug<T, TAs>(
@@ -14024,7 +12280,6 @@ abstract partial class Assert<T> : Assert
     {
         if (!(filter ?? (_ => true))(value))
             return value;
-
         var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
         {
             var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x as object,
@@ -14032,7 +12287,6 @@ abstract partial class Assert<T> : Assert
             var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
             var x => Stringifier.Stringify(x),
         };
-
         Debug(
             stringified,
             false,
@@ -14043,10 +12297,8 @@ abstract partial class Assert<T> : Assert
             line: line,
             member: member
         );
-
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static Span<T> Debug<T>(
         this in Span<T> value,
@@ -14064,12 +12316,11 @@ abstract partial class Assert<T> : Assert
         where T : unmanaged
 #endif
     {
-        // ReSharper disable ExplicitCallerInfoArgument
+       
         _ = value
            .ToArray()
            .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-
-        // ReSharper restore ExplicitCallerInfoArgument
+       
         return value;
     }
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -14090,17 +12341,15 @@ abstract partial class Assert<T> : Assert
         where T : unmanaged
 #endif
     {
-        // ReSharper disable ExplicitCallerInfoArgument
+       
         _ = value
            .View
            .ToArray()
            .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-
-        // ReSharper restore ExplicitCallerInfoArgument
+       
         return value;
     }
 #endif
-
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this in SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -14123,15 +12372,13 @@ abstract partial class Assert<T> : Assert
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        // ReSharper disable ExplicitCallerInfoArgument
+       
         _ = value
            .ToArrays()
            .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-
-        // ReSharper restore ExplicitCallerInfoArgument
+       
         return value;
     }
-
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
@@ -14149,17 +12396,15 @@ abstract partial class Assert<T> : Assert
         where T : unmanaged
 #endif
     {
-        // ReSharper disable ExplicitCallerInfoArgument
+       
         _ = value
            .ToArray()
            .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-
-        // ReSharper restore ExplicitCallerInfoArgument
+       
         return value;
     }
 #endif
 #endif
-
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and action parameter.</typeparam>
     /// <param name="value">The value to pass into the callback.</param>
@@ -14181,14 +12426,12 @@ abstract partial class Assert<T> : Assert
     /// <returns>The parameter <paramref name="value"/>.</returns>
     public static unsafe T Peek<T>(this T value, [InstantHandle] delegate*<T, void> call)
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+       
         if (call is not null)
             call(value);
-
         return value;
     }
 #endif
-
     /// <summary>Executes the function, and returns the result.</summary>
     /// <typeparam name="T">The type of value and input parameter.</typeparam>
     /// <typeparam name="TResult">The type of output and return value.</typeparam>
@@ -14197,17 +12440,12 @@ abstract partial class Assert<T> : Assert
     /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
     public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
         converter(value);
-
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable GlobalUsingsAnalyzer // ReSharper disable once RedundantUsingDirective.Global
-
+#pragma warning disable GlobalUsingsAnalyzer
 
 #pragma warning restore GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods to wrap delegates around try-catch blocks.</summary>
-
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <param name="action">The action to execute.</param>
     /// <param name="err">
@@ -14228,7 +12466,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <typeparam name="T">The type of parameter to pass to <paramref name="action"/>.</typeparam>
     /// <param name="action">The action to execute.</param>
@@ -14251,7 +12488,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <typeparam name="T1">The first type of parameter to pass to <paramref name="action"/>.</typeparam>
     /// <typeparam name="T2">The second type of parameter to pass to <paramref name="action"/>.</typeparam>
@@ -14281,7 +12517,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <typeparam name="T1">The first type of parameter to pass to <paramref name="action"/>.</typeparam>
     /// <typeparam name="T2">The second type of parameter to pass to <paramref name="action"/>.</typeparam>
@@ -14314,7 +12549,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <typeparam name="T1">The first type of parameter to pass to <paramref name="action"/>.</typeparam>
     /// <typeparam name="T2">The second type of parameter to pass to <paramref name="action"/>.</typeparam>
@@ -14350,7 +12584,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="func"/>.</summary>
     /// <typeparam name="T">The return type of <paramref name="func"/>.</typeparam>
     /// <param name="func">The function to execute.</param>
@@ -14384,7 +12617,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="func"/>.</summary>
     /// <typeparam name="T">The type of parameter to pass to <paramref name="func"/>.</typeparam>
     /// <typeparam name="TResult">The return type of <paramref name="func"/>.</typeparam>
@@ -14421,7 +12653,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="func"/>.</summary>
     /// <typeparam name="T1">The first type of parameter to pass to <paramref name="func"/>.</typeparam>
     /// <typeparam name="T2">The second type of parameter to pass to <paramref name="func"/>.</typeparam>
@@ -14461,7 +12692,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="func"/>.</summary>
     /// <typeparam name="T1">The first type of parameter to pass to <paramref name="func"/>.</typeparam>
     /// <typeparam name="T2">The second type of parameter to pass to <paramref name="func"/>.</typeparam>
@@ -14504,7 +12734,6 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
     /// <summary>Attempts to execute the <paramref name="func"/>.</summary>
     /// <typeparam name="T1">The first type of parameter to pass to <paramref name="func"/>.</typeparam>
     /// <typeparam name="T2">The second type of parameter to pass to <paramref name="func"/>.</typeparam>
@@ -14550,29 +12779,19 @@ abstract partial class Assert<T> : Assert
             return true;
         }
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
 
-
 // ReSharper disable once CheckNamespace RedundantUsingDirective.Global
-
-
 /// <summary>Provides a reference for an <see cref="UnreachableException"/>.</summary>
-
     /// <summary>Gets the <see cref="Exception"/> that a collection cannot be empty.</summary>
     public static InvalidOperationException CannotBeEmpty { get; } = new("Buffer is empty.");
-
     /// <summary>Gets the <see cref="Exception"/> that represents an unreachable state.</summary>
     public static UnreachableException Unreachable { get; } = new();
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace EmptyNamespace
-
 #if !NET20 && !NET30 && !NET471_OR_GREATER && !NETSTANDARD1_6_OR_GREATER && !NETCOREAPP
 /// <summary>Adds support for Append and Prepend in lower frameworks.</summary>
-
     /// <summary>Appends a value to the end of the sequence.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <param name="source">A sequence of values.</param>
@@ -14580,7 +12799,6 @@ abstract partial class Assert<T> : Assert
     /// <returns>A new sequence that ends with <paramref name="element"/>.</returns>
     public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource element) =>
         source.Concat(element.Yield());
-
     /// <summary>Prepends a value to the end of the sequence.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <param name="source">A sequence of values.</param>
@@ -14589,14 +12807,10 @@ abstract partial class Assert<T> : Assert
     public static IEnumerable<TSource> Prepend<TSource>(this IEnumerable<TSource> source, TSource element) =>
         element.Yield().Concat(source);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods to create cartesian products.</summary>
-
     /// <summary>Creates a cartesian product from two collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T1">The type of item in the first set.</typeparam>
@@ -14616,7 +12830,6 @@ abstract partial class Assert<T> : Assert
         second.TryCount() is { } s
             ? e.WithCount(f * s)
             : e;
-
     /// <summary>Creates a cartesian product from three collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T1">The type of item in the first set.</typeparam>
@@ -14643,7 +12856,6 @@ abstract partial class Assert<T> : Assert
         third.TryCount() is { } t
             ? e.WithCount(f * s * t)
             : e;
-
     /// <summary>Creates a cartesian product from four collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T1">The type of item in the first set.</typeparam>
@@ -14675,7 +12887,6 @@ abstract partial class Assert<T> : Assert
         fourth.TryCount() is { } u
             ? e.WithCount(f * s * t * u)
             : e;
-
     /// <summary>Creates a cartesian product from n-collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T">The type of item in the set.</typeparam>
@@ -14689,7 +12900,6 @@ abstract partial class Assert<T> : Assert
         params IEnumerable<T>[] rest
     ) =>
         Enumerable.Repeat(first, 1).Concat(rest).CartesianProduct();
-
     /// <summary>Creates a cartesian product from n-collections.</summary>
     /// <remarks><para>The cartesian product is defined as the set of ordered pairs.</para></remarks>
     /// <typeparam name="T">The type of item in the set.</typeparam>
@@ -14701,16 +12911,10 @@ abstract partial class Assert<T> : Assert
             (sum, next) => sum.SelectMany(_ => next, (s, n) => s.Concat(Enumerable.Repeat(n, 1)))
         );
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 // ReSharper disable RedundantReadonlyModifier StructCanBeMadeReadOnly
-
 /// <summary>Provides methods to calculate various binomial coefficients.</summary>
-
 #if NET8_0_OR_GREATER
     /// <summary>Calculates the binomial coefficient (nCk) (N items, choose k).</summary>
     /// <remarks><para>
@@ -14726,20 +12930,15 @@ abstract partial class Assert<T> : Assert
     public static T Choose<T>(this T n, T k)
         where T : INumberBase<T>
     {
-        if (T.IsNegative(n)) // ReSharper disable once TailRecursiveCall
+        if (T.IsNegative(n))
             return checked(T.IsEvenInteger(k) ? Choose(-n + T.One, k) : -Choose(-n + T.One + T.One, k));
-
         if (T.IsZero(k) || T.IsNegative(k) || T.IsNegative(n - k))
             return T.Zero;
-
         if (n == k)
             return T.One;
-
         var c = T.One;
-
         for (var i = T.One; T.IsPositive(k - i); i++)
             c = checked(c * n-- / i);
-
         return c;
     }
 #else
@@ -14755,45 +12954,33 @@ abstract partial class Assert<T> : Assert
     [NonNegativeValue, Pure]
     public static int Choose(this int n, int k)
     {
-        if (n < 0) // ReSharper disable once TailRecursiveCall
+        if (n < 0)
             return checked((k & 1) is 0 ? Choose(-n + 1, k) : -Choose(-n + 2, k));
-
         if (n < k || k <= 0)
             return 0;
-
         if (n == k)
             return 1;
-
         var c = 1;
-
         for (var i = 1; i <= k; i++)
             c = checked(c * n-- / i);
-
         return c;
     }
-
     /// <inheritdoc cref="Choose(int, int)"/>
     [NonNegativeValue, Pure]
     public static long Choose(this long n, long k)
     {
-        if (n < 0) // ReSharper disable once TailRecursiveCall
+        if (n < 0)
             return checked((k & 1) is 0 ? Choose(-n + 1, k) : -Choose(-n + 2, k));
-
         if (n < k || k <= 0)
             return 0;
-
         if (n == k)
             return 1;
-
         long c = 1;
-
         for (long i = 1; i <= k; i++)
             c = checked(c * n-- / i);
-
         return c;
     }
 #endif
-
     /// <summary>Calculates the binomial coefficient (nCk) (N items, choose k).</summary>
     /// <typeparam name="T">The type of items to choose from.</typeparam>
     /// <param name="n">The items to choose from.</param>
@@ -14803,7 +12990,6 @@ abstract partial class Assert<T> : Assert
     /// </returns>
     [Pure]
     public static Choices<T> Choose<T>(this IEnumerable<T>? n, int k) => new(n.ToIList(), k);
-
 /// <summary>Provides methods to calculate various binomial coefficients.</summary>
 /// <typeparam name="T">The type of element.</typeparam>
 /// <param name="n">The collection to choose from.</param>
@@ -14828,25 +13014,19 @@ readonly
             _hasDisposed,
 #endif
             _hasMoved;
-
         int[] _values = Rent(n, k);
-
         /// <inheritdoc cref="Choices{T}.K"/>
         [NonNegativeValue, Pure]
         public int K { get; } = Math.Max(k, 0);
-
         /// <inheritdoc/>
         [Pure]
         public IList<T> Current { get; private set; } = [];
-
         /// <inheritdoc cref="Choices{T}.N"/>
         [Pure]
         public readonly IList<T> N { get; } = n ?? [];
-
         /// <inheritdoc />
         [Pure]
         readonly object IEnumerator.Current => Current;
-
         /// <summary>Resets the provided array to the initial state.</summary>
         /// <param name="values">The array to fill.</param>
         /// <param name="k">
@@ -14864,14 +13044,12 @@ readonly
 #endif
             return values;
         }
-
         /// <inheritdoc />
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         public void Dispose()
         {
             if (_hasDisposed || _values is null or [])
                 return;
-
             ArrayPool<int>.Shared.Return(_values);
             _hasDisposed = true;
             _values = [];
@@ -14879,27 +13057,22 @@ readonly
 #else
         public readonly void Dispose() { }
 #endif
-
         /// <inheritdoc />
         public void Reset()
         {
             _hasMoved = false;
             Reset(_values ??= new int[K], K);
         }
-
         /// <inheritdoc />
         public bool MoveNext()
         {
             if (EarlyReturn() is { } next)
                 return next;
-
             for (var i = K - 1; i >= 0; i--)
                 if (Found(i))
                     return true;
-
             return false;
         }
-
         [Pure]
         static int[] Rent(IList<T>? n, int k) =>
             n is not { Count: not 0 and var count } || count <= k
@@ -14912,11 +13085,9 @@ readonly
         void Copy()
         {
             Current = new T[K];
-
             for (var i = 0; i < K; i++)
                 Current[i] = N[_values[i]];
         }
-
         [MustUseReturnValue]
         bool Found(int found)
         {
@@ -14931,73 +13102,58 @@ readonly
             Copy();
             return true;
         }
-
         [MustUseReturnValue]
         bool? EarlyReturn()
         {
             if (K is 0 || N is not { Count: not 0 and var count } || count < K)
                 return false;
-
             if (K == count)
                 return (Current = N) is var _ && !_hasMoved && (_hasMoved = true);
-
             if (_hasMoved)
                 return null;
-
             Copy();
             _hasMoved = true;
             return true;
         }
     }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly bool ICollection<IList<T>>.IsReadOnly => true;
-
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
     public readonly int Count => N.Count.Choose(K);
-
     /// <summary>Gets the number of choices.</summary>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
     public int K { get; } = Math.Max(k, 0);
-
     /// <summary>Gets the list of choices.</summary>
     [CollectionAccess(Read), Pure]
     public IList<T> N { get; } = n ?? [];
-
     /// <summary>Gets the first <see cref="K"/> choices.</summary>
     [CollectionAccess(Read), Pure]
     public readonly IEnumerable<T> First =>
         N.Count is var count && count < K ? [] :
         count == K ? N : N.Take(K);
-
     /// <summary>Gets the last <see cref="K"/> choices.</summary>
     [CollectionAccess(Read), Pure]
     public readonly IEnumerable<T> Last =>
         N.Count is var count && count < K ? [] :
         count == K ? N : N.Skip(N.Count - K);
-
     /// <summary>Determines whether the specified objects are equal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether the specified objects are equal.</returns>
     public static bool operator ==(Choices<T> left, Choices<T> right) => left.Equals(right);
-
     /// <summary>Determines whether the specified objects are unequal.</summary>
     /// <param name="left">The left-hand side.</param>
     /// <param name="right">The right-hand side.</param>
     /// <returns>Whether the specified objects are unequal.</returns>
     public static bool operator !=(Choices<T> left, Choices<T> right) => !(left == right);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     readonly void ICollection<IList<T>>.Add(IList<T> item) { }
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     readonly void ICollection<IList<T>>.Clear() { }
-
     /// <inheritdoc />
     [CollectionAccess(Read)]
     public readonly void CopyTo(IList<T>[] array, int arrayIndex)
@@ -15005,42 +13161,32 @@ readonly
         foreach (var next in this)
             array[arrayIndex++] = next;
     }
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     public readonly bool Contains(IList<T> item) => IndexOf(item) is not -1;
-
     /// <inheritdoc />
     public readonly override bool Equals(object? obj) => obj is Choices<T> other && Equals(other);
-
     /// <inheritdoc />
     public readonly bool Equals(Choices<T> other) => K == other.K && N.Equals(other.N);
-
     /// <inheritdoc />
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
     readonly bool ICollection<IList<T>>.Remove(IList<T> item) => false;
-
     /// <inheritdoc cref="IList{T}.IndexOf"/>
     [CollectionAccess(Read), Pure]
     public readonly int IndexOf(IList<T> item)
     {
         if (N.Count == K)
             return N.Equals(item) ? 0 : -1;
-
         var i = 0;
-
         foreach (var next in this)
             if (next.Equals(item))
                 return i;
             else
                 i++;
-
         return -1;
     }
-
     /// <inheritdoc />
     public readonly override int GetHashCode() => unchecked(K * 397 ^ N.GetHashCode());
-
     /// <inheritdoc />
     public readonly override string ToString()
     {
@@ -15052,7 +13198,6 @@ readonly
         StringBuilder str = new("[");
 #endif
         using var e = GetEnumerator();
-
         if (!e.MoveNext())
             goto Done;
 #if NET6_0_OR_GREATER
@@ -15080,7 +13225,6 @@ readonly
             str.Append(']');
 #endif
         }
-
     Done:
 #if NET6_0_OR_GREATER
         str.AppendLiteral("]");
@@ -15089,27 +13233,19 @@ readonly
         return $"{str.Append(']')}";
 #endif
     }
-
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), Pure]
     public readonly Enumerator GetEnumerator() => new(N, K);
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     readonly IEnumerator<IList<T>> IEnumerable<IList<T>>.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     [CollectionAccess(Read), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-
 #if !NETFRAMEWORK || NET35_OR_GREATER
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -15120,7 +13256,6 @@ readonly
     public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as T[] ?? iterable.ToArray();
 #endif
-
     /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
     /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -15131,7 +13266,6 @@ readonly
     [return: NotNullIfNotNull(nameof(iterable))]
     public static Collection<T>? WithCount<T>(this IEnumerable<T>? iterable, [NonNegativeValue] int count) =>
         iterable is null ? null : new(iterable, count);
-
     /// <summary>Upcasts or creates an <see cref="ICollection{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -15149,7 +13283,6 @@ readonly
 #else
                 : iterable.ToIList());
 #endif
-
     /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
     /// <typeparam name="T">The type of item within the enumeration.</typeparam>
     /// <param name="iterable">The potentially empty collection.</param>
@@ -15161,7 +13294,6 @@ readonly
     public static IEnumerable<T> DefaultIfEmpty<T>(this IEnumerable<T>? iterable, IEnumerable<T> fallback)
     {
         using var a = iterable?.GetEnumerator();
-
         if (a?.MoveNext() ?? false)
             do
                 yield return a.Current;
@@ -15170,7 +13302,6 @@ readonly
             foreach (var b in fallback)
                 yield return b;
     }
-
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -15196,7 +13327,6 @@ readonly
         IEqualityComparer<T>? comparer = null
     ) =>
         iterable is null ? null : new HashSet<T>(iterable, comparer);
-
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -15205,7 +13335,6 @@ readonly
     [return: NotNullIfNotNull(nameof(iterable))]
     public static ISet<T>? ToSetLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable);
-
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -15219,7 +13348,6 @@ readonly
     ) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
 #endif
-
     /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
     /// <param name="enumerable">The enumerable to encapsulate.</param>
     /// <param name="count">The pre-computed count.</param>
@@ -15232,74 +13360,56 @@ readonly
         /// <inheritdoc />
         [Pure]
         bool ICollection.IsSynchronized => true;
-
         /// <inheritdoc />
         [Pure]
         bool ICollection<T>.IsReadOnly => true;
-
         /// <inheritdoc cref="ICollection{T}.Count" />
         [NonNegativeValue, Pure]
         public int Count => count;
-
         /// <inheritdoc />
         [Pure]
         public object SyncRoot => enumerable;
-
         /// <inheritdoc />
         public void CopyTo(Array array, [NonNegativeValue] int index)
         {
             var i = index;
-
             foreach (var next in enumerable)
             {
                 array.SetValue(next, i);
                 _ = checked(i++);
             }
         }
-
         /// <inheritdoc />
         public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
         {
             var i = arrayIndex;
-
             foreach (var next in enumerable)
             {
                 array[i] = next;
                 _ = checked(i++);
             }
         }
-
         /// <inheritdoc />
         void ICollection<T>.Add(T? item) { }
-
         /// <inheritdoc />
         void ICollection<T>.Clear() { }
-
         /// <inheritdoc />
         [Pure]
         public bool Contains(T item) => enumerable.Contains(item);
-
         /// <inheritdoc />
         [Pure]
         bool ICollection<T>.Remove(T? item) => false;
-
         /// <inheritdoc />
         [Pure]
         IEnumerator IEnumerable.GetEnumerator() => enumerable.GetEnumerator();
-
         /// <inheritdoc />
         [Pure]
         public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
     }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15315,10 +13425,8 @@ readonly
     {
         for (var i = 0; i < upper; i++)
             action();
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15334,10 +13442,8 @@ readonly
     {
         for (var i = 0; i < upper; i++)
             action(i);
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15359,10 +13465,8 @@ readonly
     {
         for (var i = 0; i < upper; i++)
             action(external);
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15384,7 +13488,6 @@ readonly
     {
         for (var i = 0; i < upper; i++)
             action(i, external);
-
         return upper;
     }
 #if !NET20 && !NET30
@@ -15405,13 +13508,10 @@ readonly
     )
     {
         var list = iterable.ToICollection();
-
         foreach (var item in list)
             action(item);
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15432,13 +13532,10 @@ readonly
     )
     {
         var list = iterable.ToICollection();
-
         foreach (var item in list)
             action(item, external);
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15457,13 +13554,10 @@ readonly
     {
         var list = iterable.ToICollection();
         var i = 0;
-
         foreach (var item in list)
             action(item, checked(i++));
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15485,14 +13579,11 @@ readonly
     {
         var list = iterable.ToICollection();
         var i = 0;
-
         foreach (var item in list)
             action(item, checked(i++), external);
-
         return list;
     }
 #endif
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15513,10 +13604,8 @@ readonly
     {
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value);
-
         return dictionary;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15540,10 +13629,8 @@ readonly
     {
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value, external);
-
         return dictionary;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15563,13 +13650,10 @@ readonly
         where TKey : notnull
     {
         var i = 0;
-
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value, checked(i++));
-
         return dictionary;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -15592,10 +13676,8 @@ readonly
         where TKey : notnull
     {
         var i = 0;
-
         foreach (var kvp in dictionary)
             action(kvp.Key, kvp.Value, checked(i++), external);
-
         return dictionary;
     }
 #if !NET20 && !NET30
@@ -15611,13 +13693,11 @@ readonly
     [LinqTunnel, Pure]
     public static IEnumerable<int> For(this int num) =>
         num >= 0 ? Enumerable.Range(0, num) : Enumerable.Repeat(-num, -num).Select((x, i) => x - i - 1);
-
     /// <summary>Gets an enumeration of a number.</summary>
     /// <param name="num">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this int num) => num.For().GetEnumerator();
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15632,7 +13712,6 @@ readonly
     [LinqTunnel, Pure]
     public static IEnumerable<TExternal> For<TExternal>([NonNegativeValue] this int upper, TExternal external) =>
         Enumerable.Repeat(external, upper);
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15650,7 +13729,6 @@ readonly
         [InstantHandle] Func<TResult> func
     ) =>
         Enumerable.Repeat(func, upper).Select(x => x());
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15688,11 +13766,9 @@ readonly
     {
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
-
         for (T? i = default; i < abs; i++)
             yield return isNegative ? upper - i : i;
     }
-
     /// <summary>Gets an enumeration of a number.</summary>
     /// <typeparam name="T">The type of number for the loop.</typeparam>
     /// <param name="num">The index to count up or down to.</param>
@@ -15703,7 +13779,6 @@ readonly
         ISubtractionOperators<T, T, T>,
         IIncrementOperators<T> =>
         num.For().GetEnumerator();
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15721,11 +13796,9 @@ readonly
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var abs = upper < default(T) ? default(T)! - upper : upper;
-
         for (T? i = default; i < abs; i++)
             yield return external;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15746,11 +13819,9 @@ readonly
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var abs = upper < default(T) ? default(T)! - upper : upper;
-
         for (T? i = default; i < abs; i++)
             yield return func();
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15772,11 +13843,9 @@ readonly
     {
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
-
         for (T? i = default; i < abs; i++)
             yield return func(isNegative ? upper - i : i);
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15794,10 +13863,8 @@ readonly
     {
         for (T? i = default; i < upper; i++)
             action();
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15815,10 +13882,8 @@ readonly
     {
         for (T? i = default; i < upper; i++)
             action(i);
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15842,10 +13907,8 @@ readonly
     {
         for (T? i = default; i < upper; i++)
             action(external);
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -15869,31 +13932,22 @@ readonly
     {
         for (T? i = default; i < upper; i++)
             action(i, external);
-
         return upper;
     }
 #endif
-
     /// <inheritdoc cref="Array.FindAll{T}"/>
     public static T[] FindAll<T>(this T[] array, [InstantHandle] Predicate<T> match) => Array.FindAll(array, match);
-
     /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
     public static TOutput[] ConvertAll<TInput, TOutput>(
         this TInput[] array,
         [InstantHandle] Converter<TInput, TOutput> converter
     ) =>
         Array.ConvertAll(array, converter);
-
     /// <inheritdoc cref="Array.AsReadOnly{T}"/>
     public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-
     /// <summary>
     /// Defines an <see cref="IEnumerable{T}"/> with a <see cref="Delegate"/> that is invoked on iteration.
     /// </summary>
@@ -15902,23 +13956,17 @@ readonly
     sealed partial class Enumerable<T, TExternal> : IEnumerable<T>
     {
         readonly Delegate _action;
-
         readonly IEnumerable<T> _enumerable;
-
         readonly TExternal _external;
-
         /// <inheritdoc />
         public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T> action)
             : this(enumerable, external, (Delegate)action) { }
-
         /// <inheritdoc />
         public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, int> action)
             : this(enumerable, external, (Delegate)action) { }
-
         /// <inheritdoc />
         public Enumerable([ProvidesContext] IEnumerable<T> enumerable, TExternal external, Action<T, TExternal> action)
             : this(enumerable, external, (Delegate)action) { }
-
         /// <inheritdoc />
         public Enumerable(
             [ProvidesContext] IEnumerable<T> enumerable,
@@ -15926,7 +13974,6 @@ readonly
             Action<T, int, TExternal> action
         )
             : this(enumerable, external, (Delegate)action) { }
-
         /// <summary>Initializes a new instance of the <see cref="Enumerable{T, TExternal}"/> class.</summary>
         /// <param name="enumerable">
         /// The <see cref="IEnumerable{T}"/> to create an <see cref="IEnumerator{T}"/> from.
@@ -15939,7 +13986,6 @@ readonly
             _external = external;
             _action = action;
         }
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Enumerable{T, TExternal}"/>
         /// by using the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T})"/>.
@@ -15954,7 +14000,6 @@ readonly
             (IEnumerable<T> Enumerable, TExternal External, Action<T> Action) tuple
         ) =>
             new(tuple.Enumerable, tuple.External, tuple.Action);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Enumerable{T, TExternal}"/>
         /// by using the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, int})"/>.
@@ -15969,7 +14014,6 @@ readonly
             (IEnumerable<T> Enumerable, TExternal External, Action<T, int> Action) tuple
         ) =>
             new(tuple.Enumerable, tuple.External, tuple.Action);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of <see cref="Enumerable{T, TExternal}"/>
         /// by using the constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, TExternal})"/>.
@@ -15984,7 +14028,6 @@ readonly
             (IEnumerable<T> Enumerable, TExternal External, Action<T, TExternal> Action) tuple
         ) =>
             new(tuple.Enumerable, tuple.External, tuple.Action);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of Enumerable{T, TExternal} by using the
         /// constructor <see cref="Enumerable{T, TExternal}(IEnumerable{T}, TExternal, Action{T, int, TExternal})"/>.
@@ -15999,17 +14042,14 @@ readonly
             (IEnumerable<T> Enumerable, TExternal External, Action<T, int, TExternal> Action) tuple
         ) =>
             new(tuple.Enumerable, tuple.External, tuple.Action);
-
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), MustDisposeResource, Pure]
 #pragma warning disable IDISP004
         public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
 #pragma warning restore IDISP004
-
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), MustDisposeResource, Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
         sealed class Enumerator(
             [HandlesResourceDisposal, ProvidesContext] IEnumerator<T> enumerator,
             TExternal external,
@@ -16017,32 +14057,25 @@ readonly
         ) : IEnumerator<T>
         {
             int _index;
-
             /// <inheritdoc />
-            // ReSharper disable once AssignNullToNotNullAttribute
+           
             public T Current => enumerator.Current;
-
             /// <inheritdoc />
             object? IEnumerator.Current => ((IEnumerator)enumerator).Current;
-
             /// <inheritdoc />
             public void Reset()
             {
                 enumerator.Reset();
                 _index = 0;
             }
-
             /// <inheritdoc />
             public void Dispose() => enumerator.Dispose();
-
             /// <inheritdoc />
             public bool MoveNext()
             {
                 if (!enumerator.MoveNext())
                     return false;
-
                 var current = Current;
-
                 switch (action)
                 {
                     case Action<T> a:
@@ -16058,13 +14091,11 @@ readonly
                         a(current, _index, external);
                         break;
                 }
-
                 _index++;
                 return true;
             }
         }
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16079,7 +14110,6 @@ readonly
     [LinqTunnel, Pure]
     public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T> action) =>
         new Enumerable<T, object?>(iterable, null, action);
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16100,7 +14130,6 @@ readonly
         Action<T, TExternal> action
     ) =>
         new Enumerable<T, TExternal>(iterable, external, action);
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16115,7 +14144,6 @@ readonly
     [LinqTunnel, Pure]
     public static IEnumerable<T> Lazily<T>([NoEnumeration] this IEnumerable<T> iterable, Action<T, int> action) =>
         new Enumerable<T, object?>(iterable, null, action);
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16136,15 +14164,10 @@ readonly
         Action<T, int, TExternal> action
     ) =>
         new Enumerable<T, TExternal>(iterable, external, action);
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
 // ReSharper disable LoopCanBePartlyConvertedToQuery
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16161,10 +14184,8 @@ readonly
         for (var i = 0; i < upper; i++)
             if (func() is ControlFlow.Break)
                 break;
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16181,10 +14202,8 @@ readonly
         for (var i = 0; i < upper; i++)
             if (func(i) is ControlFlow.Break)
                 break;
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16207,10 +14226,8 @@ readonly
         for (var i = 0; i < upper; i++)
             if (func(external) is ControlFlow.Break)
                 break;
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16233,7 +14250,6 @@ readonly
         for (var i = 0; i < upper; i++)
             if (func(i, external) is ControlFlow.Break)
                 break;
-
         return upper;
     }
 #if !NET20 && !NET30
@@ -16254,14 +14270,11 @@ readonly
     )
     {
         var list = iterable.ToICollection();
-
         foreach (var item in list)
             if (func(item) is ControlFlow.Break)
                 break;
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16282,14 +14295,11 @@ readonly
     )
     {
         var list = iterable.ToICollection();
-
         foreach (var item in list)
             if (func(item, external) is ControlFlow.Break)
                 break;
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16308,14 +14318,11 @@ readonly
     {
         var list = iterable.ToICollection();
         var i = 0;
-
         foreach (var item in list)
             if (func(item, checked(i++)) is ControlFlow.Break)
                 break;
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16337,14 +14344,11 @@ readonly
     {
         var list = iterable.ToICollection();
         var i = 0;
-
         foreach (var item in list)
             if (func(item, checked(i++), external) is ControlFlow.Break)
                 break;
-
         return list;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16366,10 +14370,8 @@ readonly
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
                 break;
-
         return dictionary;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16394,10 +14396,8 @@ readonly
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
                 break;
-
         return dictionary;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16417,14 +14417,11 @@ readonly
         where TKey : notnull
     {
         var i = 0;
-
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value, checked(i++)) is ControlFlow.Break)
                 break;
-
         return dictionary;
     }
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -16447,11 +14444,9 @@ readonly
         where TKey : notnull
     {
         var i = 0;
-
         foreach (var kvp in dictionary)
             if (func(kvp.Key, kvp.Value, checked(i++), external) is ControlFlow.Break)
                 break;
-
         return dictionary;
     }
 #endif
@@ -16474,10 +14469,8 @@ readonly
         for (T? i = default; i < upper; i++)
             if (func() is ControlFlow.Break)
                 break;
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16496,10 +14489,8 @@ readonly
         for (T? i = default; i < upper; i++)
             if (func(i) is ControlFlow.Break)
                 break;
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16524,10 +14515,8 @@ readonly
         for (T? i = default; i < upper; i++)
             if (func(external) is ControlFlow.Break)
                 break;
-
         return upper;
     }
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16552,23 +14541,18 @@ readonly
         for (T? i = default; i < upper; i++)
             if (func(i, external) is ControlFlow.Break)
                 break;
-
         return upper;
     }
 #endif
-
 /// <summary>Determines control flow for loops in <see cref="Each"/>.</summary>
 public enum ControlFlow : byte
 {
     /// <summary>The value indicating that the loop should continue.</summary>
     Continue,
-
     /// <summary>The value indicating that the loop should break.</summary>
     Break,
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableAggregate.cs when .NET 9 is released
 // and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
 #if !CSHARPREPL
@@ -16577,7 +14561,6 @@ namespace System.Linq;
 #endif
 #if !NET9_0_OR_GREATER
 /// <summary>The backport of the AggregateBy method for <see cref="IEnumerable{T}"/>.</summary>
-
     /// <summary>Performs a specified accumulator function over a sequence.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector"/>.</typeparam>
@@ -16597,7 +14580,6 @@ namespace System.Linq;
     )
         where TKey : notnull =>
         source.TryCount() is 0 ? [] : AggregateByIterator(source, keySelector, seed, func, keyComparer);
-
     /// <summary>Performs a specified accumulator function over a sequence.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector"/>.</typeparam>
@@ -16617,7 +14599,6 @@ namespace System.Linq;
     )
         where TKey : notnull =>
         source.TryCount() is 0 ? [] : AggregateByIterator(source, keySelector, seedSelector, func, keyComparer);
-
     static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateByIterator<TSource, TKey, TAccumulate>(
         IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
@@ -16628,13 +14609,10 @@ namespace System.Linq;
         where TKey : notnull
     {
         using var enumerator = source.GetEnumerator();
-
         if (!enumerator.MoveNext())
             yield break;
-
         foreach (var countBy in PopulateDictionary(enumerator, keySelector, seed, func, keyComparer))
             yield return countBy;
-
         static Dictionary<TKey, TAccumulate> PopulateDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -16644,18 +14622,15 @@ namespace System.Linq;
         )
         {
             Dictionary<TKey, TAccumulate> dict = new(keyComparer);
-
             do
             {
                 var value = enumerator.Current;
                 var key = keySelector(value);
                 dict[key] = func(dict.GetValueOrDefault(key, seed), value);
             } while (enumerator.MoveNext());
-
             return dict;
         }
     }
-
     static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateByIterator<TSource, TKey, TAccumulate>(
         IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
@@ -16666,13 +14641,10 @@ namespace System.Linq;
         where TKey : notnull
     {
         using var enumerator = source.GetEnumerator();
-
         if (!enumerator.MoveNext())
             yield break;
-
         foreach (var countBy in PopulateDictionary(enumerator, keySelector, seedSelector, func, keyComparer))
             yield return countBy;
-
         static Dictionary<TKey, TAccumulate> PopulateDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -16682,21 +14654,17 @@ namespace System.Linq;
         )
         {
             Dictionary<TKey, TAccumulate> dict = new(keyComparer);
-
             do
             {
                 var value = enumerator.Current;
                 var key = keySelector(value);
                 dict[key] = func(dict.GetValueOrDefault(key, seedSelector(key)), value);
             } while (enumerator.MoveNext());
-
             return dict;
         }
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableCount.cs when .NET 9 is released
 // and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
 #if !CSHARPREPL
@@ -16705,7 +14673,6 @@ namespace System.Linq;
 #endif
 #if !NET9_0_OR_GREATER
 /// <summary>The backport of the CountBy method for <see cref="IEnumerable{T}"/>.</summary>
-
     /// <summary>Performs a count by operation.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
     /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector"/>.</typeparam>
@@ -16720,7 +14687,6 @@ namespace System.Linq;
     )
         where TKey : notnull =>
         source.TryCount() is 0 ? [] : CountByIterator(source, keySelector, keyComparer);
-
     static IEnumerable<KeyValuePair<TKey, int>> CountByIterator<TSource, TKey>(
         IEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
@@ -16729,13 +14695,10 @@ namespace System.Linq;
         where TKey : notnull
     {
         using var enumerator = source.GetEnumerator();
-
         if (!enumerator.MoveNext())
             yield break;
-
         foreach (var countBy in BuildCountDictionary(enumerator, keySelector, keyComparer))
             yield return countBy;
-
         static Dictionary<TKey, int> BuildCountDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -16743,20 +14706,16 @@ namespace System.Linq;
         )
         {
             Dictionary<TKey, int> countsBy = new(keyComparer);
-
             do
             {
                 var key = keySelector(enumerator.Current);
                 countsBy[key] = checked(countsBy.GetValueOrDefault(key) + 1);
             } while (enumerator.MoveNext());
-
             return countsBy;
         }
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableIndex.cs when .NET 9 is released
 // and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
 #if !CSHARPREPL
@@ -16765,7 +14724,6 @@ namespace System.Linq;
 #endif
 #if !NET9_0_OR_GREATER
 /// <summary>The backport of the Index method for <see cref="IEnumerable{T}"/>.</summary>
-
     /// <summary>Returns an enumerable that incorporates the element's index into a tuple.</summary>
     /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
     /// <param name="source">The source enumerable providing the elements.</param>
@@ -16773,40 +14731,29 @@ namespace System.Linq;
     public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source) =>
         source is TSource[] { Length: 0 } ? [] : source.Select((x, i) => (i, x));
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods to convert <see cref="IEnumerator{T}"/> to <see cref="IEnumerable{T}"/>.</summary>
-
     /// <summary>Collects <see cref="IComparer"/> and <see cref="IEqualityComparer"/> instances.</summary>
-    // ReSharper disable once UnusedType.Local
+   
     sealed class ComparerCollector : IComparer, IEqualityComparer
     {
         /// <summary>The most common usage is with tuples, in which the maximum capacity is 8.</summary>
         const int Capacity = 8;
-
-        // ReSharper disable once CollectionNeverQueried.Local MemberCanBePrivate.Local
+       
         public List<object?> List { get; } = new(Capacity);
-
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
-
         /// <inheritdoc />
         int IComparer.Compare(object? x, object? y) => Append(x, 0);
-
         /// <inheritdoc />
         int IEqualityComparer.GetHashCode(object? obj) => Append(obj, 0);
-
         T Append<T>(object? obj, T ret)
         {
             List.Add(obj);
             return ret;
         }
     }
-
     /// <summary>
     /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
     /// </summary>
@@ -16818,16 +14765,13 @@ namespace System.Linq;
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.None)]
         public void Dispose() => enumerator.Dispose();
-
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         public IEnumerator<T> GetEnumerator() => enumerator;
-
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), Pure]
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
-
     /// <summary>
     /// Wraps an <see cref="IEnumerator{T}"/> and exposes it from an <see cref="IEnumerable{T}"/> context.
     /// </summary>
@@ -16838,17 +14782,13 @@ namespace System.Linq;
         /// <inheritdoc cref="IEnumerator{T}.Current" />
         [Pure]
         public object? Current => enumerator.Current;
-
         /// <inheritdoc />
         public void Dispose() => (enumerator as IDisposable)?.Dispose();
-
         /// <inheritdoc />
         public void Reset() => enumerator.Reset();
-
         /// <inheritdoc />
         public bool MoveNext() => enumerator.MoveNext();
     }
-
     /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>
@@ -16857,20 +14797,17 @@ namespace System.Linq;
     [MustDisposeResource, Pure]
     public static IEnumerator<object?> AsGeneric([HandlesResourceDisposal] this IEnumerator enumerator) =>
         new Enumerator(enumerator);
-
     /// <summary>Wraps the enumerator inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="enumerator">The enumerator to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="enumerator"/>.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerable<object?> AsEnumerable([HandlesResourceDisposal] this IEnumerator enumerator) =>
         AsEnumerable(AsGeneric(enumerator));
-
     /// <summary>Wraps the array inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <param name="array">The array to encapsulate.</param>
     /// <returns>The <see cref="IEnumerator{T}"/> instance that wraps <paramref name="array"/>.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerable<object?> AsGenericEnumerable(this Array array) => AsEnumerable(array.GetEnumerator());
-
     /// <summary>Wraps the <see cref="IEnumerator{T}"/> inside an <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item to enumerate.</typeparam>
     /// <param name="enumerator">The <see cref="IEnumerator{T}"/> to encapsulate.</param>
@@ -16882,18 +14819,17 @@ namespace System.Linq;
     /// <summary>Converts an <see cref="IStructuralComparable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralComparable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public static List<object?> ToList(this IStructuralComparable structure)
     {
         ComparerCollector collector = new();
         _ = structure.CompareTo(structure, collector);
         return collector.List;
     }
-
     /// <summary>Converts an <see cref="IStructuralEquatable"/> to a <see cref="List{T}"/>.</summary>
     /// <param name="structure">The <see cref="IStructuralEquatable"/> to convert.</param>
     /// <returns>The <see cref="List{T}"/> that contains elements from <paramref name="structure"/>.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public static List<object?> ToList(this IStructuralEquatable structure)
     {
         ComparerCollector collector = new();
@@ -16901,16 +14837,10 @@ namespace System.Linq;
         return collector.List;
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable InvertIf
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods to force full enumerations.</summary>
-
     /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
     public static void Enumerate([InstantHandle] this IEnumerable? iterable)
@@ -16918,7 +14848,6 @@ namespace System.Linq;
         if (iterable is not null)
             foreach (var _ in iterable) { }
     }
-
     /// <summary>Forces an enumeration, meant for enumerations that have side effects.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -16927,16 +14856,11 @@ namespace System.Linq;
         if (iterable is not null)
             foreach (var _ in iterable) { }
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable CheckNamespace RedundantNameQualifier
 
-
-
-
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16948,7 +14872,6 @@ namespace System.Linq;
     /// <returns>An enumeration from a range's start to end.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<int> For(this Index index) => (index.IsFromEnd ? -index.Value : index.Value).For();
-
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -16965,7 +14888,6 @@ namespace System.Linq;
         start == end ? [] :
         start < end ? Enumerable.Range(start, end - start) :
         Enumerable.Repeat(start, start - end).Select((x, i) => x - i);
-
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
     /// <remarks><para>
     /// The tail is not guaranteed to be able to be enumerated over multiple times.
@@ -16982,45 +14904,39 @@ namespace System.Linq;
     )
     {
         using var e = enumerable?.GetEnumerator();
-
         if (e is null)
         {
             head = default;
             tail = [];
             return;
         }
-
         head = e.MoveNext() ? e.Current : default;
         tail = e.AsEnumerable();
     }
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public static char? Nth(this string str, Index index) =>
         index.IsFromEnd ? str.NthLast(index.Value - 1) : str.Nth(index.Value);
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="index">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="iterable"/>, or <see langword="default"/>.</returns>
-    [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [MustUseReturnValue]
     public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, Index index) =>
         index.IsFromEnd ? iterable.NthLast(index.Value - 1) : iterable.Nth(index.Value);
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <param name="str">The <see cref="IEnumerable{T}"/> to get an item from.</param>
     /// <param name="range">The index to get.</param>
     /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
-    [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+    [Pure]
     public static string? Nth(this string str, Range range) =>
         range.TryGetOffsetAndLength(str.Length, out var offset, out var length)
             ? str.Substring(offset, length)
             : default;
-
     /// <summary>Gets a range of items from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get a range of items from.</param>
@@ -17032,45 +14948,34 @@ namespace System.Linq;
         [LinqTunnel, Pure]
         static IEnumerable<TT> Sub<TT>([InstantHandle] IEnumerable<TT> iterable, Range range) =>
             iterable.Skip(range.Start.Value).Take(range.End.Value - range.Start.Value);
-
         if (!range.Start.IsFromEnd && !range.End.IsFromEnd)
             return Sub(iterable, range);
-
         if (iterable.TryGetNonEnumeratedCount(out var count) && RangeStart(range, count) is var startRange)
             return Sub(iterable, startRange);
-
         var arr = iterable.ToIList();
         var arrRange = RangeStart(range, arr.Count);
         return Sub(arr, arrRange);
     }
-
     /// <summary>Gets an enumeration of an index.</summary>
     /// <param name="index">The index to count up or down to.</param>
     /// <returns>An enumeration from 0 to the index's value, or vice versa.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this Index index) => index.For().GetEnumerator();
-
     /// <summary>Gets an enumeration of a range.</summary>
     /// <param name="range">The range to iterate over.</param>
     /// <returns>An enumeration from the range's start to end.</returns>
     [MustDisposeResource, Pure]
     public static IEnumerator<int> GetEnumerator(this Range range) => range.For().GetEnumerator();
-
     [Pure]
     static Index IndexStart(Index index, int length) => index.IsFromEnd ? length - index.Value - 1 : index;
-
     [Pure]
     static Range RangeStart(Range range, int length) =>
         new(IndexStart(range.Start, length), IndexStart(range.End, length));
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods that negate functions from <see cref="Enumerable"/>.</summary>
-
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
     /// <remarks><para>
     /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
@@ -17086,7 +14991,6 @@ namespace System.Linq;
         IEqualityComparer<T>? comparer = null
     ) =>
         source.GroupDuplicates(comparer).Select(x => x.Key);
-
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
     /// <remarks><para>
     /// Filters out unique elements within an <see cref="IEnumerable{T}"/>.
@@ -17102,7 +15006,6 @@ namespace System.Linq;
         IEqualityComparer<T>? comparer = null
     ) =>
         source.GroupDuplicates(comparer).SelectMany(x => x);
-
     /// <summary>Negated <see cref="Enumerable.Distinct{T}(IEnumerable{T}, IEqualityComparer{T})"/>.</summary>
     /// <remarks><para>Filters out unique elements within an <see cref="IEnumerable{T}"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="IEnumerable{T}"/> and <see cref="IEqualityComparer{T}"/>.</typeparam>
@@ -17115,7 +15018,6 @@ namespace System.Linq;
         IEqualityComparer<T>? comparer = null
     ) =>
         source.GroupBy(x => x, comparer).Where(x => x.Skip(1).Any());
-
     /// <summary>Negated <see cref="Enumerable.SkipWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains the elements from the input sequence starting at
@@ -17125,7 +15027,6 @@ namespace System.Linq;
     [LinqTunnel, Pure]
     public static IEnumerable<T> SkipUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.SkipWhile(x => !predicate(x));
-
     /// <summary>
     /// Negated
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>.
@@ -17144,16 +15045,13 @@ namespace System.Linq;
         [ValueRange(1, int.MaxValue)] int count
     )
     {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+       
         if (count <= 0)
             yield break;
-
         using var e = source.GetEnumerator();
-
         while (e.MoveNext())
             yield return e.SplitEvery(count);
     }
-
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains the elements from the input
@@ -17163,7 +15061,6 @@ namespace System.Linq;
     [LinqTunnel, Pure]
     public static IEnumerable<T> TakeUntil<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.TakeWhile(x => !predicate(x));
-
     /// <summary>Negated <see cref="Enumerable.TakeWhile{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains elements from
@@ -17176,7 +15073,6 @@ namespace System.Linq;
         Func<T, int, bool> predicate
     ) =>
         source.TakeWhile((x, y) => !predicate(x, y));
-
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains elements from
@@ -17186,7 +15082,6 @@ namespace System.Linq;
     [LinqTunnel, Pure]
     public static IEnumerable<T> Omit<T>([NoEnumeration] this IEnumerable<T> source, Func<T, bool> predicate) =>
         source.Where(x => !predicate(x));
-
     /// <summary>Negated <see cref="Enumerable.Where{T}(IEnumerable{T}, Func{T, int, bool})"/>.</summary>
     /// <returns>
     /// An <see cref="IEnumerable{T}" /> that contains elements from
@@ -17199,7 +15094,6 @@ namespace System.Linq;
         Func<T, int, bool> predicate
     ) =>
         source.Where((x, y) => !predicate(x, y));
-
     static IEnumerable<T> SplitEvery<T>(this IEnumerator<T> e, [ValueRange(1, int.MaxValue)] int count)
     {
         do
@@ -17207,14 +15101,10 @@ namespace System.Linq;
         while (--count > 0 && e.MoveNext());
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods to flatten <see cref="IEnumerable{T}"/> instances.</summary>
-
     /// <summary>Flattens the nested collection.</summary>
     /// <typeparam name="T">The type of collection.</typeparam>
     /// <param name="enumerable">The collection to flatten.</param>
@@ -17222,38 +15112,32 @@ namespace System.Linq;
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten<T>(this IEnumerable<IEnumerable<T>> enumerable) =>
         enumerable.SelectMany(Enumerable.AsEnumerable);
-
     /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten2<T>(this IEnumerable<IEnumerable<IEnumerable<T>>> enumerable) =>
         enumerable.Flatten().Flatten();
-
     /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten3<T>(this IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>> enumerable) =>
         enumerable.Flatten2().Flatten();
-
     /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten4<T>(
         this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>> enumerable
     ) =>
         enumerable.Flatten2().Flatten2();
-
     /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten5<T>(
         this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>> enumerable
     ) =>
         enumerable.Flatten4().Flatten();
-
     /// <inheritdoc cref="Flatten{T}"/>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Flatten6<T>(
         this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>>> enumerable
     ) =>
         enumerable.Flatten4().Flatten2();
-
     /// <summary>
     /// Flattens the nested collection by taking all the first elements of the enumerations,
     /// then all the second elements of the enumerations, the third, and so on.
@@ -17271,9 +15155,7 @@ namespace System.Linq;
         var (truthy, falsy) = enumerable
            .Select([MustDisposeResource](x) => x.GetEnumerator())
            .SplitBy(x => x.MoveNext());
-
         falsy.For(x => x.Dispose());
-
         try
         {
             while (truthy is not [])
@@ -17293,14 +15175,10 @@ namespace System.Linq;
         }
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods for creating combinations of items.</summary>
-
     /// <summary>Generates all combinations of the nested enumerable.</summary>
     /// <typeparam name="T">The type of nested enumerable.</typeparam>
     /// <param name="iterator">The input to generate combinations of.</param>
@@ -17318,7 +15196,6 @@ namespace System.Linq;
 #else
         iterator.Select(x => x.ReadOnly()).ReadOnly().Combinations();
 #endif
-
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
     /// <param name="lists">The input to generate combinations of.</param>
@@ -17332,11 +15209,9 @@ namespace System.Linq;
     {
         if (lists.Any(x => x is []))
             yield break;
-
         int count = lists.Count, index = 0, pos = 0;
         var indices = new int[count];
         var accumulator = new T[count];
-
         while (true)
         {
             while (pos < accumulator.Length)
@@ -17346,21 +15221,17 @@ namespace System.Linq;
                 index = 0;
                 pos++;
             }
-
             var result = new T[count];
             Array.Copy(accumulator, result, count);
             yield return result;
-
             do
             {
                 if (pos is 0)
                     yield break;
-
                 index = indices[--pos] + 1;
             } while (index >= lists[pos].Count);
         }
     }
-
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
     /// <param name="lists">The input to generate combinations of.</param>
@@ -17368,14 +15239,12 @@ namespace System.Linq;
     [Pure]
     public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
     {
-        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+       
         foreach (var list in lists)
             if (list is [])
                 return [];
-
         return lists.CombinationsIterator();
     }
-
     /// <summary>Generates all combinations of the nested enumerable.</summary>
     /// <typeparam name="T">The type of nested enumerable.</typeparam>
     /// <param name="iterator">The input to generate combinations of.</param>
@@ -17385,13 +15254,11 @@ namespace System.Linq;
         [InstantHandle] this IEnumerable<IEnumerable<T>> iterator
     ) =>
         iterator.Select(x => x.ToSmallList()).ToSmallList().Combinations();
-
     static IEnumerable<SmallList<T>> CombinationsIterator<T>(this SmallList<SmallList<T>> lists)
     {
         int count = lists.Count, index = 0, pos = 0;
         var indices = SmallList<int>.Uninit(count);
         var accumulator = SmallList<T>.Uninit(count);
-
         while (true)
         {
             while (pos < accumulator.Count)
@@ -17401,32 +15268,24 @@ namespace System.Linq;
                 index = 0;
                 pos++;
             }
-
             yield return accumulator.Cloned;
-
             do
             {
                 if (pos is 0)
                     yield break;
-
                 index = indices[--pos] + 1;
             } while (index >= lists[pos].Count);
         }
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods to create power sets.</summary>
-
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]
     public static IEnumerable<IEnumerable<object>> PowerSet(this ICollection collection) =>
         collection.Cast<object>().PowerSetInner(collection.Count);
-
     /// <summary>Creates a power set from a collection.</summary>
     /// <remarks><para>
     /// The power set is defined as the set of all subsets, including the empty set and the set itself.
@@ -17440,32 +15299,24 @@ namespace System.Linq;
     [LinqTunnel, Pure]
     public static IEnumerable<IEnumerable<T>> PowerSet<T>(this ICollection<T> collection) =>
         collection.PowerSetInner(collection.Count);
-
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]
     public static IEnumerable<IEnumerable<T>> PowerSet<T>(this IReadOnlyCollection<T> collection) =>
         collection.PowerSetInner(collection.Count);
-
     /// <inheritdoc cref="PowerSet{T}(ICollection{T})"/>
     [LinqTunnel, Pure]
     public static IEnumerable<IEnumerable<T>> PowerSet<T>(this T[] collection) =>
         ((ICollection<T>)collection).PowerSet();
-
-    // ReSharper disable ConditionIsAlwaysTrueOrFalse
+   
     [LinqTunnel, Pure]
     static IEnumerable<IEnumerable<T>> PowerSetInner<T>(this IEnumerable<T> iterable, [ValueRange(0, 31)] int count) =>
         count < 32
             ? Enumerable.Range(0, 1 << count).Select(mask => iterable.Where((_, j) => (1 << j & mask) is not 0))
             : throw new ArgumentOutOfRangeException(nameof(count), count, $"Cannot exceed bits in {nameof(Int32)}.");
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace RedundantUsingDirective
-
-
 /// <summary>Extension methods to attempt to grab the length from enumerables.</summary>
-
     /// <summary>Tries to count the elements in the enumerable.</summary>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
     /// <param name="enumerable">The enumerable to count.</param>
@@ -17481,17 +15332,12 @@ namespace System.Linq;
             IReadOnlyCollection<T> { Count: var count } => count,
             _ => enumerable.TryGetNonEnumeratedCount(out var count) ? count : null,
         };
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace RedundantUsingDirective
-
 #if NETCOREAPP_3_0_OR_GREATER
 
 #endif
-
 /// <summary>Extension methods to attempt to grab the span from enumerables.</summary>
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <summary>Tries to extract a span from the source.</summary>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
@@ -17522,14 +15368,9 @@ namespace System.Linq;
             _ => !((span = default) is var _),
         };
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
-
-
 /// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
-
     /// <summary>Takes the last item lazily, or a fallback value.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -17543,15 +15384,11 @@ namespace System.Linq;
             return fallback;
 #endif
         using var iterator = iterable.GetEnumerator();
-
         if (!iterator.MoveNext())
             return fallback;
-
         var last = iterator.Current;
-
         while (iterator.MoveNext())
             last = iterator.Current;
-
         return last;
     }
 #if !(NET20 || NET30)
@@ -17584,7 +15421,6 @@ namespace System.Linq;
             }
         }
     }
-
     /// <summary>Takes the last item, or a fallback value.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The collection of items to go through one-by-one.</param>
@@ -17604,7 +15440,6 @@ namespace System.Linq;
             _ => iterable.EnumerateOr(fallback),
         };
 #endif
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
     /// <typeparam name="TValue">The value item in the collection.</typeparam>
@@ -17615,7 +15450,6 @@ namespace System.Linq;
     public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
-
 #if !NET20 && !NET30
     /// <summary>Returns the item, or a fallback.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -17626,7 +15460,6 @@ namespace System.Linq;
     public static T Or<T>(this T? self, T fallback)
         where T : class =>
         self ?? fallback;
-
     /// <summary>Returns the item, or a fallback.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="self">The item to potentially return.</param>
@@ -17636,7 +15469,6 @@ namespace System.Linq;
     public static T Or<T>(this T? self, T fallback)
         where T : struct =>
         self ?? fallback;
-
     /// <summary>Returns the item, or a fallback.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="self">The item to potentially return.</param>
@@ -17645,20 +15477,17 @@ namespace System.Linq;
     public static T OrNew<T>(this T? self)
         where T : class, new() =>
         self ?? new();
-
     /// <summary>Returns the string, or an empty string.</summary>
     /// <param name="str">The string to potentially return.</param>
     /// <returns>The parameter <paramref name="str"/>, or <see cref="string.Empty"/>.</returns>
     [Pure]
     public static string OrEmpty(this string? str) => str ?? "";
-
     /// <summary>Returns the enumeration, or an empty enumeration.</summary>
     /// <typeparam name="T">The type of iterator.</typeparam>
     /// <param name="iterable">The enumeration to potentially return.</param>
     /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) => iterable ?? [];
-
 #if NETCOREAPP || ROSLYN
     /// <summary>Returns the array, or an empty array.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -17668,7 +15497,6 @@ namespace System.Linq;
     public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
         array.IsDefault ? ImmutableArray<T>.Empty : array;
 #endif
-
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
@@ -17676,7 +15504,6 @@ namespace System.Linq;
     [Pure]
     public static char? Nth(this string str, [NonNegativeValue] int index) =>
         index >= 0 && index < str.Length ? str[index] : null;
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
@@ -17685,10 +15512,9 @@ namespace System.Linq;
     [MustUseReturnValue]
     public static T? Nth<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
-        // Runtime check.
+       
         if (index < 0)
             return default;
-
         return iterable switch
         {
             string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
@@ -17700,7 +15526,6 @@ namespace System.Linq;
             _ => iterable.Skip(index).FirstOrDefault(),
         };
     }
-
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
@@ -17708,7 +15533,6 @@ namespace System.Linq;
     [Pure]
     public static char? NthLast(this string str, [NonNegativeValue] int index) =>
         index >= 0 && index < str.Length ? str[str.Length - index - 1] : null;
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get an item from.</param>
@@ -17717,10 +15541,9 @@ namespace System.Linq;
     [MustUseReturnValue]
     public static T? NthLast<T>([InstantHandle] this IEnumerable<T> iterable, [NonNegativeValue] int index)
     {
-        // Runtime check.
+       
         if (index < 0)
             return default;
-
         return iterable switch
         {
             string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
@@ -17736,12 +15559,11 @@ namespace System.Linq;
         };
     }
 #endif
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
+   
     static unsafe T Reinterpret<T>(char c)
     {
-        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
+       
         System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
@@ -17751,14 +15573,9 @@ namespace System.Linq;
         return Unsafe.As<char, T>(ref c);
 #endif
     }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods to create views of <see cref="IEnumerable{T}"/> instances.</summary>
-
     /// <summary>
     /// Transforms the <see cref="IEnumerable{T}"/> into views of the current and next items.
     /// </summary>
@@ -17768,7 +15585,6 @@ namespace System.Linq;
     [LinqTunnel, Pure]
     public static IEnumerable<(T Left, T Right)> Pairs<T>(this IEnumerable<T> source) =>
         source.TryCount() is { } x ? Iterator(source).WithCount(x - 1) : Iterator(source);
-
     /// <summary>
     /// Transforms the <see cref="IEnumerable{T}"/> into views of the specified length.
     /// </summary>
@@ -17788,52 +15604,39 @@ namespace System.Linq;
                 { } x => Iterator(source, size).WithCount(x - size + 1),
                 null => Iterator(source, size),
             };
-
     [Pure]
     static IEnumerable<(T Left, T Right)> Iterator<T>(IEnumerable<T> source)
     {
         using var e = source.GetEnumerator();
-
         if (!e.MoveNext())
             yield break;
-
         var previous = e.Current;
-
         while (e.MoveNext())
             yield return (previous, previous = e.Current);
     }
-
     [Pure]
     static IEnumerable<T[]> Iterator<T>(IEnumerable<T> source, int size)
     {
         using var e = source.GetEnumerator();
         var window = new T[size];
-
         for (var i = 0; i < size; i++)
             if (e.MoveNext())
                 window[i] = e.Current;
             else
                 yield break;
-
         yield return (T[])window.Clone();
-
         while (e.MoveNext())
         {
             for (var i = 1; i < window.Length; i++)
                 window[i - 1] = window[i];
-
             window[^1] = e.Current;
             yield return (T[])window.Clone();
         }
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Methods that creates enumerations from individual items.</summary>
-
 #if !NETSTANDARD || NETSTANDARD1_5_OR_GREATER
     /// <summary>Gets the types from an assembly even if type loads occur.</summary>
     /// <param name="assembly">The assembly to get the types from.</param>
@@ -17853,7 +15656,6 @@ namespace System.Linq;
         }
     }
 #endif
-
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
@@ -17866,7 +15668,6 @@ namespace System.Linq;
         [InstantHandle] Converter<T, IEnumerable<TResult>?> map
     ) =>
         item is not null && map(item) is { } iterable ? iterable : [];
-
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>
@@ -17880,7 +15681,6 @@ namespace System.Linq;
     )
         where T : struct =>
         item.HasValue && map(item.Value) is { } iterable ? iterable : [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17896,7 +15696,6 @@ namespace System.Linq;
         Func<T, IEnumerable<TResult?>?> map
     ) =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17913,7 +15712,6 @@ namespace System.Linq;
     )
         where T : struct =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17930,7 +15728,6 @@ namespace System.Linq;
     )
         where TResult : struct =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17948,7 +15745,6 @@ namespace System.Linq;
         where T : struct
         where TResult : struct =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17964,7 +15760,6 @@ namespace System.Linq;
         Func<T, int, IEnumerable<TResult?>?> map
     ) =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17981,7 +15776,6 @@ namespace System.Linq;
     )
         where T : struct =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -17998,7 +15792,6 @@ namespace System.Linq;
     )
         where TResult : struct =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
-
     /// <summary>
     /// <see cref="Enumerable.SelectMany{TSource, TResult}(IEnumerable{TSource}, Func{TSource, IEnumerable{TResult}})"/>
     /// but with exhaustive null guards that fall back to empty enumerables.
@@ -18017,69 +15810,53 @@ namespace System.Linq;
         where TResult : struct =>
         iterator?.Filter().Select(map).SelectMany(x => x ?? []).Filter() ?? [];
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
-
 // ReSharper disable once RedundantUsingDirective.Global
 
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Methods to create methods.</summary>
-
     sealed class Compared<T>(Comparison<T?> comparer) : IComparer<T>
     {
         /// <inheritdoc />
         public int Compare(T? x, T? y) => comparer(x, y);
     }
-
     sealed class Compared<T, TResult>(Converter<T?, TResult> converter, IComparer<TResult> comparer) : IComparer<T>
     {
         /// <inheritdoc />
         public int Compare(T? x, T? y) => comparer.Compare(converter(x), converter(y));
     }
-
     sealed class Equated<T>(Func<T?, T?, bool> comparer, Func<T, int> hashCode) : IEqualityComparer<T>
     {
         /// <summary>Initializes a new instance of the <see cref="Equated{T}"/> class.</summary>
         /// <param name="comparer">The comparer to convert.</param>
         public Equated(IComparer<T> comparer)
             : this(FromIComparer(comparer), Default) { }
-
         /// <summary>Returns 0.</summary>
         /// <param name="_">The discard.</param>
         /// <returns>The value 0.</returns>
         public static int Default(T? _) => 0;
-
         /// <inheritdoc />
         public bool Equals(T? x, T? y) => comparer(x, y);
-
         /// <inheritdoc />
         public int GetHashCode(T obj) => hashCode(obj);
-
         /// <summary>Returns the equality function based on the <see cref="IComparer{T}"/>.</summary>
         /// <param name="comparer">The comparer to evaluate equality.</param>
         /// <returns>The equality function that wraps <paramref name="comparer"/>.</returns>
-        // ReSharper disable NullableWarningSuppressionIsUsed
+       
         static Func<T?, T?, bool> FromIComparer(IComparer<T> comparer) => (x, y) => comparer.Compare(x!, y!) is 0;
     }
-
     sealed class Equated<T, TResult>(Converter<T?, TResult> converter, IEqualityComparer<TResult> equalityComparer)
         : IEqualityComparer<T>
     {
         /// <inheritdoc />
         public bool Equals(T? x, T? y) => equalityComparer.Equals(converter(x), converter(y));
-
         /// <inheritdoc />
-        // ReSharper disable once NullableWarningSuppressionIsUsed
+       
         public int GetHashCode(T obj) => equalityComparer.GetHashCode(converter(obj)!);
     }
-
     /// <summary>The number of bits in a byte.</summary>
     public const int BitsInByte = 8;
-
     /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
     /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
     /// <param name="disposable">The disposable to dispose.</param>
@@ -18093,39 +15870,35 @@ namespace System.Linq;
         disposable?.Dispose();
         disposable = default;
     }
-
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
-
     /// <summary>Performs nothing.</summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop()
     {
-        // .maxstack 8
-        // #if DEBUG
-        // IL_0000: nop
-        // IL_0001: ret
-        // #elif RELEASE
-        // IL_0000: ret
-        // #endif
+       
+       
+       
+       
+       
+       
+       
     }
-
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T">The type of discard.</typeparam>
     /// <param name="_">The discard.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T>(T _)
     {
-        // .maxstack 8
-        // #if DEBUG
-        // IL_0000: nop
-        // IL_0001: ret
-        // #elif RELEASE
-        // IL_0000: ret
-        // #endif
+       
+       
+       
+       
+       
+       
+       
     }
-
     /// <summary>Performs nothing.</summary>
     /// <typeparam name="T1">The first type of discard.</typeparam>
     /// <typeparam name="T2">The second type of discard.</typeparam>
@@ -18134,21 +15907,19 @@ namespace System.Linq;
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Noop<T1, T2>(T1 _, T2 __)
     {
-        // .maxstack 8
-        // #if DEBUG
-        // IL_0000: nop
-        // IL_0001: ret
-        // #elif RELEASE
-        // IL_0000: ret
-        // #endif
+       
+       
+       
+       
+       
+       
+       
     }
-
     /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
     /// <param name="comparison">The <see cref="Comparison{T}"/> to use.</param>
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparison"/>.</returns>
     public static IComparer<T> Comparing<T>(Comparison<T?> comparison) => new Compared<T>(comparison);
-
     /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
     /// <typeparam name="TResult">The resulting value from the mapping used for comparison.</typeparam>
@@ -18160,13 +15931,11 @@ namespace System.Linq;
         IComparer<TResult>? comparer = null
     ) =>
         new Compared<T, TResult>(converter, comparer ?? Comparer<TResult>.Default);
-
     /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
     /// <param name="comparison">The <see cref="Comparison{T}"/> to use.</param>
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparison"/>.</returns>
     public static IEqualityComparer<T> AsEquality<T>(this IComparer<T> comparison) => new Equated<T>(comparison);
-
     /// <summary>Creates the <see cref="IEqualityComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
     /// <typeparam name="TResult">The resulting value from the mapping used for comparison.</typeparam>
@@ -18178,7 +15947,6 @@ namespace System.Linq;
         IEqualityComparer<TResult>? comparer = null
     ) =>
         new Equated<T, TResult>(converter, comparer ?? EqualityComparer<TResult>.Default);
-
     /// <summary>Creates the <see cref="IEqualityComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
     /// <param name="comparer">The comparer to use.</param>
@@ -18186,17 +15954,11 @@ namespace System.Linq;
     /// <returns>The <see cref="IComparer{T}"/> that wraps the parameter <paramref name="comparer"/>.</returns>
     public static IEqualityComparer<T> Equating<T>(Func<T?, T?, bool> comparer, Func<T, int>? hashCode = null) =>
         new Equated<T>(comparer, hashCode ?? Equated<T>.Default);
-
     /// <inheritdoc cref="Invoke"/>
     public static TResult Invoke<TResult>([InstantHandle] Func<TResult> del) => del();
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods to clamp numbers.</summary>
-
     /// <inheritdoc cref="IsPow2(IntPtr)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this int value) =>
@@ -18205,7 +15967,6 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <inheritdoc cref="IsPow2(IntPtr)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this uint value) =>
@@ -18214,7 +15975,6 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <inheritdoc cref="IsPow2(IntPtr)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this long value) =>
@@ -18223,7 +15983,6 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <inheritdoc cref="IsPow2(IntPtr)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this ulong value) =>
@@ -18232,7 +15991,6 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -18246,7 +16004,6 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <inheritdoc cref="IsPow2(IntPtr)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nuint value) =>
@@ -18262,12 +16019,10 @@ namespace System.Linq;
         where T : IBitwiseOperators<T, T, T>, IComparisonOperators<T, T, bool>, INumberBase<T> =>
         (value & value - T.One) == T.Zero && value > T.Zero;
 #endif
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
+   
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
-
     /// <summary>Round the given integral value up to a power of 2.</summary>
     /// <remarks><para>
     /// The fallback implementation is based on
@@ -18296,12 +16051,10 @@ namespace System.Linq;
         return value + 1;
     }
 #endif
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
+   
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe ulong RoundUpToPowerOf2(this long value) => RoundUpToPowerOf2(unchecked((ulong)value));
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this ulong value)
@@ -18320,18 +16073,16 @@ namespace System.Linq;
         return value + 1;
     }
 #endif
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
+   
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint RoundUpToPowerOf2(this nint value) => RoundUpToPowerOf2(unchecked((nuint)value));
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
+   
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
-#if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
-#pragma warning disable IDE0004 // ReSharper disable once RedundantCast
+#if NET6_0_OR_GREATER
+#pragma warning disable IDE0004
         (nuint)BitOperations.RoundUpToPowerOf2(value);
 #pragma warning restore IDE0004
 #else
@@ -18355,7 +16106,6 @@ namespace System.Linq;
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
     /// <inheritdoc cref="Clamp{T}(T, T?, T?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T Clamp<T>(this T number, T? min = null, T? max = null)
@@ -18364,7 +16114,6 @@ namespace System.Linq;
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
     /// <summary>
     /// Calculates the least nonnegative remainder of <paramref name="number"/> <c>%</c> <paramref name="radix"/>.
     /// </summary>
@@ -18397,7 +16146,6 @@ namespace System.Linq;
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
     /// <inheritdoc cref="Clamp(int, int?, int?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static float Clamp(this float number, float? min = null, float? max = null) =>
@@ -18405,7 +16153,6 @@ namespace System.Linq;
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
-
     /// <summary>
     /// Calculates the least nonnegative remainder of <paramref name="number"/> <c>%</c> <paramref name="radix"/>.
     /// </summary>
@@ -18419,19 +16166,13 @@ namespace System.Linq;
     /// <returns>The result of the Euclidean division algorithm.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int Mod(this int number, int radix) => number % radix is var r && r < 0 ? unchecked(r + radix) : r;
-
     /// <inheritdoc cref="Mod(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static float Mod(this float number, float radix) => number % radix is var r && r < 0 ? r + radix : r;
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Extension methods to count digits in numbers.</summary>
-
     /// <summary>Gets the amount of digits of the number.</summary>
     /// <param name="number">The number to count.</param>
     /// <returns>The amount of digits in the parameter <paramref name="number"/>.</returns>
@@ -18443,7 +16184,6 @@ namespace System.Linq;
             < 100 => 2,
             _ => 3,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 3)]
     public static byte DigitCount(this sbyte number) =>
@@ -18453,7 +16193,6 @@ namespace System.Linq;
             < 100 and > -100 => 2,
             _ => 3,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
     public static byte DigitCount(this ushort number) =>
@@ -18465,7 +16204,6 @@ namespace System.Linq;
             < 10000 => 4,
             _ => 5,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 5)]
     public static byte DigitCount(this short number) =>
@@ -18477,7 +16215,6 @@ namespace System.Linq;
             < 10000 and > -10000 => 4,
             _ => 5,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
     public static byte DigitCount(this uint number) =>
@@ -18494,7 +16231,6 @@ namespace System.Linq;
             < 1000000000 => 9,
             _ => 10,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 10)]
     public static byte DigitCount(this int number) =>
@@ -18511,7 +16247,6 @@ namespace System.Linq;
             < 1000000000 and > -1000000000 => 9,
             _ => 10,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 20)]
     public static byte DigitCount(this ulong number) =>
@@ -18538,7 +16273,6 @@ namespace System.Linq;
             < 10000000000000000000 => 19,
             _ => 20,
         };
-
     /// <inheritdoc cref="DigitCount(byte)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(1, 19)]
     public static byte DigitCount(this long number) =>
@@ -18564,23 +16298,17 @@ namespace System.Linq;
             < 1000000000000000000 and > -1000000000000000000 => 18,
             _ => 19,
         };
-
 // SPDX-License-Identifier: MPL-2.0
 #if !NETFRAMEWORK || NET35_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier
-
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP3_0_OR_GREATER
 
 #endif
-
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
-
-    // ReSharper disable once UnusedType.Local
+   
     enum Unknowable;
-
     static readonly Dictionary<Type, IList> s_dictionary = [];
-
     /// <summary>Checks if the left-hand side implements the right-hand side.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18598,7 +16326,6 @@ namespace System.Linq;
 #else
         left.Op(right, static (x, y) => (x & y) == y);
 #endif
-
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18640,7 +16367,6 @@ namespace System.Linq;
             }
             : MathCaching<T>.From(value);
 #endif
-
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
     /// <typeparam name="T">The type of enum to get the values from.</typeparam>
     /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
@@ -18652,7 +16378,6 @@ namespace System.Linq;
             : (IList<T>)(s_dictionary[typeof(T)] = typeof(T) == typeof(Enum)
                 ? []
                 : (T[])Enum.GetValues(typeof(T)));
-
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18682,7 +16407,6 @@ namespace System.Linq;
             ? (T)(Enum)MathCaching<Unknowable>.To(value)
             : MathCaching<T>.To(value);
 #endif
-
     /// <summary>Performs a negation operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18696,7 +16420,6 @@ namespace System.Linq;
 #else
         value.Op(static x => unchecked(-x));
 #endif
-
     /// <summary>Performs an decrement operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18710,7 +16433,6 @@ namespace System.Linq;
 #else
         value.Op(static x => unchecked(x - 1));
 #endif
-
     /// <summary>Performs a increment operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18724,7 +16446,6 @@ namespace System.Linq;
 #else
         value.Op(static x => unchecked(x + 1));
 #endif
-
     /// <summary>Performs an addition operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18739,7 +16460,6 @@ namespace System.Linq;
 #else
         left.Op(right, static (x, y) => unchecked(x + y));
 #endif
-
     /// <summary>Performs a subtraction operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18754,7 +16474,6 @@ namespace System.Linq;
 #else
         left.Op(right, static (x, y) => unchecked(x - y));
 #endif
-
     /// <summary>Performs a multiplication operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18769,7 +16488,6 @@ namespace System.Linq;
 #else
         left.Op(right, static (x, y) => unchecked(x * y));
 #endif
-
     /// <summary>Performs a division operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18784,7 +16502,6 @@ namespace System.Linq;
 #else
         left.Op(right, static (x, y) => x / y);
 #endif
-
     /// <summary>Performs a modulo operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -18799,7 +16516,6 @@ namespace System.Linq;
 #else
         left.Op(right, static (x, y) => x % y);
 #endif
-
     /// <summary>Computes the product of a sequence of <typeparamref name="T"/> values.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the product of.</param>
@@ -18808,7 +16524,6 @@ namespace System.Linq;
     public static T Product<T>(this IEnumerable<T> source)
         where T : Enum =>
         source.Aggregate(Multiply);
-
     /// <summary>Computes the sum of a sequence of <typeparamref name="T"/> values.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the sum of.</param>
@@ -18832,12 +16547,10 @@ namespace System.Linq;
     static T Op<T>(this T value, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int> op)
         where T : Enum =>
         op(value.AsInt()).As<T>();
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T Op<T>(this T left, T right, [InstantHandle, RequireStaticDelegate(IsError = true)] Func<int, int, int> op)
         where T : Enum =>
         op(left.AsInt(), right.AsInt()).As<T>();
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static TResult Op<T, TResult>(
         this T left,
@@ -18846,14 +16559,11 @@ namespace System.Linq;
     )
         where T : Enum =>
         op(left.AsInt(), right.AsInt());
-
     static class MathCaching<T>
         where T : Enum
     {
         public static Converter<T, int> From { [Pure] get; } = Make<Converter<T, int>>(false);
-
         public static Converter<int, T> To { [Pure] get; } = Make<Converter<int, T>>(true);
-
         [MustUseReturnValue]
         static TFunc Make<TFunc>(bool isReverse)
             where TFunc : Delegate
@@ -18861,33 +16571,25 @@ namespace System.Linq;
             var parameter = Parameter(isReverse ? typeof(int) : typeof(T), nameof(T));
             var underlying = GetUnderlyingType(typeof(T));
             Expression cast = isReverse ? parameter : Convert(parameter, underlying);
-
             cast = underlying != typeof(int) ? Convert(parameter, isReverse ? underlying : typeof(int)) : cast;
             cast = isReverse ? Convert(cast, typeof(T)) : cast;
-
             return Lambda<TFunc>(cast, parameter).Compile();
         }
     }
 #endif
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
 // ReSharper disable RedundantUsingDirective
 // ReSharper disable CheckNamespace NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-
-
-
 // ReSharper disable once RedundantNameQualifier
 
-
 /// <summary>Methods that provide access to generic operators, for frameworks that do not support it.</summary>
-
     /// <summary>Increments the value.</summary>
     /// <typeparam name="T">The type of value to increment.</typeparam>
     /// <param name="t">The value to increment.</param>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once CognitiveComplexity
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Increment<T>(ref T t)
     {
         if (typeof(T) == typeof(byte))
@@ -18917,13 +16619,11 @@ namespace System.Linq;
         else
             Fail<T>();
     }
-
     /// <summary>Determines whether the current type <typeparamref name="T"/> is supported.</summary>
     /// <typeparam name="T">The type to check.</typeparam>
     /// <returns>Whether the current type <typeparamref name="T"/> is supported.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsSupported<T>() => DirectOperators<T>.IsSupported;
-
     /// <summary>Performs an addition operation to return the sum.</summary>
     /// <typeparam name="T">The type of value to add.</typeparam>
     /// <param name="l">The left-hand side.</param>
@@ -18948,7 +16648,6 @@ namespace System.Linq;
             _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Adder(l, r),
             _ => Fail<T>(),
         };
-
     /// <summary>Performs a dividing operation to return the quotient.</summary>
     /// <typeparam name="T">The type of value to divide.</typeparam>
     /// <param name="l">The left-hand side.</param>
@@ -18973,19 +16672,16 @@ namespace System.Linq;
             _ when DirectOperators<T>.IsSupported => DirectOperators<T>.Divider(l, r),
             _ => Fail<T>(),
         };
-
     /// <summary>Gets the maximum value.</summary>
     /// <typeparam name="T">The type of value to get the maximum value of.</typeparam>
     /// <returns>The maximum value of <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T MaxValue<T>() => DirectOperators<T>.MaxValue;
-
     /// <summary>Gets the minimum value.</summary>
     /// <typeparam name="T">The type of value to get the minimum value of.</typeparam>
     /// <returns>The minimum value of <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T MinValue<T>() => DirectOperators<T>.MinValue;
-
     /// <summary>Throws the exception used by <see cref="OperatorCaching"/> to propagate errors.</summary>
     /// <typeparam name="T">The type that failed.</typeparam>
     /// <exception cref="MissingMethodException">The type <typeparamref name="T"/> is unsupported.</exception>
@@ -18993,18 +16689,15 @@ namespace System.Linq;
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
         throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
-
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
-    // ReSharper disable once ClassNeverInstantiated.Global
+   
     public sealed partial class DirectOperators<T>
     {
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static;
-
         static readonly Type[]
             s_binary = [typeof(T), typeof(T)],
             s_unary = [typeof(T)];
-
         static DirectOperators()
         {
             try
@@ -19018,7 +16711,6 @@ namespace System.Linq;
                 IsSupported = false;
             }
         }
-
         /// <summary>
         /// Gets a value indicating whether the functions can be used.
         /// <see cref="MinValue"/> can be used regardless of its output.
@@ -19033,9 +16725,8 @@ namespace System.Linq;
              Pure]
             get;
         } = true;
-
         /// <summary>Gets the minimum value.</summary>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
+       
         public static T MaxValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
             {
@@ -19054,9 +16745,8 @@ namespace System.Linq;
                 var x when x == typeof(ushort) => (T)(object)ushort.MaxValue,
                 _ => typeof(T).GetField(nameof(MaxValue), Flags)?.GetValue(null) is T t ? t : default!,
             };
-
         /// <summary>Gets the minimum value.</summary>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
+       
         public static T MinValue { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             (typeof(T).IsEnum ? typeof(T).GetEnumUnderlyingType() : typeof(T)) switch
             {
@@ -19075,23 +16765,18 @@ namespace System.Linq;
                 var x when x == typeof(ushort) => (T)(object)ushort.MinValue,
                 _ => typeof(T).GetField(nameof(MinValue), Flags)?.GetValue(null) is T t ? t : default!,
             };
-
         /// <summary>Gets the function for dividing.</summary>
         public static Converter<T?, T>? Increment { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
         /// <summary>Gets the function for adding.</summary>
         public static Func<T?, T?, T>? Adder { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
         /// <summary>Gets the function for dividing.</summary>
         public static Func<T?, int, T>? Divider { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
-
         [Pure]
         static Converter<T?, T> Make(string name, [InstantHandle] Func<Expression, UnaryExpression> go) =>
             typeof(T).GetMethod(name, Flags, null, s_unary, null) is not { } method &&
             Expression.Parameter(typeof(T), "unit") is var unit
                 ? Expression.Lambda<Converter<T?, T>>(go(unit), unit).Compile()
                 : (Converter<T?, T>)Delegate.CreateDelegate(typeof(Converter<T?, T>), method);
-
         [Pure]
         static Func<T?, TRight?, T> Make<TRight>(
             string name,
@@ -19105,22 +16790,17 @@ namespace System.Linq;
                 : (x, y) => func(x, (T?)(object?)y);
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable SA1003, SA1114
 // ReSharper disable BadParensLineBreaks BadPreprocessorIndent
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides prime numbers.</summary>
 public static class Primes
 {
     /// <summary>The smallest prime number.</summary>
     public const short Min = 2;
-
     /// <summary>The largest prime number for signed 16-bit numbers.</summary>
     public const short MaxInt16 = 32749;
-
     /// <summary>Gets all <see langword="short"/> prime numbers.</summary>
     public static
 #if NETCOREAPP || ROSLYN
@@ -19360,7 +17040,6 @@ public static class Primes
                 32693, 32707, 32713, 32717, 32719, 32749,
             ]
         );
-
     /// <summary>Performs the index operation.</summary>
     /// <param name="index"></param>
     /// <returns></returns>
@@ -19374,16 +17053,10 @@ public static class Primes
     [Pure, ValueRange(Min, MaxInt16)]
     internal static short Index(Index index) => Index(index.IsFromEnd ? -index.Value - 1 : index.Value);
 }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 
-
-
-
 /// <summary>Extension methods to generate random numbers.</summary>
-
     /// <summary>Generates a random value of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of the random value.</typeparam>
     /// <param name="random">The random number generator.</param>
@@ -19392,20 +17065,15 @@ public static class Primes
         where T : unmanaged
     {
         T output = default;
-
         if (sizeof(T) >= sizeof(int))
             for (var i = 0; i < sizeof(T) / sizeof(int); i++)
                 *((int*)&output + i) = random(int.MinValue, int.MaxValue);
-
         if (sizeof(T) % sizeof(int) is 2 or 3)
             *((ushort*)((byte*)&output + sizeof(T)) - 1) = (ushort)random(ushort.MinValue, ushort.MinValue);
-
         if (sizeof(T) % sizeof(int) is 1 or 3)
             *((byte*)&output + sizeof(T) - sizeof(T) % 4) = (byte)random(byte.MinValue, byte.MinValue);
-
         return output;
     }
-
     /// <summary>Generates a random value of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of the random value.</typeparam>
     /// <param name="random">The random number generator.</param>
@@ -19421,16 +17089,10 @@ public static class Primes
         return Next<T>(random.Next);
 #endif
     }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace RedundantNameQualifier
 
-
-
-
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
-
     /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
     /// <remarks><para>
     /// For performance reasons, we don't validate the input length parameter against negative values.
@@ -19450,7 +17112,6 @@ public static class Primes
         if (!TryGetOffsetAndLength(range, length, out outOffset, out outLength))
             throw new ArgumentOutOfRangeException(nameof(length));
     }
-
     /// <summary>Calculate the start offset and length of range object using a collection length.</summary>
     /// <param name="range">The <see cref="Range"/> that contains the range of elements.</param>
     /// <param name="length">
@@ -19465,29 +17126,21 @@ public static class Primes
     {
         var startIndex = range.Start;
         var start = startIndex.IsFromEnd ? length - startIndex.Value : startIndex.Value;
-
         var endIndex = range.End;
         var end = endIndex.IsFromEnd ? length - endIndex.Value : endIndex.Value;
-
         outOffset = start;
         outLength = end - start;
-
         return unchecked((uint)end <= (uint)length && (uint)start <= (uint)end);
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Contains syntactic operations and registrations.</summary>
-
     /// <summary>Gets the fully qualified name for a given symbol.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
     /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
     public static string GetFullyQualifiedName(this ISymbol symbol) =>
         symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-
     /// <summary>Gets the fully qualified name for a given symbol, including nullability annotations.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
     /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
@@ -19497,14 +17150,12 @@ public static class Primes
                 SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
             )
         );
-
     /// <summary>Checks whether or not a given type symbol has a specified full name.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
     /// <param name="name">The full name to check.</param>
     /// <returns>Whether <paramref name="symbol"/> has a full name equals to <paramref name="name"/>.</returns>
     public static bool HasFullyQualifiedName(this ISymbol symbol, string name) =>
         symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == name;
-
     /// <summary>
     /// Checks whether or not a given symbol has an attribute with the specified fully qualified metadata name.
     /// </summary>
@@ -19516,17 +17167,14 @@ public static class Primes
         foreach (var attribute in symbol.GetAttributes())
             if (attribute.AttributeClass is { } named && named.HasFullyQualifiedMetadataName(name))
                 return true;
-
         return false;
     }
-
     /// <summary>Checks whether or not a given symbol has an attribute with the specified type.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
     /// <param name="typeSymbol">The <see cref="ITypeSymbol"/> instance for the attribute type to look for.</param>
     /// <returns>Whether or not <paramref name="symbol"/> has an attribute with the specified type.</returns>
     public static bool HasAttributeWithType(this ISymbol symbol, ITypeSymbol typeSymbol) =>
         TryGetAttributeWithType(symbol, typeSymbol, out _);
-
     /// <summary>Tries to get an attribute with the specified type.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
     /// <param name="typeSymbol">The <see cref="ITypeSymbol"/> instance for the attribute type to look for.</param>
@@ -19539,18 +17187,16 @@ public static class Primes
         [NotNullWhen(true)] out AttributeData? attributeData
     )
     {
-        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+       
         foreach (var attribute in symbol.GetAttributes())
             if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, typeSymbol))
             {
                 attributeData = attribute;
                 return true;
             }
-
         attributeData = null;
         return false;
     }
-
     /// <summary>Checks whether or not a given type symbol has a specified fully qualified metadata name.</summary>
     /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance to check.</param>
     /// <param name="name">The full name to check.</param>
@@ -19558,7 +17204,6 @@ public static class Primes
     public static bool HasFullyQualifiedMetadataName(this ITypeSymbol symbol, string name)
     {
         var builder = ImmutableArrayBuilder<char>.Rent();
-
         try
         {
             symbol.AppendFullyQualifiedMetadataName(builder);
@@ -19569,7 +17214,6 @@ public static class Primes
             builder.Dispose();
         }
     }
-
     /// <summary>Gets the fully qualified metadata name for a given <see cref="ITypeSymbol"/> instance.</summary>
     /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance.</param>
     /// <returns>The fully qualified metadata name for <paramref name="symbol"/>.</returns>
@@ -19577,7 +17221,6 @@ public static class Primes
     public static string GetFullyQualifiedMetadataName(this ITypeSymbol symbol)
     {
         var builder = ImmutableArrayBuilder<char>.Rent();
-
         try
         {
             symbol.AppendFullyQualifiedMetadataName(builder);
@@ -19588,7 +17231,6 @@ public static class Primes
             builder.Dispose();
         }
     }
-
     /// <summary>Tries to get an attribute with the specified fully qualified metadata name.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
     /// <param name="name">The attribute name to look for.</param>
@@ -19607,30 +17249,26 @@ public static class Primes
                 attributeData = attribute;
                 return true;
             }
-
         attributeData = null;
         return false;
     }
-
     /// <summary>Calculates the effective accessibility for a given symbol.</summary>
     /// <param name="symbol">The <see cref="ISymbol"/> instance to check.</param>
     /// <returns>The effective accessibility for <paramref name="symbol"/>.</returns>
     [Pure]
     public static Accessibility GetEffectiveAccessibility(this ISymbol symbol)
     {
-        // Start by assuming it's visible
+       
         var visibility = Accessibility.Public;
-
-        // Handle special cases
-        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+       
+       
         switch (symbol.Kind)
         {
-            case SymbolKind.Alias: return Accessibility.Private; // ReSharper disable once TailRecursiveCall
+            case SymbolKind.Alias: return Accessibility.Private;
             case SymbolKind.Parameter: return GetEffectiveAccessibility(symbol.ContainingSymbol);
             case SymbolKind.TypeParameter: return Accessibility.Private;
         }
-
-        // Traverse the symbol hierarchy to determine the effective accessibility
+       
         while (symbol is not null && symbol.Kind != SymbolKind.Namespace)
         {
             switch (symbol.DeclaredAccessibility)
@@ -19640,13 +17278,10 @@ public static class Primes
                     visibility = Accessibility.Internal;
                     break;
             }
-
             symbol = symbol.ContainingSymbol;
         }
-
         return visibility;
     }
-
     /// <summary>Checks whether or not a given symbol can be accessed from a specified assembly.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
     /// <param name="assembly">The assembly to check the accessibility of <paramref name="symbol"/> for.</param>
@@ -19656,7 +17291,6 @@ public static class Primes
         symbol.GetEffectiveAccessibility() is var accessibility &&
         accessibility == Accessibility.Public ||
         accessibility == Accessibility.Internal && symbol.ContainingAssembly.GivesAccessTo(assembly);
-
     /// <summary>Negated <see cref="SyntaxValueProvider.ForAttributeWithMetadataName"/>.</summary>
     /// <inheritdoc cref="SyntaxValueProvider.ForAttributeWithMetadataName"/>
     [Pure]
@@ -19672,13 +17306,11 @@ public static class Primes
             !symbol.TryGetAttributeWithFullyQualifiedMetadataName(fullyQualifiedMetadataName, out _)
                 ? (true, transform(context.Node, symbol, context.SemanticModel, token))
                 : default;
-
         return syntaxValueProvider
            .CreateSyntaxProvider(predicate, Extract)
            .Where(static x => x.HasValue)
            .Select(static (item, _) => item.Value);
     }
-
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
     /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
@@ -19688,7 +17320,6 @@ public static class Primes
 #pragma warning disable 8619
         provider.Where(x => x is not null);
 #pragma warning restore 8619
-
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
     /// <param name="provider">The <see cref="IncrementalValuesProvider{T}"/> to filter.</param>
@@ -19699,7 +17330,6 @@ public static class Primes
 #pragma warning disable 8629
         provider.Where(x => x.HasValue).Select((x, _) => x.Value);
 #pragma warning restore 8629
-
     /// <summary>Filters an <see cref="IncrementalValuesProvider{T}"/> to the specified destination type.</summary>
     /// <typeparam name="TFrom">The initial type.</typeparam>
     /// <typeparam name="TTo">The target type.</typeparam>
@@ -19707,9 +17337,8 @@ public static class Primes
     /// <returns>A filtered <see cref="IncrementalValuesProvider{T}"/> with <typeparamref name="TTo"/> values.</returns>
     [Pure]
     public static IncrementalValuesProvider<TTo> OfType<TFrom, TTo>(this IncrementalValuesProvider<TFrom?> provider)
-        where TTo : TFrom => // ReSharper disable once NullableWarningSuppressionIsUsed
+        where TTo : TFrom =>
         provider.Where(static x => x is TTo).Select(static (x, _) => (TTo)x!);
-
     /// <summary>Appends the fully qualified metadata name for a given symbol to a target builder.</summary>
     /// <param name="symbol">The input <see cref="ITypeSymbol"/> instance.</param>
     /// <param name="builder">The target <see cref="ImmutableArrayBuilder{T}"/> instance.</param>
@@ -19719,31 +17348,27 @@ public static class Primes
         {
             switch (symbol)
             {
-                // Namespaces that are nested also append a leading '.'
+               
                 case INamespaceSymbol { ContainingNamespace.IsGlobalNamespace: false }:
                     BuildFrom(symbol.ContainingNamespace, builder);
                     builder.Add('.');
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
-
-                // Other namespaces (ie. the one right before global) skip the leading '.'
+               
                 case INamespaceSymbol { IsGlobalNamespace: false }:
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
-
-                // Types with no namespace just have their metadata name directly written
+               
                 case ITypeSymbol { ContainingSymbol: INamespaceSymbol { IsGlobalNamespace: true } }:
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
-
-                // Types with a containing non-global namespace also append a leading '.'
+               
                 case ITypeSymbol { ContainingSymbol: INamespaceSymbol namespaceSymbol }:
                     BuildFrom(namespaceSymbol, builder);
                     builder.Add('.');
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
-
-                // Nested types append a leading '+'
+               
                 case ITypeSymbol { ContainingSymbol: ITypeSymbol typeSymbol }:
                     BuildFrom(typeSymbol, builder);
                     builder.Add('+');
@@ -19751,18 +17376,14 @@ public static class Primes
                     break;
             }
         }
-
         BuildFrom(symbol, builder);
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer
 
-
 // ReSharper disable once CheckNamespace
-
 #pragma warning restore GlobalUsingsAnalyzer
 /// <summary>Generates the attribute needed to use this analyzer.</summary>
 /// <param name="hintName">The file name of the source.</param>
@@ -19776,16 +17397,13 @@ public abstract class FixedGenerator(
     [StringSyntax("C#")]
     public const string Header =
         """
-        // <auto-generated/>
-        // ReSharper disable RedundantNameQualifier
-        // ReSharper disable once CheckNamespace
+       
+       
+       
         #nullable enable
-
         """;
-
     /// <summary>The extension of each generated file.</summary>
     const string Extension = ".g.cs";
-
     /// <summary>Gets the attribute that indicates source generation from this library.</summary>
     [Pure, StringSyntax("C#")]
     public static string Annotation { get; } =
@@ -19798,11 +17416,9 @@ public abstract class FixedGenerator(
             typeof(FixedGenerator).Assembly.GetName().Name}\", \"{
                 typeof(FixedGenerator).Assembly.GetName().Version}\")]";
 #endif
-
     /// <summary>Gets the name of the generated attribute.</summary>
     [Pure]
     public string Name => hintName;
-
     /// <summary>Gets the name of the attribute generated specified by <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The kind of <see cref="FixedGenerator"/> to get the <see cref="Name"/> from.</typeparam>
     /// <returns>The <see cref="Name"/> of the <see cref="FixedGenerator"/> <typeparamref name="T"/>.</returns>
@@ -19810,7 +17426,6 @@ public abstract class FixedGenerator(
     public static string Of<T>()
         where T : FixedGenerator, new() =>
         new T().Name;
-
     /// <inheritdoc />
 #pragma warning disable CA1033
     void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
@@ -19818,13 +17433,10 @@ public abstract class FixedGenerator(
 #pragma warning restore CA1033
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>A helper type to build sequences of values with pooled buffers.</summary>
 /// <typeparam name="T">The type of items to create sequences for.</typeparam>
 [StructLayout(LayoutKind.Auto)]
@@ -19832,51 +17444,40 @@ public ref partial struct ImmutableArrayBuilder<T>
 {
     /// <summary>The rented <see cref="Writer"/> instance to use.</summary>
     Writer? _writer;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ImmutableArrayBuilder{T}"/> struct with the specified parameters.
     /// </summary>
     /// <param name="writer">The target data writer to use.</param>
     ImmutableArrayBuilder(Writer writer) => _writer = writer;
-
     /// <inheritdoc cref="ImmutableArray{T}.Builder.Count"/>
     public readonly int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _writer!.Count;
     }
-
     /// <summary>Gets the data written to the underlying buffer so far, as a <see cref="ReadOnlySpan{T}"/>.</summary>
     [UnscopedRef]
     public readonly ReadOnlySpan<T> WrittenSpan
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)] get => _writer!.WrittenSpan;
     }
-
     /// <summary>Creates a <see cref="ImmutableArrayBuilder{T}"/> value with a pooled underlying data writer.</summary>
     /// <returns>A <see cref="ImmutableArrayBuilder{T}"/> instance to write data to.</returns>
     public static ImmutableArrayBuilder<T> Rent() => new(new());
-
     /// <inheritdoc cref="ImmutableArray{T}.Builder.Add(T)"/>
     public readonly void Add(T item) => _writer!.Add(item);
-
     /// <summary>Adds the specified items to the end of the array.</summary>
     /// <param name="items">The items to add at the end of the array.</param>
     public readonly void AddRange(scoped ReadOnlySpan<T> items) => _writer!.AddRange(items);
-
     /// <inheritdoc cref="ImmutableArray{T}.Builder.ToImmutable"/>
     public readonly ImmutableArray<T> ToImmutable() => ImmutableCollectionsMarshal.AsImmutableArray(ToArray());
-
     /// <inheritdoc cref="ImmutableArray{T}.Builder.ToArray"/>
     public readonly T[] ToArray() => WrittenSpan.ToArray();
-
     /// <summary>Gets an <see cref="IEnumerable{T}"/> instance for the current builder.</summary>
     /// <remarks><para>The builder should not be mutated while an enumerator is in use.</para></remarks>
     /// <returns>An <see cref="IEnumerable{T}"/> instance for the current builder.</returns>
     public readonly IEnumerable<T> AsEnumerable() => _writer!;
-
     /// <inheritdoc/>
     public readonly override string ToString() => WrittenSpan.ToString();
-
     /// <inheritdoc cref="IDisposable.Dispose"/>
     public void Dispose()
     {
@@ -19884,36 +17485,30 @@ public ref partial struct ImmutableArrayBuilder<T>
         _writer = null;
         writer?.Dispose();
     }
-
     /// <summary>A class handling the actual buffer writing.</summary>
     sealed class Writer : ICollection<T>, IDisposable
     {
         /// <summary>The underlying <typeparamref name="T"/> array.</summary>
         T?[]? _array = ArrayPool<T?>.Shared.Rent(typeof(T) == typeof(char) ? 1024 : 8);
-
         /// <inheritdoc/>
         bool ICollection<T>.IsReadOnly => true;
-
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.Count"/>
         public int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)] get;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
         }
-
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.WrittenSpan"/>
         public ReadOnlySpan<T> WrittenSpan
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)] get => new(_array!, 0, Count);
         }
-
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.Add"/>
         public void Add(T item)
         {
             EnsureCapacity(1);
             _array![Count++] = item;
         }
-
         /// <inheritdoc cref="ImmutableArrayBuilder{T}.AddRange"/>
         public void AddRange(ReadOnlySpan<T> items)
         {
@@ -19921,23 +17516,18 @@ public ref partial struct ImmutableArrayBuilder<T>
             items.CopyTo(_array.AsSpan(Count)!);
             Count += items.Length;
         }
-
         /// <inheritdoc/>
         public void Dispose()
         {
             var array = _array;
             _array = null;
-
             if (array is not null)
                 ArrayPool<T?>.Shared.Return(array, typeof(T) != typeof(char));
         }
-
         /// <inheritdoc/>
         void ICollection<T>.Clear() => throw new NotSupportedException();
-
         /// <inheritdoc/>
         void ICollection<T>.CopyTo(T[] array, int arrayIndex) => Array.Copy(_array!, 0, array, arrayIndex, Count);
-
         /// <summary>
         /// Ensures that <see cref="_array"/> has enough free space to contain a given number of new items.
         /// </summary>
@@ -19948,7 +17538,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             if (requestedSize > _array!.Length - Count)
                 ResizeBuffer(requestedSize);
         }
-
         /// <summary>Resizes <see cref="_array"/> to ensure it can fit the specified number of new items.</summary>
         /// <param name="sizeHint">The minimum number of items to ensure space for in <see cref="_array"/>.</param>
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -19957,54 +17546,41 @@ public ref partial struct ImmutableArrayBuilder<T>
             var minimumSize = Count + sizeHint;
             var oldArray = _array!;
             var newArray = ArrayPool<T?>.Shared.Rent(minimumSize);
-
             Array.Copy(oldArray, newArray, Count);
             _array = newArray;
             ArrayPool<T?>.Shared.Return(oldArray, typeof(T) != typeof(char));
         }
-
         /// <inheritdoc/>
         bool ICollection<T>.Contains(T item) => throw new NotSupportedException();
-
         /// <inheritdoc/>
         bool ICollection<T>.Remove(T item) => throw new NotSupportedException();
-
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<T>)this).GetEnumerator();
-
         /// <inheritdoc/>
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
             var array = _array!;
             var length = Count;
-
             for (var i = 0; i < length; i++)
                 yield return array[i]!;
         }
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer, SA1216
 // ReSharper disable once RedundantUsingDirective.Global
 
-
 #pragma warning restore GlobalUsingsAnalyzer, RCS1175
 // ReSharper disable once CheckNamespace
 
-
-
-
 /// <summary>Contains syntactic operations and registrations.</summary>
-
     /// <summary>Adds the deconstruction of the tuples onto the <see cref="SourceProductionContext"/>.</summary>
     /// <param name="context">The context to use for source generation.</param>
     /// <param name="generated">The tuple containing the hint name and source.</param>
     public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
         context.AddSource(generated.HintName, generated.Source);
-
     /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
     /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -20017,7 +17593,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             context.ReportDiagnostic(diagnostic);
 #endif
     }
-
     /// <summary>
     /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
     /// </summary>
@@ -20031,16 +17606,13 @@ public ref partial struct ImmutableArrayBuilder<T>
     {
         if (syntax is not { Parent: var parent })
             return null;
-
         while (parent is { Parent: var grandparent } and
             not BaseParameterSyntax and
             not MemberDeclarationSyntax and
             not TypeParameterSyntax)
             parent = grandparent;
-
         return parent as TypeDeclarationSyntax;
     }
-
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
     /// <param name="node">The passed in node to test.</param>
@@ -20053,7 +17625,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static bool AnnotatedAndIs<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
         where T : MemberDeclarationSyntax =>
         node is T { AttributeLists.Count: >= 1 };
-
     /// <summary>Determines whether the symbol can be passed in as a generic.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20068,7 +17639,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             not IPointerTypeSymbol and
             not { IsRefLikeType: true } and
             not { SpecialType: System_Void };
-
     /// <summary>Determines whether the symbol is declared with the attribute of the specific name.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <param name="name">The name to get.</param>
@@ -20082,22 +17652,16 @@ public ref partial struct ImmutableArrayBuilder<T>
         [Pure]
         static ReadOnlySpan<char> WithoutAttributeSuffix(string name) =>
             name.AsSpan() is var span && span is [.. var x, 'A', 't', 't', 'r', 'i', 'b', 'u', 't', 'e'] ? x : span;
-
         if (symbol is null)
             return false;
-
         if (name is null)
             return symbol.GetAttributes() is not [];
-
         var against = WithoutAttributeSuffix(name);
-
         foreach (var attribute in symbol.GetAttributes())
             if (attribute.AttributeClass?.Name is { } match && WithoutAttributeSuffix(match).SequenceEqual(against))
                 return true;
-
         return false;
     }
-
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
     /// <param name="node">The passed in node to test.</param>
@@ -20110,7 +17674,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static bool Is<T>([NotNullWhen(true)] SyntaxNode? node, CancellationToken _ = default)
         where T : SyntaxNode =>
         node is T;
-
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="accessibility">The symbol to check.</param>
     /// <returns>
@@ -20119,7 +17682,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsAccessible(this Accessibility accessibility) =>
         accessibility is Accessibility.Protected or Accessibility.ProtectedOrInternal or Accessibility.Public;
-
     /// <summary>Determines whether the symbol is accessible from an external assembly.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20128,7 +17690,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsAccessible([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.DeclaredAccessibility.IsAccessible() is true;
-
     /// <summary>
     /// Determines whether the symbol and all subsequent parent types
     /// are declared with the <see langword="partial"/> keyword.
@@ -20141,7 +17702,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsCompletelyPartial([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.FindPathToNull(x => x.ContainingType).All(IsPartial) is true;
-
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is the first declaration.</summary>
     /// <param name="node">The passed in node to test.</param>
     /// <param name="symbol">The symbol to retrieve the declaring syntax references from.</param>
@@ -20157,7 +17717,6 @@ public ref partial struct ImmutableArrayBuilder<T>
         CancellationToken token = default
     ) =>
         symbol is { DeclaringSyntaxReferences: var x } && (x is not [var first, ..] || first.GetSyntax(token) == node);
-
     /// <summary>Determines whether the symbol is from metadata.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20167,7 +17726,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsInMetadata([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol is { Locations: [{ IsInMetadata: true }, ..] };
-
     /// <summary>Determines whether the symbol is from source code.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20177,7 +17735,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsInSource([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol is { Locations: [{ IsInSource: true }, ..] };
-
     /// <summary>Determines whether the symbol is an <see langword="interface"/>.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20187,7 +17744,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsInterface([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is { BaseType: null, SpecialType: not System_Object };
-
     /// <summary>Returns whether the provided <see cref="ISymbol"/> is an interface implementation.</summary>
     /// <param name="symbol">The passed in symbol to test.</param>
     /// <returns>
@@ -20197,7 +17753,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsInterfaceDeclaration([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol?.Name.Contains('.') ?? false;
-
     /// <summary>Determines whether the symbol is declared with the <see cref="ObsoleteAttribute"/> attribute.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20207,7 +17762,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool IsObsolete([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol.HasAttribute(nameof(ObsoleteAttribute));
-
     /// <summary>Determines whether the symbol is declared with the <see langword="partial"/> keyword.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20221,7 +17775,6 @@ public ref partial struct ImmutableArrayBuilder<T>
            .Select(x => x.GetSyntax())
            .OfType<TypeDeclarationSyntax>()
            .Any(x => x.Modifiers.Any(x => x.ValueText is "partial")) is true;
-
     /// <summary>Determines whether the symbol is an <see langword="unmanaged"/> primitive type.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20230,7 +17783,7 @@ public ref partial struct ImmutableArrayBuilder<T>
     /// </returns>
     [Pure]
     public static bool IsUnmanagedPrimitive([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is // ReSharper disable once MissingIndent
+        symbol is
         {
             SpecialType: System_Char or
             System_SByte or
@@ -20247,14 +17800,12 @@ public ref partial struct ImmutableArrayBuilder<T>
             System_IntPtr or
             System_UIntPtr,
         };
-
     /// <summary>Determines whether the symbol has a default implementation.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
     [Pure]
     public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
         symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
-
     /// <summary>Determines whether the symbol has a parameterless constructor.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
@@ -20264,7 +17815,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters is []);
-
     /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to use.</param>
     /// <param name="prefix">If specified, the prefix to contain within the hint name.</param>
@@ -20275,27 +17825,20 @@ public ref partial struct ImmutableArrayBuilder<T>
     {
         if (symbol is null)
             return null;
-
         StringBuilder sb = new(symbol.Name);
         ISymbol? containing = symbol;
-
         if (symbol.TypeParameters.Length is not 0 and var length)
             sb.Append('`').Append(length);
-
         while ((containing = containing.ContainingWithoutGlobal()) is not null)
         {
             sb.Insert(0, '.').Insert(0, containing.Name);
-
             if (containing is INamedTypeSymbol { TypeParameters.Length: not 0 and var i })
                 sb.Append('`').Append(i);
         }
-
         if (prefix is not null)
             sb.Insert(0, '.').Insert(0, prefix);
-
         return sb.Append(".g.cs").ToString();
     }
-
     /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to get its keyword.</param>
     /// <returns>The keyword used to declare the parameter <paramref name="symbol"/>.</returns>
@@ -20312,7 +17855,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             { IsReferenceType: true } => "class",
             _ => "",
         };
-
     /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
     /// <param name="kind">The symbol to get its keyword.</param>
     /// <returns>The keyword used to declare the parameter <paramref name="kind"/>.</returns>
@@ -20325,7 +17867,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             RefKind.Ref => "ref ",
             _ => "",
         };
-
     /// <summary>Gets the keyword associated with the declaration of the <see cref="RefKind"/>.</summary>
     /// <param name="kind">The symbol to get its keyword.</param>
     /// <returns>The keyword used to declare the parameter <paramref name="kind"/>.</returns>
@@ -20337,7 +17878,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             RefKind.RefReadOnly => "ref readonly ",
             _ => "",
         };
-
     /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
     [Pure]
     public static string? MemberName(this ExpressionSyntax syntax)
@@ -20345,7 +17885,6 @@ public ref partial struct ImmutableArrayBuilder<T>
         syntax.TryGetMemberName(out var result);
         return result;
     }
-
     /// <inheritdoc cref="AttributeArgumentSyntaxExt.TryGetStringValue(AttributeArgumentSyntax, SemanticModel, CancellationToken, out string)"/>
     [Pure]
     public static string? StringValue(this SyntaxNodeAnalysisContext context, AttributeArgumentSyntax syntax)
@@ -20353,7 +17892,6 @@ public ref partial struct ImmutableArrayBuilder<T>
         syntax.TryGetStringValue(context.SemanticModel, context.CancellationToken, out var result);
         return result;
     }
-
     /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, TLanguageKindEnum[])"/>
     public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
         this AnalysisContext context,
@@ -20362,7 +17900,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     )
         where TSyntaxNode : SyntaxNode =>
         context.RegisterSyntaxNodeAction(action, ImmutableArray.Create(syntaxKinds));
-
     /// <inheritdoc cref="AnalysisContext.RegisterSyntaxNodeAction{TLanguageKindEnum}(Action{SyntaxNodeAnalysisContext}, ImmutableArray{TLanguageKindEnum})"/>
     public static AnalysisContext RegisterSyntaxNodeAction<TSyntaxNode>(
         this AnalysisContext context,
@@ -20374,7 +17911,6 @@ public ref partial struct ImmutableArrayBuilder<T>
         context.RegisterSyntaxNodeAction(Filter(action), syntaxKinds);
         return context;
     }
-
     /// <summary>Adds information to a diagnostic.</summary>
     /// <typeparam name="T">The type of <paramref name="message"/>.</typeparam>
     /// <param name="diagnostic">The diagnostic to append.</param>
@@ -20399,7 +17935,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             diagnostic.AdditionalLocations,
             diagnostic.Properties
         );
-
     /// <summary>Gets all the members, including its base type members.</summary>
     /// <param name="symbol">The symbol to get all of the members of.</param>
     /// <returns>
@@ -20413,7 +17948,6 @@ public ref partial struct ImmutableArrayBuilder<T>
            .FindPathToNull(x => x.BaseType)
            .SelectMany(GetAllMembers)
            .Concat(symbol.GetMembers());
-
     /// <summary>Gets the symbol from a lookup.</summary>
     /// <param name="context">The context to use.</param>
     /// <param name="syntax">The syntax to lookup.</param>
@@ -20426,31 +17960,26 @@ public ref partial struct ImmutableArrayBuilder<T>
                 cancellationToken: context.CancellationToken
             )
             : context.SemanticModel.LookupSymbols(syntax.SpanStart, name: name);
-
     /// <summary>Gets the containing <see cref="INamespaceOrTypeSymbol"/>.</summary>
     /// <param name="syntax">The syntax to lookup.</param>
     /// <returns>The containing type or namespace of the parameter <paramref name="syntax"/>.</returns>
     [Pure]
     public static INamespaceOrTypeSymbol ContainingSymbol(this ISymbol syntax) =>
         syntax.ContainingType ?? (INamespaceOrTypeSymbol)syntax.ContainingNamespace;
-
     /// <summary>Gets the containing symbol so long as it isn't the global namespace.</summary>
     /// <param name="symbol">The symbol to use.</param>
     /// <returns>The containing symbol, or <see langword="null"/> if it is the global namespace.</returns>
     [Pure]
     public static ISymbol? ContainingWithoutGlobal(this ISymbol? symbol) =>
         symbol?.ContainingSymbol is var x && x is INamespaceSymbol { IsGlobalNamespace: true } ? null : x;
-
     /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
     [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this Compilation symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
-
     /// <inheritdoc cref="GetAllMembers(INamespaceSymbol)" />
     [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this IAssemblySymbol symbol) =>
         symbol.GlobalNamespace.GetAllMembers();
-
     /// <summary>Gets all of the types declared by this symbol.</summary>
     /// <param name="symbol">The symbol to get all of the type symbols of.</param>
     /// <returns>
@@ -20459,7 +17988,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
         symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
-
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
@@ -20479,7 +18007,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             IFunctionPointerTypeSymbol x => x.Signature.ReturnType,
             _ => null,
         };
-
     /// <summary>Gets the underlying symbol if the provided parameter is the nullable type.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type of <paramref name="symbol"/>, if it exists.</returns>
@@ -20497,7 +18024,6 @@ public ref partial struct ImmutableArrayBuilder<T>
         }
             ? underlying
             : null;
-
     /// <summary>Gets the <see cref="RefKind"/> of the parameter.</summary>
     /// <param name="argument">The argument to get the <see cref="RefKind"/> of.</param>
     /// <returns>The <see cref="RefKind"/> of the parameter <paramref name="argument"/>.</returns>
@@ -20509,7 +18035,6 @@ public ref partial struct ImmutableArrayBuilder<T>
             SyntaxKind.InKeyword => RefKind.In,
             _ => RefKind.None,
         };
-
     /// <summary>Gets the specified symbol.</summary>
     /// <typeparam name="T">The type of symbol to get.</typeparam>
     /// <param name="context">The context.</param>
@@ -20519,7 +18044,6 @@ public ref partial struct ImmutableArrayBuilder<T>
     public static T? Get<T>(this in GeneratorSyntaxContext context, CancellationToken token = default)
         where T : ISymbol =>
         context.SemanticModel.GetDeclaredSymbol(context.Node, token) is T symbol ? symbol : default;
-
     [Pure]
     static Action<SyntaxNodeAnalysisContext> Filter<TSyntaxNode>(Action<SyntaxNodeAnalysisContext, TSyntaxNode> action)
         where TSyntaxNode : SyntaxNode =>
@@ -20535,21 +18059,16 @@ public ref partial struct ImmutableArrayBuilder<T>
             context.Drain();
 #endif
         };
-
     [Pure]
     static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
         ((x as INamespaceSymbol)?.GetAllMembers() ?? []).Prepend(x);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 // ReSharper disable CheckNamespace InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
-
-
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
-
 /// <summary>
 /// Helper type that allows signature help to make better decisions about which overload the user is likely choosing
 /// when the compiler itself bails out and gives a generic list of options.
@@ -20575,26 +18094,22 @@ readonly struct LightweightOverloadResolution(
         [Pure]
         public static Overload None => new(null, -1);
     }
-
     /// <summary>Performs the overload resolution.</summary>
     /// <param name="symbolInfo">The <see cref="SymbolInfo"/> to use.</param>
     /// <param name="candidates">The different overloads.</param>
     /// <returns>The overload to use.</returns>
-    // If the compiler told us the correct overload or we only have one choice, but we need to find out the
-    // parameter to highlight given cursor position
+   
+   
     public Overload RefineOverloadAndPickParameter(SymbolInfo symbolInfo, ImmutableArray<IMethodSymbol> candidates) =>
         symbolInfo.Symbol is IMethodSymbol method
             ? TryFindParameterIndexIfCompatibleMethod(method)
             : GuessCurrentSymbolAndParameter(candidates);
-
     /// <summary>Finds the parameter index if the method is compatible.</summary>
     /// <param name="method">The <see cref="IMethodSymbol"/> to check.</param>
     /// <returns>The index of the parameter if the method is compatible, <c>-1</c> otherwise.</returns>
     public int FindParameterIndexIfCompatibleMethod(IMethodSymbol method) =>
         TryFindParameterIndexIfCompatibleMethod(method) is (not null, var parameterIndex) ? parameterIndex : -1;
-
     static bool IsEmptyArgument(SyntaxNode expression) => expression.Span.IsEmpty;
-
     /// <summary> Deals with a partial invocation and finds the respective overload.</summary>
     /// <param name="methodGroup">The different overloads.</param>
     /// <returns>The overload to use.</returns>
@@ -20602,19 +18117,15 @@ readonly struct LightweightOverloadResolution(
     {
         if (arguments is [])
             return Overload.None;
-
         foreach (var method in methodGroup)
         {
             var (candidateMethod, parameterIndex) = TryFindParameterIndexIfCompatibleMethod(method);
-
             if (candidateMethod is not null)
                 return new(candidateMethod, parameterIndex);
         }
-
-        // Note: Providing no recommendation if no arguments allows the model to keep the last implicit choice.
+       
         return Overload.None;
     }
-
     /// <summary>
     /// Simulates overload resolution with the arguments provided so far and determines if you might be calling this overload.
     /// Returns true if an overload is acceptable. In that case, we output the parameter that should be highlighted given the cursor's
@@ -20622,54 +18133,41 @@ readonly struct LightweightOverloadResolution(
     /// </summary>
     Overload TryFindParameterIndexIfCompatibleMethod(IMethodSymbol method)
     {
-        // map the arguments to their corresponding parameters
+       
         using var argumentToParameterMap = PooledSmallList<int>.Empty;
-
         for (var i = 0; i < arguments.Count; i++)
             argumentToParameterMap.Append(-1);
-
         if (!TryPrepareArgumentToParameterMap(method, ref argumentToParameterMap.AsRef))
             return Overload.None;
-
-        // verify that the arguments are compatible with their corresponding parameters
+       
         var parameters = method.Parameters;
-
         for (var argumentIndex = 0; argumentIndex < arguments.Count; argumentIndex++)
         {
             var parameterIndex = argumentToParameterMap[argumentIndex];
-
             if (parameterIndex < 0)
                 continue;
-
             var parameter = parameters[parameterIndex];
             var argument = arguments[argumentIndex];
-
-            // We found a corresponding argument for this parameter.  If it's not compatible (say, a string passed
-            // to an int parameter), then this is not a suitable overload.
+           
+           
             if (!IsCompatibleArgument(argument, parameter))
                 return Overload.None;
         }
-
-        // find the parameter at the cursor position
+       
         var argumentIndexToSave = GetArgumentIndex();
         var foundParameterIndex = -1;
-
         if (argumentIndexToSave >= 0)
         {
             foundParameterIndex = argumentToParameterMap[argumentIndexToSave];
-
             if (foundParameterIndex < 0)
                 foundParameterIndex = FirstUnspecifiedParameter(ref argumentToParameterMap.AsRef);
         }
-
         System.Diagnostics.Debug.Assert(
             foundParameterIndex < parameters.Length,
             "foundParameterIndex < parameters.Length"
         );
-
         return new(method, foundParameterIndex);
     }
-
     /// <summary>Determines if the given argument is compatible with the given parameter.</summary>
     /// <param name="argument">The argument to check.</param>
     /// <param name="parameter">The parameter to check.</param>
@@ -20679,64 +18177,50 @@ readonly struct LightweightOverloadResolution(
     bool IsCompatibleArgument(ArgumentSyntax argument, IParameterSymbol parameter)
     {
         var parameterRefKind = parameter.RefKind;
-
         if (parameterRefKind == RefKind.None)
         {
-            // An argument left empty is considered to match any parameter
-            // M(1, $$)
-            // M(1, , 2$$)
+           
+           
+           
             if (IsEmptyArgument(argument.Expression))
                 return true;
-
             var type = parameter.Type;
-
             if (parameter.IsParams &&
                 type is IArrayTypeSymbol arrayType &&
                 semanticModel.ClassifyConversion(argument.Expression, arrayType.ElementType).IsImplicit)
                 return true;
-
             return semanticModel.ClassifyConversion(argument.Expression, type).IsImplicit;
         }
-
         var argumentRefKind = argument.GetRefKind();
-
         if (parameterRefKind == argumentRefKind)
             return true;
-
-        // A by-value argument matches an `in` parameter
+       
         return parameterRefKind == RefKind.In && argumentRefKind == RefKind.None;
     }
-
     /// <summary>Highlights the first unspecified parameter.</summary>
     /// <param name="argumentToParameterMap">The input map.</param>
     /// <returns>The index of the first unspecified parameter.</returns>
     int FirstUnspecifiedParameter(ref PooledSmallList<int> argumentToParameterMap)
     {
         using var specified = PooledSmallList<bool>.Empty;
-
         for (var i = 0; i < arguments.Count; i++)
             specified.Append(false);
-
         for (var i = 0; i < arguments.Count; i++)
         {
             var parameterIndex = argumentToParameterMap[i];
-
             if (parameterIndex >= 0 && parameterIndex < arguments.Count)
                 specified[parameterIndex] = true;
         }
-
         for (var i = 0; i < specified.Length; i++)
             if (!specified[i])
                 return i;
-
         return 0;
     }
-
     /// <summary>Find the parameter index corresponding to each argument provided.</summary>
     /// <param name="method">The method to prepare.</param>
     /// <param name="argumentToParameterMap">The output map.</param>
     /// <returns>Whether or not the method could be prepared.</returns>
-#pragma warning disable MA0051 // ReSharper disable once CognitiveComplexity
+#pragma warning disable MA0051
     bool TryPrepareArgumentToParameterMap(IMethodSymbol method, ref PooledSmallList<int> argumentToParameterMap)
 #pragma warning restore MA0051
     {
@@ -20744,53 +18228,43 @@ readonly struct LightweightOverloadResolution(
             argumentToParameterMap.Length == arguments.Count,
             "argumentToParameterMap.Length == arguments.Count"
         );
-
         var currentParameterIndex = 0;
         var seenOutOfPositionArgument = false;
         var inParams = false;
-
         for (var argumentIndex = 0; argumentIndex < arguments.Count; argumentIndex++)
         {
-            // Went past the number of parameters this method takes, and this is a non-params method.  There's no
-            // way this could ever match.
+           
+           
             if (argumentIndex >= method.Parameters.Length && !inParams)
                 return false;
-
             var argument = arguments[argumentIndex];
-
             if (argument is { NameColon.Name.Identifier.ValueText: var argumentName })
             {
-                // If this was a named argument but the method has no parameter with that name, there's definitely
-                // no match. Note: this is C# only, so we don't need to worry about case matching.
+               
+               
                 var namedParameterIndex = 0;
-
                 for (;
                     namedParameterIndex < method.Parameters.Length &&
                     method.Parameters[namedParameterIndex].Name == argumentName;
                     namedParameterIndex++) { }
-
                 if (namedParameterIndex == method.Parameters.Length)
                     return false;
-
                 if (namedParameterIndex != currentParameterIndex)
                     seenOutOfPositionArgument = true;
-
                 AddArgumentToParameterMapping(argumentIndex, namedParameterIndex, ref argumentToParameterMap);
             }
             else if (IsEmptyArgument(argument.Expression))
             {
-                // We count the empty argument as a used position
+               
                 if (!seenOutOfPositionArgument)
                     AddArgumentToParameterMapping(argumentIndex, currentParameterIndex, ref argumentToParameterMap);
             }
-            else if (seenOutOfPositionArgument) // Unnamed arguments are not allowed after an out-of-position argument
+            else if (seenOutOfPositionArgument)
                 return false;
-            else // Normal argument.
+            else
                 AddArgumentToParameterMapping(argumentIndex, currentParameterIndex, ref argumentToParameterMap);
         }
-
         return true;
-
         void AddArgumentToParameterMapping(
             int argumentIndex,
             int parameterIndex,
@@ -20798,52 +18272,41 @@ readonly struct LightweightOverloadResolution(
         )
         {
             System.Diagnostics.Debug.Assert(parameterIndex >= 0, "parameterIndex >= 0");
-
             System.Diagnostics.Debug.Assert(
                 parameterIndex < method.Parameters.Length,
                 "parameterIndex < method.Parameters.Length"
             );
-
             inParams |= method.Parameters[parameterIndex].IsParams;
             argumentToParameterMap[argumentIndex] = parameterIndex;
-
-            // Increment our current parameter index if we're still processing parameters in sequential order.
+           
             if (!seenOutOfPositionArgument && !inParams)
                 currentParameterIndex++;
         }
     }
-
     /// <summary>
     /// Given the cursor position, find which argument is active.
     /// This will be useful to later find which parameter should be highlighted.
     /// </summary>
     int GetArgumentIndex()
     {
-        // `$$,` points to the argument before the separator
-        // but `,$$` points to the argument following the separator
+       
+       
         for (var i = 0; i < arguments.Count - 1; i++)
             if (position <= arguments.GetSeparator(i).Span.Start)
                 return i;
-
         return arguments.Count - 1;
     }
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods for heap-allocation analysis.</summary>
-
     /// <summary>
     /// A <see langword="string"/> to use in an <see cref="ObsoleteAttribute"/> to indicate that the API isn't meant
     /// for production, but not for deprecated reasons.
     /// </summary>
     const string NotForProduction = "NOT deprecated. While this can be used in Release builds to run this on " +
         "optimized code; This API exists for debugging builds and should be excluded from final production builds.";
-
     /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
     /// <param name="action">The dangerous callback.</param>
     /// <returns>An exception, if caught.</returns>
@@ -20860,7 +18323,6 @@ readonly struct LightweightOverloadResolution(
             return ex;
         }
     }
-
     /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
     /// <typeparam name="T">The type of return.</typeparam>
     /// <param name="func">The dangerous callback.</param>
@@ -20877,7 +18339,6 @@ readonly struct LightweightOverloadResolution(
             return (default, ex);
         }
     }
-
     /// <summary>Gets the amount of bytes a callback uses.</summary>
     /// <remarks><para>
     /// This method temporarily tunes the <see cref="GC"/> to <see cref="GCLatencyMode.LowLatency"/>
@@ -20911,9 +18372,8 @@ readonly struct LightweightOverloadResolution(
 #if NETCOREAPP3_0_OR_GREATER
             var after = GC.GetTotalAllocatedBytes(true);
 #else
-            var after = GC.GetTotalMemory(false); // Prevents last-second garbage collection.
+            var after = GC.GetTotalMemory(false);
 #endif
-
             return after - before;
         }
         finally
@@ -20926,7 +18386,6 @@ readonly struct LightweightOverloadResolution(
 #endif
         }
     }
-
     /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
     /// <param name="heap">The callback that causes some amount of heap allocation.</param>
     /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
@@ -20944,15 +18403,11 @@ readonly struct LightweightOverloadResolution(
     {
         if (willWarmup)
             heap.Swallow();
-
         var all = new long[times];
-
         for (var i = 0; i < times; i++)
             all[i] += CountAllocation(heap, false);
-
         return all;
     }
-
     /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
     /// <param name="heap">The callback that causes some amount of heap allocation.</param>
     /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
@@ -20970,21 +18425,14 @@ readonly struct LightweightOverloadResolution(
     {
         if (willWarmup)
             heap.Swallow();
-
         for (var i = 0; i < times; i++)
             if (CountAllocation(heap, false) is not 0)
                 return true;
-
         return false;
     }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Class for obtaining the underlying data for lists.</summary>
-
     /// <summary>Contains the cached method for obtaining the underlying array.</summary>
     /// <typeparam name="T">The element type within the collection.</typeparam>
     static class ListCache<T>
@@ -21015,7 +18463,6 @@ readonly struct LightweightOverloadResolution(
 #endif
         }
     }
-
     /// <summary>Gets the underlying <see cref="Array"/> of the <see cref="List{T}"/>.</summary>
     /// <remarks><para>
     /// While unlikely, it is theoretically possible that the framework's implementation of
@@ -21042,46 +18489,33 @@ readonly struct LightweightOverloadResolution(
     /// <returns>The <see cref="Array"/> of the parameter <paramref name="list"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T[] UnsafelyToArray<T>(this List<T> list) => ListCache<T>.Converter(list);
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
-
     /// <inheritdoc cref="char.IsControl(char)"/>
     [Pure]
     public static bool IsControl(this char c) => char.IsControl(c);
-
     /// <inheritdoc cref="char.IsDigit(char)"/>
     [Pure]
     public static bool IsDigit(this char c) => char.IsDigit(c);
-
     /// <inheritdoc cref="char.IsHighSurrogate(char)"/>
     [Pure]
     public static bool IsHighSurrogate(this char c) => char.IsHighSurrogate(c);
-
     /// <inheritdoc cref="char.IsLetter(char)"/>
     [Pure]
     public static bool IsLetter(this char c) => char.IsLetter(c);
-
     /// <inheritdoc cref="char.IsLetterOrDigit(char)"/>
     [Pure]
     public static bool IsLetterOrDigit(this char c) => char.IsLetterOrDigit(c);
-
     /// <inheritdoc cref="char.IsLower(char)"/>
     [Pure]
     public static bool IsLower(this char c) => char.IsLower(c);
-
     /// <inheritdoc cref="char.IsLowSurrogate(char)"/>
     [Pure]
     public static bool IsLowSurrogate(this char c) => char.IsLowSurrogate(c);
-
     /// <inheritdoc cref="string.IsNullOrEmpty(string)"/>
     [Pure]
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
-
 #if NET35
     /// <summary>
     /// Indicates whether a specified string is <see langword="null"/>,
@@ -21100,34 +18534,26 @@ readonly struct LightweightOverloadResolution(
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
 #endif
-
     /// <inheritdoc cref="char.IsNumber(char)"/>
     [Pure]
     public static bool IsNumber(this char c) => char.IsNumber(c);
-
     /// <inheritdoc cref="char.IsPunctuation(char)"/>
     [Pure]
     public static bool IsPunctuation(this char c) => char.IsPunctuation(c);
-
     /// <inheritdoc cref="char.IsSeparator(char)"/>
     [Pure]
     public static bool IsSeparator(this char c) => char.IsSeparator(c);
-
     /// <inheritdoc cref="char.IsSurrogate(char)"/>
     [Pure]
     public static bool IsSurrogate(this char c) => char.IsSurrogate(c);
-
     /// <inheritdoc cref="char.IsSymbol(char)"/>
     [Pure]
     public static bool IsSymbol(this char c) => char.IsSymbol(c);
-
     /// <inheritdoc cref="char.IsUpper(char)"/>
     public static bool IsUpper(this char c) => char.IsUpper(c);
-
     /// <inheritdoc cref="char.IsWhiteSpace(char)"/>
     [Pure]
     public static bool IsWhitespace(this char c) => char.IsWhiteSpace(c);
-
     /// <summary>Converts the character to the byte-equivalent, 0-9.</summary>
     /// <param name="c">The character to convert.</param>
     /// <exception cref="ArgumentOutOfRangeException">
@@ -21139,42 +18565,33 @@ readonly struct LightweightOverloadResolution(
         c is >= '0' and <= '9'
             ? (byte)(c - '0')
             : throw new ArgumentOutOfRangeException(nameof(c), c, "Character must be 0-9.");
-
     /// <summary>Attempts to convert the character to the byte-equivalent, 0-9.</summary>
     /// <param name="c">The character to convert.</param>
     /// <returns>The number 0-9 representing the character, or <see langword="null"/>.</returns>
     [Pure]
     public static byte? TryAsDigit(this char c) => c is >= '0' and <= '9' ? (byte)(c - '0') : null;
-
     /// <inheritdoc cref="char.ToLower(char)"/>
     [Pure]
     public static char ToLower(this char c) => char.ToLowerInvariant(c);
-
     /// <inheritdoc cref="char.ToUpper(char)"/>
     [Pure]
     public static char ToUpper(this char c) => char.ToUpperInvariant(c);
-
     /// <inheritdoc cref="char.GetNumericValue(char)"/>
     [Pure]
     public static double GetNumericValue(this char c) => char.GetNumericValue(c);
-
     /// <inheritdoc cref="string.Trim(char[])"/>
     [Pure]
     public static string Trim(this string s, string trim)
     {
         int start = 0, end = 1;
-
         for (; start < s.Length; start++)
             if (start >= trim.Length || s[start] != trim[start])
                 break;
-
         for (; end <= s.Length; end++)
             if (end > trim.Length || s[^end] != trim[^end])
                 return s[..^(end - 1)];
-
         return s[start..^end];
     }
-
     /// <inheritdoc cref="string.TrimEnd(char[])"/>
     [Pure]
     public static string TrimEnd(this string s, string trim)
@@ -21182,10 +18599,8 @@ readonly struct LightweightOverloadResolution(
         for (var i = 1; i <= s.Length; i++)
             if (i > trim.Length || s[^i] != trim[^i])
                 return s[..^(i - 1)];
-
         return "";
     }
-
     /// <inheritdoc cref="string.TrimStart(char[])"/>
     [Pure]
     public static string TrimStart(this string s, string trim)
@@ -21193,23 +18608,18 @@ readonly struct LightweightOverloadResolution(
         for (var i = 0; i < s.Length; i++)
             if (i >= trim.Length || s[i] != trim[i])
                 return s[i..];
-
         return "";
     }
-
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
     [Pure]
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
-
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
 #pragma warning disable 9107
-
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
     /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
@@ -21230,27 +18640,20 @@ readonly struct LightweightOverloadResolution(
     {
         if (value is DeconstructionCollection)
             return value;
-
         if (stringLength <= 0)
             return "";
-
         HashSet<object?> seen = new(DeconstructionCollection.Comparer) { value };
         var assertion = false;
         var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion, seen);
-
         if (next is not DeconstructionCollection x)
         {
             System.Diagnostics.Debug.Assert(!assertion, "!assertion");
             return DeconstructionCollection.TryTruncate(next, stringLength, out var output) ? output : next;
         }
-
         System.Diagnostics.Debug.Assert(assertion, "assertion");
-
         for (var i = 0; recurseLength > 0 && i < recurseLength && x.TryRecurse(i, ref visitLength, seen); i++) { }
-
         return x.Simplify();
     }
-
 /// <summary>Defines the collection responsible for deconstructing.</summary>
 /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
 abstract partial class DeconstructionCollection([NonNegativeValue] int str) : ICollection
@@ -21263,11 +18666,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     sealed partial class DeconstructionComparer : IEqualityComparer<object?>
     {
         int _unique = int.MaxValue;
-
         /// <inheritdoc />
-        [Pure] // ReSharper disable once MemberHidesStaticFromOuterClass
+        [Pure]
         public new bool Equals(object? x, object? y) => !IsScalar(x) && !IsScalar(y) && x == y;
-
         /// <inheritdoc />
         [Pure]
         public int GetHashCode(object? obj) =>
@@ -21275,10 +18676,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 ? unchecked(_unique--)
 #if NETFRAMEWORK && !NET35_OR_GREATER
                 : RuntimeHelpers.GetHashCode(obj);
-#else // RuntimeHelpers.GetHashCode eventually calls an external function that I have no idea how to replicate.
+#else
                 : 0;
 #endif
-
         /// <summary>Determines whether the value is a scalar.</summary>
         /// <param name="value">The value to check.</param>
         /// <returns>
@@ -21288,17 +18688,14 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         static bool IsScalar([NotNullWhen(false)] object? value) =>
             value is nint or nuint or null or string or IConvertible or Pointer or Type or Version;
     }
-
     /// <summary>Represents a deep-cloned list.</summary>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
     sealed partial class DeconstructionList([NonNegativeValue] int str) : DeconstructionCollection(str), IList
     {
         readonly List<object?> _list = [];
-
         /// <inheritdoc />
         [Pure]
         public override IList Inner => _list;
-
         /// <inheritdoc />
         [Pure]
         public object? this[int index]
@@ -21306,15 +18703,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             get => ((IList)_list)[index];
             set => ((IList)_list)[index] = value;
         }
-
         /// <inheritdoc />
         [Pure]
         bool IList.IsFixedSize => false;
-
         /// <inheritdoc />
         [Pure]
         bool IList.IsReadOnly => false;
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of
         /// <see cref="DeconstructionCollection.DeconstructionList"/> by using the constructor
@@ -21328,7 +18722,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// </returns>
         [Pure]
         public static implicit operator DeconstructionList(int str) => new(str);
-
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21351,7 +18744,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             using var _ = enumerator as IDisposable;
             var copy = visit;
             list = new(str);
-
             while (enumerator.MoveNext())
                 if (seen?.Add(enumerator.Current) is false) { }
                 else if (--copy > 0)
@@ -21360,11 +18752,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                     break;
                 else
                     return list.Fail();
-
             visit = copy;
             return true;
         }
-
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerable">The enumerator to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21404,7 +18794,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             HashSet<object?>? seen = null
         ) =>
             TryCollect(comparable.ToList(), str, ref visit, out list, seen);
-
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="equatable">The equatable to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21427,71 +18816,55 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #endif
         public override bool Fail()
         {
-            // We append a character instead of a string because otherwise it would be surrounded by quotes.
+           
             Add('…');
             return false;
         }
-
         /// <inheritdoc />
         public override bool TryRecurse(int layer, ref int visit, HashSet<object?>? seen = null)
         {
             if (layer < 0)
                 return false;
-
             var any = false;
-
             if (layer is 0)
                 for (var i = 0; i < Count; i++)
                     _list[i] = CollectNext(_list[i], str, ref visit, ref any, seen);
             else
                 foreach (var next in _list)
                     RecurseNext(next, layer, ref visit, ref any, seen);
-
             return any;
         }
-
         /// <inheritdoc />
         [NonNegativeValue]
         public int Add(object? value) => ((IList)_list).Add(value);
-
         /// <inheritdoc />
         [Pure]
         public override string ToString() => $"[{_list.Select(ToString).Conjoin()}]";
-
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
             for (var i = 0; i < Count; i++)
                 _list[i] = SimplifyObject(_list[i]);
-
             return this;
         }
-
         /// <inheritdoc />
         void IList.Clear() => _list.Clear();
-
         /// <inheritdoc />
         void IList.Insert(int index, object? value) => _list.Insert(index, value);
-
         /// <inheritdoc />
         void IList.Remove(object? value) => _list.Remove(value);
-
         /// <inheritdoc />
         void IList.RemoveAt(int index) => _list.RemoveAt(index);
-
         /// <inheritdoc />
         [Pure]
         bool IList.Contains(object? value) => _list.Contains(value);
-
         /// <inheritdoc />
         [Pure]
         int IList.IndexOf(object? value) => _list.IndexOf(value);
-
         /// <inheritdoc />
         [Pure]
         public override IEnumerator GetEnumerator() => _list.GetEnumerator();
     }
-
     /// <summary>Represents either a complex object or a deep-cloned dictionary.</summary>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
     sealed partial class DeconstructionDictionary([NonNegativeValue] int str)
@@ -21502,33 +18875,25 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         sealed class Enumerator(DeconstructionDictionary dictionary) : IDictionaryEnumerator
         {
             int _index = -1;
-
             /// <inheritdoc />
             [Pure]
             public DictionaryEntry Entry =>
                 _index >= 0 && _index < dictionary.Count ? dictionary._list[_index] : default;
-
             /// <inheritdoc />
             [Pure]
             object IEnumerator.Current => Entry;
-
             /// <inheritdoc />
             [Pure]
             object IDictionaryEnumerator.Key => Entry.Key;
-
             /// <inheritdoc />
             [Pure]
             object? IDictionaryEnumerator.Value => Entry.Value;
-
             /// <inheritdoc />
             bool IEnumerator.MoveNext() => ++_index < dictionary.Count;
-
             /// <inheritdoc />
             void IEnumerator.Reset() => _index = -1;
         }
-
         readonly List<DictionaryEntry> _list = [];
-
         /// <inheritdoc />
         [Pure]
         object? IDictionary.this[object key]
@@ -21536,32 +18901,25 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             get => _list.Find(Eq(key)).Value;
             set => _ = _list.FindIndex(Eq(key)) is not -1 and var i ? _list[i] = new(key, value) : default;
         }
-
         /// <inheritdoc />
         [Pure]
         bool IDictionary.IsFixedSize => false;
-
         /// <inheritdoc />
         [Pure]
         bool IDictionary.IsReadOnly => false;
-
         /// <inheritdoc />
         [Pure]
         ICollection IDictionary.Keys => _list.ConvertAll(x => x.Key);
-
         /// <inheritdoc />
         [Pure]
         ICollection IDictionary.Values => _list.ConvertAll(x => x.Value);
-
         /// <inheritdoc />
         [Pure]
         public override IList Inner => _list;
-
         /// <inheritdoc />
         [Pure]
         public override ICollection Serialized =>
             _list.Aggregate(new Dictionary<string, object?>(StringComparer.Ordinal), AddUnique);
-
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance of
         /// <see cref="DeconstructionCollection.DeconstructionDictionary"/>
@@ -21575,7 +18933,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// </returns>
         [Pure]
         public static implicit operator DeconstructionDictionary(int str) => new(str);
-
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="enumerator">The enumerator to collect. It will be disposed after the method halts.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21600,7 +18957,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             using var _ = enumerator as IDisposable;
             var copy = visit;
             dictionary = new(str);
-
             while (enumerator.MoveNext())
                 if (seen?.Contains(enumerator.Key) is true ||
                     seen?.Add(enumerator.Value) is false ||
@@ -21611,11 +18967,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                     break;
                 else
                     return dictionary.Fail();
-
             visit = copy;
             return true;
         }
-
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="dict">The dictionary to collect.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21637,7 +18991,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             HashSet<object?>? seen = null
         ) =>
             TryCollect(dict.GetEnumerator(), str, ref visit, out dictionary, seen);
-
         /// <summary>Attempts to deconstruct an object by reflectively collecting its fields and properties.</summary>
         /// <param name="value">The complex object to convert.</param>
         /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21651,7 +19004,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
         /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
         /// </returns>
-        // ReSharper disable once CognitiveComplexity
+       
         public static bool TryReflectivelyCollect(
             object value,
             [NonNegativeValue] int str,
@@ -21665,8 +19018,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var type = value.GetType();
             var fields = type.GetFields();
             var properties = type.GetProperties();
-
-            // ReSharper disable once LoopCanBePartlyConvertedToQuery
+           
             foreach (var next in fields)
             {
                 if (next.IsStatic)
@@ -21677,15 +19029,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #endif
                 if (next.GetValue(value) is var result && seen?.Add(result) is false)
                     continue;
-
                 if (--copy <= 0)
                     return dictionary.Fail();
-
                 var name = Name(next, fields, properties);
                 dictionary.Add(name, result);
             }
-
-            // ReSharper disable once LoopCanBePartlyConvertedToQuery
+           
             foreach (var next in properties)
             {
                 if (next.GetGetMethod() is { } getter &&
@@ -21697,43 +19046,34 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #endif
                 if (GetValueOrException(value, next, str, ref visit, seen) is var result && seen?.Add(result) is false)
                     continue;
-
                 if (--copy <= 0)
                     return dictionary.Fail();
-
                 var name = Name(next, fields, properties);
                 dictionary.Add(name, result);
             }
-
             visit = copy;
             return true;
         }
-
         /// <inheritdoc cref="IDictionary.Add"/>
-        // ReSharper disable once NullableWarningSuppressionIsUsed
+       
         public void Add(object? key, object? value) => _list.Add(new(key!, value));
-
         /// <inheritdoc cref="IDictionary.Clear"/>
         public void Clear() => _list.Clear();
-
         /// <inheritdoc />
         public override bool Fail()
         {
-            // We append a character instead of a string because otherwise it would be surrounded by quotes.
+           
             Add('…', '…');
             return false;
         }
-
         /// <inheritdoc />
         public override bool TryRecurse(int layer, ref int visit, HashSet<object?>? seen = null)
         {
             if (layer < 0)
                 return false;
-
             var any = false;
-
             if (layer is 0)
-                for (var i = 0; i < Count; i++) // ReSharper disable once NullableWarningSuppressionIsUsed
+                for (var i = 0; i < Count; i++)
                     _list[i] = new(
                         CollectNext(_list[i].Key, str, ref visit, ref any, seen)!,
                         CollectNext(_list[i].Value, str, ref visit, ref any, seen)
@@ -21744,36 +19084,28 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                     RecurseNext(next.Key, layer, ref visit, ref any, seen);
                     RecurseNext(next.Value, layer, ref visit, ref any, seen);
                 }
-
             return any;
         }
-
         /// <inheritdoc />
         [Pure]
         public override string ToString() =>
             $"{{ {_list.Select(x => $"{ToString(x.Key)}: {ToString(x.Value)}").Conjoin()} }}";
-
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
             for (var i = 0; i < Count; i++)
                 _list[i] = new(SimplifyObject(_list[i].Key), SimplifyObject(_list[i].Value));
-
             return this;
         }
-
         /// <inheritdoc />
         [MustUseReturnValue]
         public override IEnumerator GetEnumerator() => ((IDictionary)this).GetEnumerator();
-
         /// <inheritdoc />
-        // ReSharper disable once UsageOfDefaultStructEquality
+       
         void IDictionary.Remove(object key) => _list.Remove(_list.Find(Eq(key)));
-
         /// <inheritdoc />
         [Pure]
         bool IDictionary.Contains(object key) => _list.FindIndex(Eq(key)) is not -1;
-
         /// <inheritdoc />
         [MustUseReturnValue]
         IDictionaryEnumerator IDictionary.GetEnumerator()
@@ -21781,32 +19113,25 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             _list.Sort(ByKeyString);
             return new Enumerator(this);
         }
-
-        [Pure] // ReSharper disable ParameterTypeCanBeEnumerable.Local
+        [Pure]
         static string Name(MemberInfo next, FieldInfo[] fields, PropertyInfo[] properties)
         {
-            // ReSharper restore ParameterTypeCanBeEnumerable.Local
-
+           
             static string QualifyTypeName(MemberInfo next) => $"{next.DeclaringType?.Name}.{next.Name}";
-
-            // We aren't looking at a member from a base type,
-            // so we can leave it unqualified, similar to how the 'new' keyword works.
+           
+           
             if (next.DeclaringType == next.ReflectedType)
                 return next.Name;
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
+           
             foreach (var x in fields)
                 if (x != next && x.Name == next.Name)
                     return QualifyTypeName(next);
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
+           
             foreach (var x in properties)
                 if (x != next && x.Name == next.Name)
                     return QualifyTypeName(next);
-
             return next.Name;
         }
-
         [Pure]
         static object? GetValueOrException(
             object value,
@@ -21825,62 +19150,48 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 return value is not Exception && TryReflectivelyCollect(ex, str, ref visit, out var x, seen) ? x : ex;
             }
         }
-
         [Pure]
         static Predicate<DictionaryEntry> Eq(object? key) => x => x.Key.Equals(key);
-
         [Pure]
         int ByKeyString(DictionaryEntry x, DictionaryEntry y) =>
             StringComparer.Ordinal.Compare(ToString(x.Key), ToString(y.Key));
-
         Dictionary<string, object?> AddUnique(Dictionary<string, object?> accumulator, DictionaryEntry next)
         {
             var key = ToString(next.Key);
-
             while (accumulator.ContainsKey(key))
                 key = $"…{key}";
-
             accumulator[key] = next.Value is DeconstructionCollection { Serialized: var x } ? x : next.Value;
             return accumulator;
         }
     }
-
     /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     public const int
         DefaultVisitLength = 80,
         DefaultStringLength = 40,
         DefaultRecurseLength = 20;
-
     /// <summary>Gets the comparer used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     [Pure]
     public static IEqualityComparer<object?> Comparer { get; } = new DeconstructionComparer();
-
     /// <inheritdoc />
     [Pure]
     public bool IsSynchronized => false;
-
     /// <inheritdoc />
     [NonNegativeValue, Pure]
     public int Count =>
         Inner is var inner && ReferenceEquals(this, inner) ? throw new InvalidOperationException() : inner.Count;
-
     /// <summary>Gets the maximum length of any given <see cref="string"/>.</summary>
-    [NonNegativeValue, Pure] // ReSharper disable once UnusedMember.Local
+    [NonNegativeValue, Pure]
     public int MaxStringLength => str;
-
     /// <inheritdoc />
     [Pure]
     public object SyncRoot => this;
-
     /// <summary>Gets the underlying collection.</summary>
     [Pure]
     public abstract IList Inner { get; }
-
     /// <summary>Gets the collection to a serializable collection.</summary>
-    // Unless this is explicitly overriden, assume the type is already serializable.
+   
     [Pure]
     public virtual ICollection Serialized => this;
-
     /// <summary>Attempts to truncate the <paramref name="v"/>.</summary>
     /// <param name="v">The <see cref="object"/> to truncate.</param>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21891,7 +19202,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         (o = v is not DeconstructionCollection && str >= 1 && x.Length > str
             ? $"{x[..(str - 1)]}…"
             : x) is not null;
-
     /// <summary>Collects the value however applicable, reverting on failure.</summary>
     /// <param name="value">The complex object to convert.</param>
     /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
@@ -21912,7 +19222,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             any = true;
             return o;
         }
-
         switch (value)
         {
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
@@ -21946,27 +19255,22 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                     : value;
         }
     }
-
     /// <inheritdoc />
     public void CopyTo(Array array, int index) =>
         (Inner is var inner && ReferenceEquals(this, inner) ? throw new InvalidOperationException() : inner)
        .CopyTo(array, index);
-
     /// <summary>Adds a failure element, and returns <see langword="false"/>.</summary>
     /// <returns>The value <see langword="false"/>.</returns>
     public abstract bool Fail();
-
     /// <summary>Attempts to recurse into this instance's elements.</summary>
     /// <param name="layer">The amount of layers of recursion to apply.</param>
     /// <param name="visit">The maximum number of times to recurse.</param>
     /// <param name="seen">The set of seen values, which is used to avoid recursion.</param>
     /// <returns>Whether any mutation occured.</returns>
     public abstract bool TryRecurse(int layer, ref int visit, HashSet<object?>? seen = null);
-
     /// <inheritdoc />
     [Pure]
     public abstract override string ToString();
-
     /// <summary>Returns the <see cref="string"/> representation of this instance without newlines.</summary>
     /// <returns>The <see cref="string"/> representation of this instance.</returns>
     [Pure]
@@ -21976,15 +19280,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #else
         $"{Breaking.Aggregate(new StringBuilder(ToString()), (acc, next) => acc.Replace($"{next}", ""))}";
 #endif
-
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();
-
     /// <inheritdoc />
     [MustUseReturnValue]
     public abstract IEnumerator GetEnumerator();
-
     /// <summary>Starts recursion if the value is a collection.</summary>
     /// <param name="value">The complex object to convert.</param>
     /// <param name="layer">The amount of layers of recursion to apply.</param>
@@ -22002,7 +19303,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         if (value is DeconstructionCollection collection)
             any |= collection.TryRecurse(layer - 1, ref visit, seen);
     }
-
     /// <summary>Converts the <see cref="object"/> to a <see cref="string"/>.</summary>
     /// <param name="value">The <see cref="object"/> to convert.</param>
     /// <returns>The converted <see cref="string"/>.</returns>
@@ -22012,7 +19312,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         TryTruncate(value, str, out var output);
         return output;
     }
-
     /// <summary>Simplifies the value to either a <see cref="IConvertible"/> or <see cref="string"/>.</summary>
     /// <param name="value">The value to simplify.</param>
     /// <returns>The simplified value.</returns>
@@ -22033,22 +19332,15 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         };
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable CheckNamespace RedundantNameQualifier
 
 
-
-
-
 /// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
 [UsedImplicitly]
-
     const string ParameterName = "value";
-
     static readonly ConstantExpression s_parameterName = Constant(ParameterName, typeof(string));
-
     static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,
             null,
@@ -22056,7 +19348,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             null
         ) ??
         throw Unreachable;
-
     static readonly ConstructorInfo s_newInvalidEnumArgument = typeof(InvalidEnumArgumentException).GetConstructor(
             BindingFlags.Instance | BindingFlags.Public,
             null,
@@ -22064,7 +19355,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             null
         ) ??
         throw Unreachable;
-
     /// <summary>Converts the value to a constant <see cref="string"/>.</summary>
     /// <remarks><para>
     /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
@@ -22077,7 +19367,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     public static string AsString<T>(this T value)
         where T : Enum =>
         typeof(T) == typeof(Enum) ? value.ToString() : StringCaching<T>.From(value);
-
     /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
     /// <remarks><para>
     /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
@@ -22090,14 +19379,11 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     public static T As<T>(this string value)
         where T : Enum =>
         typeof(T) == typeof(Enum) ? (T)Enum.Parse(typeof(T), value) : StringCaching<T>.To(value);
-
     static class StringCaching<T>
         where T : Enum
     {
         public static Converter<T, string> From { get; } = Make<Converter<T, string>>(false);
-
         public static Converter<string, T> To { get; } = Make<Converter<string, T>>(true);
-
         static TFunc Make<TFunc>(bool isToT)
             where TFunc : Delegate
         {
@@ -22105,28 +19391,21 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var cases = Cases(isToT);
             var thrower = Thrower(parameter, isToT);
             var ret = Switch(parameter, thrower, cases);
-
             return Lambda<TFunc>(ret, parameter).Compile();
         }
-
         static SwitchCase[] Cases(bool isToT) =>
             [..typeof(T).GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => Case(x, isToT))];
-
         static SwitchCase Case(FieldInfo x, bool isToT)
         {
             var str = Constant(x.Name, typeof(string));
             var t = Constant(x.GetValue(null), typeof(T));
             var from = isToT ? str : t;
             var to = isToT ? t : str;
-
             return SwitchCase(to, from);
         }
-
         static UnaryExpression Thrower(Expression parameter, bool isToT) =>
             Throw(isToT ? Format(parameter) : InvalidEnumArgument(parameter), isToT ? typeof(T) : typeof(string));
-
         static NewExpression Format(Expression parameter) => New(s_newArgument, parameter, s_parameterName);
-
         static NewExpression InvalidEnumArgument(Expression parameter) =>
             New(
                 s_newInvalidEnumArgument,
@@ -22136,18 +19415,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             );
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides extension methods to convert representations of text into destination types.</summary>
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this string s) => Parse<T>(s, out _);
-
     /// <summary>Parses the <see cref="string"/> into a <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
@@ -22155,92 +19428,76 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <returns>The parsed value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this string s, out bool success) => FindTryParseFor<T>.WithString(s, out success);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s) => Parse<T>(s, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s, out bool success) =>
         FindTryParseFor<T>.WithByteSpan(s, out success);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped in ReadOnlySpan<char> s) => Parse<T>(s, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped in ReadOnlySpan<char> s, out bool success) =>
         FindTryParseFor<T>.WithCharSpan(s, out success);
-
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s)
         where T : IParsable<T> =>
         Into<T>(s, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s, IFormatProvider? provider)
         where T : IParsable<T> =>
         Into<T>(s, provider, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s, IFormatProvider? provider, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, provider, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<char> s)
         where T : ISpanParsable<T> =>
         Into<T>(s, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : ISpanParsable<T> =>
         Into<T>(s, provider, out _);
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<char> s, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
@@ -22256,7 +19513,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     public static T IntoEnum<T>(this string s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : default;
-
     /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
@@ -22275,7 +19531,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     public static T IntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : default;
-
     /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
@@ -22285,19 +19540,16 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : null;
 #endif
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryParse<T>(this string s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryParse<T>(this scoped in ReadOnlySpan<byte> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryParse<T>(this scoped in ReadOnlySpan<char> s)
@@ -22309,199 +19561,156 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     public static T? TryInto<T>(this string s)
         where T : struct, IParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this string s, IFormatProvider? provider)
         where T : struct, IParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : default;
 #endif
-
     static class FindTryParseFor<T>
     {
-        [Pure] // ReSharper disable once MemberCanBePrivate.Local
+        [Pure]
         public delegate T? ByteParser(in ReadOnlySpan<byte> s, out bool success);
-
         [Pure]
         public delegate T? CharParser(in ReadOnlySpan<char> s, out bool success);
-
         [Pure]
         public delegate T? Parser(in string? s, out bool success);
-
         [Pure]
         delegate bool InByteParser(ReadOnlySpan<byte> s, CultureInfo info, out T? result);
-
         [Pure]
         delegate bool InCharParser(ReadOnlySpan<char> s, CultureInfo info, out T? result);
-
         [Pure]
         delegate bool InEnumByteParser(ReadOnlySpan<byte> s, bool ignoreCase, out T? result);
-
         [Pure]
         delegate bool InEnumCharParser(ReadOnlySpan<char> s, bool ignoreCase, out T? result);
-
         [Pure]
         delegate bool InEnumParser(string? s, bool ignoreCase, out T? result);
-
         [Pure]
         delegate bool InNumberByteParser(ReadOnlySpan<byte> s, CultureInfo info, NumberStyles style, out T? result);
-
         [Pure]
         delegate bool InNumberCharParser(ReadOnlySpan<char> s, CultureInfo info, NumberStyles style, out T? result);
-
         [Pure]
         delegate bool InNumberParser(string? s, CultureInfo info, NumberStyles style, out T? result);
-
         [Pure]
         delegate bool InParser(string? s, CultureInfo info, out T? result);
-
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
-
         static readonly InByteParser? s_byteParse = Make<InByteParser>();
-
         static readonly InCharParser? s_charParse = Make<InCharParser>();
-
         static readonly InEnumByteParser? s_byteParseEnum = Make<InEnumByteParser>();
-
         static readonly InEnumCharParser? s_charParseEnum = Make<InEnumCharParser>();
-
         static readonly InEnumParser? s_parseEnum = Make<InEnumParser>();
-
         static readonly InNumberByteParser? s_byteParseNumber = Make<InNumberByteParser>();
-
         static readonly InNumberCharParser? s_charParseNumber = Make<InNumberCharParser>();
-
         static readonly InNumberParser? s_parseNumber = Make<InNumberParser>();
-
         static readonly InParser? s_parse = Make<InParser>();
-
         public static Parser WithString { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_parseNumber is not null ? ParseNumberInvoker :
             s_parseEnum is not null ? ParseEnumInvoker :
             s_parse is not null ? ParseInvoker : FailedParseInvoker;
-
         public static ByteParser WithByteSpan { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_byteParseNumber is not null ? ByteParseNumberInvoker :
             s_byteParseEnum is not null ? ByteParseEnumInvoker :
             s_byteParse is not null ? ByteParseInvoker : ByteFailedParseInvoker;
-
         public static CharParser WithCharSpan { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
             s_charParseNumber is not null ? CharParseNumberInvoker :
             s_charParseEnum is not null ? CharParseEnumInvoker :
             s_charParse is not null ? CharParseInvoker : CharFailedParseInvoker;
-
-        // ReSharper disable NullableWarningSuppressionIsUsed
+       
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteFailedParseInvoker(in ReadOnlySpan<byte> _, out bool b)
         {
             b = false;
             return default;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteParseInvoker(in ReadOnlySpan<byte> s, out bool b)
         {
             b = s_byteParse!(s, CultureInfo.InvariantCulture, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteParseEnumInvoker(in ReadOnlySpan<byte> s, out bool b)
         {
             b = s_byteParseEnum!(s, true, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteParseNumberInvoker(in ReadOnlySpan<byte> s, out bool b)
         {
             b = s_byteParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharFailedParseInvoker(in ReadOnlySpan<char> _, out bool b)
         {
             b = false;
             return default;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharParseInvoker(in ReadOnlySpan<char> s, out bool b)
         {
             b = s_charParse!(s, CultureInfo.InvariantCulture, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharParseEnumInvoker(in ReadOnlySpan<char> s, out bool b)
         {
             b = s_charParseEnum!(s, true, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharParseNumberInvoker(in ReadOnlySpan<char> s, out bool b)
         {
             b = s_charParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? FailedParseInvoker(in string? _, out bool b)
         {
             b = false;
             return default;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ParseInvoker(in string? s, out bool b)
         {
             b = s_parse!(s, CultureInfo.InvariantCulture, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ParseEnumInvoker(in string? s, out bool b)
         {
             b = s_parseEnum!(s, true, out var result);
             return result;
         }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ParseNumberInvoker(in string? s, out bool b)
         {
             b = s_parseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
             return result;
         }
-
         [Pure]
         static TDelegate? Make<TDelegate>()
-            where TDelegate : Delegate => // ReSharper disable once NullableWarningSuppressionIsUsed
+            where TDelegate : Delegate =>
             typeof(TDelegate).GetMethod(nameof(Invoke))!.GetParameters() is var parameters &&
             Array.ConvertAll(parameters, x => x.ParameterType) is var types &&
             typeof(T)
@@ -22511,7 +19720,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                .FirstOrDefault(x => x.GetParameters().Select(x => x.ParameterType).SequenceEqual(types)) is { } method
                 ? Delegate.CreateDelegate(typeof(TDelegate), method) as TDelegate
                 : null;
-
         [MustUseReturnValue]
         static MethodInfo TryCoerce(MethodInfo x)
         {
@@ -22525,16 +19733,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             }
         }
     }
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable CheckNamespace RedundantNameQualifier
 
-
-
-
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
-
     /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
     /// <param name="index">The index to remove.</param>
@@ -22547,15 +19749,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             popped = str[index];
             return str.Remove(index, 1);
         }
-
         popped = default;
         return str;
     }
-
     /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
     public static string Pop(this string str, Index index, out char popped) =>
         str.Pop(index.GetOffset(str.Length), out popped);
-
     /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
     /// <param name="range">The range to remove.</param>
@@ -22570,7 +19769,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         popped = str[range];
         return str.Remove(startIndex, length);
     }
-
     /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
     /// <param name="str">The builder to take the character from.</param>
     /// <param name="range">The range to remove.</param>
@@ -22583,7 +19781,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
         return str.Remove(startIndex, length);
     }
-
     /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
     /// <param name="builder">The builder to take the character from.</param>
     /// <param name="index">The index to remove.</param>
@@ -22596,15 +19793,12 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             popped = builder[index];
             return builder.Remove(index, 1);
         }
-
         popped = default;
         return builder;
     }
-
     /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
     public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
         builder.Pop(index.GetOffset(builder.Length), out popped);
-
     /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
     /// <param name="builder">The builder to take the character from.</param>
     /// <param name="range">The range to remove.</param>
@@ -22623,22 +19817,18 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             static (span, tuple) =>
             {
                 var (builder, startIndex) = tuple;
-
                 for (var i = 0; i < span.Length; i++)
                     span[i] = builder[i + startIndex];
             }
         );
 #else
         StringBuilder poppedBuilder = new(length);
-
         for (var i = 0; i < length; i++)
             poppedBuilder[i] = builder[startIndex + i];
-
         popped = $"{poppedBuilder}";
 #endif
         return builder.Remove(startIndex, length);
     }
-
     /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
     /// <param name="builder">The builder to take the character from.</param>
     /// <param name="range">The range to remove.</param>
@@ -22651,113 +19841,87 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
         return builder.Remove(startIndex, length);
     }
-
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="string.Trim()"/>
     public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
-
     /// <inheritdoc cref="string.Trim()"/>
     public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> memory) => memory.TrimStart().TrimEnd();
-
     /// <inheritdoc cref="string.TrimStart(char[])"/>
     public static Memory<char> TrimStart(this Memory<char> memory)
     {
         var span = memory.Span;
-
         for (var i = 0; i < span.Length; i++)
             if (!char.IsWhiteSpace(span[i]))
                 return memory[..i];
-
         return default;
     }
-
     /// <inheritdoc cref="string.TrimStart(char[])"/>
     public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
     {
         var span = memory.Span;
-
         for (var i = 0; i < span.Length; i++)
             if (!char.IsWhiteSpace(span[i]))
                 return memory[..i];
-
         return default;
     }
-
     /// <inheritdoc cref="string.TrimEnd(char[])"/>
     public static Memory<char> TrimEnd(this Memory<char> memory)
     {
         var span = memory.Span;
-
         for (var i = span.Length - 1; i >= 0; i--)
             if (!char.IsWhiteSpace(span[i]))
                 return memory[i..];
-
         return default;
     }
-
     /// <inheritdoc cref="string.TrimEnd(char[])"/>
     public static ReadOnlyMemory<char> TrimEnd(this ReadOnlyMemory<char> memory)
     {
         var span = memory.Span;
-
         for (var i = span.Length - 1; i >= 0; i--)
             if (!char.IsWhiteSpace(span[i]))
                 return memory[i..];
-
         return default;
     }
 #endif
-
     /// <inheritdoc cref="string.Trim()"/>
     public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
-
     /// <inheritdoc cref="string.TrimEnd(char[])"/>
     public static StringBuilder TrimEnd(this StringBuilder builder)
     {
         for (var i = builder.Length - 1; i >= 0; i--)
             if (!char.IsWhiteSpace(builder[i]))
                 return builder.Remove(i + 1, builder.Length - i - 1);
-
         return builder.Remove(0, builder.Length);
     }
-
     /// <inheritdoc cref="string.TrimStart(char[])"/>
     public static StringBuilder TrimStart(this StringBuilder builder)
     {
         for (var i = 0; i < builder.Length; i++)
             if (!char.IsWhiteSpace(builder[i]))
                 return builder.Remove(0, i);
-
         return builder.Remove(0, builder.Length);
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #if WAWA
 namespace Wawa.Modules;
 #else
-
 #endif
-
-
 #if !(NET20 || NET30)
 
 #endif
-
 
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
 #if WAWA
 public
 #endif
-
     const int MaxIteration = 32, MaxRecursion = 3;
-
     unsafe delegate nuint VoidPointer(void* v);
 #if !WAWA
     const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
-#endif // ReSharper disable UnusedMember.Local
+#endif
     const string
         Apology = "I am so sorry that you have to deal with double pointers, but this cannot be supported.",
         BitFlagSeparator = " | ",
@@ -22784,7 +19948,6 @@ public
         s_fullyUnmanaged = [],
 #endif
         s_hasMethods = [];
-
     static readonly Dictionary<Type, Delegate> s_stringifiers = [];
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static readonly Dictionary<Type, string> s_unfoldedNames = new()
@@ -22818,10 +19981,8 @@ public
 #endif
         s_exSeparator = Constant(Separator),
         s_exTrue = Constant(true);
-
     static readonly unsafe MethodInfo s_readVoidPointer = ((VoidPointer)ReadVoidPointer).Method;
-
-    static readonly MethodInfo // ReSharper disable NullableWarningSuppressionIsUsed
+    static readonly MethodInfo
         s_boolStringify = ((Func<bool, int, bool, string>)Stringify).Method,
         s_combine = ((Func<string, string, string>)string.Concat).Method,
         s_readPointer = s_boolStringify.DeclaringType!
@@ -22842,7 +20003,6 @@ public
         s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
 #pragma warning restore MA0110, SYSLIB1045
 #endif
-
     /// <summary>Gets the field count of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to use.</param>
     /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
@@ -22850,7 +20010,7 @@ public
     public static int FieldCount(
 #if !WAWA
         this
-#endif // ReSharper disable once BadPreprocessorIndent
+#endif
             Version? version
     ) =>
         version switch
@@ -22872,7 +20032,6 @@ public
         s = s_angles.Replace(s, "<…>");
         return s_quotes.Replace(s, "\"…\"");
     }
-
     /// <summary>Collapses the <see cref="string"/> to a single line.</summary>
     /// <param name="expression">The <see cref="string"/> to collapse.</param>
     /// <param name="prefix">The prefix to use.</param>
@@ -22885,13 +20044,10 @@ public
         static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
         {
             var trimmed = next.Trim();
-
             fixed (char* ptr = &trimmed[0])
                 accumulator.Append(ptr, trimmed.Length).Append(' ');
-
             return accumulator;
         }
-
         return expression?.Collapse()
            .SplitSpanLines()
            .Aggregate(new StringBuilder(prefix), Accumulator)
@@ -22899,15 +20055,14 @@ public
            .ToString();
 #else
         return expression
-          ?.Collapse() // ReSharper disable once RedundantCast
+          ?.Collapse()
            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            // ReSharper disable once RedundantSuppressNullableWarningExpression
+           
            .Select(x => x.Trim())!
            .Prepend(prefix)
            .Conjoin("");
 #endif
     }
-
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="one">The string for the value 1 or -1.</param>
@@ -22920,7 +20075,7 @@ public
         (many.AsSpan().IndexOfAnyExcept('-') is not -1 and var found ? found : 0)
 #else
         Math.Min(many.TakeWhile(x => x is '-').Count(), one.Length)
-#endif // ReSharper disable once BadPreprocessorIndent
+#endif
         is var trim
             ? $"{i} {one[..^trim]}{many[trim..]}"
             : $"{i} {one}";
@@ -22933,7 +20088,6 @@ public
             ? $"{i} {one[..^tr]}{many[tr..]}"
             : $"{i} {one}";
 #endif
-
     /// <summary>Extracts the file name from the path.</summary>
     /// <remarks><para>
     /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
@@ -22962,7 +20116,6 @@ public
             ? ""
             : Path.GetFileName(path).Trim() ?? "";
 #endif
-
     /// <summary>Extracts the file name from the path.</summary>
     /// <remarks><para>
     /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
@@ -22991,12 +20144,10 @@ public
             ? ""
             : Path.GetFileName(path) ?? "";
 #endif
-
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
     public static string Prettify(this string s) => Prettify(s, separator: ",;");
-
     /// <summary>Creates the prettified form of the string.</summary>
     /// <remarks><para>
     /// The functionality is based on
@@ -23009,7 +20160,7 @@ public
     /// <param name="indent">The amount of spaces for indentation.</param>
     /// <returns>The prettified string.</returns>
     public static string Prettify(
-        this string s, // ReSharper disable once MethodOverloadWithOptionalParameter
+        this string s,
         string start = "([{<",
         string end = ")]}>",
         string separator = ",;",
@@ -23019,7 +20170,6 @@ public
         var seen = false;
         var nest = 0;
         StringBuilder sb = new();
-
         for (var i = 0; i < s.Length; i++)
             (seen, nest, sb) = s[i] switch
             {
@@ -23034,7 +20184,6 @@ public
                     s.Nth(i + 1) is { } next && end.Contains(next) => (seen, nest, sb),
                 _ => (seen, nest, sb.Append(s[i])),
             };
-
         return $"{sb}";
     }
 #endif
@@ -23049,7 +20198,6 @@ public
     [Pure]
     public static string Concat([InstantHandle] this IEnumerable<char> chars) => string.Concat(chars);
 #endif
-
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using
@@ -23059,7 +20207,7 @@ public
     /// <param name="values">The values to join.</param>
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
-    // ReSharper disable BadPreprocessorIndent
+   
     [Pure]
     public static string Conjoin<T>(
         [InstantHandle]
@@ -23070,7 +20218,6 @@ public
         char separator
     ) =>
         $"{new StringBuilder().AppendMany(values, separator)}";
-
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="values">The values to join.</param>
@@ -23086,7 +20233,6 @@ public
         string separator = Separator
     ) =>
         $"{new StringBuilder().AppendMany(values, separator)}";
-
     /// <summary>Converts the <see cref="Stopwatch"/> to its concise <see cref="string"/> representation.</summary>
     /// <param name="stopwatch">The <see cref="Stopwatch"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="stopwatch"/>.</returns>
@@ -23098,7 +20244,6 @@ public
 #endif
     ) =>
         stopwatch is null ? "0" : ToConciseString(stopwatch.Elapsed);
-
     /// <summary>Converts the <see cref="TimeSpan"/> to its concise <see cref="string"/> representation.</summary>
     /// <param name="time">The <see cref="TimeSpan"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="time"/>.</returns>
@@ -23112,7 +20257,6 @@ public
     {
         var sign = time.Ticks < 0 ? "-" : "";
         var ticks = Math.Abs(time.Ticks);
-
         return ticks switch
         {
             0 => "0",
@@ -23130,7 +20274,6 @@ public
             _ => $"{sign}{ticks / 10.0}µs",
         };
     }
-
     /// <summary>Converts a <see cref="Pointer"/> to a <see cref="string"/>.</summary>
     /// <param name="value">The <see cref="Pointer"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="value"/>.</returns>
@@ -23142,7 +20285,6 @@ public
             Pointer? value
     ) =>
         (value is null ? 0 : (nuint)Pointer.Unbox(value)).ToHexString();
-
     /// <summary>Gets the short display form of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to convert.</param>
     /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
@@ -23157,9 +20299,7 @@ public
         if (version is not var (major, minor, build, revision) ||
             major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
             return "v0";
-
         var length = Length(major, revision, minor, build);
-
         Span<char> span = stackalloc char[length];
         Format(span, version);
         return span.ToString();
@@ -23175,7 +20315,6 @@ public
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.FullName)}";
 #endif
-
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
@@ -23190,7 +20329,6 @@ public
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.Name)}";
 #endif
-
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="indexByZero">Determines whether to index from zero or one.</param>
@@ -23204,18 +20342,16 @@ public
         bool indexByZero = false
     ) =>
         indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
-
     /// <inheritdoc cref="string.Split(string[], StringSplitOptions)"/>
-    // ReSharper disable once ReturnTypeCanBeEnumerable.Global
+   
     public static string[] Chop(
 #if !WAWA
         this
 #endif
             string source,
         string separator
-    ) => // ReSharper disable once RedundantCast
+    ) =>
         source.Split(separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
     /// </summary>
@@ -23235,7 +20371,6 @@ public
             T? source
     ) =>
         Stringify(source, MaxRecursion);
-
     /// <summary>
     /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
     /// </summary>
@@ -23338,7 +20473,6 @@ public
         var p = stackalloc char[sizeof(T) * 2];
         p[0] = '0';
         p[1] = 'x';
-
         fixed (char* rh = HexCharactersTable)
             for (int i = 0, j = sizeof(T) * 2; i < sizeof(T); i++, j -= 2)
             {
@@ -23348,12 +20482,10 @@ public
                 p[j + 1] = *(rh + low);
                 p[j] = *(rh + high);
             }
-
         return new(p, 0, sizeof(T) * 2 + 2);
     }
 #pragma warning restore 8500
 #endif
-
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
@@ -23365,17 +20497,14 @@ public
 #endif
         static string UseStringifier<T>(this T source, int depth = MaxRecursion)
     {
-        // Method can be called if 'forceReflection' is true.
+       
         if (!typeof(T).IsValueType && source is null)
             return Null;
-
         if (!s_stringifiers.ContainsKey(typeof(T)))
             s_stringifiers[typeof(T)] = GenerateStringifier<T>();
-
         var name = source?.GetType() is { } type && type != typeof(T)
             ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
             : UnfoldedName(typeof(T));
-
         return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
             ? $"{name} {{ {str} }}"
             : name;
@@ -23396,21 +20525,17 @@ public
     )
     {
         using var enumerator = values.GetEnumerator();
-
         if (enumerator.MoveNext())
             dish.AppendFormatted(enumerator.Current);
         else
             return dish;
-
         while (enumerator.MoveNext())
         {
             dish.AppendFormatted(separator);
             dish.AppendFormatted(enumerator.Current);
         }
-
         return dish;
     }
-
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="dish">
@@ -23435,24 +20560,19 @@ public
                     dish.AppendFormatted(x);
                     return dish;
             }
-
         using var enumerator = values.GetEnumerator();
-
         if (enumerator.MoveNext())
             dish.AppendFormatted(enumerator.Current);
         else
             return dish;
-
         while (enumerator.MoveNext())
         {
             dish.AppendLiteral(separator);
             dish.AppendFormatted(enumerator.Current);
         }
-
         return dish;
     }
 #endif
-
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
@@ -23469,18 +20589,14 @@ public
         )
     {
         using var enumerator = values.GetEnumerator();
-
         if (enumerator.MoveNext())
             builder.Append(enumerator.Current);
         else
             return builder;
-
         while (enumerator.MoveNext())
             builder.Append(separator).Append(enumerator.Current);
-
         return builder;
     }
-
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
@@ -23502,17 +20618,13 @@ public
                 case char[] x: return builder.Append(x);
                 case string x: return builder.Append(x);
             }
-
         using var enumerator = values.GetEnumerator();
-
         if (enumerator.MoveNext())
             builder.Append(enumerator.Current);
         else
             return builder;
-
         while (enumerator.MoveNext())
             builder.Append(separator).Append(enumerator.Current);
-
         return builder;
     }
 #if !WAWA
@@ -23538,32 +20650,27 @@ public
 #endif
     static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
         builder.Append(key).Append(KeyValueSeparator).Append(value);
-
     static void Push(char c, scoped ref Span<char> span)
     {
-        span[0] = c; // ReSharper disable once ReplaceSliceWithRangeIndexer
+        span[0] = c;
         span = span.UnsafelySkip(1);
     }
-
-    // ReSharper disable RedundantAssignment
+   
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         var it = next.TryFormat(span, out var slice);
-        System.Diagnostics.Debug.Assert(it, "TryFormat"); // ReSharper disable once ReplaceSliceWithRangeIndexer
+        System.Diagnostics.Debug.Assert(it, "TryFormat");
         span = span.UnsafelySkip(slice);
     }
-
-    // ReSharper disable RedundantAssignment
+   
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {
         Push(next, ref span);
         Push(c, ref span);
     }
-
     static void Format(scoped Span<char> span, Version version)
     {
         Push('v', ref span);
-
         switch (version)
         {
             case (var major, var minor, var build, > 0 and var revision):
@@ -23585,12 +20692,10 @@ public
                 Push(version.Major, ref span);
                 break;
         }
-
         System.Diagnostics.Debug.Assert(span.IsEmpty, "span is drained");
     }
-
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER // ReSharper restore RedundantAssignment
-    // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+   
     [MustUseReturnValue]
     static bool CanUse(PropertyInfo p) =>
         p is { CanRead: true, PropertyType.Name: not "SyntaxTree" } &&
@@ -23602,14 +20707,12 @@ public
         x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
         x.PropertyType == typeof(Type) &&
         x.GetIndexParameters().Length is 0;
-
     [Pure]
     static bool IsRecord<T>() =>
         Array.Exists(
             typeof(T).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic),
             IsEqualityContract
         );
-
     [Pure]
     static int Length(int major, int revision, int minor, int build) =>
         (major.DigitCount() + 1 is var length && revision > 0 ?
@@ -23617,16 +20720,13 @@ public
             build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
                 minor > 0 ? minor.DigitCount() + 1 : 0) +
         length;
-
     [Inline, Pure]
     static int Mod(this int i) => Math.Abs(i) / 10 % 10 is 1 ? 0 : Math.Abs(i) % 10;
-
     [MustUseReturnValue]
     static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
         count is 0
             ? "[Count: 0]"
             : $"[Count: {count}; {EnumeratorStringifier(e.GetEnumerator(), depth, useQuotes, count)}]";
-
     [Pure]
     static string Escape(char c) =>
         c switch
@@ -23644,10 +20744,8 @@ public
             '\v' => "'\\v'",
             _ => $"{c}",
         };
-
     [Pure]
     static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
-
     [Pure]
     static string ToOrdinal(this int i) =>
         $"{i}{Mod(i) switch
@@ -23657,7 +20755,6 @@ public
             3 => ThirdOrd,
             _ => Else,
         }}";
-
     [Pure]
     static object Into(this Type type, int i) =>
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
@@ -23665,7 +20762,6 @@ public
 #else
         Enum.Parse(type, $"{i}");
 #endif
-
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
         [HandlesResourceDisposal] this IEnumerator iterator,
@@ -23677,12 +20773,9 @@ public
         try
         {
             StringBuilder builder = new();
-
             if (iterator.MoveNext())
                 builder.Append(Stringify(iterator.Current, depth, useQuotes));
-
             var i = 0;
-
             while (iterator.MoveNext())
             {
                 if (checked(++i) >= MaxIteration)
@@ -23690,10 +20783,8 @@ public
                     builder.Append(Separator).Append(Etcetera(count - i));
                     break;
                 }
-
                 builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
             }
-
             return builder;
         }
         finally
@@ -23706,10 +20797,8 @@ public
     static StringBuilder Indent(this StringBuilder sb, string indent, int nest)
     {
         sb.AppendLine();
-
         for (var i = 0; i < nest && nest >= 0; i++)
             sb.Append(indent);
-
         return sb;
     }
 #endif
@@ -23719,23 +20808,18 @@ public
     {
         if (source is null)
             return Null;
-
         if (!s_hasMethods.ContainsKey(typeof(T)))
             s_hasMethods[typeof(T)] =
                 source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
                 !IsRecord<T>();
-
-        // ReSharper disable once ConstantNullCoalescingCondition NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
+       
         if (depth < 0)
             return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
-
         if (source.GetType() is var t && t != typeof(T))
             return (string)s_stringify.MakeGenericMethod(t).Invoke(null, [source, depth, false])!;
-
-        // ReSharper disable once ConstantNullCoalescingCondition ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+       
         return UseStringifier(source, depth);
     }
-
     [MustUseReturnValue]
     static Func<T, int, string> GenerateStringifier<T>()
     {
@@ -23744,17 +20828,13 @@ public
             var call = Call(s_combine, prev, s_exSeparator);
             return Call(s_combine, call, curr);
         }
-
         const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
-
         ParameterExpression
             exInstance = Parameter(typeof(T), nameof(T)),
             exDepth = Parameter(typeof(int), nameof(Int32));
-
         var deepProperties = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties()) : [];
         var deepFields = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields()) : [];
-
-        // ReSharper disable ArrangeStaticMemberQualifier ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
+       
         var properties = typeof(T)
            .GetProperties(Flags)
            .Concat(deepProperties)
@@ -23774,7 +20854,6 @@ public
 #else
            .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
 #endif
-
         var all = fields
            .Concat(properties)
 #if WAWA
@@ -23785,8 +20864,7 @@ public
         var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
         return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
     }
-
-    // ReSharper disable SuggestBaseTypeForParameter
+   
     [MustUseReturnValue]
 #pragma warning disable CA1859
 #if NETFRAMEWORK && !NET40_OR_GREATER
@@ -23817,26 +20895,22 @@ public
                     ? Expression.Call(exAcc, method)
                     : Expression.Constant(UnfoldedName(exAcc.Type))
             );
-
-        // ReSharper disable once NullableWarningSuppressionIsUsed
+       
         while (type.IsPointer && (type = type.GetElementType()!) is var _)
             exAcc = type.IsPointer
                 ? throw new NotSupportedException(Apology)
                 : Call(type == typeof(void) ? s_readVoidPointer : s_readPointer.MakeGenericMethod(type), exAcc);
-
         Expression exCall =
             Call(s_stringify.MakeGenericMethod(type == typeof(void) ? typeof(nuint) : type), exAcc, exDepth, s_exTrue);
-#if NETFRAMEWORK && !NET40_OR_GREATER // Doesn't support CatchBlock. Workaround works but causes more heap allocations.
+#if NETFRAMEWORK && !NET40_OR_GREATER
         var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
         Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
-
         exCall = Invoke(wrapped, exInstance, exDepth);
 #else
         CatchBlock
             invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
             unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
             unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
-
         exCall = TryCatch(exCall, unsupportedPlatform, unsupported, invalid);
 #endif
         return Call(s_combine, exConstant, exCall);
@@ -23867,19 +20941,15 @@ public
     static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
     {
         var iterator = dictionary.GetEnumerator();
-
         try
         {
             StringBuilder builder = new();
-
             if (iterator.MoveNext())
                 builder.AppendKeyValuePair(
                     Stringify(iterator.Key, depth, useQuotes),
                     Stringify(iterator.Value, depth, useQuotes)
                 );
-
             var i = 0;
-
             while (iterator.MoveNext())
             {
                 if (checked(++i) >= MaxIteration)
@@ -23887,7 +20957,6 @@ public
                     builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
                     break;
                 }
-
                 builder
                    .Append(Separator)
                    .AppendKeyValuePair(
@@ -23895,7 +20964,6 @@ public
                         Stringify(iterator.Value, depth, useQuotes)
                     );
             }
-
             return builder;
         }
         finally
@@ -23903,7 +20971,6 @@ public
             (iterator as IDisposable)?.Dispose();
         }
     }
-
 #if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
     static StringBuilder UnfoldedName(this Type? type, StringBuilder builder, Converter<Type, string?> naming)
     {
@@ -23912,28 +20979,20 @@ public
             builder.Append(',').Append(' ');
             return x.UnfoldedName(builder, naming);
         }
-
         if (type is null)
             return builder;
-
         if (s_unfoldedNames.TryGetValue(type, out var val))
             return builder.Append(val);
-
         if (type.GetElementType() is { } underlying)
             return UnfoldedElementName(type, builder, naming, underlying);
-
         if ((naming(type) ?? "") is var name && !type.IsGenericType)
             return builder.Append(name);
-
         var length = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
         var types = type.GetGenericArguments();
-
         types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, length).Append('<'), naming);
         types.Skip(1).Select(Append).Enumerate();
-
         return builder.Append('>');
     }
-
     static StringBuilder UnfoldedElementName(
         Type type,
         StringBuilder builder,
@@ -23943,15 +21002,11 @@ public
     {
         if (type.IsByRef)
             builder.Append("ref ");
-
         builder.Append(UnfoldedName(underlying, new(), naming));
-
         if (type.IsArray)
             builder.Append('[').Append(']');
-
         if (type.IsPointer)
             builder.Append('*');
-
         return builder;
     }
 #endif
@@ -23971,20 +21026,15 @@ public
     sealed class FakeComparer(int depth) : IComparer, IEqualityComparer
     {
         StringBuilder? _builder;
-
         /// <inheritdoc />
         public override string ToString() =>
             _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(')').ToString() ?? "()";
-
         /// <inheritdoc />
         bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
-
         /// <inheritdoc />
         int IComparer.Compare(object? x, object? y) => Append(x, 0);
-
         /// <inheritdoc />
         int IEqualityComparer.GetHashCode(object? obj) => Append(obj, 0);
-
         T Append<T>(object? obj, T ret)
         {
 #pragma warning disable RCS1196
@@ -23995,27 +21045,18 @@ public
     }
 #endif
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
-
     /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
     public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
-
     /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
     public const string NonBreaking =
         "\t\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
-
     /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
     public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
-
     /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
     public const string Unicode = $"{Breaking}{NonBreaking}";
-
     /// <summary>All unicode characters that appear to be whitespace.</summary>
     public const string Combined = $"{Unicode}{Related}";
 #if NET8_0_OR_GREATER
@@ -24025,27 +21066,23 @@ public
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
         new(SearchValues.Create(Breaking));
-
     /// <inheritdoc cref="NonBreaking"/>
     public static OnceMemoryManager<SearchValues<char>> NonBreakingSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } = new(SearchValues.Create(NonBreaking));
-
     /// <inheritdoc cref="Related"/>
     public static OnceMemoryManager<SearchValues<char>> RelatedSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
         new(SearchValues.Create(Related));
-
     /// <inheritdoc cref="Unicode"/>
     public static OnceMemoryManager<SearchValues<char>> UnicodeSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
     } =
         new(SearchValues.Create(Unicode));
-
     /// <inheritdoc cref="Combined"/>
     public static OnceMemoryManager<SearchValues<char>> CombinedSearch
     {
@@ -24053,37 +21090,29 @@ public
     } =
         new(SearchValues.Create(Combined));
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
-
 // ReSharper disable once RedundantUsingDirective.Global
 
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Methods to get elements of a tuple.</summary>
-
     /// <summary>Gets the first item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
     /// <param name="tuple">The tuple to get the value from.</param>
     /// <returns>The field <see cref="ValueTuple{T1, T2}.Item1"/> from the parameter <paramref name="tuple"/>.</returns>
     public static T1 First<T1, T2>((T1, T2) tuple) => tuple.Item1;
-
     /// <summary>Gets the second item of the tuple.</summary>
     /// <typeparam name="T1">The first type of the tuple.</typeparam>
     /// <typeparam name="T2">The second type of the tuple.</typeparam>
     /// <param name="tuple">The tuple to get the value from.</param>
     /// <returns>The field <see cref="ValueTuple{T1, T2}.Item2"/> from the parameter <paramref name="tuple"/>.</returns>
     public static T2 Second<T1, T2>((T1, T2) tuple) => tuple.Item2;
-#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0 // Unique in the sense that they either don't have LINQ, or have tuples that don't implement ITuple.
+#if !NET20 && !NET30 && !NET47 && !NETSTANDARD2_0
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <param name="tuple">The tuple to enumerate.</param>
     /// <returns>The enumeration of the parameter <paramref name="tuple"/>.</returns>
     public static IEnumerable<object?> AsEnumerable(this ITuple tuple) => tuple.Length.For(i => tuple[i]);
-
     /// <summary>Gets the enumeration of the tuple.</summary>
     /// <typeparam name="T">The type of tuple.</typeparam>
     /// <param name="tuple">The tuple to enumerate.</param>
@@ -24092,14 +21121,9 @@ public
         where T : ITuple =>
         tuple.Length.For(i => tuple[i]);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides methods for unfolding.</summary>
-
     /// <summary>Applies a selector and collects the returned items recursively until the value becomes null.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="value">The initial value.</param>
@@ -24115,66 +21139,54 @@ public
         while (value is not null)
         {
             yield return value;
-
             value = converter(value);
         }
     }
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T _, Converter<T, T> converter)
         where T : struct =>
         throw Unreachable;
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
         where T : struct
     {
         T? maybe = value;
-
         while (maybe is { } yes)
         {
             yield return yes;
-
             maybe = converter(yes);
         }
     }
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? _, Converter<T, T> converter)
         where T : struct =>
         throw Unreachable;
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static IEnumerable<T> FindPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
         value is { } t ? FindPathToEmptyNullable(t, converter) : [];
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToNull<T>(this T? value, Converter<T, T?> converter)
         where T : class
     {
         SmallList<T> output = default;
-
         while (value is not null)
         {
             output.Add(value);
             value = converter(value);
         }
-
         return output;
     }
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T _, Converter<T, T> converter)
         where T : struct =>
         throw Unreachable;
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T value, Converter<T, T?> converter)
@@ -24182,36 +21194,27 @@ public
     {
         SmallList<T> output = [];
         T? maybe = value;
-
         while (maybe is { } yes)
         {
             output.Add(yes);
             maybe = converter(yes);
         }
-
         return output;
     }
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [DoesNotReturn, EditorBrowsable(EditorBrowsableState.Never), Obsolete("The return value is always not null.", true)]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? _, Converter<T, T> converter)
         where T : struct =>
         throw Unreachable;
-
     /// <inheritdoc cref="FindPathToNull{T}"/>
     [Pure]
     public static SmallList<T> FindSmallPathToEmptyNullable<T>(this T? value, Converter<T, T?> converter)
         where T : struct =>
         value is { } t ? FindSmallPathToEmptyNullable(t, converter) : [];
-
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable MissingIndent UsePositionalDeconstructionPattern
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Methods that deconstructs <see cref="Version"/> instances.</summary>
-
     /// <summary>Deconstructs this instance into the major version.</summary>
     /// <remarks><para>
     /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
@@ -24220,7 +21223,6 @@ public
     /// <param name="major">The resulting major version.</param>
     public static void Deconstruct(this Version? version, [NonNegativeValue] out int major) =>
         major = version?.Major ?? 0;
-
     /// <summary>Deconstructs this instance into the major and minor versions.</summary>
     /// <remarks><para>
     /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
@@ -24240,11 +21242,9 @@ public
             minor = min;
             return;
         }
-
         major = 0;
         minor = 0;
     }
-
     /// <summary>Deconstructs this instance into the major, minor, and build versions.</summary>
     /// <remarks><para>
     /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
@@ -24267,12 +21267,10 @@ public
             build = bui;
             return;
         }
-
         major = 0;
         minor = 0;
         build = 0;
     }
-
     /// <summary>Deconstructs this instance into the major, minor, build, and revision versions.</summary>
     /// <remarks><para>
     /// If the passed in value is <see langword="null"/>, all out parameters are zero-initialized.
@@ -24298,13 +21296,11 @@ public
             revision = rev;
             return;
         }
-
         major = 0;
         minor = 0;
         build = 0;
         revision = 0;
     }
-
     /// <summary>
     /// Deconstructs this instance into the major, minor, build, major revision, and minor revision versions.
     /// </summary>
@@ -24338,27 +21334,21 @@ public
             minorRevision = minRev;
             return;
         }
-
         major = 0;
         minor = 0;
         build = 0;
         majorRevision = 0;
         minorRevision = 0;
     }
-
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides thread-safe access to keyboard input.</summary>
-
     /// <summary>Converts <see cref="GamePadButtons"/> to <see cref="Buttons"/>.</summary>
     /// <param name="state">The <see cref="GamePadButtons"/> to convert.</param>
     /// <returns>The <see cref="Buttons"/> equivalent.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // Not `in` because `GamePadButtons` is 4 bytes large.
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Buttons AsButtons(this GamePadButtons state) => Unsafe.As<GamePadButtons, Buttons>(ref state);
-
     /// <summary>Converts <see cref="MouseState"/> to <see cref="MouseButtons"/>.</summary>
     /// <param name="state">The <see cref="MouseState"/> to convert.</param>
     /// <returns>The <see cref="MouseButtons"/> equivalent.</returns>
@@ -24370,15 +21360,11 @@ public
         (state.XButton1 is ButtonState.Pressed ? MouseButtons.X1 : MouseButtons.None) |
         (state.XButton2 is ButtonState.Pressed ? MouseButtons.X2 : MouseButtons.None);
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
 // ReSharper disable BitwiseOperatorOnEnumWithoutFlags InconsistentNaming NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides thread-safe access to keyboard input.</summary>
-
 #pragma warning disable CA1810
     static ConcurrentKeyboard()
 #pragma warning restore CA1810
@@ -24386,28 +21372,21 @@ public
         Trace.Assert(Unsafe.SizeOf<Keys>() is sizeof(int), $"sizeof({nameof(Keys)}) is 4");
         Trace.Assert(Unsafe.SizeOf<KeyMods>() is sizeof(ushort), $"sizeof({nameof(KeyMods)}) is 2");
         Trace.Assert(Unsafe.SizeOf<KeyboardState>() >= sizeof(uint) * 8 + sizeof(byte), "Memory layout is known.");
-
         Trace.Assert(TryGetType(out var type), $"{nameof(type)} is not null");
         Trace.Assert(TryGetField(type, out var delegateField), $"{nameof(delegateField)} is not null");
         Trace.Assert(TryGetValue(delegateField, out Delegate? del), $"{nameof(del)} is not null");
         s_modState = CompileModState(del);
-
         Trace.Assert(TryGetField(out var keyField), $"{nameof(keyField)} is not null");
         Trace.Assert(TryGetValue(keyField, out List<Keys>? keys), $"{nameof(keys)} is not null");
         s_keys = keys;
-
         Trace.Assert(TryFindInvalidState(out var invalid), $"{nameof(ToState)} breaks on {invalid}");
     }
-
     static readonly Func<KeyMods> s_modState;
-
     static readonly List<Keys> s_keys;
-
     /// <summary>Thread-safe version of <see cref="Keyboard.GetState()"/>.</summary>
     /// <returns>The current <see cref="KeyboardState"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static KeyboardState GetState() => s_keys.AsSpan().ToState(GetModState());
-
     /// <summary>
     /// Converts the <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> into the summed <see cref="KeyboardState"/>.
     /// </summary>
@@ -24430,15 +21409,11 @@ public
         ref var bits = ref Unsafe.As<KeyMods, ushort>(ref mods);
         ref var start = ref MemoryMarshal.GetReference(reader);
         ref var end = ref Unsafe.Add(ref start, reader.Length);
-
         while (Unsafe.IsAddressLessThan(ref start, ref end))
             Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
-
         Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)((bits & 4096) >> 11 | (bits & 8192) >> 13);
-
         return output;
     }
-
     /// <summary>
     /// Converts the <see cref="Span{T}"/> of <see cref="Keys"/> into the summed <see cref="KeyboardState"/>.
     /// </summary>
@@ -24455,12 +21430,10 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static KeyboardState ToState(this scoped in Span<Keys> keys, KeyMods mods = KeyMods.None) =>
         keys.ReadOnly().ToState(mods);
-
     /// <summary>Gets the current set of key modifiers that are active.</summary>
     /// <returns>The <see cref="KeyMods"/> representing the current modifiers active.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static KeyMods GetModState() => s_modState();
-
     [Pure]
     static bool TryFindInvalidState([NotNullWhen(false)] out Enum? invalid)
     {
@@ -24469,26 +21442,21 @@ public
             capsLock != mod is KeyMods.CapsLock ||
             numLock != mod is KeyMods.NumLock ||
             state.GetPressedKeyCount() is not 0;
-
         static bool IsKeyCausingInvalidState(Keys key) =>
             Span.In(key).ToState() is not { CapsLock: false, NumLock: false } state ||
             state.IsKeyUp(key) ||
             state.GetPressedKeyCount() is not 1;
-
         var keyModTests = EnumMath.GetValues<KeyMods>().Where(IsModifierCausingInvalidState).Cast<Enum>();
         var keyTests = EnumMath.GetValues<Keys>().Where(IsKeyCausingInvalidState).Cast<Enum>();
         invalid = keyModTests.Concat(keyTests).Filter().FirstOrDefault();
         return invalid is null;
     }
-
     [MustUseReturnValue]
     static bool TryGetField([NotNullWhen(true)] out FieldInfo? field) =>
         (field = typeof(Keyboard).GetField("_keys", BindingFlags.NonPublic | BindingFlags.Static)) is not null;
-
     [MustUseReturnValue]
     static bool TryGetField(in Type type, [NotNullWhen(true)] out FieldInfo? field) =>
         (field = type.GetField(nameof(GetModState), BindingFlags.Public | BindingFlags.Static)) is not null;
-
     [MustUseReturnValue]
     static bool TryGetType([NotNullWhen(true)] out Type? type) =>
 #pragma warning disable REFL037
@@ -24497,11 +21465,9 @@ public
     [MustUseReturnValue]
     static bool TryGetValue(in FieldInfo delegateField, [NotNullWhen(true)] out Delegate? del) =>
         (del = delegateField.GetValue(null) as Delegate) is not null;
-
     [MustUseReturnValue]
     static bool TryGetValue(in FieldInfo field, [NotNullWhen(true)] out List<Keys>? keys) =>
         (keys = field.GetValue(null) as List<Keys>) is not null;
-
     [Pure]
     static Func<KeyMods> CompileModState(in Delegate del)
     {
@@ -24511,21 +21477,16 @@ public
         return Expression.Lambda<Func<KeyMods>>(mods).Compile();
     }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
 #pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Provides the enumeration over <see cref="GamePad"/> instances.</summary>
 [StructLayout(LayoutKind.Auto)]
 public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>, IEnumerator<GamePadState>
 {
     readonly PlayerIndex _length = last + 1;
-
     PlayerIndex _index;
-
     /// <summary>Gets the first four <see cref="GamePadState"/> instances.</summary>
     public static (GamePadState First, GamePadState Second, GamePadState Third, GamePadState Fourth) Four =>
     (
@@ -24534,19 +21495,14 @@ public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePa
         GamePad.GetState(PlayerIndex.Three),
         GamePad.GetState(PlayerIndex.Four)
     );
-
     /// <inheritdoc />
     public GamePadState Current { get; private set; }
-
     /// <inheritdoc />
     readonly object IEnumerator.Current => Current;
-
     /// <inheritdoc />
     readonly void IDisposable.Dispose() { }
-
     /// <inheritdoc />
     public void Reset() => _index = PlayerIndex.One;
-
     /// <inheritdoc />
     public bool MoveNext() =>
 #pragma warning disable MA0099
@@ -24554,14 +21510,11 @@ public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePa
 #pragma warning restore MA0099
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     public readonly GamePads GetEnumerator() => this;
-
     /// <inheritdoc />
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
     /// <inheritdoc />
     readonly IEnumerator<GamePadState> IEnumerable<GamePadState>.GetEnumerator() => GetEnumerator();
 }
-
 /// <summary>Extensions for <see cref="GamePadState"/>.</summary>
 #pragma warning disable MA0048
 static class GamePadStateExtensions
@@ -24570,7 +21523,6 @@ static class GamePadStateExtensions
     /// <inheritdoc cref="GamePadState.IsConnected"/>
     public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
         state.Item1.IsConnected || state.Item2.IsConnected || state.Item3.IsConnected || state.Item4.IsConnected;
-
     /// <inheritdoc cref="GamePadState.IsButtonDown"/>
     public static bool IsButtonDown(
         this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
@@ -24580,7 +21532,6 @@ static class GamePadStateExtensions
         Unsafe.AsRef(state.Item2).IsButtonDown(buttons) ||
         Unsafe.AsRef(state.Item3).IsButtonDown(buttons) ||
         Unsafe.AsRef(state.Item4).IsButtonDown(buttons);
-
     /// <inheritdoc cref="GamePadState.IsButtonUp"/>
     public static bool IsButtonUp(
         this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
@@ -24592,11 +21543,9 @@ static class GamePadStateExtensions
         Unsafe.AsRef(state.Item4).IsButtonUp(buttons);
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
 // ReSharper disable once CheckNamespace
-
 #pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [Flags]
@@ -24621,36 +21570,27 @@ public enum KeyMods : ushort
     Reserved = 1 << 15,
 }
 #endif
-
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
 // ReSharper disable once CheckNamespace
-
-
 /// <summary>Contains mouse buttons.</summary>
 [Flags]
 public enum MouseButtons : byte
 {
     /// <summary>No mouse button.</summary>
     None,
-
     /// <summary>Left mouse button.</summary>
     Left,
-
     /// <summary>Middle mouse button.</summary>
     Middle,
-
     /// <summary>Right mouse button.</summary>
     Right = 1 << 2,
-
     /// <summary>X1 mouse button.</summary>
     X1 = 1 << 3,
-
     /// <summary>X2 mouse button.</summary>
     X2 = 1 << 4,
 }
 #endif
-
 /// <summary>Methods that creates enumerations from individual items.</summary>
 static partial class ManyQueries
 {
