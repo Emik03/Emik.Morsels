@@ -203,6 +203,7 @@
         <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE;NO_SYSTEM_MEMORY</DefineConstants>
         <RootNamespace Condition="'$(RootNamespace)' == ''">$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <Copyright Condition="$(CopyrightSince) != ''">Copyright © Emik $(CopyrightSince) - $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
+        <DefineConstants Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(DefineConstants);NO_ALLOWS_REF_STRUCT</DefineConstants>
         <DefineConstants Condition="'$(IsCeleste)' == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
     <!-- The file 'index.md' may not necessarily exist. In which case the assembly name is probably used. -->

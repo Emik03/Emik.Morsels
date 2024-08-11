@@ -4273,7 +4273,7 @@ readonly
 #pragma warning restore 8500
                 return builder.Append((char*)ptr, span.Length);
 #endif
-        };
+        }
 #endif
 }
 // SPDX-License-Identifier: MPL-2.0
