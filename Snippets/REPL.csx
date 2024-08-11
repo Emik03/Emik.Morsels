@@ -2136,7 +2136,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         {
             ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
             ref var end = ref Unsafe.Add(ref start, span.Length);
-            for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1))
+            for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1)!)
             {
                 start = Unsafe.Subtract(ref start, 1);
                 Increment(ref start);
