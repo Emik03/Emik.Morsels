@@ -9958,6 +9958,46 @@ abstract partial class Assert
         /// <returns>The fail message.</returns>
         [Pure]
         string Fail => Setup is null ? "Assertion failed! " : $"Assertion {Setup.Name} failed! ";
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="Result"/> by using the constructor
+        /// <see cref="Assert.Result(Type)"/>.
+        /// </summary>
+        /// <param name="setup">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Result"/>
+        /// by passing the parameter <paramref name="setup"/> to the constructor
+        /// <see cref="Assert.Result(Type)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Result(Type setup) => new(setup);
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="Result"/> by using the constructor
+        /// <see cref="global::Assert.Result(global::Assert, global::System.Type)"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Result"/>
+        /// by passing the parameter <paramref name="tuple"/> to the constructor
+        /// <see cref="global::Assert.Result(global::Assert, global::System.Type)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Result((Assert Assertion, Type Setup) tuple) =>
+            new(tuple.Assertion, tuple.Setup);
+        /// <summary>
+        /// Implicitly converts the parameter by creating the new instance of
+        /// <see cref="Result"/> by using the constructor
+        /// <see cref="global::Assert.Result(global::System.Exception, global::System.Type)"/>.
+        /// </summary>
+        /// <param name="tuple">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Result"/>
+        /// by passing the parameter <paramref name="tuple"/> to the constructor
+        /// <see cref="global::Assert.Result(global::System.Exception, global::System.Type)"/>.
+        /// </returns>
+        [Pure]
+        public static implicit operator Result((Exception Error, Type Setup) tuple) => new(tuple.Error, tuple.Setup);
         /// <inheritdoc />
         [Pure]
         public override string ToString() =>
@@ -10913,7 +10953,7 @@ abstract partial class Assert<T> : Assert
             var (template, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(), Accumulator.Next);
             var level = ToDiagnosticSeverity(logEvent.Level);
             DiagnosticDescriptor descriptor = new(Name, $"{s_guid}", template, Name, level, true);
-            var args = list.Select(x => (object?)logEvent.Properties[x]).ToArray();
+            var args = list.Select(object? (x) => logEvent.Properties[x]).ToArray();
             var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
             UnreportedDiagnostics.Enqueue(diagnostic);
         }
@@ -11498,6 +11538,21 @@ abstract partial class Assert<T> : Assert
         s_diagnosticSink.Location = location;
         s_diagnosticSink.AdditionalLocations = additionalLocations;
         return location;
+    }
+    /// <summary>Marks the locations in the next set of lints.</summary>
+    /// <param name="locations">The locations.</param>
+    /// <returns>The first location within the parameter <paramref name="locations"/>.</returns>
+    public static Location Mark(this IEnumerable<Location>? locations)
+    {
+        var (first, rest) = locations;
+        try
+        {
+            return Mark(first, rest);
+        }
+        finally
+        {
+            (rest as IDisposable)?.Dispose();
+        }
     }
 #endif
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>

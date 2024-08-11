@@ -80,7 +80,7 @@ static partial class Peeks
             var (template, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(), Accumulator.Next);
             var level = ToDiagnosticSeverity(logEvent.Level);
             DiagnosticDescriptor descriptor = new(Name, $"{s_guid}", template, Name, level, true);
-            var args = list.Select(x => (object?)logEvent.Properties[x]).ToArray();
+            var args = list.Select(object? (x) => logEvent.Properties[x]).ToArray();
             var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
 
             UnreportedDiagnostics.Enqueue(diagnostic);
@@ -712,6 +712,23 @@ static partial class Peeks
         s_diagnosticSink.Location = location;
         s_diagnosticSink.AdditionalLocations = additionalLocations;
         return location;
+    }
+
+    /// <summary>Marks the locations in the next set of lints.</summary>
+    /// <param name="locations">The locations.</param>
+    /// <returns>The first location within the parameter <paramref name="locations"/>.</returns>
+    public static Location Mark(this IEnumerable<Location>? locations)
+    {
+        var (first, rest) = locations;
+
+        try
+        {
+            return Mark(first, rest);
+        }
+        finally
+        {
+            (rest as IDisposable)?.Dispose();
+        }
     }
 #endif
 
