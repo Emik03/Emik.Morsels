@@ -23,16 +23,16 @@ static partial class ListMarshal
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
         /// <summary>Creates the getter to the inner array.</summary>
         /// <param name="field">The field to the list's array.</param>
+        /// <exception cref="InvalidOperationException">The field has no declaring type.</exception>
         /// <returns>The getter to the inner array.</returns>
         static Converter<List<T>, T[]> CreateGetter(FieldInfo field)
         {
-            var name = $"{field.DeclaringType?.FullName}.get_{field.Name}";
-            var getter = new DynamicMethod(name, typeof(T[]), [typeof(List<T>)], true);
-            var il = getter.GetILGenerator();
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Ldfld, field);
-            il.Emit(OpCodes.Ret);
-            return (Converter<List<T>, T[]>)getter.CreateDelegate(typeof(Converter<List<T>, T[]>));
+            if (field.DeclaringType is not { } declaringType)
+                throw new InvalidOperationException("Field has no declaring type.");
+
+            var param = Expression.Parameter(declaringType, field.Name);
+            var access = Expression.Field(param, field);
+            return Expression.Lambda<Converter<List<T>, T[]>>(access, param).Compile();
 #endif
         }
     }

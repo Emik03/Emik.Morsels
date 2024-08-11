@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace System;
 
-// ReSharper disable CognitiveComplexity
+// ReSharper disable CognitiveComplexity NullableWarningSuppressionIsUsed
 #pragma warning disable 8500, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
@@ -208,7 +208,7 @@ static partial class SpanHelpers
             {
                 length -= 8;
 
-                if (value.Equals(searchSpace[index]))
+                if (value!.Equals(searchSpace[index]))
                     goto Found;
 
                 if (value.Equals(searchSpace[index + 1]))
@@ -239,7 +239,7 @@ static partial class SpanHelpers
             {
                 length -= 4;
 
-                if (value.Equals(searchSpace[index]))
+                if (value!.Equals(searchSpace[index]))
                     goto Found;
 
                 if (value.Equals(searchSpace[index + 1]))
@@ -256,7 +256,7 @@ static partial class SpanHelpers
 
             while (length > 0)
             {
-                if (value.Equals(searchSpace[index]))
+                if (value!.Equals(searchSpace[index]))
                     goto Found;
 
                 index += 1;

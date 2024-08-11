@@ -3,9 +3,7 @@
 // ReSharper disable once CheckNamespace EmptyNamespace
 // ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500, SA1137
-#endif
 #if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 using static System.Linq.Expressions.Expression;

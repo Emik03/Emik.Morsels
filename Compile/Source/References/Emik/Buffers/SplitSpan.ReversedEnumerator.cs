@@ -246,7 +246,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     case var i when i == body.Length - 1:
                         if (body.Length is not 1)
                         {
-                            body = UnsafelyTake(body, body.Length - 1);
+                            body = body.UnsafelyTake(body.Length - 1);
                             goto Retry;
                         }
 
@@ -349,15 +349,15 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 case var i when i == body.Length - 1:
                     if (body.Length is not 1)
                     {
-                        body = UnsafelyTake(body, 1);
+                        body = body.UnsafelyTake(1);
                         goto Retry;
                     }
 
                     current = default;
                     return false;
                 case var i:
-                    current = UnsafelySkip(body, i);
-                    body = UnsafelyTake(body, i - 1);
+                    current = body.UnsafelySkip(i);
+                    body = body.UnsafelyTake(i - 1);
                     return true;
             }
 #endif
