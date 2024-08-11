@@ -1,3 +1,3 @@
 #!/bin/sh
-"$(realpath "$0").sh"
+exec "$(realpath "$0").sh" "$@"
 
