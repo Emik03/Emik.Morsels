@@ -1,0 +1,3 @@
+#!/bin/bash
+exec "$(realpath "$0").sh" "$@"
+
