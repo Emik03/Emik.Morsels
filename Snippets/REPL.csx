@@ -3901,7 +3901,7 @@ readonly
     /// <param name="accumulator">The accumulator.</param>
     /// <param name="next">The next slice from the enumeration.</param>
     /// <returns>The final accumulator value.</returns>
-    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, scoped ReadOnlySpan<TBody> next)
+    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, ReadOnlySpan<TBody> next)
 #if !NO_ALLOWS_REF_STRUCT
         where TAccumulator : allows ref struct
 #endif
