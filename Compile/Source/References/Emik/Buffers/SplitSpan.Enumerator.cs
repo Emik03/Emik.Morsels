@@ -8,7 +8,7 @@ using static Span;
 using static SplitSpanFactory;
 
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
-readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
+partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

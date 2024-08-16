@@ -227,7 +227,7 @@ static partial class Stringifier
             : path.SplitOn(s_slashes).Last.Trim();
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitAny(Slashes.AsMemory()).Last.Trim();
+            : path.SplitOnAny(Slashes.AsMemory()).Last.Trim();
 #else
             ? ""
             : Path.GetFileName(path).Trim() ?? "";
@@ -256,7 +256,7 @@ static partial class Stringifier
             : path.SplitOn(s_slashes).Last;
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitAny(Slashes.AsMemory()).Last;
+            : path.SplitOnAny(Slashes.AsMemory()).Last;
 #else
             ? ""
             : Path.GetFileName(path) ?? "";

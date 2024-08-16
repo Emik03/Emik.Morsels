@@ -2160,28 +2160,28 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         /// <summary>Gets the separator.</summary>
         public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
-    /// <inheritdoc cref="SplitSpanFactory.SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T, T, MatchAny> SplitAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAny> SplitOnAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
         new(span, separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T, T, MatchAny> SplitAny<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAny> SplitOnAny<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
-        span.ReadOnly().SplitAny(separator);
-    /// <inheritdoc cref="SplitSpanFactory.SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+        span.ReadOnly().SplitOnAny(separator);
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T, T, MatchAll> SplitAll<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAll> SplitOn<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
         new(span, separator);
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<T, T, MatchAll> SplitAll<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
+    public static SplitMemory<T, T, MatchAll> SplitOn<T>(this Memory<T> span, ReadOnlyMemory<T> separator)
         where T : IEquatable<T> =>
-        span.ReadOnly().SplitAll(separator);
+        span.ReadOnly().SplitOn(separator);
 #if NET8_0_OR_GREATER
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this ReadOnlyMemory<T> span,
@@ -2189,7 +2189,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     )
         where T : IEquatable<T> =>
         new(span, separator.Memory);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this Memory<T> span,
@@ -2198,85 +2198,85 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         new(span, separator.Memory);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this ReadOnlyMemory<byte> span, byte separator) =>
         new(span, separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this Memory<char> span, char separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this ReadOnlyMemory<char> span, char separator) =>
         new(span, separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<sbyte, sbyte, MatchOne> SplitOn(this Memory<sbyte> span, sbyte separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<sbyte, sbyte, MatchOne> SplitOn(this ReadOnlyMemory<sbyte> span, sbyte separator) =>
         new(span, separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<short, short, MatchOne> SplitOn(this Memory<short> span, short separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<short, short, MatchOne> SplitOn(this ReadOnlyMemory<short> span, short separator) =>
         new(span, separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<ushort, ushort, MatchOne> SplitOn(this Memory<ushort> span, ushort separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<ushort, ushort, MatchOne> SplitOn(this ReadOnlyMemory<ushort> span, ushort separator) =>
         new(span, separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this string span, char separator) =>
         new(span.AsMemory(), separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitAny(this string span, string separator) =>
-        span.AsMemory().SplitAny(separator.AsMemory());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string span, string separator) =>
+        span.AsMemory().SplitOnAny(separator.AsMemory());
+    /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitAny(this string span, ReadOnlyMemory<char> separator) =>
-        span.AsMemory().SplitAny(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string span, ReadOnlyMemory<char> separator) =>
+        span.AsMemory().SplitOnAny(separator);
+    /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitAny(this ReadOnlyMemory<char> span, string separator) =>
-        span.SplitAny(separator.AsMemory());
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this ReadOnlyMemory<char> span, string separator) =>
+        span.SplitOnAny(separator.AsMemory());
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitAll(this string span, string separator) =>
-        span.AsMemory().SplitAll(separator.AsMemory());
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this string span, string separator) =>
+        span.AsMemory().SplitOn(separator.AsMemory());
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitAll(this string span, ReadOnlyMemory<char> separator) =>
-        span.AsMemory().SplitAll(separator);
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this string span, ReadOnlyMemory<char> separator) =>
+        span.AsMemory().SplitOn(separator);
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitAll(this ReadOnlyMemory<char> span, string separator) =>
-        span.SplitAll(separator.AsMemory());
-    /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this ReadOnlyMemory<char> span, string separator) =>
+        span.SplitOn(separator.AsMemory());
+    /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -2286,7 +2286,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitLines(this string span) =>
         span.AsMemory().SplitLines();
-    /// <inheritdoc cref="SplitSpanFactory.SplitSpanLines"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -2300,7 +2300,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #else
         new(span, Breaking.AsMemory());
 #endif
-    /// <inheritdoc cref="SplitLines(ReadOnlyMemory{char})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -2310,7 +2310,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitLines(this Memory<char> span) =>
         span.ReadOnly().SplitLines();
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -2320,7 +2320,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         MatchAny> SplitWhitespace(this string span) =>
         span.AsMemory().SplitWhitespace();
-    /// <inheritdoc cref="SplitSpanFactory.SplitSpanWhitespace"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -2334,7 +2334,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #else
         new(span, Unicode.AsMemory());
 #endif
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlyMemory{char})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
 #if NET8_0_OR_GREATER
@@ -2345,7 +2345,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         MatchAny> SplitWhitespace(this Memory<char> span) =>
         span.ReadOnly().SplitWhitespace();
 #if NET8_0_OR_GREATER
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlyMemory{T}, ReadOnlyMemory{T})"/>
+    /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, SearchValues<char>, MatchAny> SplitOn(
         this string span,
@@ -2920,7 +2920,7 @@ readonly
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #pragma warning disable IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
-readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
+public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -3301,7 +3301,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #pragma warning disable IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
-readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
+public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
     /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -3634,7 +3634,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     /// <param name="separator">The separator.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAny> SplitAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -3642,23 +3642,23 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             new(span, separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAny> SplitAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            span.ReadOnly().SplitAny(separator);
+            span.ReadOnly().SplitOnAny(separator);
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
     /// <param name="span">The span to split.</param>
     /// <param name="separator">The separator.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAll> SplitAll<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T, T, MatchAll> SplitOn<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
@@ -3666,18 +3666,18 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             new(span, separator);
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAll> SplitAll<T>(this Span<T> span, ReadOnlySpan<T> separator)
+    public static SplitSpan<T, T, MatchAll> SplitOn<T>(this Span<T> span, ReadOnlySpan<T> separator)
 #if UNMANAGED_SPAN
         where T : unmanaged, IEquatable<T>
 #else
         where T : IEquatable<T>
 #endif
         =>
-            span.ReadOnly().SplitAll(separator);
+            span.ReadOnly().SplitOn(separator);
 #if NET8_0_OR_GREATER
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this ReadOnlySpan<T> span,
@@ -3685,7 +3685,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
     )
         where T : IEquatable<T> =>
         new(span, In(separator));
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
         this Span<T> span,
@@ -3695,7 +3695,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         span.ReadOnly().SplitOn(separator);
 #endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
 #if UNMANAGED_SPAN
@@ -3705,7 +3705,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             new(span, In(separator));
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
 #if UNMANAGED_SPAN
@@ -3716,75 +3716,75 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         =>
             span.ReadOnly().SplitOn(separator);
 #endif
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<byte, byte, MatchOne> SplitOn(this ReadOnlySpan<byte> span, byte separator) =>
         new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<byte, byte, MatchOne> SplitOn(this Span<byte> span, byte separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitOn(this ReadOnlySpan<char> span, char separator) =>
         new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitOn(this Span<char> span, char separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this ReadOnlySpan<sbyte> span, sbyte separator) =>
         new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this Span<sbyte> span, sbyte separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<short, short, MatchOne> SplitOn(this ReadOnlySpan<short> span, short separator) =>
         new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<short, short, MatchOne> SplitOn(this Span<short> span, short separator) =>
         span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this ReadOnlySpan<ushort> span, ushort separator) =>
         new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this Span<ushort> span, ushort separator) =>
         span.ReadOnly().SplitOn(separator);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
         span.AsSpan().SplitOn(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitSpanAny(this string span, string separator) =>
-        span.AsSpan().SplitAny(separator.AsSpan());
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string span, string separator) =>
+        span.AsSpan().SplitOnAny(separator.AsSpan());
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitAny(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAny(separator);
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitOnAny(separator);
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitAny(this ReadOnlySpan<char> span, string separator) =>
-        span.SplitAny(separator.AsSpan());
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string separator) =>
+        span.SplitOnAny(separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitSpanAll(this string span, string separator) =>
-        span.AsSpan().SplitAll(separator.AsSpan());
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string span, string separator) =>
+        span.AsSpan().SplitOn(separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitAll(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitAll(separator);
-    /// <inheritdoc cref="SplitAll{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    public static SplitSpan<char, char, MatchAll> SplitOn(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitAll(this ReadOnlySpan<char> span, string separator) =>
-        span.SplitAll(separator.AsSpan());
+    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string separator) =>
+        span.SplitOn(separator.AsSpan());
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -3861,7 +3861,7 @@ readonly ref partial struct SplitSpan<TBody, TSeparator, TStrategy>
         span.ReadOnly().SplitWhitespace();
 #endif
 #if NET8_0_OR_GREATER
-    /// <inheritdoc cref="SplitAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, in SearchValues{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, SearchValues<char>, MatchAny> SplitSpanOn(
         this string span,
@@ -19970,7 +19970,7 @@ public
             : path.SplitOn(s_slashes).Last.Trim();
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitAny(Slashes.AsMemory()).Last.Trim();
+            : path.SplitOnAny(Slashes.AsMemory()).Last.Trim();
 #else
             ? ""
             : Path.GetFileName(path).Trim() ?? "";
@@ -19998,7 +19998,7 @@ public
             : path.SplitOn(s_slashes).Last;
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitAny(Slashes.AsMemory()).Last;
+            : path.SplitOnAny(Slashes.AsMemory()).Last;
 #else
             ? ""
             : Path.GetFileName(path) ?? "";
