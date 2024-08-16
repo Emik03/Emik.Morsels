@@ -394,7 +394,7 @@ readonly
         !left.Equals(right);
 
     /// <summary>
-    /// Implicitly converts the parameter by creating the new instance of
+    /// Explicitly converts the parameter by creating the new instance of
     /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> by using the constructor
     /// <see cref="Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
     /// </summary>
@@ -405,7 +405,7 @@ readonly
     /// <see cref="Emik.Morsels.SplitMemory{TBody, TSeparator, TStrategy}(ReadOnlyMemory{TBody})"/>.
     /// </returns>
     [Pure]
-    public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>(ReadOnlyMemory<TBody> body) => new(body);
+    public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>(ReadOnlyMemory<TBody> body) => new(body);
 
     /// <summary>
     /// Implicitly converts the parameter by creating the new instance of
@@ -694,6 +694,23 @@ readonly
         }
 
         /// <summary>
+        /// Explicitly converts the parameter by creating the new instance
+        /// of <see cref="Enumerator"/> by using the constructor
+        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(ReadOnlyMemory{TBody})"/>.
+        /// </summary>
+        /// <param name="body">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="Enumerator"/> by passing the
+        /// parameter <paramref name="body"/> to the constructor
+        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(ReadOnlyMemory{TBody})"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>.Enumerator(
+            ReadOnlyMemory<TBody> body
+        ) =>
+            new(body);
+
+        /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="Enumerator"/> by using the constructor
         /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
@@ -709,23 +726,6 @@ readonly
             (ReadOnlyMemory<TBody> Body, ReadOnlyMemory<TSeparator> Separator) tuple
         ) =>
             new(tuple.Body, tuple.Separator);
-
-        /// <summary>
-        /// Implicitly converts the parameter by creating the new instance
-        /// of <see cref="Enumerator"/> by using the constructor
-        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(ReadOnlyMemory{TBody})"/>.
-        /// </summary>
-        /// <param name="body">The parameter to pass onto the constructor.</param>
-        /// <returns>
-        /// The new instance of <see cref="Enumerator"/> by passing the
-        /// parameter <paramref name="body"/> to the constructor
-        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(ReadOnlyMemory{TBody})"/>.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>.Enumerator(
-            ReadOnlyMemory<TBody> body
-        ) =>
-            new(body);
 
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance
@@ -832,6 +832,23 @@ readonly
         }
 
         /// <summary>
+        /// Explicitly converts the parameter by creating the new instance
+        /// of <see cref="ReversedEnumerator"/> by using the constructor
+        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlyMemory{TBody})"/>.
+        /// </summary>
+        /// <param name="body">The parameter to pass onto the constructor.</param>
+        /// <returns>
+        /// The new instance of <see cref="ReversedEnumerator"/> by passing
+        /// the parameter <paramref name="body"/> to the constructor
+        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlyMemory{TBody})"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>.ReversedEnumerator(
+            ReadOnlyMemory<TBody> body
+        ) =>
+            new(body);
+
+        /// <summary>
         /// Implicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
         /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlyMemory{TBody}, ReadOnlyMemory{TSeparator})"/>.
@@ -847,23 +864,6 @@ readonly
             (ReadOnlyMemory<TBody> Body, ReadOnlyMemory<TSeparator> Separator) tuple
         ) =>
             new(tuple.Body, tuple.Separator);
-
-        /// <summary>
-        /// Implicitly converts the parameter by creating the new instance
-        /// of <see cref="ReversedEnumerator"/> by using the constructor
-        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlyMemory{TBody})"/>.
-        /// </summary>
-        /// <param name="body">The parameter to pass onto the constructor.</param>
-        /// <returns>
-        /// The new instance of <see cref="ReversedEnumerator"/> by passing
-        /// the parameter <paramref name="body"/> to the constructor
-        /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlyMemory{TBody})"/>.
-        /// </returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>.ReversedEnumerator(
-            ReadOnlyMemory<TBody> body
-        ) =>
-            new(body);
 
         /// <summary>
         /// Implicitly converts the parameter by creating the new instance

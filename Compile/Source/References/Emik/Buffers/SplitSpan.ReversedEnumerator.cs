@@ -86,7 +86,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
         }
 
         /// <summary>
-        /// Implicitly converts the parameter by creating the new instance
+        /// Explicitly converts the parameter by creating the new instance
         /// of <see cref="ReversedEnumerator"/> by using the constructor
         /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlySpan{TBody})"/>.
         /// </summary>
@@ -97,7 +97,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.ReversedEnumerator(ReadOnlySpan{TBody})"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator(
+        public static explicit operator SplitSpan<TBody, TSeparator, TStrategy>.ReversedEnumerator(
             ReadOnlySpan<TBody> body
         ) =>
             new(body);
