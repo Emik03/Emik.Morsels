@@ -114,9 +114,7 @@ static partial class EachLazy
 
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), MustDisposeResource, Pure]
-#pragma warning disable IDISP004
         public IEnumerator<T> GetEnumerator() => new Enumerator(_enumerable.GetEnumerator(), _external, _action);
-#pragma warning restore IDISP004
 
         /// <inheritdoc />
         [CollectionAccess(CollectionAccessType.Read), MustDisposeResource, Pure]
