@@ -280,11 +280,11 @@ static partial class SpanSimdQueries
 #endif
         =>
 #if CSHARPREPL
-            Vector.LoadUnsafe(ref AsRef(source));
+            System.Numerics.Vector.LoadUnsafe(ref AsRef(source));
 #elif NET8_0_OR_GREATER
-            Vector.LoadUnsafe(source);
+            System.Numerics.Vector.LoadUnsafe(source);
 #else
-            Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
+            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
@@ -305,7 +305,7 @@ static partial class SpanSimdQueries
 #if NET7_0_OR_GREATER
             !System.Numerics.Vector<T>.IsSupported ||
 #endif
-            !Vector.IsHardwareAccelerated ||
+            !System.Numerics.Vector.IsHardwareAccelerated ||
             span.Length < System.Numerics.Vector<T>.Count
         )
 #endif
@@ -329,15 +329,15 @@ static partial class SpanSimdQueries
             current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
             best = 0 switch
             {
-                _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(current)),
-                _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(current)),
+                _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),
+                _ when typeof(TS) == typeof(SMin) => System.Numerics.Vector.Min(best, LoadUnsafe(current)),
                 _ => throw Unreachable,
             };
 
         best = 0 switch
         {
-            _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(lastVectorStart)),
-            _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(lastVectorStart)),
+            _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(lastVectorStart)),
+            _ when typeof(TS) == typeof(SMin) => System.Numerics.Vector.Min(best, LoadUnsafe(lastVectorStart)),
             _ => throw Unreachable,
         };
 

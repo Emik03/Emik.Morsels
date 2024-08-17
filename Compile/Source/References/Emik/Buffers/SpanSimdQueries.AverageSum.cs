@@ -84,7 +84,7 @@ static partial class SpanSimdQueries
 #if NET7_0_OR_GREATER
             System.Numerics.Vector<T>.IsSupported &&
 #endif
-            Vector.IsHardwareAccelerated &&
+            System.Numerics.Vector.IsHardwareAccelerated &&
             System.Numerics.Vector<T>.Count > 2 &&
             span.Length >= System.Numerics.Vector<T>.Count * 4)
             return SumVectorized(span);
@@ -317,7 +317,7 @@ static partial class SpanSimdQueries
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
-            Vector.LoadUnsafe(ref source, elementOffset);
+            System.Numerics.Vector.LoadUnsafe(ref source, elementOffset);
 #else
         where T : struct
     {

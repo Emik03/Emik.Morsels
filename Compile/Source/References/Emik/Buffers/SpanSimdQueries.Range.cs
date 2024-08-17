@@ -171,7 +171,7 @@ static partial class SpanSimdQueries
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
 
-            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
+            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
