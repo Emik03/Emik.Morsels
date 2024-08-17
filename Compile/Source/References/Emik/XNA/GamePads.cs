@@ -4,6 +4,8 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+using static Span;
+
 /// <summary>Provides the enumeration over <see cref="GamePad"/> instances.</summary>
 [StructLayout(LayoutKind.Auto)]
 struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>, IEnumerator<GamePadState>
@@ -39,7 +41,7 @@ struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>
         _index < (_length is 0 ? PlayerIndex.Four + 1 : _length) && (Current = GamePad.GetState(_index++)) is var _;
 #pragma warning restore MA0099
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    public readonly GamePads GetEnumerator() => this;
+    public readonly GamePads GetEnumerator() => new(last);
 
     /// <inheritdoc />
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -54,27 +56,27 @@ static class GamePadStateExtensions
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="GamePadState.IsConnected"/>
-    public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
+    public static bool IsConnected(this (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
         state.Item1.IsConnected || state.Item2.IsConnected || state.Item3.IsConnected || state.Item4.IsConnected;
 
     /// <inheritdoc cref="GamePadState.IsButtonDown"/>
     public static bool IsButtonDown(
-        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        this (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
-        Unsafe.AsRef(state.Item1).IsButtonDown(buttons) ||
-        Unsafe.AsRef(state.Item2).IsButtonDown(buttons) ||
-        Unsafe.AsRef(state.Item3).IsButtonDown(buttons) ||
-        Unsafe.AsRef(state.Item4).IsButtonDown(buttons);
+        AsRef(state.Item1).IsButtonDown(buttons) ||
+        AsRef(state.Item2).IsButtonDown(buttons) ||
+        AsRef(state.Item3).IsButtonDown(buttons) ||
+        AsRef(state.Item4).IsButtonDown(buttons);
 
     /// <inheritdoc cref="GamePadState.IsButtonUp"/>
     public static bool IsButtonUp(
-        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        this (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
-        Unsafe.AsRef(state.Item1).IsButtonUp(buttons) ||
-        Unsafe.AsRef(state.Item2).IsButtonUp(buttons) ||
-        Unsafe.AsRef(state.Item3).IsButtonUp(buttons) ||
-        Unsafe.AsRef(state.Item4).IsButtonUp(buttons);
+        AsRef(state.Item1).IsButtonUp(buttons) ||
+        AsRef(state.Item2).IsButtonUp(buttons) ||
+        AsRef(state.Item3).IsButtonUp(buttons) ||
+        AsRef(state.Item4).IsButtonUp(buttons);
 }
 #endif

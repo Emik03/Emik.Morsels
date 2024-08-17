@@ -1280,7 +1280,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #if NET7_0_OR_GREATER
             System.Numerics.Vector<T>.IsSupported &&
 #endif
-            Vector.IsHardwareAccelerated &&
+            System.Numerics.Vector.IsHardwareAccelerated &&
             System.Numerics.Vector<T>.Count > 2 &&
             span.Length >= System.Numerics.Vector<T>.Count * 4)
             return SumVectorized(span);
@@ -1498,7 +1498,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
-            Vector.LoadUnsafe(ref source, elementOffset);
+            System.Numerics.Vector.LoadUnsafe(ref source, elementOffset);
 #else
         where T : struct
     {
@@ -1855,11 +1855,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #endif
         =>
 #if CSHARPREPL
-            Vector.LoadUnsafe(ref AsRef(source));
+            System.Numerics.Vector.LoadUnsafe(ref AsRef(source));
 #elif NET8_0_OR_GREATER
-            Vector.LoadUnsafe(source);
+            System.Numerics.Vector.LoadUnsafe(source);
 #else
-            Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
+            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -1878,7 +1878,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 #if NET7_0_OR_GREATER
             !System.Numerics.Vector<T>.IsSupported ||
 #endif
-            !Vector.IsHardwareAccelerated ||
+            !System.Numerics.Vector.IsHardwareAccelerated ||
             span.Length < System.Numerics.Vector<T>.Count
         )
 #endif
@@ -1899,14 +1899,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             current = ref Unsafe.Add(ref current, System.Numerics.Vector<T>.Count)!)
             best = 0 switch
             {
-                _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(current)),
-                _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(current)),
+                _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(current)),
+                _ when typeof(TS) == typeof(SMin) => System.Numerics.Vector.Min(best, LoadUnsafe(current)),
                 _ => throw Unreachable,
             };
         best = 0 switch
         {
-            _ when typeof(TS) == typeof(SMax) => Vector.Max(best, LoadUnsafe(lastVectorStart)),
-            _ when typeof(TS) == typeof(SMin) => Vector.Min(best, LoadUnsafe(lastVectorStart)),
+            _ when typeof(TS) == typeof(SMax) => System.Numerics.Vector.Max(best, LoadUnsafe(lastVectorStart)),
+            _ when typeof(TS) == typeof(SMin) => System.Numerics.Vector.Min(best, LoadUnsafe(lastVectorStart)),
             _ => throw Unreachable,
         };
         value = best[0];
@@ -2109,7 +2109,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             ReadOnlySpan<T> original = s_values;
             if (length <= original.Length)
                 return original.UnsafelyTake(length);
-            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity)];
+            var replacement = new T[Math.Max(length.RoundUpToPowerOf2(), InitialCapacity / Unsafe.SizeOf<T>())];
             Span<T> span = replacement;
             original.CopyTo(span);
             Populate(span.UnsafelySkip(original.Length - (!original.IsEmpty).ToByte()));
@@ -21354,7 +21354,7 @@ public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePa
         _index < (_length is 0 ? PlayerIndex.Four + 1 : _length) && (Current = GamePad.GetState(_index++)) is var _;
 #pragma warning restore MA0099
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    public readonly GamePads GetEnumerator() => this;
+    public readonly GamePads GetEnumerator() => new(last);
     /// <inheritdoc />
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     /// <inheritdoc />
@@ -21366,26 +21366,26 @@ static class GamePadStateExtensions
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="GamePadState.IsConnected"/>
-    public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
+    public static bool IsConnected(this (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
         state.Item1.IsConnected || state.Item2.IsConnected || state.Item3.IsConnected || state.Item4.IsConnected;
     /// <inheritdoc cref="GamePadState.IsButtonDown"/>
     public static bool IsButtonDown(
-        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        this (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
-        Unsafe.AsRef(state.Item1).IsButtonDown(buttons) ||
-        Unsafe.AsRef(state.Item2).IsButtonDown(buttons) ||
-        Unsafe.AsRef(state.Item3).IsButtonDown(buttons) ||
-        Unsafe.AsRef(state.Item4).IsButtonDown(buttons);
+        AsRef(state.Item1).IsButtonDown(buttons) ||
+        AsRef(state.Item2).IsButtonDown(buttons) ||
+        AsRef(state.Item3).IsButtonDown(buttons) ||
+        AsRef(state.Item4).IsButtonDown(buttons);
     /// <inheritdoc cref="GamePadState.IsButtonUp"/>
     public static bool IsButtonUp(
-        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        this (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
-        Unsafe.AsRef(state.Item1).IsButtonUp(buttons) ||
-        Unsafe.AsRef(state.Item2).IsButtonUp(buttons) ||
-        Unsafe.AsRef(state.Item3).IsButtonUp(buttons) ||
-        Unsafe.AsRef(state.Item4).IsButtonUp(buttons);
+        AsRef(state.Item1).IsButtonUp(buttons) ||
+        AsRef(state.Item2).IsButtonUp(buttons) ||
+        AsRef(state.Item3).IsButtonUp(buttons) ||
+        AsRef(state.Item4).IsButtonUp(buttons);
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
