@@ -33,7 +33,9 @@ global using Range = System.Range;
 global using StringBuilder = System.Text.StringBuilder;
 global using Trace = System.Diagnostics.Trace;
 global using Type = System.Type;
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP_3_0_OR_GREATER && !NET5_0_OR_GREATER
 global using Vector = System.Numerics.Vector;
+#endif
 #endif
 #if KTANE
 global using Application = unity::UnityEngine.Application;
