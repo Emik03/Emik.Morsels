@@ -158,16 +158,16 @@ static partial class Clamped
     /// <paramref name="max"/>, otherwise the parameter <paramref name="number"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Clamp<T>(this T number, T? min = null, T? max = null)
+    public static T Clip<T>(this T number, T? min = null, T? max = null)
         where T : class, IComparisonOperators<T, T, bool> =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&
         number <= small ? small :
         number >= big ? big : number;
 
-    /// <inheritdoc cref="Clamp{T}(T, T?, T?)"/>
+    /// <inheritdoc cref="Clip{T}(T,T?,T?)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T Clamp<T>(this T number, T? min = null, T? max = null)
+    public static T Clip<T>(this T number, T? min = null, T? max = null)
         where T : struct, IComparisonOperators<T, T, bool> =>
         (min ?? number) is var small &&
         (max ?? number) is var big &&
