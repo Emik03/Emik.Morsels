@@ -704,25 +704,25 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         HashSet<object?>? seen = null
     )
     {
+        static bool IsChoiceAttribute(Attribute x) =>
+            x.GetType() is { DeclaringType: null, FullName: "Emik.ChoiceAttribute" } ||
+            (x.GetType().DeclaringType?.DeclaringType)
+           .FindPathToNull(x => x.DeclaringType)
+           .Any(x => x is { DeclaringType: not null, Name: "Choice" });
+
         static object? Ok(object? o, out bool any)
         {
             any = true;
             return o;
         }
 
-        bool IsChoice(Attribute x) =>
-            x.GetType().FullName is "Emik.ChoiceAttribute" ||
-            x.GetType().FindPathToNull(x => x.DeclaringType).Any(IsDotDeclaration);
-
-        bool IsDotDeclaration(MemberInfo x) => x.Name is "Choice" && x.DeclaringType == value.GetType();
-
         switch (value)
         {
+            case not null when value.GetType().GetCustomAttributes().Any(IsChoiceAttribute): return value.ToString();
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
             case Type x: return x.UnfoldedName();
             case Pointer x: return x.ToHexString();
             case Version x: return x.ToShortString();
-            case var _ when Array.Exists(Attribute.GetCustomAttributes(value.GetType()), IsChoice): return $"{value}";
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
