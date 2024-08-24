@@ -56,12 +56,12 @@ static class GamePadStateExtensions
 #pragma warning restore MA0048
 {
     /// <inheritdoc cref="GamePadState.IsConnected"/>
-    public static bool IsConnected(this (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
+    public static bool IsConnected(this in (GamePadState, GamePadState, GamePadState, GamePadState) state) =>
         state.Item1.IsConnected || state.Item2.IsConnected || state.Item3.IsConnected || state.Item4.IsConnected;
 
     /// <inheritdoc cref="GamePadState.IsButtonDown"/>
     public static bool IsButtonDown(
-        this (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
         AsRef(state.Item1).IsButtonDown(buttons) ||
@@ -71,7 +71,7 @@ static class GamePadStateExtensions
 
     /// <inheritdoc cref="GamePadState.IsButtonUp"/>
     public static bool IsButtonUp(
-        this (GamePadState, GamePadState, GamePadState, GamePadState) state,
+        this in (GamePadState, GamePadState, GamePadState, GamePadState) state,
         Buttons buttons
     ) =>
         AsRef(state.Item1).IsButtonUp(buttons) ||
