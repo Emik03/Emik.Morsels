@@ -11072,7 +11072,7 @@ abstract partial class Assert<T> : Assert
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 #pragma warning restore RCS1196
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-#if !FORCE_SERILOG && RELEASE && !CSHARPREPL
+#if !FORCE_SERILOG && RELEASE
 #if ROSLYN
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -19612,32 +19612,32 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this string s)
         where T : struct, IParsable<T> =>
-        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
+        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this string s, IFormatProvider? provider)
         where T : struct, IParsable<T> =>
-        T.TryParse(s, provider, out var result) ? result : default;
+        T.TryParse(s, provider, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
-        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
+        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
-        T.TryParse(s, provider, out var result) ? result : default;
+        T.TryParse(s, provider, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
-        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : default;
+        T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : struct, ISpanParsable<T> =>
-        T.TryParse(s, provider, out var result) ? result : default;
+        T.TryParse(s, provider, out var result) ? result : null;
 #endif
     static class FindTryParseFor<T>
     {
