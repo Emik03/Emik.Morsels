@@ -19276,16 +19276,17 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             any = true;
             return o;
         }
+        bool IsChoice(Attribute x) =>
+            x.GetType().FullName is "Emik.ChoiceAttribute" ||
+            x.GetType().FindPathToNull(x => x.DeclaringType).Any(IsDotDeclaration);
+        bool IsDotDeclaration(MemberInfo x) => x.Name is "Choice" && x.DeclaringType == value.GetType();
         switch (value)
         {
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
             case Type x: return x.UnfoldedName();
             case Pointer x: return x.ToHexString();
             case Version x: return x.ToShortString();
-            case var _ when Array.Exists(
-                Attribute.GetCustomAttributes(value.GetType()),
-                x => x.GetType() is { FullName: "Emik.ChoiceAttribute" } or { Name: "Choice" }
-            ): return $"{value}";
+            case var _ when Array.Exists(Attribute.GetCustomAttributes(value.GetType()), IsChoice): return $"{value}";
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
