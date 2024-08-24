@@ -22,6 +22,7 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define NO_ALLOWS_REF_STRUCT
+#define FORCE_SERILOG
 #define CSHARPREPL
 #define DEBUG
 global using System;
@@ -10892,7 +10893,7 @@ abstract partial class Assert<T> : Assert
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides methods to use callbacks within a statement.</summary>
-#if !RELEASE
+#if FORCE_SERILOG || !RELEASE
 #if ROSLYN
     /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
     public sealed partial class DiagnosticSink : ILogEventSink
@@ -11071,7 +11072,7 @@ abstract partial class Assert<T> : Assert
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 #pragma warning restore RCS1196
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-#if RELEASE && !CSHARPREPL
+#if !FORCE_SERILOG && RELEASE && !CSHARPREPL
 #if ROSLYN
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

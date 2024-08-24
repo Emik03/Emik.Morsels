@@ -29,6 +29,7 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define NO_ALLOWS_REF_STRUCT
+#define FORCE_SERILOG
 #define CSHARPREPL
 #define DEBUG
 <# /*

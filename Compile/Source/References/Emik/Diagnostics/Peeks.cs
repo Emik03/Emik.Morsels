@@ -6,7 +6,7 @@ namespace Emik.Morsels;
 /// <summary>Provides methods to use callbacks within a statement.</summary>
 static partial class Peeks
 {
-#if !RELEASE
+#if FORCE_SERILOG || !RELEASE
 #if ROSLYN // ReSharper disable once RedundantExtendsListEntry
     /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
     public sealed partial class DiagnosticSink : ILogEventSink
@@ -214,7 +214,7 @@ static partial class Peeks
     public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
 #pragma warning restore RCS1196
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-#if RELEASE && !CSHARPREPL
+#if !FORCE_SERILOG && RELEASE
 #if ROSLYN
     /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
