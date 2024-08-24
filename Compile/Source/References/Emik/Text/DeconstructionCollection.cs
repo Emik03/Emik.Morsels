@@ -716,6 +716,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             case Type x: return x.UnfoldedName();
             case Pointer x: return x.ToHexString();
             case Version x: return x.ToShortString();
+            case var _ when Array.Exists(
+                Attribute.GetCustomAttributes(value.GetType()),
+                x => x.GetType() is { FullName: "Emik.ChoiceAttribute" } or { Name: "Choice" }
+            ): return $"{value}";
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
             case IDictionary: goto default;
