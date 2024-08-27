@@ -192,23 +192,23 @@
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))" Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="8.0.400-beta.24280.1"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="9.0.100-beta.24406.3"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))" Include="FSharp.Core" Version="4.1.18"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="4.7.2"/>
         <Reference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
-        <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.2.4" PrivateAssets="all"/>
-        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog" Version="4.0.2-dev-02224" PrivateAssets="all"/>
+        <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.3.0" PrivateAssets="all"/>
+        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog" Version="4.0.2-dev-02226" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Sinks.File" Version="6.0.0" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Sinks.Console" Version="6.0.0" PrivateAssets="all"/>
         <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0'))" Include="Serilog.Formatting.Compact" Version="3.0.0" PrivateAssets="all"/>
         <PackageReference Condition="($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp')))" Include="FastGenericNew.SourceGenerator" Version="3.3.1" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Community Toolkit starts at .NET Standard 2.0. -->
-    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
-        <PackageReference Include="CommunityToolkit.Common" Version="8.2.2" PrivateAssets="all"/>
-        <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.2.2" PrivateAssets="all"/>
-        <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" PrivateAssets="all"/>
+    <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and '$(MSBuildProjectExtension)' != '.fsproj'">
+        <PackageReference Include="CommunityToolkit.Common" Version="8.3.0" PrivateAssets="all"/>
+        <PackageReference Include="CommunityToolkit.Diagnostics" Version="8.3.0" PrivateAssets="all"/>
+        <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.3.0" PrivateAssets="all"/>
     </ItemGroup>
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
