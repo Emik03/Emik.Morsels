@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression
+// ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 static partial class SpanSimdQueries
 {
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
