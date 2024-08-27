@@ -16887,7 +16887,10 @@ namespace System.Linq;
 // ReSharper disable BadParensLineBreaks BadPreprocessorIndent
 // ReSharper disable once CheckNamespace
 /// <summary>Provides prime numbers.</summary>
-public static class Primes
+#if CSHARPREPL
+public
+#endif
+    static class Primes
 {
     /// <summary>The smallest prime number.</summary>
     public const short Min = 2;
