@@ -134,8 +134,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
-
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped Span<T> enumerable,
@@ -161,8 +164,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
-
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
@@ -200,8 +206,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
-
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped Span<T> enumerable,
@@ -227,8 +236,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
-
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,

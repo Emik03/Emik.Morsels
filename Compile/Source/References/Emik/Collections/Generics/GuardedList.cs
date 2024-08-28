@@ -19,7 +19,6 @@ static partial class GuardedFactory
         iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToIList());
 }
 #endif
-
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
 /// an out of range value will always give the <see langword="default"/> value.
@@ -122,12 +121,11 @@ sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), MustDisposeResource, Pure]
-#pragma warning disable 8619 // Good job .NET 2.0 - 3.5 Nullable Analysis.
-    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
-#pragma warning restore 8619
+    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator().ItemCanBeNull();
+
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
+    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator().ItemCanBeNull();
 
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]

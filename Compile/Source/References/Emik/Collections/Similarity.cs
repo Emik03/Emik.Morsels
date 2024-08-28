@@ -724,10 +724,10 @@ static partial class Similarity
     )
     {
         if (leftLength is 0 || rightLength is 0)
-            return (leftLength is 0 && rightLength is 0).ToByte();
+            return leftLength is 0 && rightLength is 0 ? 1 : 0;
 
         if (leftLength is 1 && rightLength is 1)
-            return EqualsAt(left, right, 0, 0, comparer, indexer).ToByte();
+            return EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0;
 
         using var _ = rightLength.Alloc<byte>(out var span);
         return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);

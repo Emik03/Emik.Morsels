@@ -293,25 +293,45 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 // ReSharper disable once RedundantNameQualifier
-    /// <summary>Represents the rented array from <see cref="ArrayPool{T}"/>.</summary>
+    /// <summary>Represents the rented array.</summary>
     /// <typeparam name="T">The type of array to rent.</typeparam>
     public struct Rented<T> : IDisposable
     {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         T[]? _array;
+#else
+        nint _ptr;
+        static Rented()
+        {
+            if (IsReferenceOrContainsReferences<T>())
+                throw new NotSupportedException($"Type {typeof(T)} cannot be rented in this framework.");
+        }
+#endif
         /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
         /// <param name="length">The length of the array to retrieve.</param>
-        /// <param name="span">
-        /// The resulting <see cref="Span{T}"/>. Note that while <see cref="ArrayPool{T}.Rent"/> may return
-        /// </param>
-        public Rented(in int length, out Span<T> span) =>
+        /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
+        public unsafe Rented(int length, out Span<T> span) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
+#else
+#pragma warning disable 8500
+            span = new((void*)(_ptr = Marshal.AllocHGlobal(length * sizeof(T))), length);
+#pragma warning restore 8500
+#endif
         /// <inheritdoc />
         void IDisposable.Dispose()
         {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             if (_array is null)
                 return;
             ArrayPool<T>.Shared.Return(_array);
             _array = null;
+#else
+            if (_ptr is 0)
+                return;
+            Marshal.FreeHGlobal(_ptr);
+            _ptr = 0;
+#endif
         }
     }
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
@@ -383,10 +403,14 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             }
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
-            static bool IsReinterpretable(Type first, Type second) =>
-                first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
-            [Pure]
-            static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
+            static bool IsReinterpretable(Type first, Type second)
+            {
+                while (first.IsValueType && first.GetFields() is [{ FieldType: var next }])
+                    first = next;
+                while (second.IsValueType && second.GetFields() is [{ FieldType: var next }])
+                    second = next;
+                return first == second;
+            }
 #endif
         }
         /// <summary>
@@ -438,9 +462,9 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     }
     /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
-    /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes from
-    /// instantiating arrays normally. Notably, that all classes (such as <see cref="Array"/> or <see cref="List{T}"/>)
-    /// are heap allocated, and moreover are garbage collected. This can put a strain in methods that are called often.
+    /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes
+    /// from instantiating arrays normally. Notably, that all classes (such as <see cref="List{T}"/>) are heap
+    /// allocated, and moreover are garbage collected. This can cause strain in methods that are called often.
     /// </para><para>
     /// However, there isn't as much stack memory available as there is heap, which can cause a DoS (Denial of Service)
     /// vulnerability if you aren't careful. Use this constant to determine if you should use a heap allocation.
@@ -530,12 +554,16 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static byte[] Raw<T>(T value)
+    public static unsafe byte[] Raw<T>(T value)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
         =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
+#else
+            new Span<byte>(&value, sizeof(T)).ToArray();
+#endif
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.
@@ -575,16 +603,19 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static nuint ToAddress<T>(this T? _)
+    public static unsafe nuint ToAddress<T>(this T? _)
         where T : class
 #if CSHARPREPL
         =>
             Unsafe.As<T, nuint>(ref _);
-#else
+#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NET5_0_OR_GREATER
     {
         IL.Emit.Ldarg_0();
         return IL.Return<nuint>();
     }
+#else
+        =>
+            *(nuint*)&_;
 #endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
@@ -770,6 +801,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
+#endif
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
@@ -796,7 +828,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T>(this scoped Span<T> origin, scoped ref T target) =>
         origin.ReadOnly().IndexOf(ref target);
-#endif
 #if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -809,13 +840,13 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             span.ReadOnly().IndexOfAny(values);
     /// <summary>
-    /// Searches for the first index of any of the specified values similar
+    /// Searches for the first index of the specified values similar
     /// to calling IndexOf several times with the logical OR operator.
     /// </summary>
     /// <typeparam name="T">The type of the span and values.</typeparam>
     /// <param name="span">The span to search.</param>
     /// <param name="values">The set of values to search for.</param>
-    /// <returns>The first index of the occurrence of any of the values in the span. If not found, returns -1.</returns>
+    /// <returns>The first index of the occurrence of the values in the span. If not found, returns -1.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
 #if UNMANAGED_SPAN
@@ -1716,7 +1747,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped Span<T> enumerable,
@@ -1742,7 +1777,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
 #endif
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
@@ -1779,7 +1818,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped Span<T> enumerable,
@@ -1805,7 +1848,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
 #endif
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this scoped ReadOnlySpan<T> enumerable,
@@ -2965,7 +3012,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
-        /// <inheritdoc cref="IEnumerator.Current"/>
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
@@ -3041,7 +3088,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
-        /// <inheritdoc cref="IEnumerator.MoveNext"/>
+        /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
         /// <summary>
@@ -3348,7 +3395,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
-        /// <inheritdoc cref="IEnumerator.Current"/>
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
@@ -3426,7 +3473,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ when typeof(TStrategy) == typeof(MatchOne) => MoveNextOne(To<TBody>.From(sep), ref body, out current),
                 _ => throw Error,
             };
-        /// <inheritdoc cref="IEnumerator.MoveNext"/>
+        /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3717,6 +3764,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         =>
             span.ReadOnly().SplitOn(separator);
 #endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<byte, byte, MatchOne> SplitOn(this ReadOnlySpan<byte> span, byte separator) =>
@@ -3757,7 +3805,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this Span<ushort> span, ushort separator) =>
         span.ReadOnly().SplitOn(separator);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
@@ -4148,8 +4195,8 @@ readonly
         return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
 #endif
     }
-    /// <summary>Copies the values to a new <see cref="string"/> <see cref="Array"/>.</summary>
-    /// <returns>The <see cref="string"/> <see cref="Array"/> containing the copied values of this instance.</returns>
+    /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
+    /// <returns>The <see cref="string"/> array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string[] ToStringArray()
     {
@@ -4512,12 +4559,10 @@ public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IL
     public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [CollectionAccess(Read), MustDisposeResource, Pure]
-#pragma warning disable 8619
-    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator();
-#pragma warning restore 8619
+    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator().ItemCanBeNull();
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
-    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator();
+    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator().ItemCanBeNull();
     /// <inheritdoc/>
     [CollectionAccess(Read), Pure]
     IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
@@ -6808,7 +6853,7 @@ readonly
             return list[selector(0, list.Length)];
 #else
             var list = iterable.ToList();
-            return list[selector(0, list.Count)]
+            return list[selector(0, list.Count)];
 #endif
         }
         selector ??= Rand();
@@ -7516,9 +7561,9 @@ readonly
     )
     {
         if (leftLength is 0 || rightLength is 0)
-            return (leftLength is 0 && rightLength is 0).ToByte();
+            return leftLength is 0 && rightLength is 0 ? 1 : 0;
         if (leftLength is 1 && rightLength is 1)
-            return EqualsAt(left, right, 0, 0, comparer, indexer).ToByte();
+            return EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0;
         using var _ = rightLength.Alloc<byte>(out var span);
         return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
     }
@@ -8491,7 +8536,6 @@ public ref
             _ => it,
         };
     }
-#endif
     /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
     /// <param name="capacity">
@@ -8521,6 +8565,7 @@ public ref
 #endif
         =>
             (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
+#endif
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
@@ -10802,6 +10847,8 @@ abstract partial class Assert<T> : Assert
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#pragma warning disable GlobalUsingsAnalyzer
+#pragma warning restore GlobalUsingsAnalyzer
 #endif
 // ReSharper disable once CheckNamespace
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
@@ -13900,15 +13947,15 @@ readonly
         return upper;
     }
 #endif
-    /// <inheritdoc cref="Array.FindAll{T}"/>
+    /// <inheritdoc cref="System.Array.FindAll{T}(T[], Predicate{T})"/>
     public static T[] FindAll<T>(this T[] array, [InstantHandle] Predicate<T> match) => Array.FindAll(array, match);
-    /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
+    /// <inheritdoc cref="System.Array.ConvertAll{TInput, TOutput}(TInput[], Converter{TInput, TOutput})"/>
     public static TOutput[] ConvertAll<TInput, TOutput>(
         this TInput[] array,
         [InstantHandle] Converter<TInput, TOutput> converter
     ) =>
         Array.ConvertAll(array, converter);
-    /// <inheritdoc cref="Array.AsReadOnly{T}"/>
+    /// <inheritdoc cref="System.Array.AsReadOnly{T}(T[])"/>
     public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
@@ -15886,7 +15933,12 @@ namespace System.Linq;
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods to clamp numbers.</summary>
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this int value) =>
 #if NET6_0_OR_GREATER
@@ -15894,7 +15946,12 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this uint value) =>
 #if NET6_0_OR_GREATER
@@ -15902,7 +15959,12 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this long value) =>
 #if NET6_0_OR_GREATER
@@ -15910,7 +15972,12 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this ulong value) =>
 #if NET6_0_OR_GREATER
@@ -15931,7 +15998,12 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nuint value) =>
 #if NET7_0_OR_GREATER
@@ -18462,8 +18534,8 @@ readonly struct LightweightOverloadResolution(
     /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
     /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
     /// <returns>
-    /// An <see cref="Array"/> where each entry is a separate test of the number of
-    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// An array where each entry is a separate test of the number of bytes
+    /// the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
     /// </returns>
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static long[] CountAllocations(
@@ -18484,8 +18556,8 @@ readonly struct LightweightOverloadResolution(
     /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
     /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
     /// <returns>
-    /// An <see cref="Array"/> where each entry is a separate test of the number of
-    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// An array where each entry is a separate test of the number of bytes
+    /// the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
     /// </returns>
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static bool HasAllocations(
@@ -18533,30 +18605,30 @@ readonly struct LightweightOverloadResolution(
 #endif
         }
     }
-    /// <summary>Gets the underlying <see cref="Array"/> of the <see cref="List{T}"/>.</summary>
+    /// <summary>Gets the underlying array of the <see cref="List{T}"/>.</summary>
     /// <remarks><para>
     /// While unlikely, it is theoretically possible that the framework's implementation of
-    /// <see cref="List{T}"/> lacks any references to its underlying <see cref="Array"/>, or at
-    /// least directly. In that case, a new array is made, holding no reference to the list.
+    /// <see cref="List{T}"/> lacks any references to its underlying array, or at least
+    /// directly. In that case, a new array is made, holding no reference to the list.
     /// </para><para>
     /// If you want to ensure maximum compatibility, the implementation should not rely on whether
-    /// mutations within the <see cref="Array"/> would affect the <see cref="List{T}"/>, and vice versa.
+    /// mutations within the array would affect the <see cref="List{T}"/>, and vice versa.
     /// </para><para>
     /// Regardless of framework, mutations within the array will not notify the list during its enumerations which can
     /// easily cause bugs to slip through.
     /// </para><para>
-    /// The <see cref="Array"/> may contain uninitialized memory for all elements past <see cref="List{T}.Count"/>.
+    /// The array may contain uninitialized memory for all elements past <see cref="List{T}.Count"/>.
     /// </para><para>
     /// Uses of this method include obtaining a <see cref="ReadOnlySpan{T}"/> or <see cref="Span{T}"/> outside of
     /// .NET 5+ projects, as <c>CollectionsMarshal.AsSpan&lt;T&gt;</c> is not available there, or obtaining
-    /// <see cref="ReadOnlyMemory{T}"/> or <see cref="Memory{T}"/> of a <see cref="List{T}"/>, normally impossible,
-    /// or if growth of an <see cref="Array"/> is no longer needed but the contents are expected to be long-lasting.
+    /// <c>ReadOnlyMemory&lt;T&gt;</c> or <c>Memory&lt;T&gt;</c> of a <see cref="List{T}"/>, normally impossible,
+    /// or if growth of an array is no longer needed but the contents are expected to be long-lasting.
     /// </para><para>
     /// Whatever your use case, remember this: "It's not a b&#x0075;g, it's an undocumented feature.".
     /// </para></remarks>
     /// <typeparam name="T">The type of list.</typeparam>
     /// <param name="list">The list to obtain the underlying array.</param>
-    /// <returns>The <see cref="Array"/> of the parameter <paramref name="list"/>.</returns>
+    /// <returns>The array of the parameter <paramref name="list"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T[] UnsafelyToArray<T>(this List<T> list) => ListCache<T>.Converter(list);
 // SPDX-License-Identifier: MPL-2.0

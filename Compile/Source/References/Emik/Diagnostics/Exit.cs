@@ -1,7 +1,10 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
+#pragma warning disable GlobalUsingsAnalyzer
 using SecurityAction = System.Security.Permissions.SecurityAction;
+
+#pragma warning restore GlobalUsingsAnalyzer
 #endif
 
 // ReSharper disable once CheckNamespace

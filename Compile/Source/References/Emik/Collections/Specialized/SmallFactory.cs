@@ -66,7 +66,6 @@ static partial class SmallFactory
             _ => it, // Heap allocation
         };
     }
-#endif
 
     /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
     /// <typeparam name="T">The type of the collection.</typeparam>
@@ -99,6 +98,7 @@ static partial class SmallFactory
 #endif
         =>
             (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
+#endif
 
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>

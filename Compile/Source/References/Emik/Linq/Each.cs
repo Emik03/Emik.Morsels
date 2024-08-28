@@ -581,16 +581,16 @@ static partial class Each
     }
 #endif
 
-    /// <inheritdoc cref="Array.FindAll{T}"/>
+    /// <inheritdoc cref="System.Array.FindAll{T}(T[], Predicate{T})"/>
     public static T[] FindAll<T>(this T[] array, [InstantHandle] Predicate<T> match) => Array.FindAll(array, match);
 
-    /// <inheritdoc cref="Array.ConvertAll{TInput, TOutput}"/>
+    /// <inheritdoc cref="System.Array.ConvertAll{TInput, TOutput}(TInput[], Converter{TInput, TOutput})"/>
     public static TOutput[] ConvertAll<TInput, TOutput>(
         this TInput[] array,
         [InstantHandle] Converter<TInput, TOutput> converter
     ) =>
         Array.ConvertAll(array, converter);
 
-    /// <inheritdoc cref="Array.AsReadOnly{T}"/>
+    /// <inheritdoc cref="System.Array.AsReadOnly{T}(T[])"/>
     public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
 }

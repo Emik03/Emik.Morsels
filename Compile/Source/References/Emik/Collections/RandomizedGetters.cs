@@ -74,7 +74,7 @@ static partial class RandomizedGetters
             return list[selector(0, list.Length)];
 #else
             var list = iterable.ToList();
-            return list[selector(0, list.Count)]
+            return list[selector(0, list.Count)];
 #endif
         }
 

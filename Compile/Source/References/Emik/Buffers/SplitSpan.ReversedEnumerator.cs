@@ -63,7 +63,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             [MethodImpl(MethodImplOptions.AggressiveInlining)] init => _body = value;
         }
 
-        /// <inheritdoc cref="IEnumerator.Current"/>
+        /// <inheritdoc cref="IEnumerator{T}.Current"/>
         public readonly ReadOnlySpan<TBody> Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _current;
@@ -147,7 +147,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 _ => throw Error,
             };
 
-        /// <inheritdoc cref="IEnumerator.MoveNext"/>
+        /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext() => Move(_separator, ref _body, out _current);
 

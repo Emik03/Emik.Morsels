@@ -37,30 +37,30 @@ static partial class ListMarshal
         }
     }
 
-    /// <summary>Gets the underlying <see cref="Array"/> of the <see cref="List{T}"/>.</summary>
+    /// <summary>Gets the underlying array of the <see cref="List{T}"/>.</summary>
     /// <remarks><para>
     /// While unlikely, it is theoretically possible that the framework's implementation of
-    /// <see cref="List{T}"/> lacks any references to its underlying <see cref="Array"/>, or at
-    /// least directly. In that case, a new array is made, holding no reference to the list.
+    /// <see cref="List{T}"/> lacks any references to its underlying array, or at least
+    /// directly. In that case, a new array is made, holding no reference to the list.
     /// </para><para>
     /// If you want to ensure maximum compatibility, the implementation should not rely on whether
-    /// mutations within the <see cref="Array"/> would affect the <see cref="List{T}"/>, and vice versa.
+    /// mutations within the array would affect the <see cref="List{T}"/>, and vice versa.
     /// </para><para>
     /// Regardless of framework, mutations within the array will not notify the list during its enumerations which can
     /// easily cause bugs to slip through.
     /// </para><para>
-    /// The <see cref="Array"/> may contain uninitialized memory for all elements past <see cref="List{T}.Count"/>.
+    /// The array may contain uninitialized memory for all elements past <see cref="List{T}.Count"/>.
     /// </para><para>
     /// Uses of this method include obtaining a <see cref="ReadOnlySpan{T}"/> or <see cref="Span{T}"/> outside of
     /// .NET 5+ projects, as <c>CollectionsMarshal.AsSpan&lt;T&gt;</c> is not available there, or obtaining
-    /// <see cref="ReadOnlyMemory{T}"/> or <see cref="Memory{T}"/> of a <see cref="List{T}"/>, normally impossible,
-    /// or if growth of an <see cref="Array"/> is no longer needed but the contents are expected to be long-lasting.
+    /// <c>ReadOnlyMemory&lt;T&gt;</c> or <c>Memory&lt;T&gt;</c> of a <see cref="List{T}"/>, normally impossible,
+    /// or if growth of an array is no longer needed but the contents are expected to be long-lasting.
     /// </para><para>
     /// Whatever your use case, remember this: "It's not a b&#x0075;g, it's an undocumented feature.".
     /// </para></remarks>
     /// <typeparam name="T">The type of list.</typeparam>
     /// <param name="list">The list to obtain the underlying array.</param>
-    /// <returns>The <see cref="Array"/> of the parameter <paramref name="list"/>.</returns>
+    /// <returns>The array of the parameter <paramref name="list"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T[] UnsafelyToArray<T>(this List<T> list) => ListCache<T>.Converter(list);
 }

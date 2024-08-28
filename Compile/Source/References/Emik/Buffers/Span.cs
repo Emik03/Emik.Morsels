@@ -51,11 +51,16 @@ static partial class Span
             }
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
-            static bool IsReinterpretable(Type first, Type second) =>
-                first.FindPathToNull(Next).CartesianProduct(second.FindPathToNull(Next)).Any(x => x.First == x.Second);
+            static bool IsReinterpretable(Type first, Type second)
+            {
+                while (first.IsValueType && first.GetFields() is [{ FieldType: var next }])
+                    first = next;
 
-            [Pure]
-            static Type? Next(Type x) => x.IsValueType && x.GetFields() is [{ FieldType: var y }] ? y : null;
+                while (second.IsValueType && second.GetFields() is [{ FieldType: var next }])
+                    second = next;
+
+                return first == second;
+            }
 #endif
         }
 
@@ -109,9 +114,9 @@ static partial class Span
 
     /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
-    /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes from
-    /// instantiating arrays normally. Notably, that all classes (such as <see cref="Array"/> or <see cref="List{T}"/>)
-    /// are heap allocated, and moreover are garbage collected. This can put a strain in methods that are called often.
+    /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes
+    /// from instantiating arrays normally. Notably, that all classes (such as <see cref="List{T}"/>) are heap
+    /// allocated, and moreover are garbage collected. This can cause strain in methods that are called often.
     /// </para><para>
     /// However, there isn't as much stack memory available as there is heap, which can cause a DoS (Denial of Service)
     /// vulnerability if you aren't careful. Use this constant to determine if you should use a heap allocation.
@@ -210,13 +215,16 @@ static partial class Span
     /// <param name="value">The value to read.</param>
     /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static byte[] Raw<T>(T value)
+    public static unsafe byte[] Raw<T>(T value)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
         =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
-
+#else
+            new Span<byte>(&value, sizeof(T)).ToArray();
+#endif
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.
@@ -257,12 +265,12 @@ static partial class Span
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static nuint ToAddress<T>(this T? _)
+    public static unsafe nuint ToAddress<T>(this T? _)
         where T : class
 #if CSHARPREPL
         =>
             Unsafe.As<T, nuint>(ref _);
-#else
+#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NET5_0_OR_GREATER
     {
         // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
         // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
@@ -270,6 +278,9 @@ static partial class Span
         IL.Emit.Ldarg_0();
         return IL.Return<nuint>();
     }
+#else
+        =>
+            *(nuint*)&_;
 #endif
 #if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
@@ -469,7 +480,7 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
-
+#endif
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The input <see cref="Span{T}"/> to calculate the index for.</param>
@@ -496,7 +507,6 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T>(this scoped Span<T> origin, scoped ref T target) =>
         origin.ReadOnly().IndexOf(ref target);
-#endif
 #if !NET7_0_OR_GREATER
     /// <inheritdoc cref="IndexOfAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -510,13 +520,13 @@ static partial class Span
             span.ReadOnly().IndexOfAny(values);
 
     /// <summary>
-    /// Searches for the first index of any of the specified values similar
+    /// Searches for the first index of the specified values similar
     /// to calling IndexOf several times with the logical OR operator.
     /// </summary>
     /// <typeparam name="T">The type of the span and values.</typeparam>
     /// <param name="span">The span to search.</param>
     /// <param name="values">The set of values to search for.</param>
-    /// <returns>The first index of the occurrence of any of the values in the span. If not found, returns -1.</returns>
+    /// <returns>The first index of the occurrence of the values in the span. If not found, returns -1.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe int IndexOfAny<T>(this scoped ReadOnlySpan<T> span, scoped ReadOnlySpan<T> values)
 #if UNMANAGED_SPAN

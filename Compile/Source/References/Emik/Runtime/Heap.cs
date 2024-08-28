@@ -101,8 +101,8 @@ static partial class Heap
     /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
     /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
     /// <returns>
-    /// An <see cref="Array"/> where each entry is a separate test of the number of
-    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// An array where each entry is a separate test of the number of bytes
+    /// the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
     /// </returns>
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static long[] CountAllocations(
@@ -127,8 +127,8 @@ static partial class Heap
     /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
     /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
     /// <returns>
-    /// An <see cref="Array"/> where each entry is a separate test of the number of
-    /// bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
+    /// An array where each entry is a separate test of the number of bytes
+    /// the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
     /// </returns>
     [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
     public static bool HasAllocations(

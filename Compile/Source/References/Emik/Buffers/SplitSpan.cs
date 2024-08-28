@@ -113,7 +113,7 @@ static partial class SplitSpanFactory
         =>
             span.ReadOnly().SplitOn(separator);
 #endif
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<byte, byte, MatchOne> SplitOn(this ReadOnlySpan<byte> span, byte separator) =>
@@ -163,7 +163,7 @@ static partial class SplitSpanFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this Span<ushort> span, ushort separator) =>
         span.ReadOnly().SplitOn(separator);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
@@ -618,8 +618,8 @@ readonly
 #endif
     }
 
-    /// <summary>Copies the values to a new <see cref="string"/> <see cref="Array"/>.</summary>
-    /// <returns>The <see cref="string"/> <see cref="Array"/> containing the copied values of this instance.</returns>
+    /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
+    /// <returns>The <see cref="string"/> array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string[] ToStringArray()
     {

@@ -6,7 +6,12 @@ namespace Emik.Morsels;
 /// <summary>Extension methods to clamp numbers.</summary>
 static partial class Clamped
 {
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this int value) =>
 #if NET6_0_OR_GREATER
@@ -15,7 +20,12 @@ static partial class Clamped
         (value & value - 1) is 0 && value > 0;
 #endif
 
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this uint value) =>
 #if NET6_0_OR_GREATER
@@ -24,7 +34,12 @@ static partial class Clamped
         (value & value - 1) is 0 && value > 0;
 #endif
 
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this long value) =>
 #if NET6_0_OR_GREATER
@@ -33,7 +48,12 @@ static partial class Clamped
         (value & value - 1) is 0 && value > 0;
 #endif
 
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this ulong value) =>
 #if NET6_0_OR_GREATER
@@ -56,7 +76,12 @@ static partial class Clamped
         (value & value - 1) is 0 && value > 0;
 #endif
 
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
+    /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="value"/>
+    /// is a power of 2; otherwise, <see langword="false"/>.
+    /// </returns>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nuint value) =>
 #if NET7_0_OR_GREATER
