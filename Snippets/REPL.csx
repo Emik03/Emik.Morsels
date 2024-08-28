@@ -20125,11 +20125,12 @@ public
 #endif
 #pragma warning disable MA0110, SYSLIB1045
     static readonly Regex
-        s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options),
-        s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
-        s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
         s_angles = new("<(?>(?:<(?<A>)|>(?<-A>)|[^<>]+){2,})>", Options),
-        s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
+        s_curlies = new("{(?>(?:{(?<A>)|}(?<-A>)|[^{}]+){2,})}", Options),
+        s_singleQuotes = new(@"'(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})'", Options),
+        s_doubleQuotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options),
+        s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
+        s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
 #pragma warning restore MA0110, SYSLIB1045
 #endif
     /// <summary>Gets the field count of the version.</summary>
@@ -20159,7 +20160,8 @@ public
         s = s_brackets.Replace(s, "[…]");
         s = s_curlies.Replace(s, "{…}");
         s = s_angles.Replace(s, "<…>");
-        return s_quotes.Replace(s, "\"…\"");
+        s = s_singleQuotes.Replace(s, "'…'");
+        return s_doubleQuotes.Replace(s, "\"…\"");
     }
     /// <summary>Collapses the <see cref="string"/> to a single line.</summary>
     /// <param name="expression">The <see cref="string"/> to collapse.</param>
@@ -20171,12 +20173,17 @@ public
     {
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            =>
+                accumulator.Append(next.Trim());
+#else
         {
             var trimmed = next.Trim();
             fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, trimmed.Length).Append(' ');
+                accumulator.Append(ptr, trimmed.Length);
             return accumulator;
         }
+#endif
         return expression?.Collapse()
            .SplitSpanLines()
            .Aggregate(new StringBuilder(prefix), Accumulator)
