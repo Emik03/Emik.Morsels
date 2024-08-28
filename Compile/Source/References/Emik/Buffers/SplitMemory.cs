@@ -190,7 +190,6 @@ static partial class SplitMemoryFactory
 #else
         new(span, Whitespaces.Breaking.AsMemory());
 #endif
-
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,
@@ -227,7 +226,6 @@ static partial class SplitMemoryFactory
 #else
         new(span, Whitespaces.Unicode.AsMemory());
 #endif
-
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char,

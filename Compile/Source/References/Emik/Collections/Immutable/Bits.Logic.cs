@@ -136,7 +136,6 @@ readonly
             return ref Unsafe.AsRef<T>(Min(r, w));
     }
 #endif
-
     /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
     /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>

@@ -110,7 +110,6 @@ static partial class MemoryMarshal
         =>
             Cache<T>.Span(ref reference, length);
 #endif
-
     /// <summary>
     /// Create a new read-only span over a portion of a regular managed object. This can be useful
     /// if part of a managed object represents a "fixed array." This is dangerous because the
@@ -148,7 +147,6 @@ static partial class MemoryMarshal
 #else
         ref Unsafe.AsRef<T>(span.Pointer);
 #endif
-
     /// <summary>Returns a reference to the element of the span at index 0.</summary>
     /// <remarks><para>
     /// If the span is empty, this method returns a reference to the location where the

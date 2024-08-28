@@ -36,7 +36,6 @@ static partial class Rent
             span = new((void*)(_ptr = Marshal.AllocHGlobal(length * sizeof(T))), length);
 #pragma warning restore 8500
 #endif
-
         /// <inheritdoc />
         void IDisposable.Dispose()
         {

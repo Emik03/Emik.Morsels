@@ -178,7 +178,6 @@ unsafe
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
 #endif
-
     /// <summary>
     /// Attempts to copy the current <see cref="Span{T}"/> to a destination <see cref="Span{T}"/>
     /// and returns a value that indicates whether the copy operation succeeded.
@@ -225,7 +224,6 @@ unsafe
      Obsolete("Equals() on Span will always throw an exception. Use the equality operator instead.")]
     public override int GetHashCode() => throw new NotSupportedException();
 #endif
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
@@ -517,7 +515,6 @@ unsafe
      Obsolete("Equals() on ReadOnlySpan will always throw an exception. Use the equality operator instead.")]
     public override bool Equals(object? obj) => throw new NotSupportedException();
 #endif
-
     /// <summary>
     /// Attempts to copy the current <see cref="ReadOnlySpan{T}"/> to a destination <see cref="Span{T}"/>
     /// and returns a value that indicates whether the copy operation succeeded.
@@ -564,7 +561,6 @@ unsafe
      Obsolete("Equals() on ReadOnlySpan will always throw an exception. Use the equality operator instead.")]
     public override int GetHashCode() => throw new NotSupportedException();
 #endif
-
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>

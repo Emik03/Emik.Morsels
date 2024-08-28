@@ -99,7 +99,6 @@ static partial class Peeks
             };
     }
 #endif
-
     /// <summary>The character often used to identify scripted assemblies.</summary>
     public const char R = '\u211b';
 
@@ -140,7 +139,6 @@ static partial class Peeks
     static Peeks() => File.Create(s_debugFile).Dispose();
 #endif
 #endif
-
     /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
     // ReSharper disable RedundantCast
     // ReSharper disable once EventNeverSubscribedTo.Global
@@ -229,7 +227,6 @@ static partial class Peeks
     public static Location Mark(this Location location, [UsedImplicitly] IEnumerable<Location>? additionalLocations) =>
         location;
 #endif
-
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
@@ -731,7 +728,6 @@ static partial class Peeks
         }
     }
 #endif
-
     /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
@@ -1547,7 +1543,6 @@ static partial class Peeks
         return value;
     }
 #endif
-
     /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this in SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -1606,7 +1601,6 @@ static partial class Peeks
     }
 #endif
 #endif
-
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and action parameter.</typeparam>
     /// <param name="value">The value to pass into the callback.</param>
@@ -1635,7 +1629,6 @@ static partial class Peeks
         return value;
     }
 #endif
-
     /// <summary>Executes the function, and returns the result.</summary>
     /// <typeparam name="T">The type of value and input parameter.</typeparam>
     /// <typeparam name="TResult">The type of output and return value.</typeparam>

@@ -19,7 +19,6 @@ static partial class CircularFactory
         iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToIList());
 }
 #endif
-
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
 /// indices wrap around and will therefore never be out of range.

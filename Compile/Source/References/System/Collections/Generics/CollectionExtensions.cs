@@ -22,7 +22,6 @@ static class CollectionExtensions
     ) =>
         dictionary.TryGetValue(key, out var value) ? value : defaultValue;
 #endif
-
     /// <summary>
     /// Tries to get the value associated with the specified
     /// <paramref name="key"/> in the <paramref name="dictionary"/>.
@@ -148,7 +147,6 @@ static class CollectionExtensions
         where TKey : notnull =>
         new(dictionary);
 #endif
-
     /// <summary>Adds the elements of the specified span to the end of the <see cref="List{T}"/>.</summary>
     /// <typeparam name="T">The type of elements in the list.</typeparam>
     /// <param name="list">The list to which the elements should be added.</param>

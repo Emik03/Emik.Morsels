@@ -25,7 +25,6 @@ static partial class ManyQueries
         }
     }
 #endif
-
     /// <summary>Uses the callback if the parameter is non-<see langword="null"/>.</summary>
     /// <typeparam name="T">The source of the item.</typeparam>
     /// <typeparam name="TResult">The resulting type.</typeparam>

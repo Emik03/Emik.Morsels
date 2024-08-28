@@ -19,7 +19,6 @@ abstract partial class Assert(
 #if !CSHARPREPL
     static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToIList();
 #endif
-
     /// <summary>Initializes a new instance of the <see cref="Emik.Morsels.Assert"/> class.</summary>
     /// <param name="that">The condition that must be true.</param>
     /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
@@ -39,7 +38,6 @@ abstract partial class Assert(
 #else
         s_assertions.Count;
 #endif
-
     /// <summary>
     /// Gets the enumeration responsible for running every <see cref="Emik.Morsels.Assert"/> instance
     /// defined in the current <see cref="Assembly"/>, and returning every instance of a failed assert.
@@ -231,7 +229,6 @@ abstract partial class Assert(
         [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
             Math.Abs(x - y) <= Math.Abs(margin);
 #endif
-
     /// <summary>Executes every assertion and gets all of the assertions that failed.</summary>
     /// <returns>All assertions that failed.</returns>
     [Pure]
@@ -255,7 +252,6 @@ abstract partial class Assert(
         [Format("Expected @x to be approximately within the range, received #x.")](x) =>
             int.CreateSaturating(x) is var i && i >= range.Start.Value && i <= range.End.Value;
 #endif
-
     /// <summary>Creates the assertion that the value must be within a certain range.</summary>
     /// <typeparam name="T">The type of value.</typeparam>
     /// <param name="low">The inclusive lower boundary.</param>

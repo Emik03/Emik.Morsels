@@ -19,7 +19,6 @@ static partial class ClippedFactory
         iterable is null ? null : iterable as ClampedList<T> ?? new(iterable.ToIList());
 }
 #endif
-
 /// <summary>
 /// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
 /// </summary>

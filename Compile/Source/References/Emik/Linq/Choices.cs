@@ -91,7 +91,6 @@ static partial class Choices
         return c;
     }
 #endif
-
     /// <summary>Calculates the binomial coefficient (nCk) (N items, choose k).</summary>
     /// <typeparam name="T">The type of items to choose from.</typeparam>
     /// <param name="n">The items to choose from.</param>
@@ -178,7 +177,6 @@ readonly
 #else
         public readonly void Dispose() { }
 #endif
-
         /// <inheritdoc />
         public void Reset()
         {

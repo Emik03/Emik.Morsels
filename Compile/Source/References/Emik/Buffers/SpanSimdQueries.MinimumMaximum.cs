@@ -26,7 +26,6 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, SMax>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
@@ -47,7 +46,6 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, SMax>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -77,7 +75,6 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, SMin>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
@@ -98,7 +95,6 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, SMin>(enumerable.Span);
 #endif
-
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)

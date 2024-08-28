@@ -16,7 +16,6 @@ static partial class Collected
     public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
         iterable is null ? null : iterable as T[] ?? iterable.ToArray();
 #endif
-
     /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
     /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
     /// <typeparam name="T">The item in the collection.</typeparam>
@@ -45,7 +44,6 @@ static partial class Collected
 #else
                 : iterable.ToIList());
 #endif
-
     /// <summary>Returns a fallback enumeration if the collection given is null or empty.</summary>
     /// <typeparam name="T">The type of item within the enumeration.</typeparam>
     /// <param name="iterable">The potentially empty collection.</param>
@@ -115,7 +113,6 @@ static partial class Collected
     ) =>
         iterable is null ? null : iterable as ISet<T> ?? new HashSet<T>(iterable, comparer);
 #endif
-
     /// <summary>Provides a wrapper to an <see cref="IEnumerable{T}"/> with a known count.</summary>
     /// <param name="enumerable">The enumerable to encapsulate.</param>
     /// <param name="count">The pre-computed count.</param>

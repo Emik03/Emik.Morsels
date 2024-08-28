@@ -19,7 +19,6 @@ static partial class Clamped
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -33,7 +32,6 @@ static partial class Clamped
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -47,7 +45,6 @@ static partial class Clamped
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -61,7 +58,6 @@ static partial class Clamped
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -75,7 +71,6 @@ static partial class Clamped
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -96,7 +91,6 @@ static partial class Clamped
         where T : IBitwiseOperators<T, T, T>, IComparisonOperators<T, T, bool>, INumberBase<T> =>
         (value & value - T.One) == T.Zero && value > T.Zero;
 #endif
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -130,7 +124,6 @@ static partial class Clamped
         return value + 1;
     }
 #endif
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -154,7 +147,6 @@ static partial class Clamped
         return value + 1;
     }
 #endif
-
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

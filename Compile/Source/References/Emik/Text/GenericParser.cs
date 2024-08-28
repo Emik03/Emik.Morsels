@@ -147,7 +147,6 @@ static partial class GenericParser
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : null;
 #endif
-
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryParse<T>(this string s)
@@ -202,7 +201,6 @@ static partial class GenericParser
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #endif
-
     static class FindTryParseFor<T>
     {
         [Pure] // ReSharper disable once MemberCanBePrivate.Local

@@ -51,7 +51,6 @@ static partial class RandomGetItems
         =>
             GetItems(that, new ReadOnlySpan<T>(choices), length);
 #endif
-
     /// <summary>Creates an array populated with items chosen at random from the provided set of choices.</summary>
     /// <remarks><para>
     /// The method uses <see cref="Random.Next(int)"/> to select items randomly from <paramref name="choices"/>

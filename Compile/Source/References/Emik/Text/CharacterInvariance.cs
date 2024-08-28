@@ -56,7 +56,6 @@ static partial class CharacterInvariance
     [Pure]
     public static bool IsNullOrWhitespace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
 #endif
-
     /// <inheritdoc cref="char.IsNumber(char)"/>
     [Pure]
     public static bool IsNumber(this char c) => char.IsNumber(c);

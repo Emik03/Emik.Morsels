@@ -34,7 +34,6 @@ static partial class EnumMath
 #else
         left.Op(right, static (x, y) => (x & y) == y);
 #endif
-
     /// <summary>Performs a conversion operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -76,7 +75,6 @@ static partial class EnumMath
             }
             : MathCaching<T>.From(value);
 #endif
-
     /// <summary>Gets the values of an enum cached and strongly-typed.</summary>
     /// <typeparam name="T">The type of enum to get the values from.</typeparam>
     /// <returns>All values in the type parameter <typeparamref name="T"/>.</returns>
@@ -118,7 +116,6 @@ static partial class EnumMath
             ? (T)(Enum)MathCaching<Unknowable>.To(value)
             : MathCaching<T>.To(value);
 #endif
-
     /// <summary>Performs a negation operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -132,7 +129,6 @@ static partial class EnumMath
 #else
         value.Op(static x => unchecked(-x));
 #endif
-
     /// <summary>Performs an decrement operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -146,7 +142,6 @@ static partial class EnumMath
 #else
         value.Op(static x => unchecked(x - 1));
 #endif
-
     /// <summary>Performs a increment operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -160,7 +155,6 @@ static partial class EnumMath
 #else
         value.Op(static x => unchecked(x + 1));
 #endif
-
     /// <summary>Performs an addition operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -175,7 +169,6 @@ static partial class EnumMath
 #else
         left.Op(right, static (x, y) => unchecked(x + y));
 #endif
-
     /// <summary>Performs a subtraction operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -190,7 +183,6 @@ static partial class EnumMath
 #else
         left.Op(right, static (x, y) => unchecked(x - y));
 #endif
-
     /// <summary>Performs a multiplication operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -205,7 +197,6 @@ static partial class EnumMath
 #else
         left.Op(right, static (x, y) => unchecked(x * y));
 #endif
-
     /// <summary>Performs a division operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -220,7 +211,6 @@ static partial class EnumMath
 #else
         left.Op(right, static (x, y) => x / y);
 #endif
-
     /// <summary>Performs a modulo operation.</summary>
     /// <remarks><para>The conversion and operation are unchecked, and treated as <see cref="int"/>.</para></remarks>
     /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
@@ -235,7 +225,6 @@ static partial class EnumMath
 #else
         left.Op(right, static (x, y) => x % y);
 #endif
-
     /// <summary>Computes the product of a sequence of <typeparamref name="T"/> values.</summary>
     /// <typeparam name="T">The type of sequence.</typeparam>
     /// <param name="source">A sequence of <typeparamref name="T"/> values to calculate the product of.</param>

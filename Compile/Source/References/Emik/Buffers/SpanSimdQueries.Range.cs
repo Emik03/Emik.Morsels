@@ -48,7 +48,6 @@ static partial class SpanSimdQueries
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source, int index) => Range(source.Span, index);
 #endif
-
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>

@@ -81,7 +81,6 @@ static partial class BitsFactory
         where T : unmanaged =>
         source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
 #endif
-
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>

@@ -314,7 +314,6 @@ static partial class Span
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<T> ReadOnly<T>(this Memory<T> memory) => memory;
 #endif
-
     /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <typeparam name="T">The type of span.</typeparam>
     /// <param name="span">The span to convert.</param>
@@ -333,7 +332,6 @@ static partial class Span
 #else
         MemoryMarshal.CreateSpan(ref reference, 1);
 #endif
-
     /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
     /// <typeparam name="TTo">The destination type.</typeparam>
@@ -361,7 +359,6 @@ static partial class Span
         return new(ptr, length);
     }
 #endif
-
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
     /// <param name="source">The read-only reference to reinterpret.</param>
@@ -425,7 +422,6 @@ static partial class Span
         tail = memory[1..];
     }
 #endif
-
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -553,7 +549,6 @@ static partial class Span
 #else
         origin.IndexOf(ref *(T*)target.Pointer);
 #endif
-
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
@@ -731,7 +726,6 @@ static partial class Span
         =>
             (uint)(index - 1) < (uint)memory.Length ? memory.Span.UnsafelyIndex(memory.Length - index) : default;
 #endif
-
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>

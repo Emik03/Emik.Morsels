@@ -56,7 +56,6 @@ static partial class MethodImplOptions
 #else
         (Options)(1 << 8);
 #endif
-
     /// <summary>The method contains code that should always be optimized by the just-in-time (JIT) compiler.</summary>
     /// <remarks><para>
     /// Use this attribute if running an unoptimized version of the method has undesirable effects,

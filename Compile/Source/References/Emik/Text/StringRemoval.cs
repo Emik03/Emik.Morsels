@@ -180,7 +180,6 @@ static partial class StringRemoval
         return default;
     }
 #endif
-
     /// <inheritdoc cref="string.Trim()"/>
     public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
 

@@ -251,7 +251,6 @@ readonly
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
         };
 #endif
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static unsafe int PopCountRemainder(byte* remainder) =>
         BitOperations.PopCount(

@@ -186,7 +186,6 @@ static partial class MatrixFactory
             set => List[Count * x + y] = value;
         }
 #endif
-
         /// <inheritdoc />
         public bool IsReadOnly
         {
@@ -354,7 +353,6 @@ static partial class MatrixFactory
     public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
         iterator is null ? null : new(iterator.ToIList(), countPerList);
 #endif
-
     /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>

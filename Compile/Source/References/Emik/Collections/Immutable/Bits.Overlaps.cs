@@ -52,7 +52,6 @@ readonly
 #else
         (Enumerator)item is var e && e.MoveNext() && !e.MoveNext();
 #endif
-
     /// <inheritdoc cref="ICollection{T}.Contains"/>
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public bool Contains(T item)

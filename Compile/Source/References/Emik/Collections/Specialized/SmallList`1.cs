@@ -910,7 +910,6 @@ partial struct SmallList<T> :
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     readonly ulong IConvertible.ToUInt64(IFormatProvider? provider) => unchecked((ulong)Count);
 #endif
-
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

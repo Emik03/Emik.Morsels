@@ -199,7 +199,6 @@ static partial class Each
         return list;
     }
 #endif
-
     /// <summary>
     /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
     /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
@@ -580,7 +579,6 @@ static partial class Each
         return upper;
     }
 #endif
-
     /// <inheritdoc cref="System.Array.FindAll{T}(T[], Predicate{T})"/>
     public static T[] FindAll<T>(this T[] array, [InstantHandle] Predicate<T> match) => Array.FindAll(array, match);
 

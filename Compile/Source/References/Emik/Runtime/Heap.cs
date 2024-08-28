@@ -82,7 +82,6 @@ static partial class Heap
 #else
             var after = GC.GetTotalMemory(false); // Prevents last-second garbage collection.
 #endif
-
             return after - before;
         }
         finally

@@ -99,7 +99,6 @@ static partial class SmallFactory
         =>
             (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
 #endif
-
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>

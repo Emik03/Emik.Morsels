@@ -31,7 +31,6 @@ static partial class SpanSimdQueries
         =>
             span.Span.Average();
 #endif
-
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
@@ -66,7 +65,6 @@ static partial class SpanSimdQueries
         =>
             span.Span.Sum();
 #endif
-
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
@@ -133,7 +131,6 @@ static partial class SpanSimdQueries
         =>
             Average(span.Span, converter);
 #endif
-
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>
@@ -184,7 +181,6 @@ static partial class SpanSimdQueries
         =>
             span.Span.Sum(converter);
 #endif
-
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <typeparam name="TResult">The type of return.</typeparam>

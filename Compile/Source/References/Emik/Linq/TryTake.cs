@@ -80,7 +80,6 @@ static partial class TryTake
             _ => iterable.EnumerateOr(fallback),
         };
 #endif
-
     /// <summary>Gets a specific item from a collection.</summary>
     /// <typeparam name="TKey">The key item in the collection.</typeparam>
     /// <typeparam name="TValue">The value item in the collection.</typeparam>
@@ -144,7 +143,6 @@ static partial class TryTake
     public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
         array.IsDefault ? ImmutableArray<T>.Empty : array;
 #endif
-
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>
     /// <param name="index">The index to use.</param>
@@ -212,7 +210,6 @@ static partial class TryTake
         };
     }
 #endif
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
     static unsafe T Reinterpret<T>(char c)

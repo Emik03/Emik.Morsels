@@ -188,7 +188,6 @@ namespace System
                 _ => throw new ArgumentException(),
             };
 #endif
-
         [Pure, ValueRange(0)]
         int IValueTupleInternal.GetHashCode(IEqualityComparer comparer) => 0;
 
@@ -551,7 +550,6 @@ namespace System
             return comparer.Compare(Item1, objTuple.Item1);
         }
 #endif
-
         [Pure]
         int IValueTupleInternal.GetHashCode(IEqualityComparer comparer) => comparer.GetHashCode(Item1);
 
@@ -718,7 +716,6 @@ namespace System
         [Pure]
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2}"/> instance.
         /// </summary>
@@ -929,7 +926,6 @@ namespace System
         [Pure]
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2,T3}"/> instance.
         /// </summary>
@@ -1161,7 +1157,6 @@ namespace System
         [Pure]
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2,T3,T4}"/> instance.
         /// </summary>
@@ -1416,7 +1411,6 @@ namespace System
         [Pure]
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2,T3,T4,T5}"/> instance.
         /// </summary>
@@ -1693,7 +1687,6 @@ namespace System
         [Pure]
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2,T3,T4,T5,T6}"/> instance.
         /// </summary>
@@ -2001,7 +1994,6 @@ namespace System
 
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2,T3,T4,T5,T6,T7}"/> instance.
         /// </summary>
@@ -2330,7 +2322,6 @@ namespace System
         [Pure]
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
 #endif
-
         /// <summary>
         /// Returns the hash code for the current <see cref="ValueTuple{T1,T2,T3,T4,T5,T6,T7, TRest}"/> instance.
         /// </summary>

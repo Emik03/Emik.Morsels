@@ -23,7 +23,6 @@ static partial class Permuted
 #else
         iterator.Select(x => x.ReadOnly()).ReadOnly().Combinations();
 #endif
-
     /// <summary>Generates all combinations of the nested list.</summary>
     /// <typeparam name="T">The type of nested list.</typeparam>
     /// <param name="lists">The input to generate combinations of.</param>

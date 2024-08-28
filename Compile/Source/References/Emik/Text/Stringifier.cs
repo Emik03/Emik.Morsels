@@ -112,7 +112,6 @@ static partial class Stringifier
         s_quotes = new(@"""(?>(?:{(?<A>)|}(?<-A>)|[^""]+){2,})""", Options);
 #pragma warning restore MA0110, SYSLIB1045
 #endif
-
     /// <summary>Gets the field count of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to use.</param>
     /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
@@ -203,7 +202,6 @@ static partial class Stringifier
             ? $"{i} {one[..^tr]}{many[tr..]}"
             : $"{i} {one}";
 #endif
-
     /// <summary>Extracts the file name from the path.</summary>
     /// <remarks><para>
     /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
@@ -232,7 +230,6 @@ static partial class Stringifier
             ? ""
             : Path.GetFileName(path).Trim() ?? "";
 #endif
-
     /// <summary>Extracts the file name from the path.</summary>
     /// <remarks><para>
     /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
@@ -261,7 +258,6 @@ static partial class Stringifier
             ? ""
             : Path.GetFileName(path) ?? "";
 #endif
-
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
@@ -319,7 +315,6 @@ static partial class Stringifier
     [Pure]
     public static string Concat([InstantHandle] this IEnumerable<char> chars) => string.Concat(chars);
 #endif
-
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
     /// This method is more efficient than using
@@ -445,7 +440,6 @@ static partial class Stringifier
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.FullName)}";
 #endif
-
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
@@ -460,7 +454,6 @@ static partial class Stringifier
         s_unfoldedNames.TryGetValue(type, out var val) ? val :
         s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.Name)}";
 #endif
-
     /// <summary>Converts a number to an ordinal.</summary>
     /// <param name="i">The number to convert.</param>
     /// <param name="indexByZero">Determines whether to index from zero or one.</param>
@@ -623,7 +616,6 @@ static partial class Stringifier
     }
 #pragma warning restore 8500
 #endif
-
     /// <summary>Forces the use of reflective stringification.</summary>
     /// <typeparam name="T">The type of the source.</typeparam>
     /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
@@ -722,7 +714,6 @@ static partial class Stringifier
         return dish;
     }
 #endif
-
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
@@ -935,7 +926,6 @@ static partial class Stringifier
 #else
         Enum.Parse(type, $"{i}");
 #endif
-
     [MustUseReturnValue]
     static StringBuilder EnumeratorStringifier(
         [HandlesResourceDisposal] this IEnumerator iterator,
@@ -1044,7 +1034,6 @@ static partial class Stringifier
 #else
            .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
 #endif
-
         var all = fields
            .Concat(properties)
 #if WAWA

@@ -227,7 +227,6 @@ static partial class SplitSpanFactory
 #else
         new(span, Whitespaces.Breaking.AsSpan());
 #endif
-
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -267,7 +266,6 @@ static partial class SplitSpanFactory
 #else
         new(span, Whitespaces.Unicode.AsSpan());
 #endif
-
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char,
@@ -570,7 +568,6 @@ readonly
 #else
             : throw new NotSupportedException();
 #endif
-
     /// <summary>
     /// Converts the elements of the collection to a <see cref="string"/> representation,
     /// using the specified divider between elements.

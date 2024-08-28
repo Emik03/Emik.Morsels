@@ -75,7 +75,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #else // RuntimeHelpers.GetHashCode eventually calls an external function that I have no idea how to replicate.
                 : 0;
 #endif
-
         /// <summary>Determines whether the value is a scalar.</summary>
         /// <param name="value">The value to check.</param>
         /// <returns>
@@ -780,7 +779,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #else
         $"{Whitespaces.Breaking.Aggregate(new StringBuilder(ToString()), (acc, next) => acc.Replace($"{next}", ""))}";
 #endif
-
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();
