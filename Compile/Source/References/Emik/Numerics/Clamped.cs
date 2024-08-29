@@ -84,13 +84,6 @@ static partial class Clamped
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-#if NET7_0_OR_GREATER
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsPow2<T>(this T value)
-        where T : IBitwiseOperators<T, T, T>, IComparisonOperators<T, T, bool>, INumberBase<T> =>
-        (value & value - T.One) == T.Zero && value > T.Zero;
-#endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

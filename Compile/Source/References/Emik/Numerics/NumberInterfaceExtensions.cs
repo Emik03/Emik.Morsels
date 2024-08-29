@@ -90,6 +90,12 @@ static partial class NumberInterfaceExtensions
         where TSelf : INumberBase<TSelf> =>
         TSelf.IsPositiveInfinity(value);
 
+    /// <inheritdoc cref="IBinaryNumber{TSelf}.IsPow2"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2<TSelf>(this TSelf value)
+        where TSelf : IBinaryNumber<TSelf> =>
+        TSelf.IsPow2(value);
+
     /// <inheritdoc cref="INumberBase{TSelf}.IsRealNumber"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsRealNumber<TSelf>(this TSelf value)
@@ -114,6 +120,12 @@ static partial class NumberInterfaceExtensions
         where TSelf : INumber<TSelf> =>
         TSelf.Sign(value);
 
+    /// <inheritdoc cref="IBinaryInteger{TSelf}.DivRem"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static (TSelf Quotient, TSelf Remainder) DivRem<TSelf>(this TSelf left, TSelf right)
+        where TSelf : IBinaryInteger<TSelf> =>
+        TSelf.DivRem(left, right);
+
     /// <inheritdoc cref="INumberBase{TSelf}.Abs"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TSelf Abs<TSelf>(this TSelf value)
@@ -131,6 +143,12 @@ static partial class NumberInterfaceExtensions
     public static TSelf CopySign<TSelf>(this TSelf value, TSelf sign)
         where TSelf : INumber<TSelf> =>
         TSelf.CopySign(value, sign);
+
+    /// <inheritdoc cref="IBinaryNumber{TSelf}.Log2"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static TSelf Log2<TSelf>(this TSelf value)
+        where TSelf : IBinaryNumber<TSelf> =>
+        TSelf.Log2(value);
 #if NET9_0_OR_GREATER
     /// <inheritdoc cref="INumberBase{TSelf}.MultiplyAddEstimate"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

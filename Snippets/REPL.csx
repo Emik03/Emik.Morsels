@@ -16011,13 +16011,6 @@ namespace System.Linq;
 #else
         (value & value - 1) is 0 && value > 0;
 #endif
-#if NET7_0_OR_GREATER
-    /// <inheritdoc cref="IsPow2(IntPtr)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsPow2<T>(this T value)
-        where T : IBitwiseOperators<T, T, T>, IComparisonOperators<T, T, bool>, INumberBase<T> =>
-        (value & value - T.One) == T.Zero && value > T.Zero;
-#endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
@@ -16645,6 +16638,11 @@ namespace System.Linq;
     public static bool IsPositiveInfinity<TSelf>(this TSelf value)
         where TSelf : INumberBase<TSelf> =>
         TSelf.IsPositiveInfinity(value);
+    /// <inheritdoc cref="IBinaryNumber{TSelf}.IsPow2"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool IsPow2<TSelf>(this TSelf value)
+        where TSelf : IBinaryNumber<TSelf> =>
+        TSelf.IsPow2(value);
     /// <inheritdoc cref="INumberBase{TSelf}.IsRealNumber"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsRealNumber<TSelf>(this TSelf value)
@@ -16665,6 +16663,11 @@ namespace System.Linq;
     public static int Sign<TSelf>(this TSelf value)
         where TSelf : INumber<TSelf> =>
         TSelf.Sign(value);
+    /// <inheritdoc cref="IBinaryInteger{TSelf}.DivRem"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static (TSelf Quotient, TSelf Remainder) DivRem<TSelf>(this TSelf left, TSelf right)
+        where TSelf : IBinaryInteger<TSelf> =>
+        TSelf.DivRem(left, right);
     /// <inheritdoc cref="INumberBase{TSelf}.Abs"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TSelf Abs<TSelf>(this TSelf value)
@@ -16680,6 +16683,11 @@ namespace System.Linq;
     public static TSelf CopySign<TSelf>(this TSelf value, TSelf sign)
         where TSelf : INumber<TSelf> =>
         TSelf.CopySign(value, sign);
+    /// <inheritdoc cref="IBinaryNumber{TSelf}.Log2"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static TSelf Log2<TSelf>(this TSelf value)
+        where TSelf : IBinaryNumber<TSelf> =>
+        TSelf.Log2(value);
 #if NET9_0_OR_GREATER
     /// <inheritdoc cref="INumberBase{TSelf}.MultiplyAddEstimate"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
