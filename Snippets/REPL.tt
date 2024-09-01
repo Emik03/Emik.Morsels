@@ -305,7 +305,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
     static string QualifyCollectionAccess(string x)
         => x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)");
 
-    static long GetDjb2HashCode(string x) => x.Aggregate(5381, (acc, next) => unchecked((acc << 5) + acc ^ next));
+    static long GetDjb2HashCode(string x)
+        => Path.GetFileName(x).Aggregate(5381, (acc, next) => unchecked((acc << 5) + acc ^ next));
 
     static bool HasContent(string x) => !string.IsNullOrWhiteSpace(x);
 
