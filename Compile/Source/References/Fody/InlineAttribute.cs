@@ -1,19 +1,25 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK && !NET48 || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
+#if NETFRAMEWORK && !NET461_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER || NETCOREAPP && !NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace InlineMethod;
 
-using static AttributeTargets;
-
 /// <summary>Method to inline.</summary>
-[AttributeUsage(Method)]
-sealed partial class InlineAttribute : Attribute
+[AttributeUsage(AttributeTargets.Method)]
+partial class InlineAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="InlineAttribute"/> class.</summary>
-    /// <param name="remove">The value to set.</param>
-    public InlineAttribute(bool remove = true) => Remove = remove;
+    /// <param name="behavior">Export attribute.</param>
+    /// <param name="export">InlineMethod behavior.</param>
+    public InlineAttribute(InlineBehavior behavior = InlineBehavior.RemovePrivate, bool export = false)
+    {
+        Behavior = behavior;
+        Export = export;
+    }
 
-    /// <summary>Gets a value indicating whether to remove the method after inlining, if private.</summary>
-    public bool Remove { get; }
+    /// <summary>Export attribute.</summary>
+    public bool Export { get; }
+
+    /// <summary>InlineMethod behavior.</summary>
+    public InlineBehavior Behavior { get; }
 }
 #endif

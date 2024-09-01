@@ -2966,6 +2966,663 @@ readonly
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
+#pragma warning disable IDE0032, RCS1158
+/// <summary>Methods to split spans into multiple spans.</summary>
+    /// <summary>The type that indicates to match all elements.</summary>
+    public struct MatchAll;
+    /// <summary>The type that indicates to match any element.</summary>
+    public struct MatchAny;
+    /// <summary>The type that indicates to match exactly one element.</summary>
+    public struct MatchOne;
+    /// <summary>Splits a span by the specified separator.</summary>
+    /// <typeparam name="T">The type of element from the span.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="separator">The separator.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            new(span, separator);
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            span.ReadOnly().SplitOnAny(separator);
+    /// <summary>Splits a span by the specified separator.</summary>
+    /// <typeparam name="T">The type of element from the span.</typeparam>
+    /// <param name="span">The span to split.</param>
+    /// <param name="separator">The separator.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, T, MatchAll> SplitOn<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            new(span, separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, T, MatchAll> SplitOn<T>(this Span<T> span, ReadOnlySpan<T> separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>
+#endif
+        =>
+            span.ReadOnly().SplitOn(separator);
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
+        this ReadOnlySpan<T> span,
+        in SearchValues<T> separator
+    )
+        where T : IEquatable<T> =>
+        new(span, In(separator));
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
+        this Span<T> span,
+        in SearchValues<T> separator
+    )
+        where T : IEquatable<T> =>
+        span.ReadOnly().SplitOn(separator);
+#endif
+#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            new(span, In(separator));
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
+#if UNMANAGED_SPAN
+        where T : unmanaged, IEquatable<T>
+#else
+        where T : IEquatable<T>?
+#endif
+        =>
+            span.ReadOnly().SplitOn(separator);
+#endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<byte, byte, MatchOne> SplitOn(this ReadOnlySpan<byte> span, byte separator) =>
+        new(span, separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<byte, byte, MatchOne> SplitOn(this Span<byte> span, byte separator) =>
+        span.ReadOnly().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchOne> SplitOn(this ReadOnlySpan<char> span, char separator) =>
+        new(span, separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchOne> SplitOn(this Span<char> span, char separator) =>
+        span.ReadOnly().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this ReadOnlySpan<sbyte> span, sbyte separator) =>
+        new(span, separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this Span<sbyte> span, sbyte separator) =>
+        span.ReadOnly().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<short, short, MatchOne> SplitOn(this ReadOnlySpan<short> span, short separator) =>
+        new(span, separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<short, short, MatchOne> SplitOn(this Span<short> span, short separator) =>
+        span.ReadOnly().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this ReadOnlySpan<ushort> span, ushort separator) =>
+        new(span, separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this Span<ushort> span, ushort separator) =>
+        span.ReadOnly().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
+        span.AsSpan().SplitOn(separator);
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string span, string separator) =>
+        span.AsSpan().SplitOnAny(separator.AsSpan());
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitOnAny(separator);
+    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string separator) =>
+        span.SplitOnAny(separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string span, string separator) =>
+        span.AsSpan().SplitOn(separator.AsSpan());
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchAll> SplitOn(this string span, ReadOnlySpan<char> separator) =>
+        span.AsSpan().SplitOn(separator);
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string separator) =>
+        span.SplitOn(separator.AsSpan());
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitSpanLines(this string span) =>
+        span.AsSpan().SplitLines();
+    /// <summary>Splits a span by line breaks.</summary>
+    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, BreakingSearch.GetSpan());
+#else
+        new(span, Breaking.AsSpan());
+#endif
+    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitLines(this Span<char> span) =>
+        span.ReadOnly().SplitLines();
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitSpanWhitespace(this string span) =>
+        span.AsSpan().SplitWhitespace();
+    /// <summary>Splits a span by whitespace.</summary>
+    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
+    /// <param name="span">The span to split.</param>
+    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
+#if NET8_0_OR_GREATER
+        new(span, UnicodeSearch.Memory.Span);
+#else
+        new(span, Unicode.AsSpan());
+#endif
+    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char,
+#if NET8_0_OR_GREATER
+        SearchValues<char>,
+#else
+        char,
+#endif
+        MatchAny> SplitWhitespace(this Span<char> span) =>
+        span.ReadOnly().SplitWhitespace();
+#endif
+#if NET8_0_OR_GREATER
+    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, in SearchValues{T})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static SplitSpan<char, SearchValues<char>, MatchAny> SplitSpanOn(
+        this string span,
+        in SearchValues<char> separator
+    ) =>
+        span.AsSpan().SplitOn(separator);
+#endif
+/// <summary>Represents a split entry.</summary>
+/// <typeparam name="TBody">The type of element from the span.</typeparam>
+/// <typeparam name="TSeparator">The type of separator.</typeparam>
+/// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
+/// <param name="body">The line to split.</param>
+/// <param name="separator">The separator.</param>
+[StructLayout(LayoutKind.Auto)]
+[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+#if !NO_REF_STRUCTS
+    ref
+#endif
+    partial struct SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
+#if UNMANAGED_SPAN
+    where TBody : unmanaged, IEquatable<TBody>?
+#else
+    where TBody : IEquatable<TBody>?
+#endif
+#if !NET7_0_OR_GREATER
+    where TSeparator : IEquatable<TSeparator>?
+#endif
+{
+    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="accumulator">The accumulator.</param>
+    /// <param name="next">The next slice from the enumeration.</param>
+    /// <returns>The final accumulator value.</returns>
+    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, ReadOnlySpan<TBody> next)
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulator : allows ref struct
+#endif
+    ;
+    readonly ReadOnlySpan<TBody> _body = body;
+    readonly ReadOnlySpan<TSeparator> _separator = separator;
+    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
+    /// <param name="body">The line to split.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SplitSpan(ReadOnlySpan<TBody> body)
+        : this(body, default) { }
+    /// <summary>Gets the error thrown by this type.</summary>
+    public static NotSupportedException Error
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => new($"Unrecognized type: {typeof(TStrategy).Name}");
+    }
+    /// <summary>Gets the line to split.</summary>
+    public readonly ReadOnlySpan<TBody> Body
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
+    }
+    /// <summary>Gets the first element.</summary>
+    public readonly ReadOnlySpan<TBody> First
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+    }
+    /// <summary>Gets the last element.</summary>
+    public readonly ReadOnlySpan<TBody> Last
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
+    }
+    /// <summary>Gets the separator.</summary>
+    public readonly ReadOnlySpan<TSeparator> Separator
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
+    }
+    /// <summary>Gets the single element.</summary>
+    public readonly ReadOnlySpan<TBody> Single
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+    }
+    /// <summary>Gets the specified index.</summary>
+    /// <param name="index">The index to get.</param>
+    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
+    public readonly ReadOnlySpan<TBody> this[[NonNegativeValue] int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
+            var e = GetEnumerator();
+            for (var i = 0; i <= index; i++)
+                if (!e.MoveNext())
+                    return default;
+            return e.Current;
+        }
+    }
+    /// <summary>Gets the specified index.</summary>
+    /// <param name="index">The index to get.</param>
+    public readonly ReadOnlySpan<TBody> this[Index index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get
+        {
+            if (index.Value is var value && !index.IsFromEnd)
+            {
+                var forwards = GetEnumerator();
+                for (var i = 0; i <= value; i++)
+                    if (!forwards.MoveNext())
+                        return default;
+                return forwards.Current;
+            }
+            var backwards = GetReversedEnumerator();
+            for (var i = 0; i <= value; i++)
+                if (!backwards.MoveNext())
+                    return default;
+            return backwards.Current;
+        }
+    }
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both splits are equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator ==(
+        scoped SplitSpan<TBody, TSeparator, TStrategy> left,
+        scoped SplitSpan<TBody, TSeparator, TStrategy> right
+    ) =>
+        left.Equals(right);
+    /// <summary>Determines whether both splits are not equal.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>Whether both splits are not equal.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(
+        scoped SplitSpan<TBody, TSeparator, TStrategy> left,
+        scoped SplitSpan<TBody, TSeparator, TStrategy> right
+    ) =>
+        !left.Equals(right);
+    /// <summary>
+    /// Explicitly converts the parameter by creating the new instance of
+    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> by using the constructor
+    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
+    /// </summary>
+    /// <param name="body">The parameter to pass onto the constructor.</param>
+    /// <returns>
+    /// The new instance of SplitSpan{TBody, TSeparator, TStrategy} by passing the parameter <paramref name="body"/>
+    /// to the constructor <see cref="SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static explicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
+    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.</summary>
+    /// <param name="head">The first element of this enumeration.</param>
+    /// <param name="tail">The rest of this enumeration.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly void Deconstruct(out ReadOnlySpan<TBody> head, out SplitSpan<TBody, TSeparator, TStrategy> tail)
+    {
+        if (GetEnumerator() is var e && !e.MoveNext())
+        {
+            head = default;
+            tail = default;
+            return;
+        }
+        head = e.Current;
+        tail = new(e.Body, _separator);
+    }
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
+    /// <param name="other">The other side.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
+            return !otherE.MoveNext();
+        if (!otherE.MoveNext())
+            return false;
+        ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
+        while (true)
+#pragma warning disable 9080
+            if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
+#pragma warning restore 9080
+                return ret;
+    }
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
+    public readonly override bool Equals(object? obj) => false;
+    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool Equals(scoped SplitSpan<TBody, TSeparator, TStrategy> other) =>
+        _body.SequenceEqual(other._body) && _separator.SequenceEqual(other._separator);
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
+    /// <param name="other">The side to compare to.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        scoped in SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        Enumerator e = this;
+        var eOther = other.GetEnumerator();
+        while (e.MoveNext())
+            if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current))
+                return false;
+        return !eOther.MoveNext();
+    }
+    /// <summary>Computes the length.</summary>
+    /// <returns>The length.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly int Count()
+    {
+        var count = 0;
+        for (var e = GetEnumerator(); e.MoveNext(); count++) { }
+        return count;
+    }
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly override string ToString() =>
+        typeof(TBody) == typeof(char)
+            ? Aggregate(new StringBuilder(), StringBuilderAccumulator).ToString()
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+            : ToArrays().Stringify(3, true);
+#else
+            : throw new NotSupportedException();
+#endif
+    /// <summary>
+    /// Converts the elements of the collection to a <see cref="string"/> representation,
+    /// using the specified divider between elements.
+    /// </summary>
+    /// <param name="divider">The divider to insert between elements.</param>
+    /// <returns>A <see cref="string"/> representation of the collection.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string ToString(scoped ReadOnlySpan<TBody> divider)
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        if (GetEnumerator() is var e && !e.MoveNext())
+            return "";
+        using var ret = 4.Alloc<TBody>();
+        ret.Append(e.Current);
+        while (e.MoveNext())
+        {
+            ret.Append(divider);
+            ret.Append(e.Current);
+        }
+        return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
+#else
+        var e = GetEnumerator();
+        if (!e.MoveNext())
+            return "";
+        List<TBody> ret = [];
+        foreach (var next in e.Current)
+            ret.Add(next);
+        while (e.MoveNext())
+        {
+            foreach (var next in divider)
+                ret.Add(next);
+            foreach (var next in e.Current)
+                ret.Add(next);
+        }
+        return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
+#endif
+    }
+    /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
+    /// <returns>The <see cref="string"/> array containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly string[] ToStringArray()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = 4.Alloc<string>();
+        foreach (var next in this)
+            ret.Append(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
+        return ret.View.ToArray();
+#else
+        List<string> ret = [];
+        foreach (var next in this)
+            ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
+        return [.. ret];
+#endif
+    }
+    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
+    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
+    /// <param name="seed">The accumulator.</param>
+    /// <param name="func">An accumulator function to be invoked on each element.</param>
+    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+    public readonly TAccumulator Aggregate<TAccumulator>(
+        TAccumulator seed,
+        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where TAccumulator : allows ref struct
+#endif
+    {
+        var accumulator = seed;
+        foreach (var next in this)
+            accumulator = func(accumulator, next);
+        return accumulator;
+    }
+    /// <summary>Copies the values to a new flattened array.</summary>
+    /// <returns>The array containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = 4.Alloc<TBody>();
+        foreach (var next in this)
+            ret.Append(next);
+        return ret.View.ToArray();
+#else
+        List<TBody> ret = [];
+        foreach (var next in this)
+            foreach (var element in next)
+                ret.Add(element);
+        return [.. ret];
+#endif
+    }
+    /// <summary>Copies the values to a new flattened array.</summary>
+    /// <param name="divider">The separator between each element.</param>
+    /// <returns>The array containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[] ToArray(scoped ReadOnlySpan<TBody> divider)
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        if (GetEnumerator() is var e && !e.MoveNext())
+            return [];
+        using var ret = 4.Alloc<TBody>();
+        ret.Append(e.Current);
+        while (e.MoveNext())
+        {
+            ret.Append(divider);
+            ret.Append(e.Current);
+        }
+        return ret.View.ToArray();
+#else
+        if (GetEnumerator() is var e && !e.MoveNext())
+            return [];
+        List<TBody> ret = [];
+        foreach (var next in e.Current)
+            ret.Add(next);
+        while (e.MoveNext())
+        {
+            foreach (var next in divider)
+                ret.Add(next);
+            foreach (var next in e.Current)
+                ret.Add(next);
+        }
+        return [.. ret];
+#endif
+    }
+    /// <summary>Copies the values to a new nested array.</summary>
+    /// <returns>The nested array containing the copied values of this instance.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly TBody[][] ToArrays()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        using var ret = 4.Alloc<TBody[]>();
+        foreach (var next in this)
+            ret.Append(next.ToArray());
+        return ret.View.ToArray();
+#else
+        List<TBody[]> ret = [];
+        foreach (var next in this)
+            ret.Add(next.ToArray());
+        return [.. ret];
+#endif
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe StringBuilder StringBuilderAccumulator(StringBuilder builder, scoped ReadOnlySpan<TBody> span)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        =>
+            builder.Append(To<char>.From(span));
+#else
+        {
+#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
+            for (var i = 0; i < span.Length; i++)
+                builder.Append(((char*)span.Pointer)[i]);
+            return builder;
+#else
+#pragma warning disable 8500
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            var ptr = span.Pointer;
+#else
+            fixed (TBody* ptr = span)
+#endif
+#pragma warning restore 8500
+                return builder.Append((char*)ptr, span.Length);
+#endif
+        }
+#endif
+}
+// SPDX-License-Identifier: MPL-2.0
+// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #pragma warning disable IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
@@ -3665,663 +4322,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         }
     }
-}
-// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable IDE0032, RCS1158
-/// <summary>Methods to split spans into multiple spans.</summary>
-    /// <summary>The type that indicates to match all elements.</summary>
-    public struct MatchAll;
-    /// <summary>The type that indicates to match any element.</summary>
-    public struct MatchAny;
-    /// <summary>The type that indicates to match exactly one element.</summary>
-    public struct MatchOne;
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, separator);
-    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAny> SplitOnAny<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            span.ReadOnly().SplitOnAny(separator);
-    /// <summary>Splits a span by the specified separator.</summary>
-    /// <typeparam name="T">The type of element from the span.</typeparam>
-    /// <param name="span">The span to split.</param>
-    /// <param name="separator">The separator.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAll> SplitOn<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            new(span, separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchAll> SplitOn<T>(this Span<T> span, ReadOnlySpan<T> separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>
-#endif
-        =>
-            span.ReadOnly().SplitOn(separator);
-#if NET8_0_OR_GREATER
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
-        this ReadOnlySpan<T> span,
-        in SearchValues<T> separator
-    )
-        where T : IEquatable<T> =>
-        new(span, In(separator));
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, SearchValues<T>, MatchAny> SplitOn<T>(
-        this Span<T> span,
-        in SearchValues<T> separator
-    )
-        where T : IEquatable<T> =>
-        span.ReadOnly().SplitOn(separator);
-#endif
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>?
-#endif
-        =>
-            new(span, In(separator));
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<T, T, MatchOne> SplitOn<T>(this Span<T> span, in T separator)
-#if UNMANAGED_SPAN
-        where T : unmanaged, IEquatable<T>
-#else
-        where T : IEquatable<T>?
-#endif
-        =>
-            span.ReadOnly().SplitOn(separator);
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<byte, byte, MatchOne> SplitOn(this ReadOnlySpan<byte> span, byte separator) =>
-        new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<byte, byte, MatchOne> SplitOn(this Span<byte> span, byte separator) =>
-        span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchOne> SplitOn(this ReadOnlySpan<char> span, char separator) =>
-        new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchOne> SplitOn(this Span<char> span, char separator) =>
-        span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this ReadOnlySpan<sbyte> span, sbyte separator) =>
-        new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<sbyte, sbyte, MatchOne> SplitOn(this Span<sbyte> span, sbyte separator) =>
-        span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<short, short, MatchOne> SplitOn(this ReadOnlySpan<short> span, short separator) =>
-        new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<short, short, MatchOne> SplitOn(this Span<short> span, short separator) =>
-        span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this ReadOnlySpan<ushort> span, ushort separator) =>
-        new(span, separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<ushort, ushort, MatchOne> SplitOn(this Span<ushort> span, ushort separator) =>
-        span.ReadOnly().SplitOn(separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
-        span.AsSpan().SplitOn(separator);
-    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string span, string separator) =>
-        span.AsSpan().SplitOnAny(separator.AsSpan());
-    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitOnAny(separator);
-    /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string separator) =>
-        span.SplitOnAny(separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string span, string separator) =>
-        span.AsSpan().SplitOn(separator.AsSpan());
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitOn(this string span, ReadOnlySpan<char> separator) =>
-        span.AsSpan().SplitOn(separator);
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string separator) =>
-        span.SplitOn(separator.AsSpan());
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitSpanLines(this string span) =>
-        span.AsSpan().SplitLines();
-    /// <summary>Splits a span by line breaks.</summary>
-    /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
-#if NET8_0_OR_GREATER
-        new(span, BreakingSearch.GetSpan());
-#else
-        new(span, Breaking.AsSpan());
-#endif
-    /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this Span<char> span) =>
-        span.ReadOnly().SplitLines();
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitSpanWhitespace(this string span) =>
-        span.AsSpan().SplitWhitespace();
-    /// <summary>Splits a span by whitespace.</summary>
-    /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
-    /// <param name="span">The span to split.</param>
-    /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
-#if NET8_0_OR_GREATER
-        new(span, UnicodeSearch.Memory.Span);
-#else
-        new(span, Unicode.AsSpan());
-#endif
-    /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this Span<char> span) =>
-        span.ReadOnly().SplitWhitespace();
-#endif
-#if NET8_0_OR_GREATER
-    /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, in SearchValues{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, SearchValues<char>, MatchAny> SplitSpanOn(
-        this string span,
-        in SearchValues<char> separator
-    ) =>
-        span.AsSpan().SplitOn(separator);
-#endif
-/// <summary>Represents a split entry.</summary>
-/// <typeparam name="TBody">The type of element from the span.</typeparam>
-/// <typeparam name="TSeparator">The type of separator.</typeparam>
-/// <typeparam name="TStrategy">The strategy for splitting elements.</typeparam>
-/// <param name="body">The line to split.</param>
-/// <param name="separator">The separator.</param>
-[StructLayout(LayoutKind.Auto)]
-[method: MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-#if !NO_REF_STRUCTS
-    ref
-#endif
-    partial struct SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body, ReadOnlySpan<TSeparator> separator)
-#if UNMANAGED_SPAN
-    where TBody : unmanaged, IEquatable<TBody>?
-#else
-    where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-    where TSeparator : IEquatable<TSeparator>?
-#endif
-{
-    /// <summary>Represents the accumulator function for the enumeration of this type.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="accumulator">The accumulator.</param>
-    /// <param name="next">The next slice from the enumeration.</param>
-    /// <returns>The final accumulator value.</returns>
-    public delegate TAccumulator Accumulator<TAccumulator>(TAccumulator accumulator, ReadOnlySpan<TBody> next)
-#if !NO_ALLOWS_REF_STRUCT
-        where TAccumulator : allows ref struct
-#endif
-    ;
-    readonly ReadOnlySpan<TBody> _body = body;
-    readonly ReadOnlySpan<TSeparator> _separator = separator;
-    /// <summary>Initializes a new instance of the <see cref="SplitSpan{T, TSeparator, TStrategy}"/> struct.</summary>
-    /// <param name="body">The line to split.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public SplitSpan(ReadOnlySpan<TBody> body)
-        : this(body, default) { }
-    /// <summary>Gets the error thrown by this type.</summary>
-    public static NotSupportedException Error
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => new($"Unrecognized type: {typeof(TStrategy).Name}");
-    }
-    /// <summary>Gets the line to split.</summary>
-    public readonly ReadOnlySpan<TBody> Body
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _body;
-    }
-    /// <summary>Gets the first element.</summary>
-    public readonly ReadOnlySpan<TBody> First
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
-    }
-    /// <summary>Gets the last element.</summary>
-    public readonly ReadOnlySpan<TBody> Last
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
-    }
-    /// <summary>Gets the separator.</summary>
-    public readonly ReadOnlySpan<TSeparator> Separator
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _separator;
-    }
-    /// <summary>Gets the single element.</summary>
-    public readonly ReadOnlySpan<TBody> Single
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
-    }
-    /// <summary>Gets the specified index.</summary>
-    /// <param name="index">The index to get.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
-    public readonly ReadOnlySpan<TBody> this[[NonNegativeValue] int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
-            var e = GetEnumerator();
-            for (var i = 0; i <= index; i++)
-                if (!e.MoveNext())
-                    return default;
-            return e.Current;
-        }
-    }
-    /// <summary>Gets the specified index.</summary>
-    /// <param name="index">The index to get.</param>
-    public readonly ReadOnlySpan<TBody> this[Index index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            if (index.Value is var value && !index.IsFromEnd)
-            {
-                var forwards = GetEnumerator();
-                for (var i = 0; i <= value; i++)
-                    if (!forwards.MoveNext())
-                        return default;
-                return forwards.Current;
-            }
-            var backwards = GetReversedEnumerator();
-            for (var i = 0; i <= value; i++)
-                if (!backwards.MoveNext())
-                    return default;
-            return backwards.Current;
-        }
-    }
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are equal.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(
-        scoped SplitSpan<TBody, TSeparator, TStrategy> left,
-        scoped SplitSpan<TBody, TSeparator, TStrategy> right
-    ) =>
-        left.Equals(right);
-    /// <summary>Determines whether both splits are not equal.</summary>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>Whether both splits are not equal.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(
-        scoped SplitSpan<TBody, TSeparator, TStrategy> left,
-        scoped SplitSpan<TBody, TSeparator, TStrategy> right
-    ) =>
-        !left.Equals(right);
-    /// <summary>
-    /// Explicitly converts the parameter by creating the new instance of
-    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/> by using the constructor
-    /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
-    /// </summary>
-    /// <param name="body">The parameter to pass onto the constructor.</param>
-    /// <returns>
-    /// The new instance of SplitSpan{TBody, TSeparator, TStrategy} by passing the parameter <paramref name="body"/>
-    /// to the constructor <see cref="SplitSpan{TBody, TSeparator, TStrategy}(ReadOnlySpan{TBody})"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static explicit operator SplitSpan<TBody, TSeparator, TStrategy>(ReadOnlySpan<TBody> body) => new(body);
-    /// <summary>Separates the head from the tail of this <see cref="SplitSpan{T, TSeparator, TStrategy}"/>.</summary>
-    /// <param name="head">The first element of this enumeration.</param>
-    /// <param name="tail">The rest of this enumeration.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void Deconstruct(out ReadOnlySpan<TBody> head, out SplitSpan<TBody, TSeparator, TStrategy> tail)
-    {
-        if (GetEnumerator() is var e && !e.MoveNext())
-        {
-            head = default;
-            tail = default;
-            return;
-        }
-        head = e.Current;
-        tail = new(e.Body, _separator);
-    }
-    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
-    /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
-    /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
-    /// <param name="other">The other side.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
-    )
-#if !NET7_0_OR_GREATER
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
-#endif
-    {
-        if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
-            return !otherE.MoveNext();
-        if (!otherE.MoveNext())
-            return false;
-        ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
-        while (true)
-#pragma warning disable 9080
-            if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
-#pragma warning restore 9080
-                return ret;
-    }
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
-    public readonly override bool Equals(object? obj) => false;
-    /// <inheritdoc cref="IEquatable{T}.Equals(T)" />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool Equals(scoped SplitSpan<TBody, TSeparator, TStrategy> other) =>
-        _body.SequenceEqual(other._body) && _separator.SequenceEqual(other._separator);
-    /// <summary>Determines whether both splits are equal.</summary>
-    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
-    /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
-    /// <param name="other">The side to compare to.</param>
-    /// <returns>
-    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
-        scoped in SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
-    )
-#if !NET7_0_OR_GREATER
-        where TOtherSeparator : IEquatable<TOtherSeparator>?
-#endif
-    {
-        Enumerator e = this;
-        var eOther = other.GetEnumerator();
-        while (e.MoveNext())
-            if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current))
-                return false;
-        return !eOther.MoveNext();
-    }
-    /// <summary>Computes the length.</summary>
-    /// <returns>The length.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly int Count()
-    {
-        var count = 0;
-        for (var e = GetEnumerator(); e.MoveNext(); count++) { }
-        return count;
-    }
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override int GetHashCode() => unchecked(typeof(TBody).GetHashCode() * 31);
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override string ToString() =>
-        typeof(TBody) == typeof(char)
-            ? Aggregate(new StringBuilder(), StringBuilderAccumulator).ToString()
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            : ToArrays().Stringify(3, true);
-#else
-            : throw new NotSupportedException();
-#endif
-    /// <summary>
-    /// Converts the elements of the collection to a <see cref="string"/> representation,
-    /// using the specified divider between elements.
-    /// </summary>
-    /// <param name="divider">The divider to insert between elements.</param>
-    /// <returns>A <see cref="string"/> representation of the collection.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly string ToString(scoped ReadOnlySpan<TBody> divider)
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return "";
-        using var ret = 4.Alloc<TBody>();
-        ret.Append(e.Current);
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-        return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
-#else
-        var e = GetEnumerator();
-        if (!e.MoveNext())
-            return "";
-        List<TBody> ret = [];
-        foreach (var next in e.Current)
-            ret.Add(next);
-        while (e.MoveNext())
-        {
-            foreach (var next in divider)
-                ret.Add(next);
-            foreach (var next in e.Current)
-                ret.Add(next);
-        }
-        return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
-#endif
-    }
-    /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
-    /// <returns>The <see cref="string"/> array containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly string[] ToStringArray()
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<string>();
-        foreach (var next in this)
-            ret.Append(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-        return ret.View.ToArray();
-#else
-        List<string> ret = [];
-        foreach (var next in this)
-            ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-        return [.. ret];
-#endif
-    }
-    /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
-    /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
-    /// <param name="seed">The accumulator.</param>
-    /// <param name="func">An accumulator function to be invoked on each element.</param>
-    /// <returns>The accumulated result of <paramref name="seed"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-    public readonly TAccumulator Aggregate<TAccumulator>(
-        TAccumulator seed,
-        [InstantHandle, RequireStaticDelegate] Accumulator<TAccumulator> func
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where TAccumulator : allows ref struct
-#endif
-    {
-        var accumulator = seed;
-        foreach (var next in this)
-            accumulator = func(accumulator, next);
-        return accumulator;
-    }
-    /// <summary>Copies the values to a new flattened array.</summary>
-    /// <returns>The array containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TBody[] ToArray()
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<TBody>();
-        foreach (var next in this)
-            ret.Append(next);
-        return ret.View.ToArray();
-#else
-        List<TBody> ret = [];
-        foreach (var next in this)
-            foreach (var element in next)
-                ret.Add(element);
-        return [.. ret];
-#endif
-    }
-    /// <summary>Copies the values to a new flattened array.</summary>
-    /// <param name="divider">The separator between each element.</param>
-    /// <returns>The array containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TBody[] ToArray(scoped ReadOnlySpan<TBody> divider)
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return [];
-        using var ret = 4.Alloc<TBody>();
-        ret.Append(e.Current);
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-        return ret.View.ToArray();
-#else
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return [];
-        List<TBody> ret = [];
-        foreach (var next in e.Current)
-            ret.Add(next);
-        while (e.MoveNext())
-        {
-            foreach (var next in divider)
-                ret.Add(next);
-            foreach (var next in e.Current)
-                ret.Add(next);
-        }
-        return [.. ret];
-#endif
-    }
-    /// <summary>Copies the values to a new nested array.</summary>
-    /// <returns>The nested array containing the copied values of this instance.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly TBody[][] ToArrays()
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<TBody[]>();
-        foreach (var next in this)
-            ret.Append(next.ToArray());
-        return ret.View.ToArray();
-#else
-        List<TBody[]> ret = [];
-        foreach (var next in this)
-            ret.Add(next.ToArray());
-        return [.. ret];
-#endif
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe StringBuilder StringBuilderAccumulator(StringBuilder builder, scoped ReadOnlySpan<TBody> span)
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        =>
-            builder.Append(To<char>.From(span));
-#else
-        {
-#if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            for (var i = 0; i < span.Length; i++)
-                builder.Append(((char*)span.Pointer)[i]);
-            return builder;
-#else
-#pragma warning disable 8500
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-            var ptr = span.Pointer;
-#else
-            fixed (TBody* ptr = span)
-#endif
-#pragma warning restore 8500
-                return builder.Append((char*)ptr, span.Length);
-#endif
-        }
-#endif
 }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
@@ -5146,6 +5146,435 @@ readonly
     }
 }
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
+#pragma warning disable 8500, IDE0251, MA0102
+/// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
+    /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Bits<T> AsBits<T>(this T source)
+#if KTANE
+        where T : struct
+#else
+        where T : unmanaged
+#endif
+        =>
+            source;
+    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAnd<T>(this IEnumerable<T> source)
+#if KTANE
+        where T : struct
+#else
+        where T : unmanaged
+#endif
+    {
+        T t = default;
+        foreach (var next in source)
+            Bits<T>.And(next, ref t);
+        return t;
+    }
+    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
+#if KTANE
+        where T : struct
+#else
+        where T : unmanaged
+#endif
+    {
+        T t = default;
+        foreach (var next in source)
+            Bits<T>.AndNot(next, ref t);
+        return t;
+    }
+#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
+    /// <summary>Returns the reference that contains the most bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMax<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
+    /// <summary>Returns the reference that contains the least bits.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseMin<T>(this IEnumerable<T> source)
+        where T : unmanaged =>
+        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
+#endif
+    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseOr<T>(this IEnumerable<T> source)
+#if KTANE
+        where T : struct
+#else
+        where T : unmanaged
+#endif
+    {
+        T t = default;
+        foreach (var next in source)
+            Bits<T>.Or(next, ref t);
+        return t;
+    }
+    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
+    /// <typeparam name="T">The type of item.</typeparam>
+    /// <param name="source">The item.</param>
+    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T BitwiseXor<T>(this IEnumerable<T> source)
+#if KTANE
+        where T : struct
+#else
+        where T : unmanaged
+#endif
+    {
+        T t = default;
+        foreach (var next in source)
+            Bits<T>.Xor(next, ref t);
+        return t;
+    }
+/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
+/// <typeparam name="T">The type of the item to yield.</typeparam>
+/// <param name="bits">The item to use.</param>
+[StructLayout(LayoutKind.Auto)]
+#if CSHARPREPL
+public
+#endif
+#if !NO_READONLY_STRUCTS
+readonly
+#endif
+    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
+#if KTANE
+    where T : struct
+#else
+    where T : unmanaged
+#endif
+{
+    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
+    readonly T _value = bits;
+    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+    bool ICollection<T>.IsReadOnly
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
+    }
+    /// <summary>Gets the item to use.</summary>
+    [CollectionAccess(Read), ProvidesContext]
+    public readonly T Current
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+    }
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
+    /// <summary>Implicitly calls the constructor.</summary>
+    /// <param name="value">The value to pass into the constructor.</param>
+    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator Enumerator([ProvidesContext] Bits<T> value) => value.Current;
+    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+    /// <param name="value">The value to call <see cref="Current"/>.</param>
+    /// <returns>The value that was passed in to this instance.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static implicit operator T(Bits<T> value) => value.Current;
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly void CopyTo(T[] array, int arrayIndex)
+    {
+        foreach (var next in this)
+            array[arrayIndex++] = next;
+    }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Add(T item) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ICollection<T>.Clear() { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IList<T>.Insert(int index, T item) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void IList<T>.RemoveAt(int index) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool ICollection<T>.Remove(T item) => false;
+    /// <inheritdoc />
+    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    bool ISet<T>.Add(T item) => false;
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly int IndexOf(T item)
+    {
+        if ((Enumerator)item is var e && !e.MoveNext() ||
+            e.Mask is var mask && e.Index is var index && e.MoveNext())
+            return -1;
+        var that = (Enumerator)this;
+        for (var i = 0; that.MoveNext(); i++)
+            if (that.Mask == mask && that.Index == index)
+                return i;
+            else if (that.Mask > mask || that.Index > index)
+                return -1;
+        return -1;
+    }
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
+    /// <summary>
+    /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
+    /// </summary>
+    /// <returns>Itself.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
+    public readonly Enumerator GetEnumerator() => _value;
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
+    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
+    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+#pragma warning disable DOC100
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
+    /// <remarks><para>
+    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
+    /// the result is truncated to the left. Otherwise, if the type <typeparamref name="TResult"/>
+    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the left.
+    /// </para>
+    /// <example>
+    /// <para>Visual description of how the coercion works:</para>
+    /// <code lang="C#"><![CDATA[
+    /// var bits = ((ushort)0b0101_0110).AsBits();
+    /// var padding = bits.Coerce<int>();
+    /// var truncation = bits.Coerce<byte>();
+    /// ]]></code></example></remarks>
+    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe TResult Coerce<TResult>()
+#if KTANE
+        where TResult : struct
+#else
+        where TResult : unmanaged
+#endif
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Copy(T value)
+        {
+            TResult ret = default;
+            *(T*)&ret = value;
+            return ret;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Read(T value) => *(TResult*)&value;
+        return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
+    }
+    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
+    /// <remarks><para>
+    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
+    /// the result is truncated to the right. Otherwise, if the type <typeparamref name="TResult"/>
+    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the right.
+    /// </para>
+    /// <example>
+    /// <para>Visual description of how the coercion works:</para>
+    /// <code lang="C#"><![CDATA[
+    /// var bits = ((ushort)0b0101_0110).AsBits();
+    /// var padding = bits.Coerce<int>();
+    /// var truncation = bits.Coerce<byte>();
+    /// ]]></code></example></remarks>
+    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
+    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
+#pragma warning restore DOC100
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public unsafe TResult CoerceLeft<TResult>()
+#if KTANE
+        where TResult : struct
+#else
+        where TResult : unmanaged
+#endif
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Copy(T value)
+        {
+            TResult ret = default;
+            ((T*)(&ret + 1))[-1] = value;
+            return ret;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
+        return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
+            sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
+    }
+    /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
+    /// <param name="value">The item to use.</param>
+    [StructLayout(LayoutKind.Auto)]
+    public partial struct Enumerator(T value) : IEnumerator<T>
+    {
+        const int Start = -1;
+        readonly T _value = value;
+        /// <summary>Gets the current mask.</summary>
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        public nuint Mask
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        }
+        /// <summary>Gets the current index.</summary>
+        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        public nint Index
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
+        } = Start;
+        /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
+        [CollectionAccess(Read)]
+        public readonly Bits<T> AsBits
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        }
+        /// <summary>Gets the underlying value that is being enumerated.</summary>
+        [CollectionAccess(Read)]
+        public readonly T AsValue
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        }
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        public readonly unsafe T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+            get
+            {
+                T t = default;
+                *((nuint*)&t + Index) ^= Mask;
+                return t;
+            }
+        }
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
+        readonly object IEnumerator.Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
+        }
+        /// <summary>Implicitly calls the constructor.</summary>
+        /// <param name="value">The value to pass into the constructor.</param>
+        /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static implicit operator Enumerator(T value) => new(value);
+        /// <summary>Implicitly calls <see cref="Current"/>.</summary>
+        /// <param name="value">The value to call <see cref="Current"/>.</param>
+        /// <returns>The value that was passed in to this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static explicit operator T(Enumerator value) => value.Current;
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        readonly void IDisposable.Dispose() { }
+        /// <inheritdoc />
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            Index = Start;
+            Mask = 0;
+        }
+        /// <inheritdoc />
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe bool MoveNext()
+        {
+            Mask <<= 1;
+            if (Mask is 0)
+            {
+                Index++;
+                Mask++;
+            }
+            fixed (T* ptr = &_value)
+                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
+                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
+                    return true;
+            Index = sizeof(T) / sizeof(nuint);
+            Mask = FalsyMask();
+            return false;
+        }
+        /// <inheritdoc />
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public readonly override string ToString()
+        {
+            var that = this;
+            return that.ToRemainingString();
+        }
+        /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
+        /// <returns>The <see cref="string"/> result of this instance.</returns>
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
+        public unsafe string ToRemainingString()
+        {
+            var ptr = stackalloc char[s_typeSize];
+            new Span<char>(ptr, s_typeSize).Fill('0');
+            var last = ptr + s_typeSize - 1;
+            while (MoveNext())
+                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
+            return new(ptr, 0, s_typeSize);
+        }
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
+        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindNativelySized(T* ptr)
+        {
+            if (Index < 0)
+                return false;
+            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
+                for (; Mask is not 0; Mask <<= 1)
+                    if (IsNonZero(ptr))
+                        return true;
+            return false;
+        }
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool FindRest(T* ptr)
+        {
+            if (Index != sizeof(T) / sizeof(nuint))
+                return false;
+            for (; (Mask & LastRest()) is not 0; Mask <<= 1)
+                if (IsNonZero(ptr))
+                    return true;
+            return false;
+        }
+        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
+    }
+}
+// SPDX-License-Identifier: MPL-2.0
 #pragma warning disable 8500, MA0051
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
@@ -5912,435 +6341,6 @@ readonly
             else
                 return false;
         return Eq(_value, t);
-    }
-}
-// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable 8500, IDE0251, MA0102
-/// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
-    /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Bits<T> AsBits<T>(this T source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-        =>
-            source;
-    /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseAnd<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-    {
-        T t = default;
-        foreach (var next in source)
-            Bits<T>.And(next, ref t);
-        return t;
-    }
-    /// <summary>Computes the Bitwise-AND-NOT of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseAndNot<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-    {
-        T t = default;
-        foreach (var next in source)
-            Bits<T>.AndNot(next, ref t);
-        return t;
-    }
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
-    /// <summary>Returns the reference that contains the most bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the most bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMax<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Max(acc, next));
-    /// <summary>Returns the reference that contains the least bits.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the least bits of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseMin<T>(this IEnumerable<T> source)
-        where T : unmanaged =>
-        source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
-#endif
-    /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseOr<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-    {
-        T t = default;
-        foreach (var next in source)
-            Bits<T>.Or(next, ref t);
-        return t;
-    }
-    /// <summary>Computes the Bitwise-XOR of the <see cref="IEnumerable{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T BitwiseXor<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-    {
-        T t = default;
-        foreach (var next in source)
-            Bits<T>.Xor(next, ref t);
-        return t;
-    }
-/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
-/// <typeparam name="T">The type of the item to yield.</typeparam>
-/// <param name="bits">The item to use.</param>
-[StructLayout(LayoutKind.Auto)]
-#if CSHARPREPL
-public
-#endif
-#if !NO_READONLY_STRUCTS
-readonly
-#endif
-    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
-#if KTANE
-    where T : struct
-#else
-    where T : unmanaged
-#endif
-{
-    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
-    readonly T _value = bits;
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-    bool ICollection<T>.IsReadOnly
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => true;
-    }
-    /// <summary>Gets the item to use.</summary>
-    [CollectionAccess(Read), ProvidesContext]
-    public readonly T Current
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
-    }
-    /// <summary>Implicitly calls the constructor.</summary>
-    /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Bits<T>([ProvidesContext] Enumerator value) => value.Current;
-    /// <summary>Implicitly calls the constructor.</summary>
-    /// <param name="value">The value to pass into the constructor.</param>
-    /// <returns>A new instance of <see cref="Bits{T}"/> with <paramref name="value"/> passed in.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Bits<T>([ProvidesContext] T value) => new(value);
-    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-    /// <param name="value">The value to call <see cref="Current"/>.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator Enumerator([ProvidesContext] Bits<T> value) => value.Current;
-    /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-    /// <param name="value">The value to call <see cref="Current"/>.</param>
-    /// <returns>The value that was passed in to this instance.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator T(Bits<T> value) => value.Current;
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly void CopyTo(T[] array, int arrayIndex)
-    {
-        foreach (var next in this)
-            array[arrayIndex++] = next;
-    }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Add(T item) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Clear() { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IList<T>.Insert(int index, T item) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IList<T>.RemoveAt(int index) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool ICollection<T>.Remove(T item) => false;
-    /// <inheritdoc />
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool ISet<T>.Add(T item) => false;
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly int IndexOf(T item)
-    {
-        if ((Enumerator)item is var e && !e.MoveNext() ||
-            e.Mask is var mask && e.Index is var index && e.MoveNext())
-            return -1;
-        var that = (Enumerator)this;
-        for (var i = 0; that.MoveNext(); i++)
-            if (that.Mask == mask && that.Index == index)
-                return i;
-            else if (that.Mask > mask || that.Index > index)
-                return -1;
-        return -1;
-    }
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
-    /// <summary>
-    /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
-    /// </summary>
-    /// <returns>Itself.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    public readonly Enumerator GetEnumerator() => _value;
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-    /// <inheritdoc />
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    readonly IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-#pragma warning disable DOC100
-    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
-    /// <remarks><para>
-    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
-    /// the result is truncated to the left. Otherwise, if the type <typeparamref name="TResult"/>
-    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the left.
-    /// </para>
-    /// <example>
-    /// <para>Visual description of how the coercion works:</para>
-    /// <code lang="C#"><![CDATA[
-    /// var bits = ((ushort)0b0101_0110).AsBits();
-    /// var padding = bits.Coerce<int>();
-    /// var truncation = bits.Coerce<byte>();
-    /// ]]></code></example></remarks>
-    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult Coerce<TResult>()
-#if KTANE
-        where TResult : struct
-#else
-        where TResult : unmanaged
-#endif
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Copy(T value)
-        {
-            TResult ret = default;
-            *(T*)&ret = value;
-            return ret;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => *(TResult*)&value;
-        return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
-    }
-    /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
-    /// <remarks><para>
-    /// If the type <typeparamref name="TResult"/> is smaller than <typeparamref name="T"/>,
-    /// the result is truncated to the right. Otherwise, if the type <typeparamref name="TResult"/>
-    /// is larger than <typeparamref name="T"/>, the result is zero-padded to the right.
-    /// </para>
-    /// <example>
-    /// <para>Visual description of how the coercion works:</para>
-    /// <code lang="C#"><![CDATA[
-    /// var bits = ((ushort)0b0101_0110).AsBits();
-    /// var padding = bits.Coerce<int>();
-    /// var truncation = bits.Coerce<byte>();
-    /// ]]></code></example></remarks>
-    /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
-    /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
-#pragma warning restore DOC100
-    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult CoerceLeft<TResult>()
-#if KTANE
-        where TResult : struct
-#else
-        where TResult : unmanaged
-#endif
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Copy(T value)
-        {
-            TResult ret = default;
-            ((T*)(&ret + 1))[-1] = value;
-            return ret;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
-        return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
-            sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
-    }
-    /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
-    /// <param name="value">The item to use.</param>
-    [StructLayout(LayoutKind.Auto)]
-    public partial struct Enumerator(T value) : IEnumerator<T>
-    {
-        const int Start = -1;
-        readonly T _value = value;
-        /// <summary>Gets the current mask.</summary>
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public nuint Mask
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
-        }
-        /// <summary>Gets the current index.</summary>
-        [CLSCompliant(false), CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public nint Index
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)] private set;
-        } = Start;
-        /// <summary>Gets the reconstruction of the original enumerable that can create this instance.</summary>
-        [CollectionAccess(Read)]
-        public readonly Bits<T> AsBits
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
-        }
-        /// <summary>Gets the underlying value that is being enumerated.</summary>
-        [CollectionAccess(Read)]
-        public readonly T AsValue
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
-        }
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public readonly unsafe T Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get
-            {
-                T t = default;
-                *((nuint*)&t + Index) ^= Mask;
-                return t;
-            }
-        }
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        readonly object IEnumerator.Current
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Current;
-        }
-        /// <summary>Implicitly calls the constructor.</summary>
-        /// <param name="value">The value to pass into the constructor.</param>
-        /// <returns>A new instance of <see cref="Enumerator"/> with <paramref name="value"/> passed in.</returns>
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator Enumerator(T value) => new(value);
-        /// <summary>Implicitly calls <see cref="Current"/>.</summary>
-        /// <param name="value">The value to call <see cref="Current"/>.</param>
-        /// <returns>The value that was passed in to this instance.</returns>
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static explicit operator T(Enumerator value) => value.Current;
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        readonly void IDisposable.Dispose() { }
-        /// <inheritdoc />
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Reset()
-        {
-            Index = Start;
-            Mask = 0;
-        }
-        /// <inheritdoc />
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe bool MoveNext()
-        {
-            Mask <<= 1;
-            if (Mask is 0)
-            {
-                Index++;
-                Mask++;
-            }
-            fixed (T* ptr = &_value)
-                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
-                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
-                    return true;
-            Index = sizeof(T) / sizeof(nuint);
-            Mask = FalsyMask();
-            return false;
-        }
-        /// <inheritdoc />
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public readonly override string ToString()
-        {
-            var that = this;
-            return that.ToRemainingString();
-        }
-        /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
-        /// <returns>The <see cref="string"/> result of this instance.</returns>
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-        public unsafe string ToRemainingString()
-        {
-            var ptr = stackalloc char[s_typeSize];
-            new Span<char>(ptr, s_typeSize).Fill('0');
-            var last = ptr + s_typeSize - 1;
-            while (MoveNext())
-                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
-            return new(ptr, 0, s_typeSize);
-        }
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
-        [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindNativelySized(T* ptr)
-        {
-            if (Index < 0)
-                return false;
-            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
-                for (; Mask is not 0; Mask <<= 1)
-                    if (IsNonZero(ptr))
-                        return true;
-            return false;
-        }
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindRest(T* ptr)
-        {
-            if (Index != sizeof(T) / sizeof(nuint))
-                return false;
-            for (; (Mask & LastRest()) is not 0; Mask <<= 1)
-                if (IsNonZero(ptr))
-                    return true;
-            return false;
-        }
-        [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
     }
 }
 // SPDX-License-Identifier: MPL-2.0
@@ -9849,6 +9849,290 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
+/// <summary>Defines the base class for an assertion, where a function is expected to return true.</summary>
+/// <param name="that">The condition that must be true.</param>
+/// <param name="message">The message to display when <paramref name="that"/> is false.</param>
+/// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>
+#if CSHARPREPL
+public
+#endif
+abstract partial class Assert(
+    bool that,
+    string? message = null,
+    [CallerArgumentExpression(nameof(that))] string thatEx = ""
+)
+{
+#if !CSHARPREPL
+    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToIList();
+#endif
+    /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
+    /// <param name="that">The condition that must be true.</param>
+    /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
+    /// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>
+    protected Assert(
+        [InstantHandle] Func<bool> that,
+        string? message = null,
+        [CallerArgumentExpression(nameof(that))] string thatEx = ""
+    )
+        : this(Update(that, that, ref message, f => f?[thatEx]), message, thatEx) { }
+    /// <summary>Gets the amount of available assertions.</summary>
+    [Pure]
+    public static int Length =>
+#if CSHARPREPL
+        Runner.Count();
+#else
+        s_assertions.Count;
+#endif
+    /// <summary>
+    /// Gets the enumeration responsible for running every <see cref="Assert"/> instance
+    /// defined in the current <see cref="Assembly"/>, and returning every instance of a failed assert.
+    /// </summary>
+    [Pure]
+    public static IEnumerable<Result> Runner =>
+#if CSHARPREPL
+        AppDomain
+           .CurrentDomain
+           .GetAssemblies()
+           .SelectMany(ManyQueries.TryGetTypes)
+           .Where(IsAssertable)
+#else
+        s_assertions
+#endif
+           .Select(x => new Result(x));
+    /// <summary>Gets the message of the assertion if it failed, or null.</summary>
+    [Pure]
+    public string? Message { get; } = that ? null : message ?? FormatAttribute.Default[thatEx];
+    /// <summary>Gets the name of the assertion.</summary>
+    [Pure]
+    public string Name => GetType().UnfoldedFullName();
+    /// <summary>Assertion that the enumerable must contain an item.</summary>
+    /// <param name="x">The enumerable that must contain an item.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> contains an item.</returns>
+    [Format("Expected @x to have any items, received an empty collection."), Pure]
+    public static bool Any([InstantHandle] IEnumerable x)
+    {
+        var e = x.GetEnumerator();
+        try
+        {
+            return e.MoveNext();
+        }
+        finally
+        {
+            (e as IDisposable)?.Dispose();
+        }
+    }
+    /// <summary>Assertion that the enumerable must be empty.</summary>
+    /// <param name="x">The enumerable that must be empty.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is empty.</returns>
+    [Format("Expected @x to be an empty collection, received #x."), Pure]
+    public static bool Empty([InstantHandle] IEnumerable x) => !Any(x);
+    /// <summary>Assertion that the enumerable must be null or empty.</summary>
+    /// <param name="x">The enumerable that must be null or empty.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is null or empty.</returns>
+    [Format("Expected @x to be null or empty, received #x."), Pure]
+    public static bool EmptyOrNull([InstantHandle, NotNullWhen(false)] IEnumerable? x) => x is null || !Any(x);
+    /// <summary>Updates the value of the referenced parameter if the provided assertion fails.</summary>
+    /// <param name="exposure">The exposed <see cref="Delegate"/> used to get metadata from.</param>
+    /// <param name="that">The condition that must be true.</param>
+    /// <param name="message">The message to update.</param>
+    /// <param name="formatter">The factory of the message.</param>
+    /// <returns>The returned value when calling the parameter <paramref name="that"/>.</returns>
+    [MustUseReturnValue]
+    public static bool Update(
+        [InstantHandle] Delegate exposure,
+        [InstantHandle] Func<bool> that,
+        ref string? message,
+        [InstantHandle] Converter<FormatAttribute?, string?> formatter
+    ) =>
+        that() || (message ??= formatter(exposure.Method.GetCustomAttribute<FormatAttribute>())) is var _ && false;
+    /// <summary>Assertion that both parameters must contain the same items.</summary>
+    /// <typeparam name="T">The type of items to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> have the same items.</returns>
+    [Format("Expected @x to have the same items as @y, received #x and #y."), Pure]
+    public static bool SequenceEqualTo<T>([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
+        x.SequenceEqual(y);
+    /// <summary>Assertion that both parameters must be equal.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> are the same.</returns>
+    [Format("Expected @x to be equal to @y, received #x and #y."), Pure]
+    public static bool EqualTo<T>(T x, T y) => EqualityComparer<T>.Default.Equals(x, y);
+    /// <summary>Assertion that the left-hand side must be greater than the right-hand side.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is greater than <paramref name="y"/>.</returns>
+    [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y."), Pure]
+    public static bool GreaterThan<T>(T x, T y) => Compare(x, y) > 0;
+    /// <summary>Assertion that the left-hand side must be greater than or equal to the right-hand side.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is greater than or equal to <paramref name="y"/>.</returns>
+    [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y."), Pure]
+    public static bool GreaterThanOrEqualTo<T>(T x, T y) => Compare(x, y) >= 0;
+    /// <summary>Assertion that the left-hand side must be less than the right-hand side.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is less than <paramref name="y"/>.</returns>
+    [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y."), Pure]
+    public static bool LessThan<T>(T x, T y) => Compare(x, y) < 0;
+    /// <summary>Assertion that the left-hand side must be less than or equal to the right-hand side.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is less than or equal to <paramref name="y"/>.</returns>
+    [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y."), Pure]
+    public static bool LessThanOrEqualTo<T>(T x, T y) => Compare(x, y) <= 0;
+    /// <summary>Assertion that the enumerable must not be null.</summary>
+    /// <param name="x">The value that must not be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
+    [Format("Expected @x to be not null, received null."), Pure]
+    public static bool NotNull([NotNullWhen(true)] object? x) => x is not null;
+    /// <summary>Assertion that the enumerable must not be null.</summary>
+    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
+    /// <param name="x">The value that must not be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
+    [Format("Expected @x to be not null, received null."), Pure]
+    public static bool NotNull<T>([NotNullWhen(true)] T x) => x is not null;
+    /// <summary>Assertion that the enumerable must be null.</summary>
+    /// <param name="x">The value that must be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
+    [Format("Expected @x to be null, received #x."), Pure]
+    public static bool Null([NotNullWhen(false)] object? x) => x is null;
+    /// <summary>Assertion that the enumerable must be null.</summary>
+    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
+    /// <param name="x">The value that must be null.</param>
+    /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
+    [Format("Expected @x to be null, received #x."), Pure]
+    public static bool Null<T>([NotNullWhen(false)] T x) => x is null;
+    /// <summary>Assertion that both parameters must not be equal.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> are not the same.</returns>
+    [Format("Expected @x to not be equal to @y, received #x."), Pure]
+    public static bool UnequalTo<T>(T x, T y) => !EqualTo(x, y);
+    /// <summary>Compares the two instances. This method is used for any comparing assertion methods.</summary>
+    /// <typeparam name="T">The type of values to compare.</typeparam>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>The resulting value from comparing parameters <paramref name="x"/> and <paramref name="y"/>.</returns>
+    [Pure]
+    public static int Compare<T>(T x, T y) => Comparer<T>.Default.Compare(x, y);
+#if NET7_0_OR_GREATER
+    /// <summary>Creates the assertion that two values must be equal to each other within an error of margin.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="margin">The lossy value to which both instances are considered equal.</param>
+    /// <returns>The assertion that determines equality of two values within a margin of error.</returns>
+    [Pure]
+    public static Func<T, T, bool> RoughlyEqualTo<T>(T margin)
+        where T : INumber<T> =>
+        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
+            T.Abs(x - y) <= T.Abs(margin);
+#else
+    /// <summary>Creates the assertion that two items must be equal to each other within an error of margin.</summary>
+    /// <param name="margin">The lossy value to which both instances are considered equal.</param>
+    /// <returns>The assertion that determines equality of two items within a margin of error.</returns>
+    [Pure]
+    public static Func<float, float, bool> RoughlyEqualTo(float margin) =>
+        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
+            Math.Abs(x - y) <= Math.Abs(margin);
+    /// <inheritdoc cref="RoughlyEqualTo(float)"/>
+    [Pure]
+    public static Func<double, double, bool> RoughlyEqualTo(double margin) =>
+        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
+            Math.Abs(x - y) <= Math.Abs(margin);
+    /// <inheritdoc cref="RoughlyEqualTo(float)"/>
+    [Pure]
+    public static Func<decimal, decimal, bool> RoughlyEqualTo(decimal margin) =>
+        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
+            Math.Abs(x - y) <= Math.Abs(margin);
+#endif
+    /// <summary>Executes every assertion and gets all of the assertions that failed.</summary>
+    /// <returns>All assertions that failed.</returns>
+    [Pure]
+    public static IEnumerable<string> AllMessages() => Runner.RunAll().Where(x => x.Failed).Select(x => $"{x}");
+    /// <summary>Creates the assertion that the value must be within a certain range.</summary>
+    /// <param name="range">The range of values to accept. The range is considered to be inclusive on both ends.</param>
+    /// <returns>The assertion that determines whether a value is within the specific range.</returns>
+    [Pure]
+    public static Predicate<int> InRangeOf(Range range) =>
+        [Format("Expected @x to be approximately within the range, received #x.")](x) =>
+            x >= range.Start.Value && x <= range.End.Value;
+#if NET7_0_OR_GREATER
+    /// <summary>Creates the assertion that the value must be within a certain range.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="range">The range of values to accept. The range is considered to be inclusive on both ends.</param>
+    /// <returns>The assertion that determines whether a value is within the specific range.</returns>
+    [Pure]
+    public static Predicate<T> InRangeOf<T>(Range range)
+        where T : INumberBase<T> =>
+        [Format("Expected @x to be approximately within the range, received #x.")](x) =>
+            int.CreateSaturating(x) is var i && i >= range.Start.Value && i <= range.End.Value;
+#endif
+    /// <summary>Creates the assertion that the value must be within a certain range.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="low">The inclusive lower boundary.</param>
+    /// <param name="high">The inclusive higher boundary.</param>
+    /// <returns>The assertion that determines whether a value is within the specific range.</returns>
+    [Pure]
+    public static Predicate<T> InRangeOf<T>(T low, T high) =>
+        [Format("Expected @x to be approximately within the range, received #x.")](x) =>
+            GreaterThanOrEqualTo(x, low) && LessThanOrEqualTo(x, high);
+    /// <summary>Creates the assertion that the parameter must contain specific items.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="items">The items that will be eventually compared to.</param>
+    /// <returns>The assertion that determines whether a value contains the pre-determined items.</returns>
+    [Pure]
+    public static Predicate<IEnumerable<T>> Structured<T>(params T[] items) =>
+        [Format("Expected @x to have fixed specific items, received #x.")](x) => SequenceEqualTo(x, items);
+    /// <summary>Returns the parameter.</summary>
+    /// <typeparam name="T">The type of value.</typeparam>
+    /// <param name="items">The items that will be returned directly.</param>
+    /// <returns>The parameter <paramref name="items"/>.</returns>
+    [Pure]
+    public static T[] Params<T>(params T[] items) => items;
+    /// <inheritdoc />
+    [Pure]
+    public override string ToString() => new Result(this, GetType()).ToString();
+    /// <summary>
+    /// Determines whether the type implements <see cref="Assert"/> and can be instantiated.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns>Whether the type implements <see cref="Assert"/> and can be instantiated.</returns>
+    [Pure]
+    static bool IsAssertable([NotNullWhen(true)] Type? type) =>
+        type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
+        ParameterlessConstructor(type) is not null &&
+        type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
+    /// <summary>Gets the parameterless constructor, ignoring possible exceptions thrown.</summary>
+    /// <param name="type">The type to get the parameterless exception from.</param>
+    /// <returns>
+    /// The <see cref="ConstructorInfo"/> containing no parameters from the parameter <paramref name="type"/>,
+    /// if one exists.
+    /// </returns>
+    [Pure]
+    static ConstructorInfo? ParameterlessConstructor(Type type)
+    {
+        try
+        {
+            return type.GetConstructor(Type.EmptyTypes);
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
+        }
+    }
+}
+#endif
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
 /// <inheritdoc cref="Assert"/>
 abstract partial class Assert
 {
@@ -10173,290 +10457,6 @@ abstract partial class Assert
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-/// <summary>Defines the base class for an assertion, where a function is expected to return true.</summary>
-/// <param name="that">The condition that must be true.</param>
-/// <param name="message">The message to display when <paramref name="that"/> is false.</param>
-/// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>
-#if CSHARPREPL
-public
-#endif
-abstract partial class Assert(
-    bool that,
-    string? message = null,
-    [CallerArgumentExpression(nameof(that))] string thatEx = ""
-)
-{
-#if !CSHARPREPL
-    static readonly IList<Type> s_assertions = typeof(Assert).Assembly.TryGetTypes().Where(IsAssertable).ToIList();
-#endif
-    /// <summary>Initializes a new instance of the <see cref="Assert"/> class.</summary>
-    /// <param name="that">The condition that must be true.</param>
-    /// <param name="message">The message to display when <paramref name="that"/> is false.</param>
-    /// <param name="thatEx">The context of where <paramref name="that"/> came from.</param>
-    protected Assert(
-        [InstantHandle] Func<bool> that,
-        string? message = null,
-        [CallerArgumentExpression(nameof(that))] string thatEx = ""
-    )
-        : this(Update(that, that, ref message, f => f?[thatEx]), message, thatEx) { }
-    /// <summary>Gets the amount of available assertions.</summary>
-    [Pure]
-    public static int Length =>
-#if CSHARPREPL
-        Runner.Count();
-#else
-        s_assertions.Count;
-#endif
-    /// <summary>
-    /// Gets the enumeration responsible for running every <see cref="Assert"/> instance
-    /// defined in the current <see cref="Assembly"/>, and returning every instance of a failed assert.
-    /// </summary>
-    [Pure]
-    public static IEnumerable<Result> Runner =>
-#if CSHARPREPL
-        AppDomain
-           .CurrentDomain
-           .GetAssemblies()
-           .SelectMany(ManyQueries.TryGetTypes)
-           .Where(IsAssertable)
-#else
-        s_assertions
-#endif
-           .Select(x => new Result(x));
-    /// <summary>Gets the message of the assertion if it failed, or null.</summary>
-    [Pure]
-    public string? Message { get; } = that ? null : message ?? FormatAttribute.Default[thatEx];
-    /// <summary>Gets the name of the assertion.</summary>
-    [Pure]
-    public string Name => GetType().UnfoldedFullName();
-    /// <summary>Assertion that the enumerable must contain an item.</summary>
-    /// <param name="x">The enumerable that must contain an item.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> contains an item.</returns>
-    [Format("Expected @x to have any items, received an empty collection."), Pure]
-    public static bool Any([InstantHandle] IEnumerable x)
-    {
-        var e = x.GetEnumerator();
-        try
-        {
-            return e.MoveNext();
-        }
-        finally
-        {
-            (e as IDisposable)?.Dispose();
-        }
-    }
-    /// <summary>Assertion that the enumerable must be empty.</summary>
-    /// <param name="x">The enumerable that must be empty.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is empty.</returns>
-    [Format("Expected @x to be an empty collection, received #x."), Pure]
-    public static bool Empty([InstantHandle] IEnumerable x) => !Any(x);
-    /// <summary>Assertion that the enumerable must be null or empty.</summary>
-    /// <param name="x">The enumerable that must be null or empty.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is null or empty.</returns>
-    [Format("Expected @x to be null or empty, received #x."), Pure]
-    public static bool EmptyOrNull([InstantHandle, NotNullWhen(false)] IEnumerable? x) => x is null || !Any(x);
-    /// <summary>Updates the value of the referenced parameter if the provided assertion fails.</summary>
-    /// <param name="exposure">The exposed <see cref="Delegate"/> used to get metadata from.</param>
-    /// <param name="that">The condition that must be true.</param>
-    /// <param name="message">The message to update.</param>
-    /// <param name="formatter">The factory of the message.</param>
-    /// <returns>The returned value when calling the parameter <paramref name="that"/>.</returns>
-    [MustUseReturnValue]
-    public static bool Update(
-        [InstantHandle] Delegate exposure,
-        [InstantHandle] Func<bool> that,
-        ref string? message,
-        [InstantHandle] Converter<FormatAttribute?, string?> formatter
-    ) =>
-        that() || (message ??= formatter(exposure.Method.GetCustomAttribute<FormatAttribute>())) is var _ && false;
-    /// <summary>Assertion that both parameters must contain the same items.</summary>
-    /// <typeparam name="T">The type of items to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> have the same items.</returns>
-    [Format("Expected @x to have the same items as @y, received #x and #y."), Pure]
-    public static bool SequenceEqualTo<T>([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
-        x.SequenceEqual(y);
-    /// <summary>Assertion that both parameters must be equal.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> are the same.</returns>
-    [Format("Expected @x to be equal to @y, received #x and #y."), Pure]
-    public static bool EqualTo<T>(T x, T y) => EqualityComparer<T>.Default.Equals(x, y);
-    /// <summary>Assertion that the left-hand side must be greater than the right-hand side.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is greater than <paramref name="y"/>.</returns>
-    [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y."), Pure]
-    public static bool GreaterThan<T>(T x, T y) => Compare(x, y) > 0;
-    /// <summary>Assertion that the left-hand side must be greater than or equal to the right-hand side.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is greater than or equal to <paramref name="y"/>.</returns>
-    [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y."), Pure]
-    public static bool GreaterThanOrEqualTo<T>(T x, T y) => Compare(x, y) >= 0;
-    /// <summary>Assertion that the left-hand side must be less than the right-hand side.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is less than <paramref name="y"/>.</returns>
-    [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y."), Pure]
-    public static bool LessThan<T>(T x, T y) => Compare(x, y) < 0;
-    /// <summary>Assertion that the left-hand side must be less than or equal to the right-hand side.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is less than or equal to <paramref name="y"/>.</returns>
-    [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y."), Pure]
-    public static bool LessThanOrEqualTo<T>(T x, T y) => Compare(x, y) <= 0;
-    /// <summary>Assertion that the enumerable must not be null.</summary>
-    /// <param name="x">The value that must not be null.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
-    [Format("Expected @x to be not null, received null."), Pure]
-    public static bool NotNull([NotNullWhen(true)] object? x) => x is not null;
-    /// <summary>Assertion that the enumerable must not be null.</summary>
-    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
-    /// <param name="x">The value that must not be null.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is not null.</returns>
-    [Format("Expected @x to be not null, received null."), Pure]
-    public static bool NotNull<T>([NotNullWhen(true)] T x) => x is not null;
-    /// <summary>Assertion that the enumerable must be null.</summary>
-    /// <param name="x">The value that must be null.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
-    [Format("Expected @x to be null, received #x."), Pure]
-    public static bool Null([NotNullWhen(false)] object? x) => x is null;
-    /// <summary>Assertion that the enumerable must be null.</summary>
-    /// <typeparam name="T">The type of value to do the null check on.</typeparam>
-    /// <param name="x">The value that must be null.</param>
-    /// <returns>Whether the parameter <paramref name="x"/> is null.</returns>
-    [Format("Expected @x to be null, received #x."), Pure]
-    public static bool Null<T>([NotNullWhen(false)] T x) => x is null;
-    /// <summary>Assertion that both parameters must not be equal.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>Whether the parameters <paramref name="x"/> and <paramref name="y"/> are not the same.</returns>
-    [Format("Expected @x to not be equal to @y, received #x."), Pure]
-    public static bool UnequalTo<T>(T x, T y) => !EqualTo(x, y);
-    /// <summary>Compares the two instances. This method is used for any comparing assertion methods.</summary>
-    /// <typeparam name="T">The type of values to compare.</typeparam>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>The resulting value from comparing parameters <paramref name="x"/> and <paramref name="y"/>.</returns>
-    [Pure]
-    public static int Compare<T>(T x, T y) => Comparer<T>.Default.Compare(x, y);
-#if NET7_0_OR_GREATER
-    /// <summary>Creates the assertion that two values must be equal to each other within an error of margin.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="margin">The lossy value to which both instances are considered equal.</param>
-    /// <returns>The assertion that determines equality of two values within a margin of error.</returns>
-    [Pure]
-    public static Func<T, T, bool> RoughlyEqualTo<T>(T margin)
-        where T : INumber<T> =>
-        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
-            T.Abs(x - y) <= T.Abs(margin);
-#else
-    /// <summary>Creates the assertion that two items must be equal to each other within an error of margin.</summary>
-    /// <param name="margin">The lossy value to which both instances are considered equal.</param>
-    /// <returns>The assertion that determines equality of two items within a margin of error.</returns>
-    [Pure]
-    public static Func<float, float, bool> RoughlyEqualTo(float margin) =>
-        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
-            Math.Abs(x - y) <= Math.Abs(margin);
-    /// <inheritdoc cref="RoughlyEqualTo(float)"/>
-    [Pure]
-    public static Func<double, double, bool> RoughlyEqualTo(double margin) =>
-        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
-            Math.Abs(x - y) <= Math.Abs(margin);
-    /// <inheritdoc cref="RoughlyEqualTo(float)"/>
-    [Pure]
-    public static Func<decimal, decimal, bool> RoughlyEqualTo(decimal margin) =>
-        [Format("Expected @x to be approximately equal to @y, received #x and #y.")](x, y) =>
-            Math.Abs(x - y) <= Math.Abs(margin);
-#endif
-    /// <summary>Executes every assertion and gets all of the assertions that failed.</summary>
-    /// <returns>All assertions that failed.</returns>
-    [Pure]
-    public static IEnumerable<string> AllMessages() => Runner.RunAll().Where(x => x.Failed).Select(x => $"{x}");
-    /// <summary>Creates the assertion that the value must be within a certain range.</summary>
-    /// <param name="range">The range of values to accept. The range is considered to be inclusive on both ends.</param>
-    /// <returns>The assertion that determines whether a value is within the specific range.</returns>
-    [Pure]
-    public static Predicate<int> InRangeOf(Range range) =>
-        [Format("Expected @x to be approximately within the range, received #x.")](x) =>
-            x >= range.Start.Value && x <= range.End.Value;
-#if NET7_0_OR_GREATER
-    /// <summary>Creates the assertion that the value must be within a certain range.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="range">The range of values to accept. The range is considered to be inclusive on both ends.</param>
-    /// <returns>The assertion that determines whether a value is within the specific range.</returns>
-    [Pure]
-    public static Predicate<T> InRangeOf<T>(Range range)
-        where T : INumberBase<T> =>
-        [Format("Expected @x to be approximately within the range, received #x.")](x) =>
-            int.CreateSaturating(x) is var i && i >= range.Start.Value && i <= range.End.Value;
-#endif
-    /// <summary>Creates the assertion that the value must be within a certain range.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="low">The inclusive lower boundary.</param>
-    /// <param name="high">The inclusive higher boundary.</param>
-    /// <returns>The assertion that determines whether a value is within the specific range.</returns>
-    [Pure]
-    public static Predicate<T> InRangeOf<T>(T low, T high) =>
-        [Format("Expected @x to be approximately within the range, received #x.")](x) =>
-            GreaterThanOrEqualTo(x, low) && LessThanOrEqualTo(x, high);
-    /// <summary>Creates the assertion that the parameter must contain specific items.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="items">The items that will be eventually compared to.</param>
-    /// <returns>The assertion that determines whether a value contains the pre-determined items.</returns>
-    [Pure]
-    public static Predicate<IEnumerable<T>> Structured<T>(params T[] items) =>
-        [Format("Expected @x to have fixed specific items, received #x.")](x) => SequenceEqualTo(x, items);
-    /// <summary>Returns the parameter.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="items">The items that will be returned directly.</param>
-    /// <returns>The parameter <paramref name="items"/>.</returns>
-    [Pure]
-    public static T[] Params<T>(params T[] items) => items;
-    /// <inheritdoc />
-    [Pure]
-    public override string ToString() => new Result(this, GetType()).ToString();
-    /// <summary>
-    /// Determines whether the type implements <see cref="Assert"/> and can be instantiated.
-    /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <returns>Whether the type implements <see cref="Assert"/> and can be instantiated.</returns>
-    [Pure]
-    static bool IsAssertable([NotNullWhen(true)] Type? type) =>
-        type is { IsAbstract: false, IsClass: true, IsGenericType: false } &&
-        ParameterlessConstructor(type) is not null &&
-        type.FindPathToNull(x => x.BaseType).Contains(typeof(Assert));
-    /// <summary>Gets the parameterless constructor, ignoring possible exceptions thrown.</summary>
-    /// <param name="type">The type to get the parameterless exception from.</param>
-    /// <returns>
-    /// The <see cref="ConstructorInfo"/> containing no parameters from the parameter <paramref name="type"/>,
-    /// if one exists.
-    /// </returns>
-    [Pure]
-    static ConstructorInfo? ParameterlessConstructor(Type type)
-    {
-        try
-        {
-            return type.GetConstructor(Type.EmptyTypes);
-        }
-        catch (FileNotFoundException)
-        {
-            return null;
-        }
-    }
-}
-#endif
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
@@ -10645,6 +10645,55 @@ abstract partial class Assert<T>
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
+/// <summary>Defines the base class for an assertion, where a value is expected to return true.</summary>
+/// <typeparam name="T">The type of value to assert with.</typeparam>
+abstract partial class Assert<T> : Assert
+{
+    /// <inheritdoc cref="Assert.EqualTo{T}"/>
+    [Format("Expected @x to be equal to @y, received #x and #y.")]
+    public static bool EqualTo(T x, T y) => EqualTo<T>(x, y);
+    /// <inheritdoc cref="Assert.GreaterThan{T}"/>
+    [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y.")]
+    public static bool GreaterThan(T x, T y) => GreaterThan<T>(x, y);
+    /// <inheritdoc cref="Assert.GreaterThanOrEqualTo{T}"/>
+    [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y.")]
+    public static bool GreaterThanOrEqualTo(T x, T y) => GreaterThanOrEqualTo<T>(x, y);
+    /// <inheritdoc cref="Assert.LessThan{T}"/>
+    [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y.")]
+    public static bool LessThan(T x, T y) => LessThan<T>(x, y);
+    /// <inheritdoc cref="Assert.LessThanOrEqualTo{T}"/>
+    [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y.")]
+    public static bool LessThanOrEqualTo(T x, T y) => LessThanOrEqualTo<T>(x, y);
+    /// <inheritdoc cref="Assert.NotNull{T}"/>
+    [Format("Expected @x to be not null, received null.")]
+    public static bool NotNull(T x) => NotNull<T>(x);
+    /// <inheritdoc cref="Assert.Null{T}"/>
+    [Format("Expected @x to be null, received #x.")]
+    public static bool Null(T x) => Null<T>(x);
+    /// <inheritdoc cref="Assert.SequenceEqualTo{T}"/>
+    [Format("Expected @x to have the same items as @y, received #x and #y.")]
+    public static bool SequenceEqualTo([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
+        SequenceEqualTo<T>(x, y);
+    /// <inheritdoc cref="Assert.UnequalTo{T}"/>
+    [Format("Expected @x to not be equal to @y, received #x.")]
+    public static bool UnequalTo(T x, T y) => UnequalTo<T>(x, y);
+    /// <inheritdoc cref="Assert.Compare{T}"/>
+    [Pure]
+    public static int Compare(T x, T y) => Compare<T>(x, y);
+    /// <inheritdoc cref="Assert.InRangeOf{T}(T, T)"/>
+    [Pure]
+    public static Predicate<T> InRangeOf(T low, T high) => InRangeOf<T>(low, high);
+    /// <inheritdoc cref="Assert.Structured{T}"/>
+    [Pure]
+    public static Predicate<IEnumerable<T>> Structured(params T[] expected) => Structured<T>(expected);
+    /// <inheritdoc cref="Assert.Params{T}"/>
+    [Pure]
+    public static T[] Params(params T[] items) => Params<T>(items);
+}
+#endif
+// SPDX-License-Identifier: MPL-2.0
+#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
 /// <inheritdoc cref="Assert{T}"/>
 abstract partial class Assert<T>
 {
@@ -10793,55 +10842,6 @@ abstract partial class Assert<T>
         )
             : base(() => that(x()), message, thatEx) { }
     }
-}
-#endif
-// SPDX-License-Identifier: MPL-2.0
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable once CheckNamespace
-/// <summary>Defines the base class for an assertion, where a value is expected to return true.</summary>
-/// <typeparam name="T">The type of value to assert with.</typeparam>
-abstract partial class Assert<T> : Assert
-{
-    /// <inheritdoc cref="Assert.EqualTo{T}"/>
-    [Format("Expected @x to be equal to @y, received #x and #y.")]
-    public static bool EqualTo(T x, T y) => EqualTo<T>(x, y);
-    /// <inheritdoc cref="Assert.GreaterThan{T}"/>
-    [Format("Expected @x to be strictly greater than @y, received #x which is less than or equal to #y.")]
-    public static bool GreaterThan(T x, T y) => GreaterThan<T>(x, y);
-    /// <inheritdoc cref="Assert.GreaterThanOrEqualTo{T}"/>
-    [Format("Expected @x to be greater than or equal to @y, received #x which is strictly less than #y.")]
-    public static bool GreaterThanOrEqualTo(T x, T y) => GreaterThanOrEqualTo<T>(x, y);
-    /// <inheritdoc cref="Assert.LessThan{T}"/>
-    [Format("Expected @x to be strictly less than @y, received #x which is greater than or equal to #y.")]
-    public static bool LessThan(T x, T y) => LessThan<T>(x, y);
-    /// <inheritdoc cref="Assert.LessThanOrEqualTo{T}"/>
-    [Format("Expected @x to be less than or equal to @y, received #x which is strictly greater than #y.")]
-    public static bool LessThanOrEqualTo(T x, T y) => LessThanOrEqualTo<T>(x, y);
-    /// <inheritdoc cref="Assert.NotNull{T}"/>
-    [Format("Expected @x to be not null, received null.")]
-    public static bool NotNull(T x) => NotNull<T>(x);
-    /// <inheritdoc cref="Assert.Null{T}"/>
-    [Format("Expected @x to be null, received #x.")]
-    public static bool Null(T x) => Null<T>(x);
-    /// <inheritdoc cref="Assert.SequenceEqualTo{T}"/>
-    [Format("Expected @x to have the same items as @y, received #x and #y.")]
-    public static bool SequenceEqualTo([InstantHandle] IEnumerable<T> x, [InstantHandle] IEnumerable<T> y) =>
-        SequenceEqualTo<T>(x, y);
-    /// <inheritdoc cref="Assert.UnequalTo{T}"/>
-    [Format("Expected @x to not be equal to @y, received #x.")]
-    public static bool UnequalTo(T x, T y) => UnequalTo<T>(x, y);
-    /// <inheritdoc cref="Assert.Compare{T}"/>
-    [Pure]
-    public static int Compare(T x, T y) => Compare<T>(x, y);
-    /// <inheritdoc cref="Assert.InRangeOf{T}(T, T)"/>
-    [Pure]
-    public static Predicate<T> InRangeOf(T low, T high) => InRangeOf<T>(low, high);
-    /// <inheritdoc cref="Assert.Structured{T}"/>
-    [Pure]
-    public static Predicate<IEnumerable<T>> Structured(params T[] expected) => Structured<T>(expected);
-    /// <inheritdoc cref="Assert.Params{T}"/>
-    [Pure]
-    public static T[] Params(params T[] items) => Params<T>(items);
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -19874,173 +19874,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
     }
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace RedundantNameQualifier
-/// <summary>Provides extension methods for <see cref="char"/>.</summary>
-    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, int index, out char popped)
-    {
-        if (index >= 0 && index < str.Length)
-        {
-            popped = str[index];
-            return str.Remove(index, 1);
-        }
-        popped = default;
-        return str;
-    }
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static string Pop(this string str, Index index, out char popped) =>
-        str.Pop(index.GetOffset(str.Length), out popped);
-    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Pop(this string str, Range range, out string popped)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        popped = str[range];
-        return str.Remove(startIndex, length);
-    }
-    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
-    /// <param name="str">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="str"/>.</returns>
-    public static string Remove(this string str, Range range)
-    {
-        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
-        return str.Remove(startIndex, length);
-    }
-    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="index">The index to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
-    {
-        if (index >= 0 && index < builder.Length)
-        {
-            popped = builder[index];
-            return builder.Remove(index, 1);
-        }
-        popped = default;
-        return builder;
-    }
-    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
-    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
-        builder.Pop(index.GetOffset(builder.Length), out popped);
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        popped = string.Create(
-            length,
-            (builder, startIndex),
-            static (span, tuple) =>
-            {
-                var (builder, startIndex) = tuple;
-                for (var i = 0; i < span.Length; i++)
-                    span[i] = builder[i + startIndex];
-            }
-        );
-#else
-        StringBuilder poppedBuilder = new(length);
-        for (var i = 0; i < length; i++)
-            poppedBuilder[i] = builder[startIndex + i];
-        popped = $"{poppedBuilder}";
-#endif
-        return builder.Remove(startIndex, length);
-    }
-    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
-    /// <param name="builder">The builder to take the character from.</param>
-    /// <param name="range">The range to remove.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
-    /// </exception>
-    /// <returns>The parameter <paramref name="builder"/>.</returns>
-    public static StringBuilder Remove(this StringBuilder builder, Range range)
-    {
-        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
-        return builder.Remove(startIndex, length);
-    }
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER
-    /// <inheritdoc cref="string.Trim()"/>
-    public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
-    /// <inheritdoc cref="string.Trim()"/>
-    public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> memory) => memory.TrimStart().TrimEnd();
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    public static Memory<char> TrimStart(this Memory<char> memory)
-    {
-        var span = memory.Span;
-        for (var i = 0; i < span.Length; i++)
-            if (!char.IsWhiteSpace(span[i]))
-                return memory[..i];
-        return default;
-    }
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
-    {
-        var span = memory.Span;
-        for (var i = 0; i < span.Length; i++)
-            if (!char.IsWhiteSpace(span[i]))
-                return memory[..i];
-        return default;
-    }
-    /// <inheritdoc cref="string.TrimEnd(char[])"/>
-    public static Memory<char> TrimEnd(this Memory<char> memory)
-    {
-        var span = memory.Span;
-        for (var i = span.Length - 1; i >= 0; i--)
-            if (!char.IsWhiteSpace(span[i]))
-                return memory[i..];
-        return default;
-    }
-    /// <inheritdoc cref="string.TrimEnd(char[])"/>
-    public static ReadOnlyMemory<char> TrimEnd(this ReadOnlyMemory<char> memory)
-    {
-        var span = memory.Span;
-        for (var i = span.Length - 1; i >= 0; i--)
-            if (!char.IsWhiteSpace(span[i]))
-                return memory[i..];
-        return default;
-    }
-#endif
-    /// <inheritdoc cref="string.Trim()"/>
-    public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
-    /// <inheritdoc cref="string.TrimEnd(char[])"/>
-    public static StringBuilder TrimEnd(this StringBuilder builder)
-    {
-        for (var i = builder.Length - 1; i >= 0; i--)
-            if (!char.IsWhiteSpace(builder[i]))
-                return builder.Remove(i + 1, builder.Length - i - 1);
-        return builder.Remove(0, builder.Length);
-    }
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    public static StringBuilder TrimStart(this StringBuilder builder)
-    {
-        for (var i = 0; i < builder.Length; i++)
-            if (!char.IsWhiteSpace(builder[i]))
-                return builder.Remove(0, i);
-        return builder.Remove(0, builder.Length);
-    }
-// SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
 #if WAWA
@@ -21178,6 +21011,173 @@ public
 #endif
 #endif
 // SPDX-License-Identifier: MPL-2.0
+// ReSharper disable CheckNamespace RedundantNameQualifier
+/// <summary>Provides extension methods for <see cref="char"/>.</summary>
+    /// <summary>Removes the single character based on the index from the langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, int index, out char popped)
+    {
+        if (index >= 0 && index < str.Length)
+        {
+            popped = str[index];
+            return str.Remove(index, 1);
+        }
+        popped = default;
+        return str;
+    }
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static string Pop(this string str, Index index, out char popped) =>
+        str.Pop(index.GetOffset(str.Length), out popped);
+    /// <summary>Removes the substring based on the range from the langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Pop(this string str, Range range, out string popped)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        popped = str[range];
+        return str.Remove(startIndex, length);
+    }
+    /// <summary>Removes the substring based on the range from the <see langword="string"/>.</summary>
+    /// <param name="str">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="str"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="str"/>.</returns>
+    public static string Remove(this string str, Range range)
+    {
+        range.GetOffsetAndLength(str.Length, out var startIndex, out var length);
+        return str.Remove(startIndex, length);
+    }
+    /// <summary>Removes the single character based on the index from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="index">The index to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Pop(this StringBuilder builder, int index, out char popped)
+    {
+        if (index >= 0 && index < builder.Length)
+        {
+            popped = builder[index];
+            return builder.Remove(index, 1);
+        }
+        popped = default;
+        return builder;
+    }
+    /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
+    public static StringBuilder Pop(this StringBuilder builder, Index index, out char popped) =>
+        builder.Pop(index.GetOffset(builder.Length), out popped);
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <param name="popped">The resulting character that was removed, or <see langword="default"/>.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Pop(this StringBuilder builder, Range range, out string popped)
+    {
+        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+        popped = string.Create(
+            length,
+            (builder, startIndex),
+            static (span, tuple) =>
+            {
+                var (builder, startIndex) = tuple;
+                for (var i = 0; i < span.Length; i++)
+                    span[i] = builder[i + startIndex];
+            }
+        );
+#else
+        StringBuilder poppedBuilder = new(length);
+        for (var i = 0; i < length; i++)
+            poppedBuilder[i] = builder[startIndex + i];
+        popped = $"{poppedBuilder}";
+#endif
+        return builder.Remove(startIndex, length);
+    }
+    /// <summary>Removes the substring based on the range from the <see cref="StringBuilder"/>.</summary>
+    /// <param name="builder">The builder to take the character from.</param>
+    /// <param name="range">The range to remove.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="range"/> is out of range when indexing the parameter <paramref name="builder"/>.
+    /// </exception>
+    /// <returns>The parameter <paramref name="builder"/>.</returns>
+    public static StringBuilder Remove(this StringBuilder builder, Range range)
+    {
+        range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
+        return builder.Remove(startIndex, length);
+    }
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER
+    /// <inheritdoc cref="string.Trim()"/>
+    public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
+    /// <inheritdoc cref="string.Trim()"/>
+    public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> memory) => memory.TrimStart().TrimEnd();
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static Memory<char> TrimStart(this Memory<char> memory)
+    {
+        var span = memory.Span;
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..i];
+        return default;
+    }
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..i];
+        return default;
+    }
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static Memory<char> TrimEnd(this Memory<char> memory)
+    {
+        var span = memory.Span;
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+        return default;
+    }
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static ReadOnlyMemory<char> TrimEnd(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+        for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+        return default;
+    }
+#endif
+    /// <inheritdoc cref="string.Trim()"/>
+    public static StringBuilder Trim(this StringBuilder builder) => builder.TrimStart().TrimEnd();
+    /// <inheritdoc cref="string.TrimEnd(char[])"/>
+    public static StringBuilder TrimEnd(this StringBuilder builder)
+    {
+        for (var i = builder.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(builder[i]))
+                return builder.Remove(i + 1, builder.Length - i - 1);
+        return builder.Remove(0, builder.Length);
+    }
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static StringBuilder TrimStart(this StringBuilder builder)
+    {
+        for (var i = 0; i < builder.Length; i++)
+            if (!char.IsWhiteSpace(builder[i]))
+                return builder.Remove(0, i);
+        return builder.Remove(0, builder.Length);
+    }
+// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
     /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
@@ -21733,19 +21733,43 @@ static partial class ManyQueries
     [MustUseReturnValue]
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
-
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
-sealed partial class InlineAttribute : Attribute
+partial class InlineAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="InlineAttribute"/> class.</summary>
-    /// <param name="remove">The value to set.</param>
-    public InlineAttribute(bool remove = true) => Remove = remove;
-
-    /// <summary>Gets a value indicating whether to remove the method after inlining, if private.</summary>
-    public bool Remove { get; }
+    /// <param name="behavior">Export attribute.</param>
+    /// <param name="export">InlineMethod behavior.</param>
+    public InlineAttribute(InlineBehavior behavior = InlineBehavior.RemovePrivate, bool export = false)
+    {
+        Behavior = behavior;
+        Export = export;
+    }
+    /// <summary>Export attribute.</summary>
+    public bool Export { get; }
+    /// <summary>InlineMethod behavior.</summary>
+    public InlineBehavior Behavior { get; }
 }
-
+/// <summary>InlineMethod behavior.</summary>
+enum InlineBehavior
+{
+    /// <summary>Keep method after inline.</summary>
+    Keep,
+    /// <summary>Remove method after inline if private.</summary>
+    RemovePrivate,
+    /// <summary>Remove method after inline.</summary>
+    Remove,
+}
+/// <summary>Resolve delegate parameter.</summary>
+[AttributeUsage(AttributeTargets.Parameter)]
+partial class ResolveDelegateAttribute : Attribute
+{
+    /// <summary>Initializes a new instance of the <see cref="ResolveDelegateAttribute"/> class.</summary>
+    /// <param name="inline">Inline after resolve.</param>
+    public ResolveDelegateAttribute(bool inline = true) => Inline = inline;
+    /// <summary>Inline after resolve.</summary>
+    public bool Inline { get; }
+}
 /// <summary>Provides stringification methods.</summary>
 static class Stringifier
 {
@@ -21763,8 +21787,6 @@ static class Stringifier
     [MustUseReturnValue]
     public static string Stringify<T>(T? source) => source.Stringify();
 }
-
 /// <summary>Polyfill for <c>nameof()</c>.</summary>
 static class Morsels;
-
 CatchFatalExceptions = true;

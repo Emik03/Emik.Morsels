@@ -331,7 +331,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
     var lines = Directory
         .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
-        .OrderBy(Id, StringComparer.Ordinal)
+        .OrderBy(Id)
         .Select(File.ReadAllText)
         .Select(RemoveNamespaces)
         .Select(QualifyCollectionAccess)
@@ -358,19 +358,43 @@ static partial class ManyQueries
     [MustUseReturnValue]
     public static IEnumerable<Type> TryGetTypes(Assembly? assembly) => assembly.TryGetTypes();
 }
-
 /// <summary>Method to inline.</summary>
 [AttributeUsage(AttributeTargets.Method)]
-sealed partial class InlineAttribute : Attribute
+partial class InlineAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="InlineAttribute"/> class.</summary>
-    /// <param name="remove">The value to set.</param>
-    public InlineAttribute(bool remove = true) => Remove = remove;
-
-    /// <summary>Gets a value indicating whether to remove the method after inlining, if private.</summary>
-    public bool Remove { get; }
+    /// <param name="behavior">Export attribute.</param>
+    /// <param name="export">InlineMethod behavior.</param>
+    public InlineAttribute(InlineBehavior behavior = InlineBehavior.RemovePrivate, bool export = false)
+    {
+        Behavior = behavior;
+        Export = export;
+    }
+    /// <summary>Export attribute.</summary>
+    public bool Export { get; }
+    /// <summary>InlineMethod behavior.</summary>
+    public InlineBehavior Behavior { get; }
 }
-
+/// <summary>InlineMethod behavior.</summary>
+enum InlineBehavior
+{
+    /// <summary>Keep method after inline.</summary>
+    Keep,
+    /// <summary>Remove method after inline if private.</summary>
+    RemovePrivate,
+    /// <summary>Remove method after inline.</summary>
+    Remove,
+}
+/// <summary>Resolve delegate parameter.</summary>
+[AttributeUsage(AttributeTargets.Parameter)]
+partial class ResolveDelegateAttribute : Attribute
+{
+    /// <summary>Initializes a new instance of the <see cref="ResolveDelegateAttribute"/> class.</summary>
+    /// <param name="inline">Inline after resolve.</param>
+    public ResolveDelegateAttribute(bool inline = true) => Inline = inline;
+    /// <summary>Inline after resolve.</summary>
+    public bool Inline { get; }
+}
 /// <summary>Provides stringification methods.</summary>
 static class Stringifier
 {
@@ -388,8 +412,6 @@ static class Stringifier
     [MustUseReturnValue]
     public static string Stringify<T>(T? source) => source.Stringify();
 }
-
 /// <summary>Polyfill for <c>nameof()</c>.</summary>
 static class Morsels;
-
 CatchFatalExceptions = true;
