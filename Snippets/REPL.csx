@@ -18766,7 +18766,7 @@ readonly struct LightweightOverloadResolution(
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
+// ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
 #pragma warning disable 9107

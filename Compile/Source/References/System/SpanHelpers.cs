@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace System;
 
-// ReSharper disable CognitiveComplexity NullableWarningSuppressionIsUsed
+// ReSharper disable CognitiveComplexity NullableWarningSuppressionIsUsed RedundantCallerArgumentExpressionDefaultValue RedundantSuppressNullableWarningExpression
 #pragma warning disable 8500, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
