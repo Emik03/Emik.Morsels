@@ -294,8 +294,6 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
     static string FirstGroup(Match x) => x.Groups[1].Value;
 
-    static string Id(string x) => x;
-
     static string RemoveComments(string x)
         => x.IndexOf(" // ", StringComparison.Ordinal) is var i and not -1 ? x.Remove(i) : x;
 
@@ -306,6 +304,8 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
     static string QualifyCollectionAccess(string x)
         => x.Replace("CollectionAccess(None)", "CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)");
+
+    static long GetDjb2HashCode(string x) => x.Aggregate(5381, (acc, next) => unchecked((acc << 5) + acc ^ next));
 
     static bool HasContent(string x) => !string.IsNullOrWhiteSpace(x);
 
@@ -331,7 +331,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
 
     var lines = Directory
         .EnumerateFiles(root, "*.cs", SearchOption.AllDirectories)
-        .OrderBy(Id)
+        .OrderBy(GetDjb2HashCode)
         .Select(File.ReadAllText)
         .Select(RemoveNamespaces)
         .Select(QualifyCollectionAccess)
