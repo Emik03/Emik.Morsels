@@ -124,6 +124,14 @@ static partial class MethodGroupings
         // #endif
     }
 
+    /// <summary>Gets a pseudo-random prime number.</summary>
+    /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
+    /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
+    /// <returns>The pseudo-random prime number.</returns>
+    [Pure, ValueRange(Primes.Min, Primes.MaxInt16)]
+    public static short Prime([CallerMemberName] string name = "", [CallerLineNumber] int line = 0) =>
+        Primes.Index(name.GetDjb2HashCode() ^ line);
+
     /// <summary>Creates the <see cref="IComparer{T}"/> from the mapping.</summary>
     /// <typeparam name="T">The type to compare.</typeparam>
     /// <param name="comparison">The <see cref="Comparison{T}"/> to use.</param>

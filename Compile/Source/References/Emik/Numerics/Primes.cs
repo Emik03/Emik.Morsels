@@ -257,8 +257,8 @@ public
         );
 
     /// <summary>Performs the index operation.</summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
+    /// <param name="index">The index.</param>
+    /// <returns>The prime at the specified index.</returns>
     [Pure, ValueRange(Min, MaxInt16)]
     public static short Index(int index) =>
 #if NETCOREAPP || ROSLYN
@@ -266,6 +266,7 @@ public
 #else
         Int16[index.Mod(Int16.Count)];
 #endif
+    /// <inheritdoc cref="Index(int)"/>
     [Pure, ValueRange(Min, MaxInt16)]
     internal static short Index(Index index) => Index(index.IsFromEnd ? -index.Value - 1 : index.Value);
 }
