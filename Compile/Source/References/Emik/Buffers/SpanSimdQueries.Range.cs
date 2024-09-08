@@ -197,9 +197,11 @@ static partial class SpanSimdQueries
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Populate(scoped Span<T> span)
         {
-            ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
+            ref var start = ref MemoryMarshal.GetReference(span);
+            ref var last = ref Unsafe.Add(ref start, span.Length);
+            start = ref Unsafe.Add(ref start, 1);
 
-            while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, span.Length)))
+            while (Unsafe.IsAddressLessThan(ref start, ref last))
             {
                 start = Unsafe.Subtract(ref start, 1);
                 Increment(ref start);

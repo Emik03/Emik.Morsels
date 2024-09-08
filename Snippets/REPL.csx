@@ -1209,8 +1209,10 @@ public
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Populate(scoped Span<T> span)
         {
-            ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
-            while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, span.Length)))
+            ref var start = ref MemoryMarshal.GetReference(span);
+            ref var last = ref Unsafe.Add(ref start, span.Length);
+            start = ref Unsafe.Add(ref start, 1);
+            while (Unsafe.IsAddressLessThan(ref start, ref last))
             {
                 start = Unsafe.Subtract(ref start, 1);
                 Increment(ref start);
@@ -2608,8 +2610,9 @@ public
         KeyboardState output = default;
         var reader = MemoryMarshal.Cast<Keys, int>(keys);
         ref var start = ref MemoryMarshal.GetReference(reader);
+        ref var end = ref Unsafe.Add(ref start, reader.Length);
         ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
-        while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, reader.Length)))
+        while (Unsafe.IsAddressLessThan(ref start, ref end))
             Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
         Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)((bits & 4096) >> 11 | (bits & 8192) >> 13);
         return output;
