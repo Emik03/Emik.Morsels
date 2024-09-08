@@ -333,7 +333,8 @@ static partial class EachWithControlFlow
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        // ReSharper disable once NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+        for (T? i = default; i < upper; i!++)
             if (func() is ControlFlow.Break)
                 break;
 
@@ -381,7 +382,7 @@ static partial class EachWithControlFlow
         TExternal external,
         [InstantHandle] Func<TExternal, ControlFlow> func
     )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>
     {
         for (T? i = default; i < upper; i++)
             if (func(external) is ControlFlow.Break)

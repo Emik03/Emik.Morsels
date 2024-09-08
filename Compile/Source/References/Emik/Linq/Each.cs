@@ -395,8 +395,9 @@ static partial class Each
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
 
-        for (T? i = default; i < abs; i++)
-            yield return isNegative ? upper - i : i;
+        // ReSharper disable RedundantSuppressNullableWarningExpression
+        for (T? i = default; i < abs; i!++)
+            yield return isNegative ? upper - i! : i!;
     }
 
     /// <summary>Gets an enumeration of a number.</summary>
