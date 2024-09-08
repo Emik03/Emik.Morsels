@@ -1210,11 +1210,11 @@ public
         static void Populate(scoped Span<T> span)
         {
             ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
-            ref var end = ref Unsafe.Add(ref start, span.Length);
-            for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1)!)
+            while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, span.Length)))
             {
                 start = Unsafe.Subtract(ref start, 1);
                 Increment(ref start);
+                start = ref Unsafe.Add(ref start, 1)!;
             }
         }
     }
@@ -2604,13 +2604,12 @@ public
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static KeyboardState ToState(this scoped in ReadOnlySpan<Keys> keys, KeyMods mods = KeyMods.None)
     {
+        var bits = (ushort)mods;
         KeyboardState output = default;
         var reader = MemoryMarshal.Cast<Keys, int>(keys);
-        ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
-        ref var bits = ref Unsafe.As<KeyMods, ushort>(ref mods);
         ref var start = ref MemoryMarshal.GetReference(reader);
-        ref var end = ref Unsafe.Add(ref start, reader.Length);
-        while (Unsafe.IsAddressLessThan(ref start, ref end))
+        ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
+        while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, reader.Length)))
             Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
         Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)((bits & 4096) >> 11 | (bits & 8192) >> 13);
         return output;
@@ -3826,7 +3825,7 @@ abstract partial class Assert
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             if (func() is ControlFlow.Break)
                 break;
         return upper;
@@ -3870,7 +3869,7 @@ abstract partial class Assert
         TExternal external,
         [InstantHandle] Func<TExternal, ControlFlow> func
     )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
+        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>
     {
         for (T? i = default; i < upper; i++)
             if (func(external) is ControlFlow.Break)
@@ -8865,7 +8864,7 @@ abstract partial class Assert(
 // ReSharper disable once CheckNamespace
 #pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
-[Flags]
+[CLSCompliant(false), Flags]
 public enum KeyMods : ushort
 {
     None,
@@ -11079,8 +11078,8 @@ public enum KeyMods : ushort
     {
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
-        for (T? i = default; i < abs; i++)
-            yield return isNegative ? upper - i : i;
+        for (T? i = default; i < abs; i!++)
+            yield return isNegative ? upper - i! : i!;
     }
     /// <summary>Gets an enumeration of a number.</summary>
     /// <typeparam name="T">The type of number for the loop.</typeparam>

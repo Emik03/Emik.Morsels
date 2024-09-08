@@ -52,18 +52,16 @@ static partial class ConcurrentKeyboard
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static KeyboardState ToState(this scoped in ReadOnlySpan<Keys> keys, KeyMods mods = KeyMods.None)
     {
+        var bits = (ushort)mods;
         KeyboardState output = default;
         var reader = MemoryMarshal.Cast<Keys, int>(keys);
-        ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
-        ref var bits = ref Unsafe.As<KeyMods, ushort>(ref mods);
         ref var start = ref MemoryMarshal.GetReference(reader);
-        ref var end = ref Unsafe.Add(ref start, reader.Length);
+        ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
 
-        while (Unsafe.IsAddressLessThan(ref start, ref end))
+        while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, reader.Length)))
             Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
 
         Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)((bits & 4096) >> 11 | (bits & 8192) >> 13);
-
         return output;
     }
 

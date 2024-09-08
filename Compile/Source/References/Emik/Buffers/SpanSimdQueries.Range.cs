@@ -198,12 +198,12 @@ static partial class SpanSimdQueries
         static void Populate(scoped Span<T> span)
         {
             ref var start = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), 1);
-            ref var end = ref Unsafe.Add(ref start, span.Length);
 
-            for (; Unsafe.IsAddressLessThan(ref start, ref end); start = ref Unsafe.Add(ref start, 1)!)
+            while (Unsafe.IsAddressLessThan(ref start, ref Unsafe.Add(ref start, span.Length)))
             {
                 start = Unsafe.Subtract(ref start, 1);
                 Increment(ref start);
+                start = ref Unsafe.Add(ref start, 1)!;
             }
         }
     }
