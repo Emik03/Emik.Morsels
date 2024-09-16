@@ -107,6 +107,14 @@
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
     </PropertyGroup>
+    <!-- The copy command for Windows. -->
+    <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+        <CopyCommand>xcopy</CopyCommand>
+    </PropertyGroup>
+    <!-- The copy command for Mac/Linux. -->
+    <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+        <CopyCommand>cp</CopyCommand>
+    </PropertyGroup>
     <!-- Benchmarks and dotnet-script do not like being run from the artifacts path. -->
     <PropertyGroup Condition="!$(MSBuildProjectFullPath.Contains('dotnet-script')) and !$(MSBuildProjectName.Contains('Benchmark'))">
         <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
