@@ -18,6 +18,18 @@ static partial class Hsv
     /// <param name="saturation">The saturation.</param>
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
+    public static (byte, byte, byte) ToRgb(this int hue, byte saturation, byte value) =>
+        ToRgb((ushort)hue.Mod(M * 6), saturation, value);
+
+    /// <summary>Converts the HSV values to RGB.</summary>
+    /// <remarks><para>
+    /// Implementation based on
+    /// <a href="https://github.com/SGauvin/HsvConverter/blob/master/HsvConverter.cpp">SGauvin's HsvConverter</a>.
+    /// </para></remarks>
+    /// <param name="hue">The hue, generally ranging from 0 to 1529.</param>
+    /// <param name="saturation">The saturation.</param>
+    /// <param name="value">The value.</param>
+    /// <returns>The RGB components of the HSV parameters.</returns>
     public static (byte, byte, byte) ToRgb(this ushort hue, byte saturation, byte value) =>
         (hue %= M * 6) switch
         {
@@ -29,6 +41,18 @@ static partial class Hsv
             _ => (value, (byte)((M - saturation) * value / M), (byte)(V(M - hue % M, saturation) * value / M)),
         };
 #if XNA
+    /// <summary>Converts the HSV values to RGB.</summary>
+    /// <remarks><para>
+    /// Implementation based on
+    /// <a href="https://github.com/SGauvin/HsvConverter/blob/master/HsvConverter.cpp">SGauvin's HsvConverter</a>.
+    /// </para></remarks>
+    /// <param name="hue">The hue, generally ranging from 0 to 1529.</param>
+    /// <param name="saturation">The saturation.</param>
+    /// <param name="value">The value.</param>
+    /// <returns>The RGB components of the HSV parameters.</returns>
+    public static Color ToColor(this int hue, byte saturation, byte value) =>
+        ToColor((ushort)hue.Mod(M * 6), saturation, value);
+
     /// <summary>Converts the HSV values to <see cref="Color"/>.</summary>
     /// <remarks><para>
     /// Implementation based on
