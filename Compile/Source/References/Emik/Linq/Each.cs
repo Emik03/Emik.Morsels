@@ -429,7 +429,7 @@ static partial class Each
     {
         var abs = upper < default(T) ? default(T)! - upper : upper;
 
-        for (T? i = default; i < abs; i++)
+        for (T? i = default; i < abs; i!++)
             yield return external;
     }
 
@@ -454,7 +454,7 @@ static partial class Each
     {
         var abs = upper < default(T) ? default(T)! - upper : upper;
 
-        for (T? i = default; i < abs; i++)
+        for (T? i = default; i < abs; i!++)
             yield return func();
     }
 
@@ -480,8 +480,8 @@ static partial class Each
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
 
-        for (T? i = default; i < abs; i++)
-            yield return func(isNegative ? upper - i : i);
+        for (T? i = default; i < abs; i!++)
+            yield return func(isNegative ? upper - i! : i!);
     }
 
     /// <summary>
@@ -499,7 +499,7 @@ static partial class Each
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             action();
 
         return upper;
@@ -520,8 +520,8 @@ static partial class Each
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            action(i);
+        for (T? i = default; i < upper; i!++)
+            action(i!);
 
         return upper;
     }
@@ -547,7 +547,7 @@ static partial class Each
     )
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             action(external);
 
         return upper;
@@ -574,8 +574,8 @@ static partial class Each
     )
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            action(i, external);
+        for (T? i = default; i < upper; i!++)
+            action(i!, external);
 
         return upper;
     }

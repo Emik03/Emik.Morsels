@@ -199,7 +199,7 @@ static partial class SpanSimdQueries
         {
             ref var start = ref MemoryMarshal.GetReference(span);
             ref var last = ref Unsafe.Add(ref start, span.Length);
-            start = ref Unsafe.Add(ref start, 1);
+            start = ref Unsafe.Add(ref start, 1)!;
 
             while (Unsafe.IsAddressLessThan(ref start, ref last))
             {

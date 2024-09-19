@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
-// ReSharper disable LoopCanBePartlyConvertedToQuery
+// ReSharper disable LoopCanBePartlyConvertedToQuery NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
 static partial class EachWithControlFlow
 {
     /// <summary>
@@ -356,8 +356,8 @@ static partial class EachWithControlFlow
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            if (func(i) is ControlFlow.Break)
+        for (T? i = default; i < upper; i!++)
+            if (func(i!) is ControlFlow.Break)
                 break;
 
         return upper;
@@ -384,7 +384,7 @@ static partial class EachWithControlFlow
     )
         where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             if (func(external) is ControlFlow.Break)
                 break;
 
@@ -412,8 +412,8 @@ static partial class EachWithControlFlow
     )
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            if (func(i, external) is ControlFlow.Break)
+        for (T? i = default; i < upper; i!++)
+            if (func(i!, external) is ControlFlow.Break)
                 break;
 
         return upper;
