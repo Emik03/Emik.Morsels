@@ -19,13 +19,13 @@ static partial class Hsv
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
     public static (byte, byte, byte) ToRgb(this ushort hue, byte saturation, byte value) =>
-        (hue %= 6 * M) switch
+        (hue %= M * 6) switch
         {
-            < M => (value, (byte)(V(hue % M, saturation) * value / M), (byte)((M - saturation) * value / M)),
-            < M * 2 => ((byte)(V(M - hue % M, saturation) * value / M), value, (byte)((M - saturation) * value / M)),
-            < M * 3 => ((byte)((M - saturation) * value / M), value, (byte)(V(hue % M, saturation) * value / 255)),
-            < M * 4 => ((byte)((M - saturation) * value / M), (byte)(V(M - hue % M, saturation) * value / M), value),
-            < M * 5 => ((byte)(V(hue % M, saturation) * value / M), (byte)((M - saturation) * value / M), value),
+            <= M => (value, (byte)(V(hue % M, saturation) * value / M), (byte)((M - saturation) * value / M)),
+            <= M * 2 => ((byte)(V(M - hue % M, saturation) * value / M), value, (byte)((M - saturation) * value / M)),
+            <= M * 3 => ((byte)((M - saturation) * value / M), value, (byte)(V(hue % M, saturation) * value / M)),
+            <= M * 4 => ((byte)((M - saturation) * value / M), (byte)(V(M - hue % M, saturation) * value / M), value),
+            <= M * 5 => ((byte)(V(hue % M, saturation) * value / M), (byte)((M - saturation) * value / M), value),
             _ => (value, (byte)((M - saturation) * value / M), (byte)(V(M - hue % M, saturation) * value / M)),
         };
 #if XNA
