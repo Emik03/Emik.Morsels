@@ -5511,7 +5511,7 @@ abstract partial class Assert
     /// <param name="saturation">The saturation.</param>
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
-    public static (byte, byte, byte) ToRgb(this int hue, byte saturation, byte value) =>
+    public static (byte, byte, byte) ToRgb(this int hue, byte saturation = M, byte value = M) =>
         ToRgb((ushort)hue.Mod(M * 6), saturation, value);
     /// <summary>Converts the HSV values to RGB.</summary>
     /// <remarks><para>
@@ -5522,7 +5522,7 @@ abstract partial class Assert
     /// <param name="saturation">The saturation.</param>
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
-    public static (byte, byte, byte) ToRgb(this ushort hue, byte saturation, byte value) =>
+    public static (byte, byte, byte) ToRgb(this ushort hue, byte saturation = M, byte value = M) =>
         (hue %= M * 6) switch
         {
             <= M => (value, (byte)(V(hue % M, saturation) * value / M), (byte)((M - saturation) * value / M)),
@@ -5542,7 +5542,7 @@ abstract partial class Assert
     /// <param name="saturation">The saturation.</param>
     /// <param name="value">The value.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
-    public static Color ToColor(this int hue, byte saturation, byte value) =>
+    public static Color ToColor(this int hue, byte saturation = M, byte value = M) =>
         ToColor((ushort)hue.Mod(M * 6), saturation, value);
     /// <summary>Converts the HSV values to <see cref="Color"/>.</summary>
     /// <remarks><para>
@@ -5555,7 +5555,7 @@ abstract partial class Assert
     /// <param name="alpha">The alpha channel.</param>
     /// <returns>The RGB components of the HSV parameters.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Color ToColor(this ushort hue, byte saturation, byte value, byte alpha = M)
+    public static Color ToColor(this ushort hue, byte saturation = M, byte value = M, byte alpha = M)
     {
         var (r, g, b) = ToRgb(hue, saturation, value);
         return new(r, g, b, alpha);
