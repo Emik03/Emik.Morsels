@@ -1,12 +1,14 @@
+.DEFAULT: help
 .PHONY: help repl
+.SILENT: help
 
 default: help
 
 help:
-	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  help              to see this message"
-	@echo "  repl              to launch CSharpRepl with Emik.Morsels as an embedded dependency"
-	@echo "  Snippets/REPL.csx to concatenate all of the source files into one large file a REPL environment could read"
+	echo "Please use \`make <target>' where <target> is one of"
+	echo "  help              to see this message"
+	echo "  repl              to launch CSharpRepl with Emik.Morsels as an embedded dependency"
+	echo "  Snippets/REPL.csx to concatenate all of the source files into one large file a REPL environment could read"
 
 repl: Snippets/REPL.csx
 	command -v csharprepl || dotnet tool install -g csharprepl
