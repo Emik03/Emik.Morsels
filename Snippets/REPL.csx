@@ -1211,7 +1211,7 @@ public
         {
             ref var start = ref MemoryMarshal.GetReference(span);
             ref var last = ref Unsafe.Add(ref start, span.Length);
-            start = ref Unsafe.Add(ref start, 1);
+            start = ref Unsafe.Add(ref start, 1)!;
             while (Unsafe.IsAddressLessThan(ref start, ref last))
             {
                 start = Unsafe.Subtract(ref start, 1);
@@ -3529,7 +3529,7 @@ abstract partial class Assert
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
-// ReSharper disable LoopCanBePartlyConvertedToQuery
+// ReSharper disable LoopCanBePartlyConvertedToQuery NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
     /// Boolean expression evaluates to <see langword="true"/>.
@@ -3848,8 +3848,8 @@ abstract partial class Assert
     public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            if (func(i) is ControlFlow.Break)
+        for (T? i = default; i < upper; i!++)
+            if (func(i!) is ControlFlow.Break)
                 break;
         return upper;
     }
@@ -3874,7 +3874,7 @@ abstract partial class Assert
     )
         where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             if (func(external) is ControlFlow.Break)
                 break;
         return upper;
@@ -3900,8 +3900,8 @@ abstract partial class Assert
     )
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            if (func(i, external) is ControlFlow.Break)
+        for (T? i = default; i < upper; i!++)
+            if (func(i!, external) is ControlFlow.Break)
                 break;
         return upper;
     }
@@ -6600,7 +6600,7 @@ abstract partial class Assert<T> : Assert
     public static IEnumerable<SmallList<T>> Combinations<T>(this SmallList<SmallList<T>> lists)
     {
         foreach (var list in lists)
-            if (list is [])
+            if (list.IsEmpty)
                 return [];
         return lists.CombinationsIterator();
     }
@@ -11194,7 +11194,7 @@ public enum KeyMods : ushort
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var abs = upper < default(T) ? default(T)! - upper : upper;
-        for (T? i = default; i < abs; i++)
+        for (T? i = default; i < abs; i!++)
             yield return external;
     }
     /// <summary>
@@ -11217,7 +11217,7 @@ public enum KeyMods : ushort
         where T : IComparisonOperators<T?, T?, bool>, ISubtractionOperators<T, T, T>, IIncrementOperators<T>
     {
         var abs = upper < default(T) ? default(T)! - upper : upper;
-        for (T? i = default; i < abs; i++)
+        for (T? i = default; i < abs; i!++)
             yield return func();
     }
     /// <summary>
@@ -11241,8 +11241,8 @@ public enum KeyMods : ushort
     {
         var isNegative = upper < default(T);
         var abs = isNegative ? default(T)! - upper : upper;
-        for (T? i = default; i < abs; i++)
-            yield return func(isNegative ? upper - i : i);
+        for (T? i = default; i < abs; i!++)
+            yield return func(isNegative ? upper - i! : i!);
     }
     /// <summary>
     /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
@@ -11259,7 +11259,7 @@ public enum KeyMods : ushort
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action action)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             action();
         return upper;
     }
@@ -11278,8 +11278,8 @@ public enum KeyMods : ushort
     public static T For<T>([NonNegativeValue] this T upper, [InstantHandle] Action<T> action)
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            action(i);
+        for (T? i = default; i < upper; i!++)
+            action(i!);
         return upper;
     }
     /// <summary>
@@ -11303,7 +11303,7 @@ public enum KeyMods : ushort
     )
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
+        for (T? i = default; i < upper; i!++)
             action(external);
         return upper;
     }
@@ -11328,8 +11328,8 @@ public enum KeyMods : ushort
     )
         where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
     {
-        for (T? i = default; i < upper; i++)
-            action(i, external);
+        for (T? i = default; i < upper; i!++)
+            action(i!, external);
         return upper;
     }
 #endif
@@ -14602,7 +14602,7 @@ readonly
             return e.Current;
         }
     }
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[Index]"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
