@@ -5,7 +5,7 @@ namespace Emik.Morsels;
 #pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [CLSCompliant(false), Flags]
-public enum KeyMods : ushort
+enum KeyMods : ushort
 {
     None,
     LeftShift,
