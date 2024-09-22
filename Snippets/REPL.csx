@@ -6640,6 +6640,7 @@ abstract partial class Assert<T> : Assert
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Class for obtaining the underlying data for lists.</summary>
+#if !NET9_0_OR_GREATER
     /// <summary>Contains the cached method for obtaining the underlying array.</summary>
     /// <typeparam name="T">The element type within the collection.</typeparam>
     static class ListCache<T>
@@ -6669,6 +6670,7 @@ abstract partial class Assert<T> : Assert
 #endif
         }
     }
+#endif
     /// <summary>Gets the underlying array of the <see cref="List{T}"/>.</summary>
     /// <remarks><para>
     /// While unlikely, it is theoretically possible that the framework's implementation of
@@ -6694,7 +6696,17 @@ abstract partial class Assert<T> : Assert
     /// <param name="list">The list to obtain the underlying array.</param>
     /// <returns>The array of the parameter <paramref name="list"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T[] UnsafelyToArray<T>(this List<T> list) => ListCache<T>.Converter(list);
+    public static T[] UnsafelyToArray<T>(this List<T> list)
+#if NET9_0_OR_GREATER
+    {
+        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_items")]
+        static extern ref readonly T[] Items(List<T> list);
+        return Items(list);
+    }
+#else
+        =>
+            ListCache<T>.Converter(list);
+#endif
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
