@@ -176,7 +176,7 @@
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4.0" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.163" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.168" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.12.5" PrivateAssets="all"/>
