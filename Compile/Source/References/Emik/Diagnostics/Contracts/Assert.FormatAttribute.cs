@@ -53,7 +53,8 @@ abstract partial class Assert
         /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
         [Pure]
         public string this[string assertion, string xFactory, object? xValue, string yFactory, object? yValue] =>
-            new StringBuilder(Template)
+            Template
+               .ToBuilder()
                .Replace(Assertion, assertion.Collapse())
                .Replace(XFactory, xFactory.Collapse())
                .Replace(XValue, xValue.Stringify())

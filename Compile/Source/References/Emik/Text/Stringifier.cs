@@ -171,7 +171,7 @@ static partial class Stringifier
 
         return expression?.Collapse()
            .SplitSpanLines()
-           .Aggregate(new StringBuilder(prefix), Accumulator)
+           .Aggregate(prefix.ToBuilder(), Accumulator)
            .Trim()
            .ToString();
 #else

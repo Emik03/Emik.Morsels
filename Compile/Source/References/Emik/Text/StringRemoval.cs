@@ -125,6 +125,11 @@ static partial class StringRemoval
         return builder.Remove(startIndex, length);
     }
 
+    /// <summary>Creates the <see cref="StringBuilder"/> around the provided <see cref="string"/>.</summary>
+    /// <param name="str">The <see cref="string"/> to create the <see cref="StringBuilder"/> around.</param>
+    /// <returns>The <see cref="StringBuilder"/> of the parameter <paramref name="str"/>.</returns>
+    [Pure]
+    public static StringBuilder ToBuilder(this string? str) => new(str);
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="string.Trim()"/>
     public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();

@@ -5068,6 +5068,11 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         range.GetOffsetAndLength(builder.Length, out var startIndex, out var length);
         return builder.Remove(startIndex, length);
     }
+    /// <summary>Creates the <see cref="StringBuilder"/> around the provided <see cref="string"/>.</summary>
+    /// <param name="str">The <see cref="string"/> to create the <see cref="StringBuilder"/> around.</param>
+    /// <returns>The <see cref="StringBuilder"/> of the parameter <paramref name="str"/>.</returns>
+    [Pure]
+    public static StringBuilder ToBuilder(this string? str) => new(str);
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER
     /// <inheritdoc cref="string.Trim()"/>
     public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
@@ -5173,7 +5178,8 @@ abstract partial class Assert
         /// <param name="yValue">The value to replace <see cref="YValue"/> with.</param>
         [Pure]
         public string this[string assertion, string xFactory, object? xValue, string yFactory, object? yValue] =>
-            new StringBuilder(Template)
+            Template
+               .ToBuilder()
                .Replace(Assertion, assertion.Collapse())
                .Replace(XFactory, xFactory.Collapse())
                .Replace(XValue, xValue.Stringify())
@@ -6861,7 +6867,7 @@ public
 #endif
         return expression?.Collapse()
            .SplitSpanLines()
-           .Aggregate(new StringBuilder(prefix), Accumulator)
+           .Aggregate(prefix.ToBuilder(), Accumulator)
            .Trim()
            .ToString();
 #else
@@ -7047,10 +7053,10 @@ public
     /// <returns>The <see cref="string"/> representation of <paramref name="stopwatch"/>.</returns>
     [Pure]
     public static string ToConciseString(
-        this
 #if !WAWA
-            Stopwatch? stopwatch
+        this
 #endif
+            Stopwatch? stopwatch
     ) =>
         stopwatch is null ? "0" : ToConciseString(stopwatch.Elapsed);
     /// <summary>Converts the <see cref="TimeSpan"/> to its concise <see cref="string"/> representation.</summary>
@@ -7460,13 +7466,21 @@ public
     static void Push(char c, scoped ref Span<char> span)
     {
         span[0] = c;
+#if WAWA
+        span = span.Slice(1);
+#else
         span = span.UnsafelySkip(1);
+#endif
     }
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
-        var it = next.TryFormat(span, out var slice);
-        System.Diagnostics.Debug.Assert(it, "TryFormat");
+        if (!next.TryFormat(span, out var slice))
+            System.Diagnostics.Debug.Fail("TryFormat");
+#if WAWA
+        span = span.Slice(slice);
+#else
         span = span.UnsafelySkip(slice);
+#endif
     }
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {
@@ -19244,7 +19258,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         ToString().SplitSpanLines().ToString();
 #else
-        $"{Breaking.Aggregate(new StringBuilder(ToString()), (acc, next) => acc.Replace($"{next}", ""))}";
+        $"{Breaking.Aggregate(ToString().ToBuilder(), (acc, next) => acc.Replace($"{next}", ""))}";
 #endif
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
