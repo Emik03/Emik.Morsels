@@ -365,10 +365,10 @@ static partial class Stringifier
     /// <returns>The <see cref="string"/> representation of <paramref name="stopwatch"/>.</returns>
     [Pure]
     public static string ToConciseString(
-        this
 #if !WAWA
-            Stopwatch? stopwatch
+        this
 #endif
+            Stopwatch? stopwatch
     ) =>
         stopwatch is null ? "0" : ToConciseString(stopwatch.Elapsed);
 
@@ -810,16 +810,23 @@ static partial class Stringifier
 
     static void Push(char c, scoped ref Span<char> span)
     {
-        span[0] = c; // ReSharper disable once ReplaceSliceWithRangeIndexer
+        span[0] = c;
+#if WAWA
+        span = span.Slice(1);
+#else
         span = span.UnsafelySkip(1);
+#endif
     }
 
-    // ReSharper disable RedundantAssignment
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
-        var it = next.TryFormat(span, out var slice);
-        System.Diagnostics.Debug.Assert(it, "TryFormat"); // ReSharper disable once ReplaceSliceWithRangeIndexer
+        if (!next.TryFormat(span, out var slice))
+            System.Diagnostics.Debug.Fail("TryFormat");
+#if WAWA
+        span = span.Slice(slice);
+#else
         span = span.UnsafelySkip(slice);
+#endif
     }
 
     // ReSharper disable RedundantAssignment
