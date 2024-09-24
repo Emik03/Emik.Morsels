@@ -124,9 +124,9 @@ static partial class MethodGroupings
         // #endif
     }
 
-    /// <summary>Gets a pseudo-random prime number.</summary>
+    /// <summary>Gets a consistent prime number based on the line number this was called from.</summary>
     /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
-    /// <returns>The pseudo-random prime number.</returns>
+    /// <returns>The consistent pseudo-random prime number.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(Primes.Min, Primes.MaxInt16)]
     public static short Prime([CallerLineNumber] int line = 0) => Primes.Index(line);
 
