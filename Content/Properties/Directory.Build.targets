@@ -219,7 +219,7 @@
         <AssemblySearchPaths>$(Morsels)/References/;$(AssemblySearchPaths)</AssemblySearchPaths>
     </PropertyGroup>
     <!-- Properties for Roslyn analyzer projects. -->
-    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+    <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Generated.Tests&quot;))">
         <NoTests>true</NoTests>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
@@ -228,7 +228,7 @@
         <NoWarn>$(NoWarn);AsyncifyInvocation;419;1574;1580;3001;3002;3003;3009;3024;8601;8604;8669;8767;9124</NoWarn>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
-    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Generated.Tests&quot;))">
         <IsPackable>false</IsPackable>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
@@ -250,7 +250,6 @@
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.7.0"/>
         <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
-        <Compile Condition="'$(MSBuildProjectExtension)' != '.csproj' or !$(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/Source/References/NUnit/**/*.cs"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
         <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.5.5" PrivateAssets="all"/>
     </ItemGroup>

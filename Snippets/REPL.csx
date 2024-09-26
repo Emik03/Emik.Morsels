@@ -20128,11 +20128,23 @@ public abstract class FixedGenerator(
     public static string Of<T>()
         where T : FixedGenerator, new() =>
         new T().Name;
+    /// <summary>Deconstructs this instance to source code.</summary>
+    /// <param name="name">The name of the generated file.</param>
+    /// <param name="text">The contents of the generated file.</param>
+    public void Deconstruct(out string name, out string text) =>
+        (name, text) = ($"{hintName}{Extension}", $"{Header}{contents}\n");
     /// <inheritdoc />
 #pragma warning disable CA1033
     void IIncrementalGenerator.Initialize(IncrementalGeneratorInitializationContext context) =>
-        context.RegisterPostInitializationOutput(x => x.AddSource($"{hintName}{Extension}", $"{Header}{contents}\n"));
+        context.RegisterPostInitializationOutput(AddSource);
 #pragma warning restore CA1033
+    /// <summary>Adds source code to the context.</summary>
+    /// <param name="context">The context to add source code to.</param>
+    void AddSource(IncrementalGeneratorPostInitializationContext context)
+    {
+        var (name, text) = this;
+        context.AddSource(name, text);
+    }
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
