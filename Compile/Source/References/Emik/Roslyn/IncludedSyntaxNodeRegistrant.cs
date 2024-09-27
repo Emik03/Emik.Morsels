@@ -113,6 +113,54 @@ static partial class IncludedSyntaxNodeRegistrant
         return false;
     }
 
+    /// <summary>Determines whether the symbol has a default implementation.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
+    [Pure]
+    public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
+        symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
+
+    /// <summary>Determines whether the symbol has a parameterless constructor.</summary>
+    /// <param name="symbol">The symbol to check.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
+    /// has a parameterless constructor, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters is []);
+
+    /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
+    /// <param name="symbol">The symbol to use.</param>
+    /// <param name="prefix">If specified, the prefix to contain within the hint name.</param>
+    /// <returns>The hint name of the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    [return: NotNullIfNotNull(nameof(symbol))]
+    public static string? HintName(this INamedTypeSymbol? symbol, string? prefix = nameof(Emik))
+    {
+        if (symbol is null)
+            return null;
+
+        StringBuilder sb = new(symbol.Name);
+        ISymbol? containing = symbol;
+
+        if (symbol.TypeParameters.Length is not 0 and var length)
+            sb.Append('`').Append(length);
+
+        while ((containing = containing.ContainingWithoutGlobal()) is not null)
+        {
+            sb.Insert(0, '.').Insert(0, containing.Name);
+
+            if (containing is INamedTypeSymbol { TypeParameters.Length: not 0 and var i })
+                sb.Append('`').Append(i);
+        }
+
+        if (prefix is not null)
+            sb.Insert(0, '.').Insert(0, prefix);
+
+        return sb.Append(".g.cs").ToString();
+    }
+
     /// <summary>Returns whether the provided <see cref="SyntaxNode"/> is of type <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type of <see cref="SyntaxNode"/> to test the instance for.</typeparam>
     /// <param name="node">The passed in node to test.</param>
@@ -263,53 +311,16 @@ static partial class IncludedSyntaxNodeRegistrant
             System_UIntPtr,
         };
 
-    /// <summary>Determines whether the symbol has a default implementation.</summary>
-    /// <param name="symbol">The symbol to check.</param>
-    /// <returns>The value <see langword="true"/> if the symbol has a default implementation.</returns>
-    [Pure]
-    public static bool HasDefaultImplementation([NotNullWhen(true)] this ISymbol? symbol) =>
-        symbol is IMethodSymbol { IsAbstract: false, IsVirtual: true };
-
-    /// <summary>Determines whether the symbol has a parameterless constructor.</summary>
+    /// <summary>Determines whether the symbol represents an unsafe type.</summary>
     /// <param name="symbol">The symbol to check.</param>
     /// <returns>
     /// The value <see langword="true"/> if the parameter <paramref name="symbol"/>
-    /// has a parameterless constructor, otherwise; <see langword="false"/>.
+    /// represents an unsafe type, otherwise; <see langword="false"/>.
     /// </returns>
     [Pure]
-    public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
-        symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters is []);
-
-    /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
-    /// <param name="symbol">The symbol to use.</param>
-    /// <param name="prefix">If specified, the prefix to contain within the hint name.</param>
-    /// <returns>The hint name of the parameter <paramref name="symbol"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(symbol))]
-    public static string? HintName(this INamedTypeSymbol? symbol, string? prefix = nameof(Emik))
-    {
-        if (symbol is null)
-            return null;
-
-        StringBuilder sb = new(symbol.Name);
-        ISymbol? containing = symbol;
-
-        if (symbol.TypeParameters.Length is not 0 and var length)
-            sb.Append('`').Append(length);
-
-        while ((containing = containing.ContainingWithoutGlobal()) is not null)
-        {
-            sb.Insert(0, '.').Insert(0, containing.Name);
-
-            if (containing is INamedTypeSymbol { TypeParameters.Length: not 0 and var i })
-                sb.Append('`').Append(i);
-        }
-
-        if (prefix is not null)
-            sb.Insert(0, '.').Insert(0, prefix);
-
-        return sb.Append(".g.cs").ToString();
-    }
+    public static bool IsUnsafe([NotNullWhen(true)] this ITypeSymbol? symbol) =>
+        symbol is IFunctionPointerTypeSymbol or IPointerTypeSymbol ||
+        symbol is IArrayTypeSymbol { ElementType: var e } && IsUnsafe(e);
 
     /// <summary>Gets the keyword associated with the declaration of the <see cref="ITypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to get its keyword.</param>
