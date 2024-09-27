@@ -20120,11 +20120,11 @@ public abstract class FixedGenerator(
     [Pure, StringSyntax("C#")]
     public static string Annotation { get; } =
 #if GENERATED_CODE_ABSOLUTE_PATH
-        $"[global::System.CodeDom.Compiler.GeneratedCode(\"{
+        $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{
             typeof(FixedGenerator).Assembly.ManifestModule.FullyQualifiedName}\", \"{
                 typeof(FixedGenerator).Assembly.ManifestModule.ModuleVersionId}\")]";
 #else
-        $"[global::System.CodeDom.Compiler.GeneratedCode(\"{
+        $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{
             typeof(FixedGenerator).Assembly.GetName().Name}\", \"{
                 typeof(FixedGenerator).Assembly.GetName().Version}\")]";
 #endif
