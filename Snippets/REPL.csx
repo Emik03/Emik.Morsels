@@ -20109,7 +20109,7 @@ public abstract class FixedGenerator(
     /// <summary>Gets the attribute that indicates source generation from this library.</summary>
     [Pure, StringSyntax("C#")]
     public static string Annotation { get; } =
-#if DEBUG
+#if GENERATED_CODE_ABSOLUTE_PATH
         $"[global::System.CodeDom.Compiler.GeneratedCode(\"{
             typeof(FixedGenerator).Assembly.ManifestModule.FullyQualifiedName}\", \"{
                 typeof(FixedGenerator).Assembly.ManifestModule.ModuleVersionId}\")]";
