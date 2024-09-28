@@ -44,6 +44,19 @@ public abstract class FixedGenerator(
     [Pure]
     public string Name => hintName;
 
+    /// <summary>Gets the source.</summary>
+    [Pure]
+    public (string, SourceText) Source
+    {
+        get
+        {
+            var (name, text) = this;
+
+            return ($"{typeof(AttributeGenerator).Namespace}/{typeof(AttributeGenerator)}/{name}",
+                SourceText.From(text, Encoding.UTF8));
+        }
+    }
+
     /// <summary>Gets the name of the attribute generated specified by <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The kind of <see cref="FixedGenerator"/> to get the <see cref="Name"/> from.</typeparam>
     /// <returns>The <see cref="Name"/> of the <see cref="FixedGenerator"/> <typeparamref name="T"/>.</returns>
