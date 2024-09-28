@@ -10,7 +10,7 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
 {
     RoslynComparer() { }
 
-    /// <summary> The default instance. </summary>
+    /// <summary>Gets the default instance.</summary>
     [Pure]
     public static RoslynComparer Instance { get; } = new();
 
@@ -26,84 +26,77 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         ReferenceEquals(x, y) ||
         x is not null &&
         y is not null &&
-        (x is not IAliasSymbol && y is not IAliasSymbol ||
-            x is IAliasSymbol && y is IAliasSymbol && !Eq(As<IAliasSymbol>(x), As<IAliasSymbol>(y))) &&
-        (x is not IAssemblySymbol && y is not IAssemblySymbol ||
-            x is IAssemblySymbol && y is IAssemblySymbol && !Eq(As<IAssemblySymbol>(x), As<IAssemblySymbol>(y))) &&
-        (x is not IDiscardSymbol && y is not IDiscardSymbol ||
-            x is IDiscardSymbol && y is IDiscardSymbol && !Eq(As<IDiscardSymbol>(x), As<IDiscardSymbol>(y))) &&
-        (x is not IEventSymbol && y is not IEventSymbol ||
-            x is IEventSymbol && y is IEventSymbol && !Eq(As<IEventSymbol>(x), As<IEventSymbol>(y))) &&
-        (x is not IFieldSymbol && y is not IFieldSymbol ||
-            x is IFieldSymbol && y is IFieldSymbol && !Eq(As<IFieldSymbol>(x), As<IFieldSymbol>(y))) &&
-        (x is not ILabelSymbol && y is not ILabelSymbol ||
-            x is ILabelSymbol && y is ILabelSymbol && !Eq(As<ILabelSymbol>(x), As<ILabelSymbol>(y))) &&
-        (x is not ILocalSymbol && y is not ILocalSymbol ||
-            x is ILocalSymbol && y is ILocalSymbol && !Eq(As<ILocalSymbol>(x), As<ILocalSymbol>(y))) &&
-        (x is not IMethodSymbol && y is not IMethodSymbol ||
-            x is IMethodSymbol && y is IMethodSymbol && !Eq(As<IMethodSymbol>(x), As<IMethodSymbol>(y))) &&
-        (x is not IModuleSymbol && y is not IModuleSymbol ||
-            x is IModuleSymbol && y is IModuleSymbol && !Eq(As<IModuleSymbol>(x), As<IModuleSymbol>(y))) &&
-        (x is not INamespaceOrTypeSymbol && y is not INamespaceOrTypeSymbol ||
-            x is INamespaceOrTypeSymbol &&
-            y is INamespaceOrTypeSymbol &&
-            !Eq(As<INamespaceOrTypeSymbol>(x), As<INamespaceOrTypeSymbol>(y))) &&
-        (x is not IParameterSymbol && y is not IParameterSymbol ||
-            x is IParameterSymbol && y is IParameterSymbol && !Eq(As<IParameterSymbol>(x), As<IParameterSymbol>(y))) &&
-        (x is not IPreprocessingSymbol && y is not IPreprocessingSymbol ||
-            x is IPreprocessingSymbol && y is IPreprocessingSymbol) &&
-        (x is not IPropertySymbol && y is not IPropertySymbol ||
-            x is IPropertySymbol && y is IPropertySymbol && !Eq(As<IPropertySymbol>(x), As<IPropertySymbol>(y))) &&
-        (x is not IRangeVariableSymbol && y is not IRangeVariableSymbol ||
-            x is IRangeVariableSymbol && y is IRangeVariableSymbol) &&
-        (x is not ISourceAssemblySymbol && y is not ISourceAssemblySymbol || // Implements IAssemblySymbol
-            x is ISourceAssemblySymbol && y is ISourceAssemblySymbol) &&
-        (x is not INamespaceSymbol && y is not INamespaceSymbol || // Implements INamespaceOrTypeSymbol
-            x is INamespaceSymbol && y is INamespaceSymbol && !Eq(As<INamespaceSymbol>(x), As<INamespaceSymbol>(y))) &&
-        (x is not ITypeSymbol && y is not ITypeSymbol ||
-            x is ITypeSymbol && y is ITypeSymbol && !Eq(As<ITypeSymbol>(x), As<ITypeSymbol>(y))) &&
-        (x is not IArrayTypeSymbol && y is not IArrayTypeSymbol || // Implements ITypeSymbol
-            x is IArrayTypeSymbol && y is IArrayTypeSymbol && !Eq(As<IArrayTypeSymbol>(x), As<IArrayTypeSymbol>(y))) &&
-        (x is not IDynamicTypeSymbol && y is not IDynamicTypeSymbol ||
-            x is IDynamicTypeSymbol && y is IDynamicTypeSymbol) &&
-        (x is not IFunctionPointerTypeSymbol && y is not IFunctionPointerTypeSymbol ||
-            x is IFunctionPointerTypeSymbol &&
-            y is IFunctionPointerTypeSymbol &&
-            !Eq(As<IFunctionPointerTypeSymbol>(x), As<IFunctionPointerTypeSymbol>(y))) &&
-        (x is not INamedTypeSymbol && y is not INamedTypeSymbol ||
-            x is INamedTypeSymbol && y is INamedTypeSymbol && !Eq(As<INamedTypeSymbol>(x), As<INamedTypeSymbol>(y))) &&
-        (x is not IPointerTypeSymbol && y is not IPointerTypeSymbol ||
-            x is IPointerTypeSymbol &&
-            y is IPointerTypeSymbol &&
-            !Eq(As<IPointerTypeSymbol>(x), As<IPointerTypeSymbol>(y))) &&
-        (x is not ITypeParameterSymbol && y is not ITypeParameterSymbol ||
-            x is ITypeParameterSymbol &&
-            y is ITypeParameterSymbol &&
-            !Eq(As<ITypeParameterSymbol>(x), As<ITypeParameterSymbol>(y))) &&
-        (x is not IErrorTypeSymbol && y is not IErrorTypeSymbol || // Implements INamedTypeSymbol
-            x is IErrorTypeSymbol && y is IErrorTypeSymbol && !Eq(As<IErrorTypeSymbol>(x), As<IErrorTypeSymbol>(y)));
+        x.Kind == y.Kind &&
+        x.Name == y.Name &&
+        x.IsExtern == y.IsExtern &&
+        x.IsSealed == y.IsSealed &&
+        x.IsStatic == y.IsStatic &&
+        x.Language == y.Language &&
+        x.IsVirtual == y.IsVirtual &&
+        x.IsAbstract == y.IsAbstract &&
+        x.IsOverride == y.IsOverride &&
+        x.MetadataName == y.MetadataName &&
+        x.IsDefinition == y.IsDefinition &&
+        x.MetadataToken == y.MetadataToken &&
+        x.IsImplicitlyDeclared == y.IsImplicitlyDeclared &&
+        x.CanBeReferencedByName == y.CanBeReferencedByName &&
+        x.DeclaredAccessibility == y.DeclaredAccessibility &&
+        x.HasUnsupportedMetadata == y.HasUnsupportedMetadata &&
+        Eq(x.ContainingType, y.ContainingType) &&
+        Eq(x.ContainingModule, y.ContainingModule) &&
+        Eq(x.ContainingAssembly, y.ContainingAssembly) &&
+        Eq(x.ContainingNamespace, y.ContainingNamespace) &&
+        x.Locations.GuardedSequenceEqual(y.Locations) &&
+        x.DeclaringSyntaxReferences.GuardedSequenceEqual(y.DeclaringSyntaxReferences, Eq) &&
+        Eq<IAliasSymbol>(x, y, Eq) &&
+        Eq<IAssemblySymbol>(x, y, Eq) &&
+        Eq<IDiscardSymbol>(x, y, Eq) &&
+        Eq<IEventSymbol>(x, y, Eq) &&
+        Eq<IFieldSymbol>(x, y, Eq) &&
+        Eq<ILabelSymbol>(x, y, Eq) &&
+        Eq<ILocalSymbol>(x, y, Eq) &&
+        Eq<IMethodSymbol>(x, y, Eq) &&
+        Eq<IModuleSymbol>(x, y, Eq) &&
+        Eq<INamespaceOrTypeSymbol>(x, y, Eq) &&
+        Eq<IParameterSymbol>(x, y, Eq) &&
+        Eq<IPreprocessingSymbol>(x, y, Eq) &&
+        Eq<IPropertySymbol>(x, y, Eq) &&
+        Eq<IRangeVariableSymbol>(x, y, Eq) &&
+        Eq<ISourceAssemblySymbol>(x, y, Eq) &&
+        Eq<INamespaceSymbol>(x, y, Eq) &&
+        Eq<ITypeSymbol>(x, y, Eq) &&
+        Eq<IArrayTypeSymbol>(x, y, Eq) &&
+        Eq<IDynamicTypeSymbol>(x, y, Eq) &&
+        Eq<IFunctionPointerTypeSymbol>(x, y, Eq) &&
+        Eq<INamedTypeSymbol>(x, y, Eq) &&
+        Eq<IPointerTypeSymbol>(x, y, Eq) &&
+        Eq<ITypeParameterSymbol>(x, y, Eq) &&
+        Eq<IErrorTypeSymbol>(x, y, Eq);
 
     /// <summary>Returns the hash code for this string.</summary>
-    /// <param name="x">The instance.</param>
+    /// <param name="obj">The instance.</param>
     /// <returns>A 32-bit signed integer hash code.</returns>
     [Pure]
-    public static int Hash(ISymbol? x)
+    public static int Hash(ISymbol? obj)
     {
-        if (x is null)
-            return Prime();
+        int hash = Prime();
 
-        var hash = x.Kind.AsInt();
-        hash ^= unchecked(x.MetadataToken * Prime());
-        hash ^= unchecked(x.DeclaredAccessibility.AsInt() * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(x.Name) * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(x.Language) * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(x.MetadataName) * Prime());
+        for (var o = obj; o is not null; o = o.ContainingSymbol)
+        {
+            hash ^= unchecked(o.Kind.AsInt() * Prime());
+            hash ^= unchecked(o.MetadataToken * Prime());
+            hash ^= unchecked(o.DeclaredAccessibility.AsInt() * Prime());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(o.Name) * Prime());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(o.Language) * Prime());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(o.MetadataName) * Prime());
+        }
+
         return hash;
     }
 
     /// <inheritdoc />
     [Pure]
-    public bool Equals(AssemblyIdentity? x, AssemblyIdentity? y) =>
+    bool IEqualityComparer<AssemblyIdentity?>.Equals(AssemblyIdentity? x, AssemblyIdentity? y) =>
         ReferenceEquals(x, y) ||
         x is not null &&
         y is not null &&
@@ -120,7 +113,7 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
 
     /// <inheritdoc />
     [Pure]
-    public bool Equals(CustomModifier? x, CustomModifier? y) =>
+    bool IEqualityComparer<CustomModifier?>.Equals(CustomModifier? x, CustomModifier? y) =>
         ReferenceEquals(x, y) ||
         x is not null && y is not null && x.IsOptional == y.IsOptional && Eq(x.Modifier, y.Modifier);
 
@@ -130,7 +123,7 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
 
     /// <inheritdoc />
     [Pure]
-    public int GetHashCode(AssemblyIdentity? obj)
+    int IEqualityComparer<AssemblyIdentity?>.GetHashCode(AssemblyIdentity? obj)
     {
         if (obj is null)
             return Prime();
@@ -148,17 +141,17 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
 
     /// <inheritdoc />
     [Pure]
-    public int GetHashCode(CustomModifier? obj) =>
-        obj is null ? Prime() : Hash(obj.Modifier) ^ obj.IsOptional.ToByte() * Prime();
+    int IEqualityComparer<CustomModifier?>.GetHashCode(CustomModifier? obj) =>
+        Prime() * (obj is null ? 1 : Hash(obj.Modifier) ^ obj.IsOptional.ToByte());
 
     /// <inheritdoc />
     [Pure]
     int IEqualityComparer<ISymbol?>.GetHashCode(ISymbol? x) => Hash(x);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IAliasSymbol x, IAliasSymbol y) => Eq(x.Target as ISymbol, y.Target);
+    [Pure]
+    static bool Eq(IAliasSymbol x, IAliasSymbol y) => Eq((ISymbol)x.Target, y.Target);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IArrayTypeSymbol x, IArrayTypeSymbol y) =>
         x.IsSZArray == y.IsSZArray &&
         x.Rank == y.Rank &&
@@ -166,34 +159,34 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.LowerBounds.GuardedSequenceEqual(y.LowerBounds) &&
         x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance) &&
         x.Sizes.GuardedSequenceEqual(y.Sizes) &&
-        Eq(x.ElementType as ISymbol, y.ElementType);
+        Eq((ISymbol)x.ElementType, y.ElementType);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IAssemblySymbol x, IAssemblySymbol y) =>
         x.IsInteractive == y.IsInteractive &&
-        Instance.Equals(x.Identity, y.Identity) &&
-        Eq(x.GlobalNamespace as ISymbol, y.GlobalNamespace);
+        ((IEqualityComparer<AssemblyIdentity?>)Instance).Equals(x.Identity, y.Identity) &&
+        Eq((ISymbol)x.GlobalNamespace, y.GlobalNamespace);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IDiscardSymbol x, IDiscardSymbol y) =>
-        x.NullableAnnotation == y.NullableAnnotation == Eq(x.Type as ISymbol, y.Type);
+        x.NullableAnnotation == y.NullableAnnotation == Eq((ISymbol)x.Type, y.Type);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IErrorTypeSymbol x, IErrorTypeSymbol y) =>
         x.CandidateReason == y.CandidateReason && x.CandidateSymbols.GuardedSequenceEqual(y.CandidateSymbols, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IEventSymbol x, IEventSymbol y) =>
         x.NullableAnnotation == y.NullableAnnotation &&
         x.IsWindowsRuntimeEvent == y.IsWindowsRuntimeEvent &&
-        Eq(x.Type as ISymbol, y.Type) &&
-        Eq(x.AddMethod as ISymbol, y.AddMethod) &&
-        Eq(x.RaiseMethod as ISymbol, y.RaiseMethod) &&
-        Eq(x.RemoveMethod as ISymbol, y.RemoveMethod) &&
-        Eq(x.OverriddenEvent as ISymbol, y.OverriddenEvent) &&
+        Eq((ISymbol)x.Type, y.Type) &&
+        Eq((ISymbol?)x.AddMethod, y.AddMethod) &&
+        Eq((ISymbol?)x.RaiseMethod, y.RaiseMethod) &&
+        Eq((ISymbol?)x.RemoveMethod, y.RemoveMethod) &&
+        Eq((ISymbol?)x.OverriddenEvent, y.OverriddenEvent) &&
         x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IFieldSymbol x, IFieldSymbol y) =>
         x.IsConst == y.IsConst &&
         x.RefKind == y.RefKind &&
@@ -205,20 +198,20 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.IsFixedSizeBuffer == y.IsFixedSizeBuffer &&
         x.NullableAnnotation == y.NullableAnnotation &&
         (x.ConstantValue?.Equals(y.ConstantValue) ?? y.ConstantValue is null) &&
-        Eq(x.Type as ISymbol, y.Type) &&
+        Eq((ISymbol)x.Type, y.Type) &&
         Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
-        Eq(x.CorrespondingTupleField as ISymbol, y.CorrespondingTupleField) &&
+        Eq((ISymbol?)x.CorrespondingTupleField, y.CorrespondingTupleField) &&
         x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance) &&
         x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IFunctionPointerTypeSymbol x, IFunctionPointerTypeSymbol y) =>
-        Eq(x.Signature as ISymbol, y.Signature);
+        Eq((ISymbol)x.Signature, y.Signature);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(ILabelSymbol x, ILabelSymbol y) => Eq(x.ContainingMethod as ISymbol, y.ContainingMethod);
+    [Pure]
+    static bool Eq(ILabelSymbol x, ILabelSymbol y) => Eq((ISymbol)x.ContainingMethod, y.ContainingMethod);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(ILocalSymbol x, ILocalSymbol y) =>
         x.IsRef == y.IsRef &&
         x.IsConst == y.IsConst &&
@@ -231,9 +224,9 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.HasConstantValue == y.HasConstantValue &&
         x.NullableAnnotation == y.NullableAnnotation &&
         (x.ConstantValue?.Equals(y.ConstantValue) ?? y.ConstantValue is null) &&
-        Eq(x.Type as ISymbol, y.Type);
+        Eq((ISymbol)x.Type, y.Type);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IMethodSymbol x, IMethodSymbol y) =>
         x.Arity == y.Arity &&
         x.IsAsync == y.IsAsync &&
@@ -255,15 +248,15 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.ReturnNullableAnnotation == y.ReturnNullableAnnotation &&
         x.ReceiverNullableAnnotation == y.ReceiverNullableAnnotation &&
         x.MethodImplementationFlags == y.MethodImplementationFlags &&
-        Eq(x.ReturnType as ISymbol, y.ReturnType) &&
+        Eq((ISymbol)x.ReturnType, y.ReturnType) &&
         Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
-        Eq(x.ReducedFrom as ISymbol, y.ReducedFrom) &&
-        Eq(x.ReceiverType as ISymbol, y.ReceiverType) &&
-        Eq(x.ConstructedFrom as ISymbol, y.ConstructedFrom) &&
-        Eq(x.OverriddenMethod as ISymbol, y.OverriddenMethod) &&
-        Eq(x.PartialDefinitionPart as ISymbol, y.PartialDefinitionPart) &&
-        Eq(x.PartialImplementationPart as ISymbol, y.PartialImplementationPart) &&
-        Eq(x.AssociatedAnonymousDelegate as ISymbol, y.AssociatedAnonymousDelegate) &&
+        Eq((ISymbol?)x.ReducedFrom, y.ReducedFrom) &&
+        Eq((ISymbol?)x.ReceiverType, y.ReceiverType) &&
+        Eq((ISymbol)x.ConstructedFrom, y.ConstructedFrom) &&
+        Eq((ISymbol?)x.OverriddenMethod, y.OverriddenMethod) &&
+        Eq((ISymbol?)x.PartialDefinitionPart, y.PartialDefinitionPart) &&
+        Eq((ISymbol?)x.PartialImplementationPart, y.PartialImplementationPart) &&
+        Eq((ISymbol?)x.AssociatedAnonymousDelegate, y.AssociatedAnonymousDelegate) &&
         x.TypeArgumentNullableAnnotations.GuardedSequenceEqual(y.TypeArgumentNullableAnnotations) &&
         x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance) &&
         x.ReturnTypeCustomModifiers.GuardedSequenceEqual(y.ReturnTypeCustomModifiers, Instance) &&
@@ -272,13 +265,13 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.UnmanagedCallingConventionTypes.GuardedSequenceEqual(y.UnmanagedCallingConventionTypes, Instance) &&
         x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IModuleSymbol x, IModuleSymbol y) =>
-        Eq(x.GlobalNamespace as ISymbol, y.GlobalNamespace) &&
+        Eq((ISymbol)x.GlobalNamespace, y.GlobalNamespace) &&
         x.ReferencedAssemblies.GuardedSequenceEqual(y.ReferencedAssemblies, Instance) &&
         x.ReferencedAssemblySymbols.GuardedSequenceEqual(y.ReferencedAssemblySymbols, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(INamedTypeSymbol x, INamedTypeSymbol y) =>
         x.Arity == y.Arity &&
         x.IsComImport == y.IsComImport &&
@@ -289,25 +282,25 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.IsImplicitClass & y.IsImplicitClass &&
         x.IsUnboundGenericType == y.IsUnboundGenericType &&
         x.MightContainExtensionMethods == y.MightContainExtensionMethods &&
-        Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
-        Eq(x.EnumUnderlyingType as ISymbol, y.EnumUnderlyingType) &&
-        Eq(x.TupleUnderlyingType as ISymbol, y.TupleUnderlyingType) &&
-        Eq(x.DelegateInvokeMethod as ISymbol, y.DelegateInvokeMethod) &&
-        Eq(x.NativeIntegerUnderlyingType as ISymbol, y.NativeIntegerUnderlyingType) &&
+        // Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
+        // Eq((ISymbol?)x.EnumUnderlyingType, y.EnumUnderlyingType) &&
+        // Eq((ISymbol?)x.TupleUnderlyingType, y.TupleUnderlyingType) &&
+        // Eq((ISymbol?)x.DelegateInvokeMethod, y.DelegateInvokeMethod) &&
+        // Eq((ISymbol?)x.NativeIntegerUnderlyingType, y.NativeIntegerUnderlyingType) &&
         x.TypeArgumentNullableAnnotations.GuardedSequenceEqual(y.TypeArgumentNullableAnnotations) &&
         x.TupleElements.GuardedSequenceEqual(y.TupleElements, Instance) &&
         x.TypeArguments.GuardedSequenceEqual(y.TypeArguments, Instance) &&
         x.TypeParameters.GuardedSequenceEqual(y.TypeParameters, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(INamespaceOrTypeSymbol x, INamespaceOrTypeSymbol y) =>
         x.IsNamespace == y.IsNamespace && x.IsType == y.IsType;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(INamespaceSymbol x, INamespaceSymbol y) =>
         x.IsGlobalNamespace == y.IsGlobalNamespace && x.NamespaceKind == y.NamespaceKind;
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IParameterSymbol x, IParameterSymbol y) =>
         x.IsThis == y.IsThis &&
         x.Ordinal == y.Ordinal &&
@@ -319,16 +312,16 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.NullableAnnotation == y.NullableAnnotation &&
         x.HasExplicitDefaultValue == y.HasExplicitDefaultValue &&
         (x.ExplicitDefaultValue?.Equals(y.ExplicitDefaultValue) ?? y.ExplicitDefaultValue is null) &&
-        Eq(x.Type as ISymbol, y.Type) &&
+        Eq((ISymbol)x.Type, y.Type) &&
         x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance) &&
         x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IPointerTypeSymbol x, IPointerTypeSymbol y) =>
-        Eq(x.PointedAtType as ISymbol, y.PointedAtType) &&
+        Eq((ISymbol)x.PointedAtType, y.PointedAtType) &&
         x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(IPropertySymbol x, IPropertySymbol y) =>
         x.RefKind == y.RefKind &&
         x.IsIndexer == y.IsIndexer &&
@@ -339,16 +332,16 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.ReturnsByRef == y.ReturnsByRef &&
         x.NullableAnnotation == y.NullableAnnotation &&
         x.ReturnsByRefReadonly == y.ReturnsByRefReadonly &&
-        Eq(x.Type as ISymbol, y.Type) &&
-        Eq(x.GetMethod as ISymbol, y.GetMethod) &&
-        Eq(x.SetMethod as ISymbol, y.SetMethod) &&
-        Eq(x.OverriddenProperty as ISymbol, y.OverriddenProperty) &&
+        Eq((ISymbol)x.Type, y.Type) &&
+        Eq((ISymbol?)x.GetMethod, y.GetMethod) &&
+        Eq((ISymbol?)x.SetMethod, y.SetMethod) &&
+        Eq((ISymbol?)x.OverriddenProperty, y.OverriddenProperty) &&
         x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance) &&
         x.TypeCustomModifiers.GuardedSequenceEqual(y.TypeCustomModifiers, Instance) &&
         x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, Instance) &&
         x.Parameters.GuardedSequenceEqual(y.Parameters, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(ITypeParameterSymbol x, ITypeParameterSymbol y) =>
         x.Ordinal == y.Ordinal &&
         x.Variance == y.Variance &&
@@ -359,13 +352,13 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.HasReferenceTypeConstraint == y.HasReferenceTypeConstraint &&
         x.HasUnmanagedTypeConstraint == y.HasUnmanagedTypeConstraint &&
         x.ReferenceTypeConstraintNullableAnnotation == y.ReferenceTypeConstraintNullableAnnotation &&
-        Eq(x.ReducedFrom as ISymbol, y.ReducedFrom) &&
-        Eq(x.DeclaringType as ISymbol, y.DeclaringType) &&
-        Eq(x.DeclaringMethod as ISymbol, y.DeclaringMethod) &&
+        Eq((ISymbol?)x.ReducedFrom, y.ReducedFrom) &&
+        Eq((ISymbol?)x.DeclaringType, y.DeclaringType) &&
+        Eq((ISymbol?)x.DeclaringMethod, y.DeclaringMethod) &&
         x.ConstraintNullableAnnotations.GuardedSequenceEqual(y.ConstraintNullableAnnotations) &&
         x.ConstraintTypes.GuardedSequenceEqual(y.ConstraintTypes, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [Pure]
     static bool Eq(ITypeSymbol x, ITypeSymbol y) =>
         x.Kind == y.Kind &&
         x.IsRecord == y.IsRecord &&
@@ -378,16 +371,18 @@ public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
         x.IsReferenceType == y.IsReferenceType &&
         x.IsUnmanagedType == y.IsUnmanagedType &&
         x.IsNativeIntegerType == y.IsNativeIntegerType &&
-        Eq(x.BaseType as ISymbol, y.BaseType) &&
+        Eq((ISymbol?)x.BaseType, y.BaseType) &&
         x.Interfaces.GuardedSequenceEqual(y.Interfaces, Instance) &&
         x.AllInterfaces.GuardedSequenceEqual(y.AllInterfaces, Instance);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T As<T>(ISymbol x)
-        where T : class, ISymbol
-    {
-        Debug.Assert(x is T);
-        return Unsafe.As<T>(x);
-    }
+    [Pure]
+    static bool Eq(SyntaxReference? x, SyntaxReference? y) =>
+        ReferenceEquals(x, y) ||
+        x is not null && y is not null && x.Span == y.Span && x.SyntaxTree.IsEquivalentTo(y.SyntaxTree);
+
+    [Pure]
+    static bool Eq<T>(ISymbol? x, ISymbol? y, Func<T, T, bool> predicate)
+        where T : ISymbol =>
+        x is not T && x is not T || x is T tx && y is T ty && predicate(tx, ty);
 }
 #endif
