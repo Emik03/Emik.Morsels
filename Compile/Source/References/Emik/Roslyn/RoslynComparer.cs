@@ -154,17 +154,17 @@ public sealed class RoslynComparer
             r.Equals(x.ContainingType, y.ContainingType) &&
             r.Equals(x.Type, y.Type),
         onFieldSymbol: r => (x, y) => x.MetadataName == y.MetadataName && r.Equals(x.ContainingType, y.ContainingType),
-        onLocalSymbol: r => (x, y) => x.MetadataName == y.MetadataName && r.Equals(x.ContainingSymbol, y.ContainingSymbol),
+        onLocalSymbol: r => (x, y) =>
+            x.MetadataName == y.MetadataName && r.Equals(x.ContainingSymbol, y.ContainingSymbol),
         onMethodSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
             r.Equals(x.ContainingType, y.ContainingType) &&
             x.Parameters.SequenceEqual(y.Parameters, r),
-        onNamespaceSymbol: r => (x, y) =>
-            x.MetadataName == y.MetadataName && r.Equals(x.ContainingNamespace, y.ContainingNamespace),
-        onParameterSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
-            r.Equals(x.ContainingSymbol, y.ContainingSymbol),
+        onParameterSymbol: _ => (x, y) => x.MetadataName == y.MetadataName,
         onPropertySymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
             r.Equals(x.ContainingType, y.ContainingType) &&
             r.Equals(x.Type, y.Type),
+        onNamespaceSymbol: r => (x, y) =>
+            x.MetadataName == y.MetadataName && r.Equals(x.ContainingNamespace, y.ContainingNamespace),
         onTypeSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
             r.Equals(x.ContainingNamespace, y.ContainingNamespace) &&
             (!x.IsReferenceType || x.MatchesNullableAnnotation(y)),
@@ -177,19 +177,15 @@ public sealed class RoslynComparer
         r => (x, y) => x.Kind == y.Kind &&
             x.MetadataName == y.MetadataName &&
             r.Equals(x.ContainingType, y.ContainingType) &&
-            r.Equals(x.ContainingModule, y.ContainingModule) &&
-            r.Equals(x.ContainingSymbol, y.ContainingSymbol) &&
-            r.Equals(x.ContainingAssembly, y.ContainingAssembly) &&
             r.Equals(x.ContainingNamespace, y.ContainingNamespace) &&
             r.Equals(x.ToUnderlying(), y.ToUnderlying()),
-        onAssemblySymbol: _ => (x, y) => x.Identity == y.Identity,
         onMethodSymbol: r => (x, y) => x.Parameters.SequenceEqual(y.Parameters, r) &&
             x.TypeArguments.SequenceEqual(y.TypeArguments, r) &&
             x.TypeParameters.SequenceEqual(y.TypeParameters, r),
         onPropertySymbol: r => (x, y) => x.Parameters.SequenceEqual(y.Parameters, r),
         onTypeSymbol: _ => IncludedSyntaxNodeRegistrant.MatchesNullableAnnotation,
-        onNamedTypeSymbol: r => (x, y) => x.TypeArguments.SequenceEqual(y.TypeArguments, r) &&
-            x.TypeParameters.SequenceEqual(y.TypeParameters, r)
+        onNamedTypeSymbol: r => (x, y) =>
+            x.TypeArguments.SequenceEqual(y.TypeArguments, r) && x.TypeParameters.SequenceEqual(y.TypeParameters, r)
     );
 
     /// <summary>Gets the instance for comparing as strict as value-based comparisons go.</summary>
@@ -334,6 +330,7 @@ public sealed class RoslynComparer
         _ => (x, y) => x.IsGlobalNamespace == y.IsGlobalNamespace && x.NamespaceKind == y.NamespaceKind,
         r => (x, y) => x.Kind == y.Kind &&
             x.IsRecord == y.IsRecord &&
+            x.TypeKind == y.TypeKind &&
             x.IsReadOnly == y.IsReadOnly &&
             x.IsTupleType == y.IsTupleType &&
             x.IsValueType == y.IsValueType &&
