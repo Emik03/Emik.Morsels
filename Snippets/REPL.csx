@@ -2788,6 +2788,19 @@ public
     [Pure]
     public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters is []);
+    /// <summary>Determines whether the symbols have matching nullable annotations.</summary>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="x"/>
+    /// has the equivalent <see cref="ITypeSymbol.NullableAnnotation"/> as the
+    /// parameter <paramref name="y"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool MatchesNullableAnnotation(this ITypeSymbol x, ITypeSymbol y) =>
+        !(x.NullableAnnotation is not NullableAnnotation.None and var a &&
+            y.NullableAnnotation is not NullableAnnotation.None and var b &&
+            a != b);
     /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to use.</param>
     /// <param name="prefix">If specified, the prefix to contain within the hint name.</param>
@@ -9496,9 +9509,9 @@ public enum KeyMods : ushort
     public static T Error<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
@@ -9506,9 +9519,9 @@ public enum KeyMods : ushort
     public static Span<T> Error<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9520,9 +9533,9 @@ public enum KeyMods : ushort
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9534,9 +9547,9 @@ public enum KeyMods : ushort
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -9553,9 +9566,9 @@ public enum KeyMods : ushort
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9568,9 +9581,9 @@ public enum KeyMods : ushort
     public static T Fatal<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
@@ -9578,9 +9591,9 @@ public enum KeyMods : ushort
     public static Span<T> Fatal<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9592,9 +9605,9 @@ public enum KeyMods : ushort
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9606,9 +9619,9 @@ public enum KeyMods : ushort
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -9625,9 +9638,9 @@ public enum KeyMods : ushort
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9640,9 +9653,9 @@ public enum KeyMods : ushort
     public static T Info<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
@@ -9650,9 +9663,9 @@ public enum KeyMods : ushort
     public static Span<T> Info<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9664,9 +9677,9 @@ public enum KeyMods : ushort
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9678,9 +9691,9 @@ public enum KeyMods : ushort
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -9697,9 +9710,9 @@ public enum KeyMods : ushort
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9712,9 +9725,9 @@ public enum KeyMods : ushort
     public static T Verbose<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
@@ -9722,9 +9735,9 @@ public enum KeyMods : ushort
     public static Span<T> Verbose<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9736,9 +9749,9 @@ public enum KeyMods : ushort
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9750,9 +9763,9 @@ public enum KeyMods : ushort
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -9769,9 +9782,9 @@ public enum KeyMods : ushort
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9784,9 +9797,9 @@ public enum KeyMods : ushort
     public static T Warn<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
@@ -9794,9 +9807,9 @@ public enum KeyMods : ushort
     public static Span<T> Warn<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9808,9 +9821,9 @@ public enum KeyMods : ushort
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9822,9 +9835,9 @@ public enum KeyMods : ushort
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -9841,9 +9854,9 @@ public enum KeyMods : ushort
     public static ReadOnlySpan<T> Warn<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -9885,9 +9898,9 @@ public enum KeyMods : ushort
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
     /// <param name="map">When specified, overrides the value that is logged.</param>
-    /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
-    /// <param name="stringLength">The maximum length of any given <see cref="string"/>.</param>
-    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
+    /// <param name="visit">The maximum number of times to recurse through an enumeration.</param>
+    /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
+    /// <param name="recurse">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
     /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
     /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
@@ -9896,22 +9909,22 @@ public enum KeyMods : ushort
     public static T Debug<T>(
         this T x,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(x))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(x, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(x, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9921,16 +9934,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9940,16 +9953,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9964,16 +9977,16 @@ public enum KeyMods : ushort
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -9983,7 +9996,7 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
@@ -9991,22 +10004,22 @@ public enum KeyMods : ushort
     public static T Error<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Error<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10016,16 +10029,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10035,16 +10048,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10059,16 +10072,16 @@ public enum KeyMods : ushort
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10078,7 +10091,7 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
@@ -10086,22 +10099,22 @@ public enum KeyMods : ushort
     public static T Fatal<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Fatal<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10111,16 +10124,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10130,16 +10143,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10154,16 +10167,16 @@ public enum KeyMods : ushort
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10173,7 +10186,7 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
@@ -10181,22 +10194,22 @@ public enum KeyMods : ushort
     public static T Info<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Info<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10206,16 +10219,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10225,16 +10238,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10249,16 +10262,16 @@ public enum KeyMods : ushort
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10268,7 +10281,7 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
@@ -10276,22 +10289,22 @@ public enum KeyMods : ushort
     public static T Verbose<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Verbose<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10301,16 +10314,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10320,16 +10333,16 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10344,16 +10357,16 @@ public enum KeyMods : ushort
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -10363,7 +10376,7 @@ public enum KeyMods : ushort
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
@@ -10464,9 +10477,9 @@ public enum KeyMods : ushort
     static T Do<T>(
         T value,
         [InstantHandle] Converter<T, object?>? map,
-        [NonNegativeValue] int visitLength,
-        [NonNegativeValue] int stringLength,
-        [NonNegativeValue] int recurseLength,
+        [NonNegativeValue] int visit,
+        [NonNegativeValue] int str,
+        [NonNegativeValue] int recurse,
         string? expression,
         string? path,
         string? name,
@@ -10489,7 +10502,7 @@ public enum KeyMods : ushort
 #endif
                 _ => value,
             };
-        var x = (map ?? Memory)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
+        var x = (map ?? Memory)(value).ToDeconstructed(visit, str, recurse) is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
@@ -17296,359 +17309,434 @@ namespace System.Linq;
 #if ROSLYN
 // ReSharper disable once CheckNamespace
 /// <summary>Strict value-based equality for symbol comparison.</summary>
-public sealed class RoslynComparer : IEqualityComparer<AssemblyIdentity?>,
-    IEqualityComparer<CustomModifier?>,
-    IEqualityComparer<ISymbol?>
+public sealed class RoslynComparer
+    : IEqualityComparer<CustomModifier?>, IEqualityComparer<ISymbol?>, IEqualityComparer<SyntaxReference?>
 {
-    RoslynComparer() { }
-    /// <summary> The default instance. </summary>
-    [Pure]
-    public static RoslynComparer Instance { get; } = new();
-    /// <summary>Performs the strict value-based equality on the symbols.</summary>
-    /// <param name="x">The left-hand side.</param>
-    /// <param name="y">The right-hand side.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameters <paramref name="x"/>
-    /// and the parameters <paramref name="y"/> have the same values.
-    /// </returns>
-    [Pure]
-    public static bool Eq(ISymbol? x, ISymbol? y) =>
-        ReferenceEquals(x, y) ||
-        x is not null &&
-        y is not null &&
-        (x is not IAliasSymbol && y is not IAliasSymbol ||
-            x is IAliasSymbol && y is IAliasSymbol && !Eq(As<IAliasSymbol>(x), As<IAliasSymbol>(y))) &&
-        (x is not IAssemblySymbol && y is not IAssemblySymbol ||
-            x is IAssemblySymbol && y is IAssemblySymbol && !Eq(As<IAssemblySymbol>(x), As<IAssemblySymbol>(y))) &&
-        (x is not IDiscardSymbol && y is not IDiscardSymbol ||
-            x is IDiscardSymbol && y is IDiscardSymbol && !Eq(As<IDiscardSymbol>(x), As<IDiscardSymbol>(y))) &&
-        (x is not IEventSymbol && y is not IEventSymbol ||
-            x is IEventSymbol && y is IEventSymbol && !Eq(As<IEventSymbol>(x), As<IEventSymbol>(y))) &&
-        (x is not IFieldSymbol && y is not IFieldSymbol ||
-            x is IFieldSymbol && y is IFieldSymbol && !Eq(As<IFieldSymbol>(x), As<IFieldSymbol>(y))) &&
-        (x is not ILabelSymbol && y is not ILabelSymbol ||
-            x is ILabelSymbol && y is ILabelSymbol && !Eq(As<ILabelSymbol>(x), As<ILabelSymbol>(y))) &&
-        (x is not ILocalSymbol && y is not ILocalSymbol ||
-            x is ILocalSymbol && y is ILocalSymbol && !Eq(As<ILocalSymbol>(x), As<ILocalSymbol>(y))) &&
-        (x is not IMethodSymbol && y is not IMethodSymbol ||
-            x is IMethodSymbol && y is IMethodSymbol && !Eq(As<IMethodSymbol>(x), As<IMethodSymbol>(y))) &&
-        (x is not IModuleSymbol && y is not IModuleSymbol ||
-            x is IModuleSymbol && y is IModuleSymbol && !Eq(As<IModuleSymbol>(x), As<IModuleSymbol>(y))) &&
-        (x is not INamespaceOrTypeSymbol && y is not INamespaceOrTypeSymbol ||
-            x is INamespaceOrTypeSymbol &&
-            y is INamespaceOrTypeSymbol &&
-            !Eq(As<INamespaceOrTypeSymbol>(x), As<INamespaceOrTypeSymbol>(y))) &&
-        (x is not IParameterSymbol && y is not IParameterSymbol ||
-            x is IParameterSymbol && y is IParameterSymbol && !Eq(As<IParameterSymbol>(x), As<IParameterSymbol>(y))) &&
-        (x is not IPreprocessingSymbol && y is not IPreprocessingSymbol ||
-            x is IPreprocessingSymbol && y is IPreprocessingSymbol) &&
-        (x is not IPropertySymbol && y is not IPropertySymbol ||
-            x is IPropertySymbol && y is IPropertySymbol && !Eq(As<IPropertySymbol>(x), As<IPropertySymbol>(y))) &&
-        (x is not IRangeVariableSymbol && y is not IRangeVariableSymbol ||
-            x is IRangeVariableSymbol && y is IRangeVariableSymbol) &&
-        (x is not ISourceAssemblySymbol && y is not ISourceAssemblySymbol ||
-            x is ISourceAssemblySymbol && y is ISourceAssemblySymbol) &&
-        (x is not INamespaceSymbol && y is not INamespaceSymbol ||
-            x is INamespaceSymbol && y is INamespaceSymbol && !Eq(As<INamespaceSymbol>(x), As<INamespaceSymbol>(y))) &&
-        (x is not ITypeSymbol && y is not ITypeSymbol ||
-            x is ITypeSymbol && y is ITypeSymbol && !Eq(As<ITypeSymbol>(x), As<ITypeSymbol>(y))) &&
-        (x is not IArrayTypeSymbol && y is not IArrayTypeSymbol ||
-            x is IArrayTypeSymbol && y is IArrayTypeSymbol && !Eq(As<IArrayTypeSymbol>(x), As<IArrayTypeSymbol>(y))) &&
-        (x is not IDynamicTypeSymbol && y is not IDynamicTypeSymbol ||
-            x is IDynamicTypeSymbol && y is IDynamicTypeSymbol) &&
-        (x is not IFunctionPointerTypeSymbol && y is not IFunctionPointerTypeSymbol ||
-            x is IFunctionPointerTypeSymbol &&
-            y is IFunctionPointerTypeSymbol &&
-            !Eq(As<IFunctionPointerTypeSymbol>(x), As<IFunctionPointerTypeSymbol>(y))) &&
-        (x is not INamedTypeSymbol && y is not INamedTypeSymbol ||
-            x is INamedTypeSymbol && y is INamedTypeSymbol && !Eq(As<INamedTypeSymbol>(x), As<INamedTypeSymbol>(y))) &&
-        (x is not IPointerTypeSymbol && y is not IPointerTypeSymbol ||
-            x is IPointerTypeSymbol &&
-            y is IPointerTypeSymbol &&
-            !Eq(As<IPointerTypeSymbol>(x), As<IPointerTypeSymbol>(y))) &&
-        (x is not ITypeParameterSymbol && y is not ITypeParameterSymbol ||
-            x is ITypeParameterSymbol &&
-            y is ITypeParameterSymbol &&
-            !Eq(As<ITypeParameterSymbol>(x), As<ITypeParameterSymbol>(y))) &&
-        (x is not IErrorTypeSymbol && y is not IErrorTypeSymbol ||
-            x is IErrorTypeSymbol && y is IErrorTypeSymbol && !Eq(As<IErrorTypeSymbol>(x), As<IErrorTypeSymbol>(y)));
-    /// <summary>Returns the hash code for this string.</summary>
-    /// <param name="x">The instance.</param>
-    /// <returns>A 32-bit signed integer hash code.</returns>
-    [Pure]
-    public static int Hash(ISymbol? x)
+    /// <summary>Provides the signature for value-based equality in comparisons.</summary>
+    /// <typeparam name="TOutput">The type of comparison to get.</typeparam>
+    /// <param name="that">The recursive function.</param>
+    /// <returns>The comparison function.</returns>
+    public delegate Func<TOutput, TOutput, bool> Equal<in TOutput>(RoslynComparer that);
+    /// <summary>Provides the signature for recursive hashing.</summary>
+    /// <typeparam name="T">The type to hash.</typeparam>
+    /// <param name="that">The recursive function.</param>
+    /// <returns>The hashing function.</returns>
+    public delegate Converter<T, int> Hash<in T>(RoslynComparer that);
+    readonly Func<ISymbol, ISymbol, bool> _onSymbol;
+    readonly Func<IAliasSymbol, IAliasSymbol, bool> _onAliasSymbol;
+    readonly Func<IAssemblySymbol, IAssemblySymbol, bool> _onAssemblySymbol;
+    readonly Func<IDiscardSymbol, IDiscardSymbol, bool> _onDiscardSymbol;
+    readonly Func<IEventSymbol, IEventSymbol, bool> _onEventSymbol;
+    readonly Func<IFieldSymbol, IFieldSymbol, bool> _onFieldSymbol;
+    readonly Func<ILabelSymbol, ILabelSymbol, bool> _onLabelSymbol;
+    readonly Func<ILocalSymbol, ILocalSymbol, bool> _onLocalSymbol;
+    readonly Func<IMethodSymbol, IMethodSymbol, bool> _onMethodSymbol;
+    readonly Func<IModuleSymbol, IModuleSymbol, bool> _onModuleSymbol;
+    readonly Func<INamespaceOrTypeSymbol, INamespaceOrTypeSymbol, bool> _onNamespaceOrTypeSymbol;
+    readonly Func<IParameterSymbol, IParameterSymbol, bool> _onParameterSymbol;
+    readonly Func<IPreprocessingSymbol, IPreprocessingSymbol, bool> _onPreprocessingSymbol;
+    readonly Func<IPropertySymbol, IPropertySymbol, bool> _onPropertySymbol;
+    readonly Func<IRangeVariableSymbol, IRangeVariableSymbol, bool> _onRangeVariableSymbol;
+    readonly Func<ISourceAssemblySymbol, ISourceAssemblySymbol, bool> _onSourceAssemblySymbol;
+    readonly Func<INamespaceSymbol, INamespaceSymbol, bool> _onNamespaceSymbol;
+    readonly Func<ITypeSymbol, ITypeSymbol, bool> _onTypeSymbol;
+    readonly Func<IArrayTypeSymbol, IArrayTypeSymbol, bool> _onArrayTypeSymbol;
+    readonly Func<IDynamicTypeSymbol, IDynamicTypeSymbol, bool> _onDynamicTypeSymbol;
+    readonly Func<IFunctionPointerTypeSymbol, IFunctionPointerTypeSymbol, bool> _onFunctionPointerTypeSymbol;
+    readonly Func<INamedTypeSymbol, INamedTypeSymbol, bool> _onNamedTypeSymbol;
+    readonly Func<IPointerTypeSymbol, IPointerTypeSymbol, bool> _onPointerTypeSymbol;
+    readonly Func<ITypeParameterSymbol, ITypeParameterSymbol, bool> _onTypeParameterSymbol;
+    readonly Func<IErrorTypeSymbol, IErrorTypeSymbol, bool> _onErrorTypeSymbol;
+    readonly Func<CustomModifier, CustomModifier, bool> _onCustomModifier;
+    readonly Func<SyntaxReference, SyntaxReference, bool> _onSyntaxReference;
+    readonly Converter<ISymbol, int> _onSymbolHash;
+    readonly Converter<CustomModifier, int> _onCustomModifierHash;
+    readonly Converter<SyntaxReference, int> _onSyntaxReferenceHash;
+    /// <summary>Strict value-based equality for symbol comparison.</summary>
+    public RoslynComparer(
+        Equal<ISymbol>? onSymbol = null,
+        Equal<IAliasSymbol>? onAliasSymbol = null,
+        Equal<IAssemblySymbol>? onAssemblySymbol = null,
+        Equal<IDiscardSymbol>? onDiscardSymbol = null,
+        Equal<IEventSymbol>? onEventSymbol = null,
+        Equal<IFieldSymbol>? onFieldSymbol = null,
+        Equal<ILabelSymbol>? onLabelSymbol = null,
+        Equal<ILocalSymbol>? onLocalSymbol = null,
+        Equal<IMethodSymbol>? onMethodSymbol = null,
+        Equal<IModuleSymbol>? onModuleSymbol = null,
+        Equal<INamespaceOrTypeSymbol>? onNamespaceOrTypeSymbol = null,
+        Equal<IParameterSymbol>? onParameterSymbol = null,
+        Equal<IPreprocessingSymbol>? onPreprocessingSymbol = null,
+        Equal<IPropertySymbol>? onPropertySymbol = null,
+        Equal<IRangeVariableSymbol>? onRangeVariableSymbol = null,
+        Equal<ISourceAssemblySymbol>? onSourceAssemblySymbol = null,
+        Equal<INamespaceSymbol>? onNamespaceSymbol = null,
+        Equal<ITypeSymbol>? onTypeSymbol = null,
+        Equal<IArrayTypeSymbol>? onArrayTypeSymbol = null,
+        Equal<IDynamicTypeSymbol>? onDynamicTypeSymbol = null,
+        Equal<IFunctionPointerTypeSymbol>? onFunctionPointerTypeSymbol = null,
+        Equal<INamedTypeSymbol>? onNamedTypeSymbol = null,
+        Equal<IPointerTypeSymbol>? onPointerTypeSymbol = null,
+        Equal<ITypeParameterSymbol>? onTypeParameterSymbol = null,
+        Equal<IErrorTypeSymbol>? onErrorTypeSymbol = null,
+        Equal<CustomModifier>? onCustomModifier = null,
+        Equal<SyntaxReference>? onSyntaxReference = null,
+        Hash<ISymbol>? onSymbolHash = null,
+        Hash<CustomModifier>? onCustomModifierHash = null,
+        Hash<SyntaxReference>? onSyntaxReferenceHash = null
+    )
     {
-        if (x is null)
-            return Prime();
-        var hash = x.Kind.AsInt();
-        hash ^= unchecked(x.MetadataToken * Prime());
-        hash ^= unchecked(x.DeclaredAccessibility.AsInt() * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(x.Name) * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(x.Language) * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(x.MetadataName) * Prime());
-        return hash;
+        _onSymbol = onSymbol?.Invoke(this) ?? True;
+        _onAliasSymbol = onAliasSymbol?.Invoke(this) ?? True;
+        _onAssemblySymbol = onAssemblySymbol?.Invoke(this) ?? True;
+        _onDiscardSymbol = onDiscardSymbol?.Invoke(this) ?? True;
+        _onEventSymbol = onEventSymbol?.Invoke(this) ?? True;
+        _onFieldSymbol = onFieldSymbol?.Invoke(this) ?? True;
+        _onLabelSymbol = onLabelSymbol?.Invoke(this) ?? True;
+        _onLocalSymbol = onLocalSymbol?.Invoke(this) ?? True;
+        _onMethodSymbol = onMethodSymbol?.Invoke(this) ?? True;
+        _onModuleSymbol = onModuleSymbol?.Invoke(this) ?? True;
+        _onNamespaceOrTypeSymbol = onNamespaceOrTypeSymbol?.Invoke(this) ?? True;
+        _onParameterSymbol = onParameterSymbol?.Invoke(this) ?? True;
+        _onPreprocessingSymbol = onPreprocessingSymbol?.Invoke(this) ?? True;
+        _onPropertySymbol = onPropertySymbol?.Invoke(this) ?? True;
+        _onRangeVariableSymbol = onRangeVariableSymbol?.Invoke(this) ?? True;
+        _onSourceAssemblySymbol = onSourceAssemblySymbol?.Invoke(this) ?? True;
+        _onNamespaceSymbol = onNamespaceSymbol?.Invoke(this) ?? True;
+        _onTypeSymbol = onTypeSymbol?.Invoke(this) ?? True;
+        _onArrayTypeSymbol = onArrayTypeSymbol?.Invoke(this) ?? True;
+        _onDynamicTypeSymbol = onDynamicTypeSymbol?.Invoke(this) ?? True;
+        _onFunctionPointerTypeSymbol = onFunctionPointerTypeSymbol?.Invoke(this) ?? True;
+        _onNamedTypeSymbol = onNamedTypeSymbol?.Invoke(this) ?? True;
+        _onPointerTypeSymbol = onPointerTypeSymbol?.Invoke(this) ?? True;
+        _onTypeParameterSymbol = onTypeParameterSymbol?.Invoke(this) ?? True;
+        _onErrorTypeSymbol = onErrorTypeSymbol?.Invoke(this) ?? True;
+        _onCustomModifier = onCustomModifier?.Invoke(this) ?? True;
+        _onSyntaxReference = onSyntaxReference?.Invoke(this) ?? True;
+        _onSymbolHash = onSymbolHash?.Invoke(this) ?? Zero;
+        _onCustomModifierHash = onCustomModifierHash?.Invoke(this) ?? Zero;
+        _onSyntaxReferenceHash = onSyntaxReferenceHash?.Invoke(this) ?? Zero;
     }
-    /// <inheritdoc />
+    /// <summary>Gets the instance for a comparison behaving identically to <see cref="SymbolComparer"/>.</summary>
     [Pure]
-    public bool Equals(AssemblyIdentity? x, AssemblyIdentity? y) =>
-        ReferenceEquals(x, y) ||
-        x is not null &&
-        y is not null &&
-        x.Name == y.Name &&
-        x.Flags == y.Flags &&
-        x.Version == y.Version &&
-        x.ContentType == y.ContentType &&
-        x.CultureName == y.CultureName &&
-        x.IsStrongName == y.IsStrongName &&
-        x.HasPublicKey == y.HasPublicKey &&
-        x.IsRetargetable == y.IsRetargetable &&
-        x.PublicKey.GuardedSequenceEqual(y.PublicKey) &&
-        x.PublicKeyToken.GuardedSequenceEqual(y.PublicKeyToken);
+    public static RoslynComparer Gu { get; } = new(
+        _ => (x, y) => x.Kind == y.Kind,
+        onAssemblySymbol: _ => (x, y) => x.Identity == y.Identity,
+        onEventSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
+            r.Equals(x.ContainingType, y.ContainingType) &&
+            r.Equals(x.Type, y.Type),
+        onFieldSymbol: r => (x, y) => x.MetadataName == y.MetadataName && r.Equals(x.ContainingType, y.ContainingType),
+        onLocalSymbol: r => (x, y) => x.MetadataName == y.MetadataName && r.Equals(x.ContainingSymbol, y.ContainingSymbol),
+        onMethodSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
+            r.Equals(x.ContainingType, y.ContainingType) &&
+            x.Parameters.SequenceEqual(y.Parameters, r),
+        onNamespaceSymbol: r => (x, y) =>
+            x.MetadataName == y.MetadataName && r.Equals(x.ContainingNamespace, y.ContainingNamespace),
+        onParameterSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
+            r.Equals(x.ContainingSymbol, y.ContainingSymbol),
+        onPropertySymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
+            r.Equals(x.ContainingType, y.ContainingType) &&
+            r.Equals(x.Type, y.Type),
+        onTypeSymbol: r => (x, y) => x.MetadataName == y.MetadataName &&
+            r.Equals(x.ContainingNamespace, y.ContainingNamespace) &&
+            (!x.IsReferenceType || x.MatchesNullableAnnotation(y)),
+        onNamedTypeSymbol: r => (x, y) => x.TypeArguments.GuardedSequenceEqual(y.TypeArguments, r)
+    );
+    /// <summary>Gets the instance for comparing signatures.</summary>
+    [Pure]
+    public static RoslynComparer Signature { get; } = new(
+        r => (x, y) => x.Kind == y.Kind &&
+            x.MetadataName == y.MetadataName &&
+            r.Equals(x.ContainingType, y.ContainingType) &&
+            r.Equals(x.ContainingModule, y.ContainingModule) &&
+            r.Equals(x.ContainingSymbol, y.ContainingSymbol) &&
+            r.Equals(x.ContainingAssembly, y.ContainingAssembly) &&
+            r.Equals(x.ContainingNamespace, y.ContainingNamespace) &&
+            r.Equals(x.ToUnderlying(), y.ToUnderlying()),
+        onAssemblySymbol: _ => (x, y) => x.Identity == y.Identity,
+        onMethodSymbol: r => (x, y) => x.Parameters.SequenceEqual(y.Parameters, r) &&
+            x.TypeArguments.SequenceEqual(y.TypeArguments, r) &&
+            x.TypeParameters.SequenceEqual(y.TypeParameters, r),
+        onPropertySymbol: r => (x, y) => x.Parameters.SequenceEqual(y.Parameters, r),
+        onTypeSymbol: _ => IncludedSyntaxNodeRegistrant.MatchesNullableAnnotation,
+        onNamedTypeSymbol: r => (x, y) => x.TypeArguments.SequenceEqual(y.TypeArguments, r) &&
+            x.TypeParameters.SequenceEqual(y.TypeParameters, r)
+    );
+    /// <summary>Gets the instance for comparing as strict as value-based comparisons go.</summary>
+    [Pure]
+    public static RoslynComparer Strict { get; } = new(
+        r => (x, y) => x.Kind == y.Kind &&
+            x.Name == y.Name &&
+            x.IsExtern == y.IsExtern &&
+            x.IsSealed == y.IsSealed &&
+            x.IsStatic == y.IsStatic &&
+            x.Language == y.Language &&
+            x.IsVirtual == y.IsVirtual &&
+            x.IsAbstract == y.IsAbstract &&
+            x.IsOverride == y.IsOverride &&
+            x.MetadataName == y.MetadataName &&
+            x.IsDefinition == y.IsDefinition &&
+            x.MetadataToken == y.MetadataToken &&
+            x.IsImplicitlyDeclared == y.IsImplicitlyDeclared &&
+            x.CanBeReferencedByName == y.CanBeReferencedByName &&
+            x.DeclaredAccessibility == y.DeclaredAccessibility &&
+            x.HasUnsupportedMetadata == y.HasUnsupportedMetadata &&
+            r.Equals(x.ContainingType, y.ContainingType) &&
+            r.Equals(x.ContainingModule, y.ContainingModule) &&
+            r.Equals(x.ContainingAssembly, y.ContainingAssembly) &&
+            r.Equals(x.ContainingNamespace, y.ContainingNamespace) &&
+            x.Locations.GuardedSequenceEqual(y.Locations) &&
+            x.DeclaringSyntaxReferences.GuardedSequenceEqual(y.DeclaringSyntaxReferences, r),
+        r => (x, y) => r.Equals(x.Target, y.Target),
+        r => (x, y) => x.IsInteractive == y.IsInteractive &&
+            x.Identity == y.Identity &&
+            r.Equals(x.GlobalNamespace, y.GlobalNamespace),
+        r => (x, y) => x.NullableAnnotation == y.NullableAnnotation && r.Equals(x, y),
+        r => (x, y) => x.NullableAnnotation == y.NullableAnnotation &&
+            x.IsWindowsRuntimeEvent == y.IsWindowsRuntimeEvent &&
+            r.Equals(x.Type, y.Type) &&
+            r.Equals(x.AddMethod, y.AddMethod) &&
+            r.Equals(x.RaiseMethod, y.RaiseMethod) &&
+            r.Equals(x.RemoveMethod, y.RemoveMethod) &&
+            r.Equals(x.OverriddenEvent, y.OverriddenEvent) &&
+            x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, r),
+        r => (x, y) => x.IsConst == y.IsConst &&
+            x.RefKind == y.RefKind &&
+            x.FixedSize == y.FixedSize &&
+            x.IsReadOnly == y.IsReadOnly &&
+            x.IsRequired == y.IsRequired &&
+            x.IsVolatile == y.IsVolatile &&
+            x.HasConstantValue == y.HasConstantValue &&
+            x.IsFixedSizeBuffer == y.IsFixedSizeBuffer &&
+            x.NullableAnnotation == y.NullableAnnotation &&
+            (x.ConstantValue?.Equals(y.ConstantValue) ?? y.ConstantValue is null) &&
+            r.Equals(x.Type, y.Type) &&
+            r.Equals(x.AssociatedSymbol, y.AssociatedSymbol) &&
+            r.Equals(x.CorrespondingTupleField, y.CorrespondingTupleField) &&
+            x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, r) &&
+            x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, r),
+        r => (x, y) => r.Equals(x.ContainingMethod, y.ContainingMethod),
+        r => (x, y) => x.IsRef == y.IsRef &&
+            x.IsConst == y.IsConst &&
+            x.IsFixed == y.IsFixed &&
+            x.IsUsing == y.IsUsing &&
+            x.RefKind == y.RefKind &&
+            x.IsForEach == y.IsForEach &&
+            x.ScopedKind == y.ScopedKind &&
+            x.IsFunctionValue == y.IsFunctionValue &&
+            x.HasConstantValue == y.HasConstantValue &&
+            x.NullableAnnotation == y.NullableAnnotation &&
+            (x.ConstantValue?.Equals(y.ConstantValue) ?? y.ConstantValue is null) &&
+            r.Equals(x.Type, y.Type),
+        r => (x, y) => x.Arity == y.Arity &&
+            x.IsAsync == y.IsAsync &&
+            x.RefKind == y.RefKind &&
+            x.IsVararg == y.IsVararg &&
+            x.IsInitOnly == y.IsInitOnly &&
+            x.IsReadOnly == y.IsReadOnly &&
+            x.MethodKind == y.MethodKind &&
+            x.ReturnsVoid == y.ReturnsVoid &&
+            x.ReturnsByRef == y.ReturnsByRef &&
+            x.IsConditional == y.IsConditional &&
+            x.IsGenericMethod == y.IsGenericMethod &&
+            x.IsCheckedBuiltin == y.IsCheckedBuiltin &&
+            x.CallingConvention == y.CallingConvention &&
+            x.IsExtensionMethod == y.IsExtensionMethod &&
+            x.IsPartialDefinition == y.IsPartialDefinition &&
+            x.ReturnsByRefReadonly == y.ReturnsByRefReadonly &&
+            x.HidesBaseMethodsByName == y.HidesBaseMethodsByName &&
+            x.ReturnNullableAnnotation == y.ReturnNullableAnnotation &&
+            x.ReceiverNullableAnnotation == y.ReceiverNullableAnnotation &&
+            x.MethodImplementationFlags == y.MethodImplementationFlags &&
+            r.Equals(x.ReturnType, y.ReturnType) &&
+            r.Equals(x.AssociatedSymbol, y.AssociatedSymbol) &&
+            r.Equals(x.ReducedFrom, y.ReducedFrom) &&
+            r.Equals(x.ReceiverType, y.ReceiverType) &&
+            r.Equals(x.ConstructedFrom, y.ConstructedFrom) &&
+            r.Equals(x.OverriddenMethod, y.OverriddenMethod) &&
+            r.Equals(x.PartialDefinitionPart, y.PartialDefinitionPart) &&
+            r.Equals(x.PartialImplementationPart, y.PartialImplementationPart) &&
+            r.Equals(x.AssociatedAnonymousDelegate, y.AssociatedAnonymousDelegate) &&
+            x.TypeArgumentNullableAnnotations.GuardedSequenceEqual(y.TypeArgumentNullableAnnotations) &&
+            x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, r) &&
+            x.ReturnTypeCustomModifiers.GuardedSequenceEqual(y.ReturnTypeCustomModifiers, r) &&
+            x.Parameters.GuardedSequenceEqual(y.Parameters, r) &&
+            x.TypeArguments.GuardedSequenceEqual(y.TypeArguments, r) &&
+            x.UnmanagedCallingConventionTypes.GuardedSequenceEqual(y.UnmanagedCallingConventionTypes, r) &&
+            x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, r),
+        r => (x, y) => r.Equals(x.GlobalNamespace, y.GlobalNamespace) &&
+            x.ReferencedAssemblies.GuardedSequenceEqual(y.ReferencedAssemblies) &&
+            x.ReferencedAssemblySymbols.GuardedSequenceEqual(y.ReferencedAssemblySymbols, r),
+        _ => (x, y) => x.IsNamespace == y.IsNamespace && x.IsType == y.IsType,
+        r => (x, y) => x.IsThis == y.IsThis &&
+            x.Ordinal == y.Ordinal &&
+            x.RefKind == y.RefKind &&
+            x.IsParams == y.IsParams &&
+            x.IsDiscard == y.IsDiscard &&
+            x.IsOptional == y.IsOptional &&
+            x.ScopedKind == y.ScopedKind &&
+            x.NullableAnnotation == y.NullableAnnotation &&
+            x.HasExplicitDefaultValue == y.HasExplicitDefaultValue &&
+            (x.ExplicitDefaultValue?.Equals(y.ExplicitDefaultValue) ?? y.ExplicitDefaultValue is null) &&
+            r.Equals(x.Type, y.Type) &&
+            x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, r) &&
+            x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, r),
+        null,
+        r => (x, y) => x.RefKind == y.RefKind &&
+            x.IsIndexer == y.IsIndexer &&
+            x.IsReadOnly == y.IsReadOnly &&
+            x.IsRequired == y.IsRequired &&
+            x.IsWriteOnly == y.IsWriteOnly &&
+            x.IsWithEvents == y.IsWithEvents &&
+            x.ReturnsByRef == y.ReturnsByRef &&
+            x.NullableAnnotation == y.NullableAnnotation &&
+            x.ReturnsByRefReadonly == y.ReturnsByRefReadonly &&
+            r.Equals(x.Type, y.Type) &&
+            r.Equals(x.GetMethod, y.GetMethod) &&
+            r.Equals(x.SetMethod, y.SetMethod) &&
+            r.Equals(x.OverriddenProperty, y.OverriddenProperty) &&
+            x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, r) &&
+            x.TypeCustomModifiers.GuardedSequenceEqual(y.TypeCustomModifiers, r) &&
+            x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, r) &&
+            x.Parameters.GuardedSequenceEqual(y.Parameters, r),
+        null,
+        null,
+        _ => (x, y) => x.IsGlobalNamespace == y.IsGlobalNamespace && x.NamespaceKind == y.NamespaceKind,
+        r => (x, y) => x.Kind == y.Kind &&
+            x.IsRecord == y.IsRecord &&
+            x.IsReadOnly == y.IsReadOnly &&
+            x.IsTupleType == y.IsTupleType &&
+            x.IsValueType == y.IsValueType &&
+            x.SpecialType == y.SpecialType &&
+            x.IsRefLikeType == y.IsRefLikeType &&
+            x.IsAnonymousType == y.IsAnonymousType &&
+            x.IsReferenceType == y.IsReferenceType &&
+            x.IsUnmanagedType == y.IsUnmanagedType &&
+            x.IsNativeIntegerType == y.IsNativeIntegerType &&
+            r.Equals(x.BaseType, y.BaseType) &&
+            x.Interfaces.GuardedSequenceEqual(y.Interfaces, r) &&
+            x.AllInterfaces.GuardedSequenceEqual(y.AllInterfaces, r),
+        r => (x, y) => x.IsSZArray == y.IsSZArray &&
+            x.Rank == y.Rank &&
+            x.ElementNullableAnnotation == y.ElementNullableAnnotation &&
+            r.Equals(x.ElementType, y.ElementType) &&
+            x.Sizes.GuardedSequenceEqual(y.Sizes) &&
+            x.LowerBounds.GuardedSequenceEqual(y.LowerBounds) &&
+            x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, r),
+        null,
+        r => (x, y) => r.Equals(x.Signature, y.Signature),
+        r => (x, y) => x.Arity == y.Arity &&
+            x.IsComImport == y.IsComImport &&
+            x.IsFileLocal == y.IsFileLocal &&
+            x.IsGenericType == y.IsGenericType &&
+            x.IsScriptClass == y.IsScriptClass &&
+            x.IsSerializable == y.IsSerializable &&
+            x.IsImplicitClass & y.IsImplicitClass &&
+            x.IsUnboundGenericType == y.IsUnboundGenericType &&
+            x.MightContainExtensionMethods == y.MightContainExtensionMethods &&
+            r.Equals(x.AssociatedSymbol, y.AssociatedSymbol) &&
+            r.Equals(x.EnumUnderlyingType, y.EnumUnderlyingType) &&
+            r.Equals(x.TupleUnderlyingType, y.TupleUnderlyingType) &&
+            r.Equals(x.DelegateInvokeMethod, y.DelegateInvokeMethod) &&
+            r.Equals(x.NativeIntegerUnderlyingType, y.NativeIntegerUnderlyingType) &&
+            x.TypeArgumentNullableAnnotations.GuardedSequenceEqual(y.TypeArgumentNullableAnnotations) &&
+            x.TupleElements.GuardedSequenceEqual(y.TupleElements, r) &&
+            x.TypeArguments.GuardedSequenceEqual(y.TypeArguments, r) &&
+            x.TypeParameters.GuardedSequenceEqual(y.TypeParameters, r),
+        r => (x, y) => r.Equals(x.PointedAtType, y.PointedAtType) &&
+            x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, r),
+        r => (x, y) => x.Ordinal == y.Ordinal &&
+            x.Variance == y.Variance &&
+            x.TypeParameterKind == y.TypeParameterKind &&
+            x.HasNotNullConstraint == y.HasNotNullConstraint &&
+            x.HasValueTypeConstraint == y.HasValueTypeConstraint &&
+            x.HasConstructorConstraint == y.HasConstructorConstraint &&
+            x.HasReferenceTypeConstraint == y.HasReferenceTypeConstraint &&
+            x.HasUnmanagedTypeConstraint == y.HasUnmanagedTypeConstraint &&
+            x.ReferenceTypeConstraintNullableAnnotation == y.ReferenceTypeConstraintNullableAnnotation &&
+            r.Equals(x.ReducedFrom, y.ReducedFrom) &&
+            r.Equals(x.DeclaringType, y.DeclaringType) &&
+            r.Equals(x.DeclaringMethod, y.DeclaringMethod) &&
+            x.ConstraintNullableAnnotations.GuardedSequenceEqual(y.ConstraintNullableAnnotations) &&
+            x.ConstraintTypes.GuardedSequenceEqual(y.ConstraintTypes, r),
+        r => (x, y) => x.CandidateReason == y.CandidateReason &&
+            x.CandidateSymbols.GuardedSequenceEqual(y.CandidateSymbols, r),
+        r => (x, y) => x.IsOptional == y.IsOptional && r.Equals(x.Modifier, y.Modifier),
+        _ => (x, y) => x.Span == y.Span && x.SyntaxTree.IsEquivalentTo(y.SyntaxTree),
+        _ => BetterHashCode,
+        r => x => x.IsOptional.ToByte() * Prime() ^ r.GetHashCode(x.Modifier),
+        _ => x => x.Span.GetHashCode()
+    );
     /// <inheritdoc />
     [Pure]
     public bool Equals(CustomModifier? x, CustomModifier? y) =>
+        ReferenceEquals(x, y) || x is not null && y is not null && _onCustomModifier(x, y);
+    /// <inheritdoc />
+    [Pure]
+    public bool Equals(ISymbol? x, ISymbol? y) =>
         ReferenceEquals(x, y) ||
-        x is not null && y is not null && x.IsOptional == y.IsOptional && Eq(x.Modifier, y.Modifier);
+        x is not null &&
+        y is not null &&
+        _onSymbol(x, y) &&
+        Eq(x, y, _onAliasSymbol) &&
+        Eq(x, y, _onAssemblySymbol) &&
+        Eq(x, y, _onDiscardSymbol) &&
+        Eq(x, y, _onEventSymbol) &&
+        Eq(x, y, _onFieldSymbol) &&
+        Eq(x, y, _onLabelSymbol) &&
+        Eq(x, y, _onLocalSymbol) &&
+        Eq(x, y, _onMethodSymbol) &&
+        Eq(x, y, _onModuleSymbol) &&
+        Eq(x, y, _onNamespaceOrTypeSymbol) &&
+        Eq(x, y, _onParameterSymbol) &&
+        Eq(x, y, _onPreprocessingSymbol) &&
+        Eq(x, y, _onPropertySymbol) &&
+        Eq(x, y, _onRangeVariableSymbol) &&
+        Eq(x, y, _onSourceAssemblySymbol) &&
+        Eq(x, y, _onNamespaceSymbol) &&
+        Eq(x, y, _onTypeSymbol) &&
+        Eq(x, y, _onArrayTypeSymbol) &&
+        Eq(x, y, _onDynamicTypeSymbol) &&
+        Eq(x, y, _onFunctionPointerTypeSymbol) &&
+        Eq(x, y, _onNamedTypeSymbol) &&
+        Eq(x, y, _onPointerTypeSymbol) &&
+        Eq(x, y, _onTypeParameterSymbol) &&
+        Eq(x, y, _onErrorTypeSymbol);
+    /// <inheritdoc />
+    public bool Equals(SyntaxReference? x, SyntaxReference? y) =>
+        ReferenceEquals(x, y) || x is not null && y is not null && _onSyntaxReference(x, y);
     /// <inheritdoc />
     [Pure]
-    bool IEqualityComparer<ISymbol?>.Equals(ISymbol? x, ISymbol? y) => Eq(x, y);
+    public int GetHashCode(CustomModifier? obj) => obj is null ? 0 : _onCustomModifierHash(obj);
     /// <inheritdoc />
     [Pure]
-    public int GetHashCode(AssemblyIdentity? obj)
+    public int GetHashCode(ISymbol? obj) => obj is null ? 0 : _onSymbolHash.Invoke(obj);
+    /// <inheritdoc />
+    [Pure]
+    public int GetHashCode(SyntaxReference? obj) => obj is null ? 0 : _onSyntaxReferenceHash(obj);
+    [Pure]
+    static bool Eq<T>(ISymbol x, ISymbol y, Func<T, T, bool> predicate)
+        where T : ISymbol =>
+        x is T tx && y is T ty && predicate(tx, ty) || x is not T && y is not T;
+    [Pure]
+    static bool True<T>(T _, T __) => true;
+    [Pure]
+    static int BetterHashCode(ISymbol x)
     {
-        if (obj is null)
-            return Prime();
-        var hash = obj.Flags.AsInt();
-        hash ^= unchecked(obj.ContentType.AsInt() * Prime());
-        hash ^= unchecked(obj.Version.GetHashCode() * Prime());
-        hash ^= unchecked(obj.IsStrongName.ToByte() * Prime());
-        hash ^= unchecked(obj.HasPublicKey.ToByte() * Prime());
-        hash ^= unchecked(obj.IsRetargetable.ToByte() * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Name) * Prime());
-        hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.CultureName) * Prime());
+        int hash = Prime();
+        for (var obj = Unsafe.As<ISymbol?>(x); obj is not null; obj = obj.ContainingSymbol)
+        {
+            hash ^= unchecked(obj.Kind.AsInt() * Prime());
+            hash ^= unchecked(obj.MetadataToken * Prime());
+            hash ^= unchecked(obj.DeclaredAccessibility.AsInt() * Prime());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Name) * Prime());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.Language) * Prime());
+            hash ^= unchecked(StringComparer.Ordinal.GetHashCode(obj.MetadataName) * Prime());
+        }
         return hash;
     }
-    /// <inheritdoc />
     [Pure]
-    public int GetHashCode(CustomModifier? obj) =>
-        obj is null ? Prime() : Hash(obj.Modifier) ^ obj.IsOptional.ToByte() * Prime();
-    /// <inheritdoc />
-    [Pure]
-    int IEqualityComparer<ISymbol?>.GetHashCode(ISymbol? x) => Hash(x);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IAliasSymbol x, IAliasSymbol y) => Eq(x.Target as ISymbol, y.Target);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IArrayTypeSymbol x, IArrayTypeSymbol y) =>
-        x.IsSZArray == y.IsSZArray &&
-        x.Rank == y.Rank &&
-        x.ElementNullableAnnotation == y.ElementNullableAnnotation &&
-        x.LowerBounds.GuardedSequenceEqual(y.LowerBounds) &&
-        x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance) &&
-        x.Sizes.GuardedSequenceEqual(y.Sizes) &&
-        Eq(x.ElementType as ISymbol, y.ElementType);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IAssemblySymbol x, IAssemblySymbol y) =>
-        x.IsInteractive == y.IsInteractive &&
-        Instance.Equals(x.Identity, y.Identity) &&
-        Eq(x.GlobalNamespace as ISymbol, y.GlobalNamespace);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IDiscardSymbol x, IDiscardSymbol y) =>
-        x.NullableAnnotation == y.NullableAnnotation == Eq(x.Type as ISymbol, y.Type);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IErrorTypeSymbol x, IErrorTypeSymbol y) =>
-        x.CandidateReason == y.CandidateReason && x.CandidateSymbols.GuardedSequenceEqual(y.CandidateSymbols, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IEventSymbol x, IEventSymbol y) =>
-        x.NullableAnnotation == y.NullableAnnotation &&
-        x.IsWindowsRuntimeEvent == y.IsWindowsRuntimeEvent &&
-        Eq(x.Type as ISymbol, y.Type) &&
-        Eq(x.AddMethod as ISymbol, y.AddMethod) &&
-        Eq(x.RaiseMethod as ISymbol, y.RaiseMethod) &&
-        Eq(x.RemoveMethod as ISymbol, y.RemoveMethod) &&
-        Eq(x.OverriddenEvent as ISymbol, y.OverriddenEvent) &&
-        x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IFieldSymbol x, IFieldSymbol y) =>
-        x.IsConst == y.IsConst &&
-        x.RefKind == y.RefKind &&
-        x.FixedSize == y.FixedSize &&
-        x.IsReadOnly == y.IsReadOnly &&
-        x.IsRequired == y.IsRequired &&
-        x.IsVolatile == y.IsVolatile &&
-        x.HasConstantValue == y.HasConstantValue &&
-        x.IsFixedSizeBuffer == y.IsFixedSizeBuffer &&
-        x.NullableAnnotation == y.NullableAnnotation &&
-        (x.ConstantValue?.Equals(y.ConstantValue) ?? y.ConstantValue is null) &&
-        Eq(x.Type as ISymbol, y.Type) &&
-        Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
-        Eq(x.CorrespondingTupleField as ISymbol, y.CorrespondingTupleField) &&
-        x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance) &&
-        x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IFunctionPointerTypeSymbol x, IFunctionPointerTypeSymbol y) =>
-        Eq(x.Signature as ISymbol, y.Signature);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(ILabelSymbol x, ILabelSymbol y) => Eq(x.ContainingMethod as ISymbol, y.ContainingMethod);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(ILocalSymbol x, ILocalSymbol y) =>
-        x.IsRef == y.IsRef &&
-        x.IsConst == y.IsConst &&
-        x.IsFixed == y.IsFixed &&
-        x.IsUsing == y.IsUsing &&
-        x.RefKind == y.RefKind &&
-        x.IsForEach == y.IsForEach &&
-        x.ScopedKind == y.ScopedKind &&
-        x.IsFunctionValue == y.IsFunctionValue &&
-        x.HasConstantValue == y.HasConstantValue &&
-        x.NullableAnnotation == y.NullableAnnotation &&
-        (x.ConstantValue?.Equals(y.ConstantValue) ?? y.ConstantValue is null) &&
-        Eq(x.Type as ISymbol, y.Type);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IMethodSymbol x, IMethodSymbol y) =>
-        x.Arity == y.Arity &&
-        x.IsAsync == y.IsAsync &&
-        x.RefKind == y.RefKind &&
-        x.IsVararg == y.IsVararg &&
-        x.IsInitOnly == y.IsInitOnly &&
-        x.IsReadOnly == y.IsReadOnly &&
-        x.MethodKind == y.MethodKind &&
-        x.ReturnsVoid == y.ReturnsVoid &&
-        x.ReturnsByRef == y.ReturnsByRef &&
-        x.IsConditional == y.IsConditional &&
-        x.IsGenericMethod == y.IsGenericMethod &&
-        x.IsCheckedBuiltin == y.IsCheckedBuiltin &&
-        x.CallingConvention == y.CallingConvention &&
-        x.IsExtensionMethod == y.IsExtensionMethod &&
-        x.IsPartialDefinition == y.IsPartialDefinition &&
-        x.ReturnsByRefReadonly == y.ReturnsByRefReadonly &&
-        x.HidesBaseMethodsByName == y.HidesBaseMethodsByName &&
-        x.ReturnNullableAnnotation == y.ReturnNullableAnnotation &&
-        x.ReceiverNullableAnnotation == y.ReceiverNullableAnnotation &&
-        x.MethodImplementationFlags == y.MethodImplementationFlags &&
-        Eq(x.ReturnType as ISymbol, y.ReturnType) &&
-        Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
-        Eq(x.ReducedFrom as ISymbol, y.ReducedFrom) &&
-        Eq(x.ReceiverType as ISymbol, y.ReceiverType) &&
-        Eq(x.ConstructedFrom as ISymbol, y.ConstructedFrom) &&
-        Eq(x.OverriddenMethod as ISymbol, y.OverriddenMethod) &&
-        Eq(x.PartialDefinitionPart as ISymbol, y.PartialDefinitionPart) &&
-        Eq(x.PartialImplementationPart as ISymbol, y.PartialImplementationPart) &&
-        Eq(x.AssociatedAnonymousDelegate as ISymbol, y.AssociatedAnonymousDelegate) &&
-        x.TypeArgumentNullableAnnotations.GuardedSequenceEqual(y.TypeArgumentNullableAnnotations) &&
-        x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance) &&
-        x.ReturnTypeCustomModifiers.GuardedSequenceEqual(y.ReturnTypeCustomModifiers, Instance) &&
-        x.Parameters.GuardedSequenceEqual(y.Parameters, Instance) &&
-        x.TypeArguments.GuardedSequenceEqual(y.TypeArguments, Instance) &&
-        x.UnmanagedCallingConventionTypes.GuardedSequenceEqual(y.UnmanagedCallingConventionTypes, Instance) &&
-        x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IModuleSymbol x, IModuleSymbol y) =>
-        Eq(x.GlobalNamespace as ISymbol, y.GlobalNamespace) &&
-        x.ReferencedAssemblies.GuardedSequenceEqual(y.ReferencedAssemblies, Instance) &&
-        x.ReferencedAssemblySymbols.GuardedSequenceEqual(y.ReferencedAssemblySymbols, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(INamedTypeSymbol x, INamedTypeSymbol y) =>
-        x.Arity == y.Arity &&
-        x.IsComImport == y.IsComImport &&
-        x.IsFileLocal == y.IsFileLocal &&
-        x.IsGenericType == y.IsGenericType &&
-        x.IsScriptClass == y.IsScriptClass &&
-        x.IsSerializable == y.IsSerializable &&
-        x.IsImplicitClass & y.IsImplicitClass &&
-        x.IsUnboundGenericType == y.IsUnboundGenericType &&
-        x.MightContainExtensionMethods == y.MightContainExtensionMethods &&
-        Eq(x.AssociatedSymbol, y.AssociatedSymbol) &&
-        Eq(x.EnumUnderlyingType as ISymbol, y.EnumUnderlyingType) &&
-        Eq(x.TupleUnderlyingType as ISymbol, y.TupleUnderlyingType) &&
-        Eq(x.DelegateInvokeMethod as ISymbol, y.DelegateInvokeMethod) &&
-        Eq(x.NativeIntegerUnderlyingType as ISymbol, y.NativeIntegerUnderlyingType) &&
-        x.TypeArgumentNullableAnnotations.GuardedSequenceEqual(y.TypeArgumentNullableAnnotations) &&
-        x.TupleElements.GuardedSequenceEqual(y.TupleElements, Instance) &&
-        x.TypeArguments.GuardedSequenceEqual(y.TypeArguments, Instance) &&
-        x.TypeParameters.GuardedSequenceEqual(y.TypeParameters, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(INamespaceOrTypeSymbol x, INamespaceOrTypeSymbol y) =>
-        x.IsNamespace == y.IsNamespace && x.IsType == y.IsType;
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(INamespaceSymbol x, INamespaceSymbol y) =>
-        x.IsGlobalNamespace == y.IsGlobalNamespace && x.NamespaceKind == y.NamespaceKind;
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IParameterSymbol x, IParameterSymbol y) =>
-        x.IsThis == y.IsThis &&
-        x.Ordinal == y.Ordinal &&
-        x.RefKind == y.RefKind &&
-        x.IsParams == y.IsParams &&
-        x.IsDiscard == y.IsDiscard &&
-        x.IsOptional == y.IsOptional &&
-        x.ScopedKind == y.ScopedKind &&
-        x.NullableAnnotation == y.NullableAnnotation &&
-        x.HasExplicitDefaultValue == y.HasExplicitDefaultValue &&
-        (x.ExplicitDefaultValue?.Equals(y.ExplicitDefaultValue) ?? y.ExplicitDefaultValue is null) &&
-        Eq(x.Type as ISymbol, y.Type) &&
-        x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance) &&
-        x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IPointerTypeSymbol x, IPointerTypeSymbol y) =>
-        Eq(x.PointedAtType as ISymbol, y.PointedAtType) &&
-        x.CustomModifiers.GuardedSequenceEqual(y.CustomModifiers, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(IPropertySymbol x, IPropertySymbol y) =>
-        x.RefKind == y.RefKind &&
-        x.IsIndexer == y.IsIndexer &&
-        x.IsReadOnly == y.IsReadOnly &&
-        x.IsRequired == y.IsRequired &&
-        x.IsWriteOnly == y.IsWriteOnly &&
-        x.IsWithEvents == y.IsWithEvents &&
-        x.ReturnsByRef == y.ReturnsByRef &&
-        x.NullableAnnotation == y.NullableAnnotation &&
-        x.ReturnsByRefReadonly == y.ReturnsByRefReadonly &&
-        Eq(x.Type as ISymbol, y.Type) &&
-        Eq(x.GetMethod as ISymbol, y.GetMethod) &&
-        Eq(x.SetMethod as ISymbol, y.SetMethod) &&
-        Eq(x.OverriddenProperty as ISymbol, y.OverriddenProperty) &&
-        x.RefCustomModifiers.GuardedSequenceEqual(y.RefCustomModifiers, Instance) &&
-        x.TypeCustomModifiers.GuardedSequenceEqual(y.TypeCustomModifiers, Instance) &&
-        x.ExplicitInterfaceImplementations.GuardedSequenceEqual(y.ExplicitInterfaceImplementations, Instance) &&
-        x.Parameters.GuardedSequenceEqual(y.Parameters, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(ITypeParameterSymbol x, ITypeParameterSymbol y) =>
-        x.Ordinal == y.Ordinal &&
-        x.Variance == y.Variance &&
-        x.TypeParameterKind == y.TypeParameterKind &&
-        x.HasNotNullConstraint == y.HasNotNullConstraint &&
-        x.HasValueTypeConstraint == y.HasValueTypeConstraint &&
-        x.HasConstructorConstraint == y.HasConstructorConstraint &&
-        x.HasReferenceTypeConstraint == y.HasReferenceTypeConstraint &&
-        x.HasUnmanagedTypeConstraint == y.HasUnmanagedTypeConstraint &&
-        x.ReferenceTypeConstraintNullableAnnotation == y.ReferenceTypeConstraintNullableAnnotation &&
-        Eq(x.ReducedFrom as ISymbol, y.ReducedFrom) &&
-        Eq(x.DeclaringType as ISymbol, y.DeclaringType) &&
-        Eq(x.DeclaringMethod as ISymbol, y.DeclaringMethod) &&
-        x.ConstraintNullableAnnotations.GuardedSequenceEqual(y.ConstraintNullableAnnotations) &&
-        x.ConstraintTypes.GuardedSequenceEqual(y.ConstraintTypes, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static bool Eq(ITypeSymbol x, ITypeSymbol y) =>
-        x.Kind == y.Kind &&
-        x.IsRecord == y.IsRecord &&
-        x.IsReadOnly == y.IsReadOnly &&
-        x.IsTupleType == y.IsTupleType &&
-        x.IsValueType == y.IsValueType &&
-        x.SpecialType == y.SpecialType &&
-        x.IsRefLikeType == y.IsRefLikeType &&
-        x.IsAnonymousType == y.IsAnonymousType &&
-        x.IsReferenceType == y.IsReferenceType &&
-        x.IsUnmanagedType == y.IsUnmanagedType &&
-        x.IsNativeIntegerType == y.IsNativeIntegerType &&
-        Eq(x.BaseType as ISymbol, y.BaseType) &&
-        x.Interfaces.GuardedSequenceEqual(y.Interfaces, Instance) &&
-        x.AllInterfaces.GuardedSequenceEqual(y.AllInterfaces, Instance);
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T As<T>(ISymbol x)
-        where T : class, ISymbol
-    {
-        Debug.Assert(x is T);
-        return Unsafe.As<T>(x);
-    }
+    static int Zero<T>(T _) => 0;
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -20131,6 +20219,17 @@ public abstract class FixedGenerator(
     /// <summary>Gets the name of the generated attribute.</summary>
     [Pure]
     public string Name => hintName;
+    /// <summary>Gets the source.</summary>
+    [Pure]
+    public (string, SourceText) Source
+    {
+        get
+        {
+            var (name, text) = this;
+            return ($"{typeof(AttributeGenerator).Namespace}/{typeof(AttributeGenerator)}/{name}",
+                SourceText.From(text, Encoding.UTF8));
+        }
+    }
     /// <summary>Gets the name of the attribute generated specified by <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The kind of <see cref="FixedGenerator"/> to get the <see cref="Name"/> from.</typeparam>
     /// <returns>The <see cref="Name"/> of the <see cref="FixedGenerator"/> <typeparamref name="T"/>.</returns>

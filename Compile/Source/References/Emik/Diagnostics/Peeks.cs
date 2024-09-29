@@ -316,9 +316,9 @@ static partial class Peeks
     public static T Error<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
 
@@ -327,9 +327,9 @@ static partial class Peeks
     public static Span<T> Error<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -342,9 +342,9 @@ static partial class Peeks
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -357,9 +357,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -377,9 +377,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -393,9 +393,9 @@ static partial class Peeks
     public static T Fatal<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
 
@@ -404,9 +404,9 @@ static partial class Peeks
     public static Span<T> Fatal<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -419,9 +419,9 @@ static partial class Peeks
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -434,9 +434,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -454,9 +454,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -470,9 +470,9 @@ static partial class Peeks
     public static T Info<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
 
@@ -481,9 +481,9 @@ static partial class Peeks
     public static Span<T> Info<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -496,9 +496,9 @@ static partial class Peeks
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -511,9 +511,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -531,9 +531,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -547,9 +547,9 @@ static partial class Peeks
     public static T Verbose<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
 
@@ -558,9 +558,9 @@ static partial class Peeks
     public static Span<T> Verbose<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -573,9 +573,9 @@ static partial class Peeks
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -588,9 +588,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -608,9 +608,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -624,9 +624,9 @@ static partial class Peeks
     public static T Warn<T>(
         this T x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     ) =>
         x;
 
@@ -635,9 +635,9 @@ static partial class Peeks
     public static Span<T> Warn<T>(
         this Span<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -650,9 +650,9 @@ static partial class Peeks
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> x,
         [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -665,9 +665,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> x,
         [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where TBody : unmanaged, IEquatable<TBody>
@@ -685,9 +685,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Warn<T>(
         this ReadOnlySpan<T> x,
         [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
     )
 #if UNMANAGED_SPAN
         where T : unmanaged
@@ -732,9 +732,9 @@ static partial class Peeks
     /// <typeparam name="T">The type of the value to write.</typeparam>
     /// <param name="x">The value to write.</param>
     /// <param name="map">When specified, overrides the value that is logged.</param>
-    /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
-    /// <param name="stringLength">The maximum length of any given <see cref="string"/>.</param>
-    /// <param name="recurseLength">The maximum number of times to recurse a nested object or dictionary.</param>
+    /// <param name="visit">The maximum number of times to recurse through an enumeration.</param>
+    /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
+    /// <param name="recurse">The maximum number of times to recurse a nested object or dictionary.</param>
     /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
     /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
     /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
@@ -743,23 +743,23 @@ static partial class Peeks
     public static T Debug<T>(
         this T x,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(x))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(x, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(x, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
 
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Debug<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -769,7 +769,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
@@ -777,9 +777,9 @@ static partial class Peeks
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -789,7 +789,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
@@ -797,9 +797,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -814,7 +814,7 @@ static partial class Peeks
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
@@ -822,9 +822,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Debug<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -834,7 +834,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Debug);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
 
@@ -843,23 +843,23 @@ static partial class Peeks
     public static T Error<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
 
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Error<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -869,7 +869,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
@@ -877,9 +877,9 @@ static partial class Peeks
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -889,7 +889,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
@@ -897,9 +897,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -914,7 +914,7 @@ static partial class Peeks
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
@@ -922,9 +922,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Error<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -934,7 +934,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Error);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
 
@@ -943,23 +943,23 @@ static partial class Peeks
     public static T Fatal<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
 
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Fatal<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -969,7 +969,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
@@ -977,9 +977,9 @@ static partial class Peeks
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -989,7 +989,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
@@ -997,9 +997,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1014,7 +1014,7 @@ static partial class Peeks
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
@@ -1022,9 +1022,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Fatal<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1034,7 +1034,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Fatal);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
 
@@ -1043,23 +1043,23 @@ static partial class Peeks
     public static T Info<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
 
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Info<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1069,7 +1069,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
@@ -1077,9 +1077,9 @@ static partial class Peeks
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1089,7 +1089,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
@@ -1097,9 +1097,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1114,7 +1114,7 @@ static partial class Peeks
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
@@ -1122,9 +1122,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Info<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1134,7 +1134,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Information);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
 
@@ -1143,23 +1143,23 @@ static partial class Peeks
     public static T Verbose<T>(
         this T value,
         [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
         [CallerLineNumber] int line = default
     ) =>
-        Do(value, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
 
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static Span<T> Verbose<T>(
         this Span<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1169,7 +1169,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
@@ -1177,9 +1177,9 @@ static partial class Peeks
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1189,7 +1189,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArrayLazily, map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
@@ -1197,9 +1197,9 @@ static partial class Peeks
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
         [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1214,7 +1214,7 @@ static partial class Peeks
         where TSeparator : IEquatable<TSeparator>?
 #endif
     {
-        Do(value.ToArrays(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
@@ -1222,9 +1222,9 @@ static partial class Peeks
     public static ReadOnlySpan<T> Verbose<T>(
         this ReadOnlySpan<T> value,
         [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(value))] string? expression = "",
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -1234,7 +1234,7 @@ static partial class Peeks
         where T : unmanaged
 #endif
     {
-        Do(value.ToArray(), map, visitLength, stringLength, recurseLength, expression, path, name, line, LogEventLevel.Verbose);
+        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
 
@@ -1341,9 +1341,9 @@ static partial class Peeks
     static T Do<T>(
         T value,
         [InstantHandle] Converter<T, object?>? map,
-        [NonNegativeValue] int visitLength,
-        [NonNegativeValue] int stringLength,
-        [NonNegativeValue] int recurseLength,
+        [NonNegativeValue] int visit,
+        [NonNegativeValue] int str,
+        [NonNegativeValue] int recurse,
         string? expression,
         string? path,
         string? name,
@@ -1367,7 +1367,7 @@ static partial class Peeks
                 _ => value,
             };
 
-        var x = (map ?? Memory)(value).ToDeconstructed(visitLength, stringLength, recurseLength) is var deconstructed &&
+        var x = (map ?? Memory)(value).ToDeconstructed(visit, str, recurse) is var deconstructed &&
             deconstructed is DeconstructionCollection { Serialized: var serialized }
                 ? serialized
                 : deconstructed;
