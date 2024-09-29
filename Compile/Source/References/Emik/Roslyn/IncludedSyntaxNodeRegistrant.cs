@@ -130,6 +130,20 @@ static partial class IncludedSyntaxNodeRegistrant
     public static bool HasParameterlessConstructor([NotNullWhen(true)] this ITypeSymbol? symbol) =>
         symbol is INamedTypeSymbol { InstanceConstructors: var x } && x.Any(x => x.Parameters is []);
 
+    /// <summary>Determines whether the symbols have matching nullable annotations.</summary>
+    /// <param name="x">The left-hand side.</param>
+    /// <param name="y">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameter <paramref name="x"/>
+    /// has the equivalent <see cref="ITypeSymbol.NullableAnnotation"/> as the
+    /// parameter <paramref name="y"/>, otherwise; <see langword="false"/>.
+    /// </returns>
+    [Pure]
+    public static bool MatchesNullableAnnotation(this ITypeSymbol x, ITypeSymbol y) =>
+        !(x.NullableAnnotation is not NullableAnnotation.None and var a &&
+            y.NullableAnnotation is not NullableAnnotation.None and var b &&
+            a != b);
+
     /// <summary>Gets the hint name of the <see cref="INamedTypeSymbol"/>.</summary>
     /// <param name="symbol">The symbol to use.</param>
     /// <param name="prefix">If specified, the prefix to contain within the hint name.</param>
