@@ -164,7 +164,6 @@
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <IsKtane>true</IsKtane>
         <NoTests>true</NoTests>
         <FileVersion>5.0</FileVersion>
         <Nullable>annotations</Nullable>
@@ -189,6 +188,10 @@
                 <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
             </Weavers>
         </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Adds Keep Talking and Nobody Explodes references implicitly, but allow opting-out of the reference. -->
+    <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;)) and '$(IsKtane)' == ''">
+        <IsKtane>true</IsKtane>
     </PropertyGroup>
     <!-- Common and/or default values that reference values in Directory.Build.props. -->
     <PropertyGroup>
