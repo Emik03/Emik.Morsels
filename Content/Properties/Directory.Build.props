@@ -180,7 +180,7 @@
         <PackageReference Include="Meziantou.Analyzer" Version="2.0.169" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
         <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.6" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.7" PrivateAssets="all"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.2" PrivateAssets="all"/>
         <PackageReference Include="Jubjubnest.Style.DotNet" Version="0.1.54" PrivateAssets="all"/>
@@ -192,7 +192,7 @@
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.6" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.7" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>

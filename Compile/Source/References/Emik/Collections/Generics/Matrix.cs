@@ -211,6 +211,7 @@ static partial class MatrixFactory
         {
             [Pure]
 #pragma warning disable 8603 // Unreachable.
+            // ReSharper disable once AssignNullToNotNullAttribute
             get => _listLazy?.Invoke() ?? _listEager;
 #pragma warning restore 8603
         }

@@ -166,10 +166,10 @@
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
         <IsKtane>true</IsKtane>
         <NoTests>true</NoTests>
-        <NoWarn>$(NoWarn);419</NoWarn>
-        <FileVersion>4.7.2</FileVersion>
+        <FileVersion>5.0</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
+        <NoWarn>$(NoWarn);419;CI0003</NoWarn>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
         <WeaverConfiguration>
             <Weavers>
@@ -303,6 +303,7 @@
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
+        <Compile Include="$(Morsels)/Compile/Source/References/Fody/InlineAttribute.cs" Link="Source/References/Fody/InlineAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/AllowNullAttribute.cs" Link="Source/References/Fody/AllowNullAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/NullGuardAttribute.cs" Link="Source/References/Fody/NullGuardAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/System/Diagnostics/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
