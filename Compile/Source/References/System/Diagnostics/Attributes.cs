@@ -656,7 +656,7 @@ namespace System.Runtime.CompilerServices
         AttributeTargets.Constructor | AttributeTargets.Method | AttributeTargets.Property,
         Inherited = false
     )]
-    public sealed class OverloadResolutionPriorityAttribute(int priority) : Attribute
+    sealed class OverloadResolutionPriorityAttribute(int priority) : Attribute
     {
         /// <summary>Gets the priority of the member.</summary>
         public int Priority { get; } = priority;
