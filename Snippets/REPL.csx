@@ -16450,7 +16450,7 @@ readonly
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
-    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
     /// <summary>
@@ -21375,7 +21375,7 @@ namespace System.Linq;
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
-    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
     /// <summary>Returns itself but with the number of elements specified skipped. This is evaluated eagerly.</summary>

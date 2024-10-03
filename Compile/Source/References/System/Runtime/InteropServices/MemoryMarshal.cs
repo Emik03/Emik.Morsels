@@ -178,13 +178,14 @@ static partial class MemoryMarshal
             ReadOnlySpan = Make<ReadOnlySpanFactory<T>>() ?? InefficientReadOnlySpanFallback;
             Span = Make<SpanFactory<T>>() ?? InefficientSpanFallback;
 
-            static MethodInfo? Factory(Type type) =>
-                type.Assembly
+            static MethodInfo? Factory(Type? type) =>
+                type
+                  ?.Assembly
                    .GetType("System.Runtime.InteropServices.MemoryMarshal")
                   ?.GetMethod($"Create{type.Name}", FactoryFlags)
                   ?.MakeGenericMethod(typeof(T));
 
-            ConstructorInfo? Constructor(Type type) => type.GetConstructor(ConstructorFlags, null, args, null);
+            ConstructorInfo? Constructor(Type? type) => type?.GetConstructor(ConstructorFlags, null, args, null);
 
             TTarget? Make<TTarget>() =>
                 typeof(TTarget).GetMethod(nameof(Invoke))?.ReturnType is var type &&
