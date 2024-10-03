@@ -5,7 +5,7 @@ namespace Virtuosity;
 
 using static AttributeTargets;
 
-/// <summary>Used to exclude a class form virtualization.</summary>
+/// <summary>Used to exclude a class from virtualization.</summary>
 [AttributeUsage(Class)]
 sealed partial class DoNotVirtualizeAttribute : Attribute;
 #endif
