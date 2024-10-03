@@ -168,8 +168,8 @@
         <FileVersion>5.0</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
-        <NoWarn>$(NoWarn);419;CI0003</NoWarn>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
+        <NoWarn>$(NoWarn);419;CI0003;Proj0202;Proj0204;Proj0205</NoWarn>
         <WeaverConfiguration>
             <Weavers>
                 <Equals/>
@@ -182,6 +182,29 @@
                 <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <Caseless StringComparison="Ordinal"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
+                <InlineMethod/>
+                <Divorce/>
+                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
+            </Weavers>
+        </WeaverConfiguration>
+    </PropertyGroup>
+    <!-- Adds additional Fody Weavers for wawa libraries that are compatible with .NET Standard 2.0. -->
+    <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;)) and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
+        <WeaverConfiguration>
+            <Weavers>
+                <Lazy/>
+                <Equals/>
+                <InfoOf/>
+                <InlineIL/>
+                <ToString/>
+                <NullGuard Mode="Implicit"/>
+                <Substitute/>
+                <Virtuosity/>
+                <PrecompiledRegex/>
+                <LocalsInit Default="false"/>
+                <Caseless StringComparison="Ordinal"/>
+                <ConfigureAwait ContinueOnCapturedContext="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
@@ -251,7 +274,7 @@
         <Compile Remove="$(AssemblyName).Generated.Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
-        <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.7.0"/>
+        <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.8.2"/>
         <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
         <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.1')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.5.5" PrivateAssets="all"/>
