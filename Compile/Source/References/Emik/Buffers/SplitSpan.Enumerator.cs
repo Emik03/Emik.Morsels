@@ -10,7 +10,7 @@ using static SplitSpanFactory;
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
-    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
