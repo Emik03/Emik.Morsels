@@ -10,7 +10,7 @@ namespace System.Runtime.CompilerServices;
 /// interpolated strings into <see cref="string"/> instances.
 /// </summary>
 [InterpolatedStringHandler]
-public ref struct DefaultInterpolatedStringHandler
+ref struct DefaultInterpolatedStringHandler
 {
     // Implementation note:
     // As this type lives in CompilerServices and is only intended to be targeted by the compiler,
