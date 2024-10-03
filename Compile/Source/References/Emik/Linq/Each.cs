@@ -591,5 +591,7 @@ static partial class Each
         Array.ConvertAll(array, converter);
 
     /// <inheritdoc cref="System.Array.AsReadOnly{T}(T[])"/>
-    public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
+    // ReSharper disable once RedundantNameQualifier
+    public static System.Collections.ObjectModel.ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) =>
+        Array.AsReadOnly(array ?? []);
 }

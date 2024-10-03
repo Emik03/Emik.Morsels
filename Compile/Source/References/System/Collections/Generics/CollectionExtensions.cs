@@ -128,12 +128,14 @@ static class CollectionExtensions
         return false;
     }
 
-    /// <summary>Returns a read-only <see cref="ReadOnlyCollection{T}"/> wrapper for the specified list.</summary>
+    /// <summary>
+    /// Returns a read-only <see cref="ObjectModel.ReadOnlyCollection{T}"/> wrapper for the specified list.
+    /// </summary>
     /// <typeparam name="T">The type of elements in the collection.</typeparam>
     /// <param name="list">The list to wrap.</param>
     /// <returns>An object that acts as a read-only wrapper around the current <see cref="IList{T}"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="list"/> is null.</exception>
-    public static ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> list) => new(list);
+    public static ObjectModel.ReadOnlyCollection<T> AsReadOnly<T>(this IList<T> list) => new(list);
 #if !NET20 && !NET30 && !NET35
     /// <summary>
     /// Returns a read-only <see cref="ReadOnlyDictionary{TKey, TValue}"/> wrapper for the current dictionary.

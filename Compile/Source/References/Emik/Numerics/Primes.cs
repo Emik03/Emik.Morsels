@@ -20,8 +20,8 @@ public
     public static
 #if NETCOREAPP || ROSLYN
         ImmutableArray
-#else
-        ReadOnlyCollection
+#else // ReSharper disable once RedundantNameQualifier
+        System.Collections.ObjectModel.ReadOnlyCollection
 #endif
         <short> Int16 { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if NETCOREAPP || ROSLYN

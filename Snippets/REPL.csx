@@ -581,7 +581,7 @@ public
 #if NETCOREAPP || ROSLYN
         ImmutableArray
 #else
-        ReadOnlyCollection
+        System.Collections.ObjectModel.ReadOnlyCollection
 #endif
         <short> Int16 { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if NETCOREAPP || ROSLYN
@@ -11391,7 +11391,8 @@ public enum KeyMods : ushort
     ) =>
         Array.ConvertAll(array, converter);
     /// <inheritdoc cref="System.Array.AsReadOnly{T}(T[])"/>
-    public static ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) => Array.AsReadOnly(array ?? []);
+    public static System.Collections.ObjectModel.ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) =>
+        Array.AsReadOnly(array ?? []);
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 #if !NET20 && !NET30
