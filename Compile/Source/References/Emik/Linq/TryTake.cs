@@ -90,7 +90,6 @@ static partial class TryTake
     public static TValue? Nth<TKey, TValue>([InstantHandle] this IDictionary<TKey, TValue> dictionary, TKey key)
         where TKey : notnull =>
         dictionary.TryGetValue(key, out var value) ? value : default;
-
 #if !NET20 && !NET30
     /// <summary>Returns the item, or a fallback.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -133,7 +132,6 @@ static partial class TryTake
     /// <returns>The parameter <paramref name="iterable"/>, or <see cref="Enumerable.Empty{T}"/>.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> OrEmpty<T>([NoEnumeration] this IEnumerable<T>? iterable) => iterable ?? [];
-
 #if NETCOREAPP || ROSLYN
     /// <summary>Returns the array, or an empty array.</summary>
     /// <typeparam name="T">The type of array.</typeparam>

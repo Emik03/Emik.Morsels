@@ -21923,9 +21923,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public static bool Go<T>(
         [InstantHandle] Func<T> func,
         [NotNullWhen(true)] out Exception? err,
-        [NotNullWhen(false)] out T? ok
+        [MaybeNullWhen(true)] out T ok
     )
-        where T : notnull
     {
         try
         {
@@ -21959,9 +21958,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         [InstantHandle] Func<T, TResult> func,
         in T param,
         [NotNullWhen(true)] out Exception? err,
-        [NotNullWhen(false)] out TResult? ok
+        [MaybeNullWhen(true)] out TResult ok
     )
-        where TResult : notnull
     {
         try
         {
@@ -21998,9 +21996,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         in T1 first,
         in T2 second,
         [NotNullWhen(true)] out Exception? err,
-        [NotNullWhen(false)] out TResult? ok
+        [MaybeNullWhen(true)] out TResult ok
     )
-        where TResult : notnull
     {
         try
         {
@@ -22040,9 +22037,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         in T2 second,
         in T3 third,
         [NotNullWhen(true)] out Exception? err,
-        [NotNullWhen(false)] out TResult? ok
+        [MaybeNullWhen(true)] out TResult ok
     )
-        where TResult : notnull
     {
         try
         {
@@ -22085,9 +22081,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         in T3 third,
         in T4 fourth,
         [NotNullWhen(true)] out Exception? err,
-        [NotNullWhen(false)] out TResult? ok
+        [MaybeNullWhen(true)] out TResult ok
     )
-        where TResult : notnull
     {
         try
         {
