@@ -164,6 +164,7 @@
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
         <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.2.0" PrivateAssets="all"/>
+        <PackageReference Include="Absence.Fody" Version="2.0.0" PrivateAssets="all"/>
         <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24.0" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.9.0" PrivateAssets="all"/>
@@ -192,11 +193,11 @@
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.7" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24415.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24415.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24415.1" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
