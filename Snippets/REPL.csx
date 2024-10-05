@@ -5474,14 +5474,14 @@ abstract partial class Assert
         TSelf.Min(x, y);
     /// <inheritdoc cref="INumberBase{TSelf}.MinMagnitude"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TSelf MinMagnitude<TSelf>(this TSelf value, TSelf sign)
+    public static TSelf MinMagnitude<TSelf>(this TSelf x, TSelf y)
         where TSelf : INumberBase<TSelf> =>
-        TSelf.MinMagnitude(value, sign);
+        TSelf.MinMagnitude(x, y);
     /// <inheritdoc cref="INumberBase{TSelf}.MinMagnitudeNumber"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TSelf MinMagnitudeNumber<TSelf>(this TSelf value, TSelf sign)
+    public static TSelf MinMagnitudeNumber<TSelf>(this TSelf x, TSelf y)
         where TSelf : INumberBase<TSelf> =>
-        TSelf.MinMagnitudeNumber(value, sign);
+        TSelf.MinMagnitudeNumber(x, y);
     /// <inheritdoc cref="INumber{TSelf}.MinNumber"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TSelf MinNumber<TSelf>(this TSelf value, TSelf sign)
@@ -5494,19 +5494,19 @@ abstract partial class Assert
         TSelf.Max(x, y);
     /// <inheritdoc cref="INumberBase{TSelf}.MaxMagnitude"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TSelf MaxMagnitude<TSelf>(this TSelf value, TSelf sign)
+    public static TSelf MaxMagnitude<TSelf>(this TSelf x, TSelf y)
         where TSelf : INumberBase<TSelf> =>
-        TSelf.MaxMagnitude(value, sign);
+        TSelf.MaxMagnitude(x, y);
     /// <inheritdoc cref="INumberBase{TSelf}.MaxMagnitudeNumber"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TSelf MaxMagnitudeNumber<TSelf>(this TSelf value, TSelf sign)
+    public static TSelf MaxMagnitudeNumber<TSelf>(this TSelf x, TSelf y)
         where TSelf : INumberBase<TSelf> =>
-        TSelf.MaxMagnitudeNumber(value, sign);
+        TSelf.MaxMagnitudeNumber(x, y);
     /// <inheritdoc cref="INumber{TSelf}.MaxNumber"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TSelf MaxNumber<TSelf>(this TSelf value, TSelf sign)
+    public static TSelf MaxNumber<TSelf>(this TSelf x, TSelf y)
         where TSelf : INumber<TSelf> =>
-        TSelf.MaxNumber(value, sign);
+        TSelf.MaxNumber(x, y);
     /// <inheritdoc cref="INumberBase{TSelf}.CreateChecked{TOther}"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TOther CreateChecked<TSelf, TOther>(this TSelf value)
