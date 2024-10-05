@@ -9,7 +9,7 @@ using static Span;
 /// <summary>Extension methods to attempt to grab the span from enumerables.</summary>
 static partial class TryAccessSpan
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Tries to extract a span from the source.</summary>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
     /// <param name="source">The source to extract the span from.</param>

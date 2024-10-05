@@ -31,7 +31,7 @@ static partial class SpanSimdQueries
         typeof(T) == typeof(uint) ||
         typeof(T) == typeof(ulong) ||
         typeof(T) == typeof(ushort);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
@@ -47,7 +47,7 @@ static partial class SpanSimdQueries
     /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source, int index) => Range(source.Span, index);
-#endif
+
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>

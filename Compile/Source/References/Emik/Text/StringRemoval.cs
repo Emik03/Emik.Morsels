@@ -130,7 +130,7 @@ static partial class StringRemoval
     /// <returns>The <see cref="StringBuilder"/> of the parameter <paramref name="str"/>.</returns>
     [Pure]
     public static StringBuilder ToBuilder(this string? str) => new(str);
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="string.Trim()"/>
     public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
 

@@ -147,8 +147,7 @@ static partial class Span
         Unsafe.As<T?, nuint>(ref reference) = address;
 #endif
     }
-
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>

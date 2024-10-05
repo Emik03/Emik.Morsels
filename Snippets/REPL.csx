@@ -1071,7 +1071,6 @@ public
         typeof(T) == typeof(uint) ||
         typeof(T) == typeof(ulong) ||
         typeof(T) == typeof(ushort);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
@@ -1084,7 +1083,6 @@ public
     /// <inheritdoc cref="Range{T}(Span{T}, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this Memory<T> source, int index) => Range(source.Span, index);
-#endif
     /// <summary>Creates the range.</summary>
     /// <typeparam name="T">The type of number.</typeparam>
     /// <param name="source">The <see cref="Span{T}"/> to mutate.</param>
@@ -1584,7 +1582,7 @@ public
         Unsafe.As<T?, nuint>(ref reference) = address;
 #endif
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>
@@ -5096,7 +5094,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <returns>The <see cref="StringBuilder"/> of the parameter <paramref name="str"/>.</returns>
     [Pure]
     public static StringBuilder ToBuilder(this string? str) => new(str);
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="string.Trim()"/>
     public static Memory<char> Trim(this Memory<char> memory) => memory.TrimStart().TrimEnd();
     /// <inheritdoc cref="string.Trim()"/>
@@ -14358,7 +14356,7 @@ readonly
     }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable IDE0032
 /// <summary>Methods to split spans into multiple spans.</summary>
     /// <summary>
@@ -14411,6 +14409,7 @@ readonly
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, OnceMemoryManager<T> separator)
@@ -14421,6 +14420,7 @@ readonly
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
+#endif
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
@@ -15153,7 +15153,7 @@ readonly
 // ReSharper disable once CheckNamespace
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -15181,7 +15181,7 @@ readonly
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -15201,7 +15201,7 @@ readonly
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -15229,7 +15229,7 @@ readonly
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -15249,7 +15249,7 @@ readonly
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -15290,7 +15290,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -15320,7 +15320,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -15361,7 +15361,7 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -16814,7 +16814,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.ReadOnly().Sum();
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -16870,7 +16870,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             Average(span.ReadOnly(), converter);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -16919,7 +16919,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.ReadOnly().Sum(converter);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -16958,7 +16958,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             sum = Adder(sum, converter(x));
         return sum;
     }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -16976,7 +16976,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         =>
             span.Span.ReadOnly().Average();
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -16994,7 +16994,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         =>
             span.Span.ReadOnly().Sum();
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -17024,7 +17024,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         =>
             span.Span.ReadOnly().Average(converter);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -19772,7 +19772,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #if NETCOREAPP_3_0_OR_GREATER
 #endif
 /// <summary>Extension methods to attempt to grab the span from enumerables.</summary>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Tries to extract a span from the source.</summary>
     /// <typeparam name="T">The type of element in the <see cref="IEnumerable{T}"/>.</typeparam>
     /// <param name="source">The source to extract the span from.</param>

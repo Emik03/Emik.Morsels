@@ -7,7 +7,7 @@ namespace Emik.Morsels;
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 static partial class SpanSimdQueries
 {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -36,7 +36,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -56,7 +56,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -85,7 +85,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -105,7 +105,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -147,7 +147,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
@@ -177,7 +177,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
@@ -219,7 +219,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP || ROSLYN
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
