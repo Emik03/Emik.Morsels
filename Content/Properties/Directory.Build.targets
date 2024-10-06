@@ -1,19 +1,14 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <!-- Use all compatible Fody projects for C# in .NET Framework 2.0 - 3.5. -->
+    <!-- Fody weaver configuration for C# within .NET Framework 2.0 - 3.5. -->
     <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <WeaverConfiguration>
             <Weavers>
-                <Equals/>
                 <InfoOf/>
                 <InlineIL/>
-                <ToString/>
                 <NullGuard/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
+                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
@@ -21,61 +16,14 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Use all compatible Fody projects for C# in .NET Framework 4.0. -->
-    <PropertyGroup>
-        <WeaverConfiguration Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
-            <Weavers>
-                <Lazy/>
-                <Equals/>
-                <InfoOf/>
-                <InlineIL/>
-                <ToString/>
-                <NullGuard/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
-                <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Use all compatible Fody projects for C# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')))">
+    <!-- Fody weaver configuration for C# outside of .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')))">
         <WeaverConfiguration>
             <Weavers>
-                <Lazy/>
-                <Equals/>
-                <InfoOf/>
-                <InlineIL/>
-                <ToString/>
-                <NullGuard/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
-                <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
-                <ConfigureAwait ContinueOnCapturedContext="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Use all compatible Fody projects for C# in .NET Standard 1.0 - 1.6. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
-        <WeaverConfiguration>
-            <Weavers>
-                <Lazy/>
-                <Equals/>
                 <InfoOf/>
                 <InlineIL/>
                 <NullGuard/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
+                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
@@ -83,19 +31,13 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Use all compatible Fody projects for F# in .NET Framework 2.0 - 3.5. -->
+    <!-- Fody weaver configuration for F# within .NET Framework 2.0 - 3.5. -->
     <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <WeaverConfiguration>
             <Weavers>
-                <Equals/>
                 <InfoOf/>
                 <InlineIL/>
-                <ToString/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
@@ -103,58 +45,12 @@
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Use all compatible Fody projects for F# in .NET Framework 4.0. -->
-    <PropertyGroup>
-        <WeaverConfiguration Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45'))">
-            <Weavers>
-                <Lazy/>
-                <Equals/>
-                <InfoOf/>
-                <InlineIL/>
-                <ToString/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
-                <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Use all compatible Fody projects for F# in .NET Framework 4.5+ and .NET Standard 2.0+. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net45')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')))">
+    <!-- Fody weaver configuration for F# outside of .NET Framework 2.0 - 3.5. -->
+    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')))">
         <WeaverConfiguration>
             <Weavers>
-                <Lazy/>
-                <Equals/>
                 <InfoOf/>
                 <InlineIL/>
-                <ToString/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
-                <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
-                <ConfigureAwait ContinueOnCapturedContext="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Use all compatible Fody projects for F# in .NET Standard 1.0 - 1.6. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
-        <WeaverConfiguration>
-            <Weavers>
-                <Lazy/>
-                <Equals/>
-                <InfoOf/>
-                <InlineIL/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
@@ -172,39 +68,11 @@
         <NoWarn>$(NoWarn);419;CI0003;Proj0202;Proj0204;Proj0205</NoWarn>
         <WeaverConfiguration>
             <Weavers>
-                <Equals/>
                 <InfoOf/>
                 <InlineIL/>
-                <ToString/>
+                <JetBrainsAnnotations/>
                 <NullGuard Mode="Implicit"/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
                 <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Adds additional Fody Weavers for wawa libraries that are compatible with .NET Standard 2.0. -->
-    <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;)) and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))">
-        <WeaverConfiguration>
-            <Weavers>
-                <Lazy/>
-                <Equals/>
-                <InfoOf/>
-                <InlineIL/>
-                <ToString/>
-                <NullGuard Mode="Implicit"/>
-                <Substitute/>
-                <Virtuosity/>
-                <PrecompiledRegex/>
-                <LocalsInit Default="false"/>
-                <Caseless StringComparison="Ordinal"/>
-                <ConfigureAwait ContinueOnCapturedContext="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
@@ -371,20 +239,12 @@
             </ReferencePath>
         </ItemGroup>
     </Target>
-    <!-- Run Constructor.csx on the project for Windows. -->
-    <Target Name="RunConstructorTests" Condition="'$(OS)' == 'Windows_NT' and $(NoTests) != 'true' and '$(RebuildingWithoutJetBrainsAnnotations)' != 'true'">
-        <Exec Command="where -q dotnet-script || dotnet tool install -g dotnet-script&#xA;type $([System.IO.Path]::GetFullPath('$(Morsels)/Snippets/Constructors.csx')) | dotnet-script eval -- $(IntermediateOutputPath)$(AssemblyName).dll" IgnoreExitCode="true"/>
-    </Target>
-    <!-- Run Constructor.csx on the project for Mac or Linux. -->
-    <Target Name="RunConstructorTests" Condition="'$(OS)' != 'Windows_NT' and $(NoTests) != 'true' and '$(RebuildingWithoutJetBrainsAnnotations)' != 'true'">
-        <Exec Command="command -v dotnet-script &gt;/dev/null 2&gt;&amp;1 || dotnet tool install -g dotnet-script&#xA;cat $([System.IO.Path]::GetFullPath('$(Morsels)/Snippets/Constructors.csx')) | dotnet-script eval -- $(IntermediateOutputPath)$(AssemblyName).dll" IgnoreExitCode="true"/>
-    </Target>
     <!-- Copy index file to make Documentation folder nicer in GitHub. -->
-    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="$(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)') and '$(RebuildingWithoutJetBrainsAnnotations)' == 'true'">
+    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="$(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)')">
         <Exec Command="$(CopyCommand) &quot;$(MarkdownIndexFilePath)&quot; &quot;$(ProjectDir)Documentation/README.md&quot;"/>
     </Target>
     <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository. -->
-    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)' == 'net35' and $(Destination) != '' and ('$(RebuildingWithoutJetBrainsAnnotations)' == 'true' or '$(MSBuildProjectExtension)' == '.fsproj')">
+    <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)' == 'net35' and $(Destination) != ''">
         <Exec Command="$(CopyCommand) $(Out) &quot;$(Destination)&quot;"/>
         <Exec Command="$(CopyCommand) &quot;$(OutDir)$(AssemblyName).xml&quot; &quot;$(Destination)&quot;"/>
         <Exec Command="$(CopyCommand) &quot;$(OutDir)$(AssemblyName).pdb&quot; &quot;$(Destination)&quot;" IgnoreExitCode="true"/>

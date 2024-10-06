@@ -539,11 +539,11 @@ readonly
         return ret.View.ToArray();
     }
 
-    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Enumerator GetEnumerator() => new(this);
 
-    /// <inheritdoc cref="IEnumerable.GetEnumerator"/>
+    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReversedEnumerator GetReversedEnumerator() => new(this);
 

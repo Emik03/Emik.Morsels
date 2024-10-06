@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-namespace Emik.NRTs.Tests;
+namespace Emik.Morsels.Tests;
 
 public sealed class JaroWinklerTests
 {

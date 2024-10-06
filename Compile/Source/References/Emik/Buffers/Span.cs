@@ -268,7 +268,7 @@ static partial class Span
         where T : class
 #if CSHARPREPL
         =>
-            Unsafe.As<T, nuint>(ref _);
+            Unsafe.As<T?, nuint>(ref _);
 #elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NET5_0_OR_GREATER
     {
         // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,

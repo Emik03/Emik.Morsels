@@ -113,11 +113,10 @@ static partial class Peeks
     static readonly Guid s_guid = Guid.NewGuid();
 #endif
 #if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    static readonly string s_path = Path.Combine(
-        Path.GetTempPath(),
-        typeof(Assert).Assembly.GetName().Name is [not R, ..] name ? name : $"{R}"
-    ); // ReSharper disable once RedundantNameQualifier
+    static readonly string s_path =
+        Path.Combine(Path.GetTempPath(), typeof(Bits<>).Assembly.GetName().Name is [not R, ..] name ? name : $"{R}");
 
+    // ReSharper disable once RedundantNameQualifier
     static readonly ITextFormatter s_json =
 #if CSHARPREPL
         new JsonFormatter();

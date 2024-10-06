@@ -1,6 +1,5 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <Import Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../'))"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
         <Authors>Emik</Authors>
@@ -41,7 +40,6 @@
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <FodyDependsOnTargets>RunConstructorTests</FodyDependsOnTargets>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
@@ -116,29 +114,24 @@
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
         <CopyCommand>cp</CopyCommand>
     </PropertyGroup>
-    <!-- Benchmarks and dotnet-script do not like being run from the artifacts path. -->
-    <PropertyGroup Condition="!$(MSBuildProjectFullPath.Contains('dotnet-script')) and !$(MSBuildProjectName.Contains('Benchmark'))">
+    <!-- Benchmarks do not like being run from the artifacts path. -->
+    <PropertyGroup Condition="!$(MSBuildProjectName.Contains('Benchmark'))">
         <ArtifactsPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../artifacts'))</ArtifactsPath>
     </PropertyGroup>
     <!-- Ensure that the path is not relative, escaping all instances of "..", which is necessary if through a symlink. -->
     <PropertyGroup Condition="!$([System.IO.Path]::IsPathRooted('$(Morsels)'))">
         <Morsels>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../../$(Morsels)'))</Morsels>
     </PropertyGroup>
-    <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props') and !Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
     <!-- F# exclusive properties. -->
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
         <TailCalls>true</TailCalls>
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     </PropertyGroup>
-    <!-- Roslyn projects should not embed documentation on output. -->
-    <PropertyGroup Condition="$(MSBuildProjectName.Contains('Analyzer')) or $(MSBuildProjectName.Contains('SourceGenerator'))">
-        <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <ExportJetBrainsAnnotations>false</ExportJetBrainsAnnotations>
-    </PropertyGroup>
     <!-- Sets the icon of the package, if it exists. -->
     <PropertyGroup Condition="Exists('Images/icon.png')">
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
+    <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props') and !Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
     <!-- Set .globalconfig to the proper tag. If it exists above, it is likely symlinked to it and we don't do anything. -->
     <ItemGroup Condition="!Exists($([MSBuild]::GetPathOfFileAbove('.globalconfig', '$(MSBuildProjectFullPath)../')))">
         <AdditionalFiles Remove="$(Morsels)/Content/Properties/.globalconfig"/>
@@ -150,6 +143,7 @@
         <AdditionalFiles Include="$(Morsels)/Content/Properties/**" Link="Properties/**"/>
         <Content Include="$(Morsels)/Content/Properties/**" Link="Properties/**" Pack="false"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.csproj'" Include="$(Morsels)/Compile/**/*.cs"/>
+        <Content Include="*.ExternalAnnotations.xml" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always"/>
         <Compile Condition="'$(MSBuildProjectExtension)' == '.fsproj'" Include="$(Morsels)/Compile/**/*.fs" Link="Emik.Morsels/*.fs"/>
         <None Condition="Exists('Images/icon.png')" Include="Images/icon.png" Link="Images/icon.png" Pack="true" PackagePath="icon.png"/>
         <None Include="$([MSBuild]::GetPathOfFileAbove('README.md', '$(MSBuildProjectFullPath)../'))" Link="README.md" Pack="true" PackagePath="/"/>
@@ -162,17 +156,13 @@
     <ItemGroup>
         <PackageReference Include="Fody" Version="6.8.2" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all"/>
-        <PackageReference Include="Equals.Fody" Version="4.0.2" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.2.0" PrivateAssets="all"/>
         <PackageReference Include="Absence.Fody" Version="2.0.0" PrivateAssets="all"/>
-        <PackageReference Include="Caseless.Fody" Version="1.9.1" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24.0" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.9.0" PrivateAssets="all"/>
         <PackageReference Include="UnitGenerator" Version="1.6.2" PrivateAssets="all"/>
-        <PackageReference Include="ToString.Fody" Version="1.11.1" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1.0" PrivateAssets="all"/>
-        <PackageReference Include="Substitute.Fody" Version="1.6.0" PrivateAssets="all"/>
-        <PackageReference Include="Virtuosity.Fody" Version="3.1.1" PrivateAssets="all"/>
+        <PackageReference Include="SerilogAnalyzer" Version="0.15.0" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.8.2" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
@@ -180,7 +170,6 @@
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all"/>
         <PackageReference Include="Meziantou.Analyzer" Version="2.0.169" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
-        <PackageReference Include="PrecompiledRegex.Fody" Version="1.0.0" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.12.7" PrivateAssets="all"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.2" PrivateAssets="all"/>
@@ -201,10 +190,8 @@
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24415.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24415.1" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
-        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="ConfigureAwait.Fody" Version="3.3.2" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net452'))" Include="Doctest" Version="0.0.6" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="9.0.100-beta.24406.3"/>
-        <PackageReference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0'))" Include="Lazy.Fody" Version="1.11.0" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))" Include="FSharp.Core" Version="4.1.18"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="4.7.2"/>
         <Reference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
@@ -224,7 +211,7 @@
     <!-- JetBrains.Annotations doesn't blend very well with F#. -->
     <ItemGroup Condition="'$(MSBuildProjectExtension)' != '.fsproj'">
         <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" PrivateAssets="all"/>
-        <PackageReference Include="ReSharper.ExportAnnotations.Task" Version="1.4.0" PrivateAssets="all"/>
+        <PackageReference Include="JetBrainsAnnotations.Fody" Version="2.17.0" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Explicit references -->
     <ItemGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))">
