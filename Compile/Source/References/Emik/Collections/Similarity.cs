@@ -7,8 +7,6 @@ namespace Emik.Morsels;
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity
 {
-    const string E = "Value must be non-negative and less than the length.";
-
     const StringComparison DefaultCharComparer = StringComparison.Ordinal;
 
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
@@ -936,6 +934,8 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
+        const string E = "Value must be non-negative and less than the length.";
+
         /// <summary>Takes the element corresponding to the passed in index. A bounds check is performed.</summary>
         /// <param name="i">The index to take.</param>
         /// <exception cref="ArgumentOutOfRangeException">
@@ -943,8 +943,9 @@ static partial class Similarity
         /// </exception>
         public T this[int i]
         {
+            // ReSharper disable once NullableWarningSuppressionIsUsed
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get => (uint)i < (uint)Length ? ((T*)pointer)[i] : throw new ArgumentOutOfRangeException(nameof(i), i, E);
+            get => (uint)i < (uint)Length ? ((T*)pointer)[i]! : throw new ArgumentOutOfRangeException(nameof(i), i, E);
         }
 
         /// <summary>Gets the length.</summary>
