@@ -4,7 +4,6 @@
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 namespace Emik.Morsels;
 #pragma warning disable IDE0032
-using static SmallList;
 using static Span;
 using static SplitMemoryFactory;
 using static SplitSpanFactory;

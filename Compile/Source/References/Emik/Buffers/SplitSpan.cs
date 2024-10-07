@@ -4,7 +4,6 @@
 
 namespace Emik.Morsels;
 #pragma warning disable IDE0032, RCS1158
-using static SmallList;
 using static Span;
 using static SplitSpanFactory;
 
