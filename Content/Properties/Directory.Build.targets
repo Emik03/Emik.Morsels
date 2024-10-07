@@ -42,8 +42,8 @@
             <Weavers>
                 <InfoOf/>
                 <InlineIL/>
-                <JetBrainsAnnotations/>
                 <NullGuard Mode="Implicit"/>
+                <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
