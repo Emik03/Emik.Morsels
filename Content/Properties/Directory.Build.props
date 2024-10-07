@@ -155,7 +155,7 @@
         <PackageReference Include="InfoOf.Fody" Version="2.2" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.9" PrivateAssets="all"/>
-        <PackageReference Include="Absence.Fody" Version="2.0.3" PrivateAssets="all"/>
+        <PackageReference Include="Absence.Fody" Version="2.0.4" PrivateAssets="all"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
         <PackageReference Include="UnitGenerator" Version="1.6.2" PrivateAssets="all"/>
@@ -178,7 +178,6 @@
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
-        <PackageReference Include="CollectionOptimizationCop" Version="0.0.41-beta" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.7" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
