@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <!-- Fody weaver configuration for C# within .NET Framework 2.0 - 3.5. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+    <!-- Fody weaver configuration for C#. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(WeaverConfiguration)' == ''">
         <WeaverConfiguration>
             <Weavers>
                 <InfoOf/>
@@ -12,27 +12,12 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
-    <!-- Fody weaver configuration for C# outside of .NET Framework 2.0 - 3.5. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.csproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')))">
-        <WeaverConfiguration>
-            <Weavers>
-                <InfoOf/>
-                <InlineIL/>
-                <NullGuard/>
-                <JetBrainsAnnotations/>
-                <LocalsInit Default="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Fody weaver configuration for F# within .NET Framework 2.0 - 3.5. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
+    <!-- Fody weaver configuration for F#. -->
+    <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(WeaverConfiguration)' == ''">
         <WeaverConfiguration>
             <Weavers>
                 <InfoOf/>
@@ -41,20 +26,7 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
-            </Weavers>
-        </WeaverConfiguration>
-    </PropertyGroup>
-    <!-- Fody weaver configuration for F# outside of .NET Framework 2.0 - 3.5. -->
-    <PropertyGroup Condition="'$(WeaverConfiguration)' == '' and '$(MSBuildProjectExtension)' == '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.0')))">
-        <WeaverConfiguration>
-            <Weavers>
-                <InfoOf/>
-                <InlineIL/>
-                <LocalsInit Default="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
-                <InlineMethod/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -76,7 +48,7 @@
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
                 <InlineMethod/>
                 <Divorce/>
-                <Absence Except="Serilog.Core.LoggingLevelSwitchChangedEventArgs Serilog.Events.LogEventLevel"/>
+                <Absence/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
@@ -161,7 +133,7 @@
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="'$(IsKtane)' == 'true'">
-        <PackageReference Include="UnityEngineAnalyzer" Version="1.0.0" PrivateAssets="all"/>
+        <PackageReference Include="UnityEngineAnalyzer" Version="1.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
         <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false"/>
@@ -187,11 +159,10 @@
         <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
         <PackageReference Include="coverlet.collector" Version="6.0.2" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit" Version="2.9.1" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10.0" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5.0" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.console" Version="2.9.1" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.0.0-pre.35" PrivateAssets="all"/>
     </ItemGroup>
