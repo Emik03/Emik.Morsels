@@ -110,9 +110,8 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
         /// <see cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator(SplitSpan{TBody, TSeparator, TStrategy})"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>.Enumerator(
-            SplitSpan<TBody, TSeparator, TStrategy> split
-        ) =>
+        public static implicit operator SplitSpan<TBody, TSeparator, TStrategy>
+            .Enumerator(SplitSpan<TBody, TSeparator, TStrategy> split) =>
             new(split);
 
         /// <summary>Performs one step of an enumeration over the provided spans.</summary>

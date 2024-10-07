@@ -703,9 +703,8 @@ readonly
         /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(ReadOnlyMemory{TBody})"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>.Enumerator(
-            ReadOnlyMemory<TBody> body
-        ) =>
+        public static explicit operator SplitMemory<TBody, TSeparator, TStrategy>
+            .Enumerator(ReadOnlyMemory<TBody> body) =>
             new(body);
 
         /// <summary>
@@ -737,9 +736,8 @@ readonly
         /// <see cref="SplitMemory{TBody, TSeparator, TStrategy}.Enumerator(SplitMemory{TBody, TSeparator, TStrategy})"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>.Enumerator(
-            SplitMemory<TBody, TSeparator, TStrategy> split
-        ) =>
+        public static implicit operator SplitMemory<TBody, TSeparator, TStrategy>
+            .Enumerator(SplitMemory<TBody, TSeparator, TStrategy> split) =>
             new(split);
 
         /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Enumerator.Move"/>
