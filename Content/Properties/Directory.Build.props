@@ -155,10 +155,9 @@
         <PackageReference Include="InfoOf.Fody" Version="2.2" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.9" PrivateAssets="all"/>
-        <PackageReference Include="Absence.Fody" Version="2.0.4" PrivateAssets="all"/>
+        <PackageReference Include="Absence.Fody" Version="2.0.5" PrivateAssets="all"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
-        <PackageReference Include="UnitGenerator" Version="1.6.2" PrivateAssets="all"/>
         <PackageReference Include="SerilogAnalyzer" Version="0.15" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.8.2" PrivateAssets="all"/>
@@ -174,7 +173,7 @@
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all"/>
-        <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24415.1" PrivateAssets="all"/>
+        <PackageReference Include="Text.Analyzers" Version="3.11.0-beta1.24454.1" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
@@ -183,8 +182,8 @@
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24415.1" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24415.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24454.1" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24454.1" PrivateAssets="all"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml" Private="false"/>
