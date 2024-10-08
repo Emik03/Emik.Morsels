@@ -474,7 +474,9 @@ static partial class Span
     /// <returns>The index of <paramref name="memory"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
+#pragma warning disable 9191
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
+#pragma warning restore 9191
 #endif
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
