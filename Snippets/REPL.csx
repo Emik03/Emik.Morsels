@@ -19165,7 +19165,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <inheritdoc />
         [Pure]
         public override string ToString() =>
-            $"{{ {_list.Select(x => $"{ToString(x.Key)}: {ToString(x.Value)}").Conjoin()} }}";
+            _list is [] ? "{ }" : $"{{{_list.Select(x => $"{ToString(x.Key)}: {ToString(x.Value)}").Conjoin()} }}";
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
