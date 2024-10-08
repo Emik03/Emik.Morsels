@@ -3,6 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
+// ReSharper disable once RedundantNameQualifier
+using Expression = System.Linq.Expressions.Expression;
+
 /// <summary>Class for obtaining the underlying data for lists.</summary>
 static partial class ListMarshal
 {
