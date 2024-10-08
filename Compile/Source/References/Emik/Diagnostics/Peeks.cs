@@ -258,7 +258,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Debug<T>(
@@ -273,7 +273,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#endif
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
@@ -335,7 +335,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Error<T>(
@@ -350,7 +350,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#endif
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
@@ -412,7 +412,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Fatal<T>(
@@ -427,7 +427,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#endif
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
@@ -489,7 +489,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Info<T>(
@@ -504,7 +504,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#endif
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
@@ -566,7 +566,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Verbose<T>(
@@ -581,7 +581,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#endif
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
@@ -643,7 +643,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Warn<T>(
@@ -658,7 +658,7 @@ static partial class Peeks
 #endif
         =>
             x;
-
+#endif
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
@@ -771,7 +771,7 @@ static partial class Peeks
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -791,7 +791,7 @@ static partial class Peeks
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
-
+#endif
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -871,7 +871,7 @@ static partial class Peeks
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> value,
@@ -891,7 +891,7 @@ static partial class Peeks
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
-
+#endif
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -971,7 +971,7 @@ static partial class Peeks
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> value,
@@ -991,7 +991,7 @@ static partial class Peeks
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
-
+#endif
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -1071,7 +1071,7 @@ static partial class Peeks
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> value,
@@ -1091,7 +1091,7 @@ static partial class Peeks
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
-
+#endif
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -1171,7 +1171,7 @@ static partial class Peeks
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> value,
@@ -1191,7 +1191,7 @@ static partial class Peeks
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
-
+#endif
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -1271,7 +1271,7 @@ static partial class Peeks
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> value,
@@ -1291,7 +1291,7 @@ static partial class Peeks
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
-
+#endif
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
