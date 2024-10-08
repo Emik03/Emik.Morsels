@@ -40,6 +40,7 @@
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <DoNotMerge>^(?:(?!CommunityToolkit)(?!Serilog).)+$</DoNotMerge>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>

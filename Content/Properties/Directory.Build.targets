@@ -9,7 +9,7 @@
                 <NullGuard/>
                 <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
@@ -23,7 +23,7 @@
                 <InfoOf/>
                 <InlineIL/>
                 <LocalsInit Default="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
@@ -45,7 +45,7 @@
                 <NullGuard Mode="Implicit"/>
                 <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
-                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="^(?:(?!CommunityToolkit)(?!Serilog).)+$"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <InlineMethod/>
                 <Divorce/>
                 <Absence/>
