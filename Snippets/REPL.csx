@@ -1888,9 +1888,7 @@ public
     /// <returns>The index of <paramref name="memory"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
-#pragma warning disable 9191
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
-#pragma warning restore 9191
 #endif
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
@@ -7891,7 +7889,7 @@ public sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IL
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantNullableFlowAttribute RedundantUsingDirective UseSymbolAlias
 #if WAWA
 namespace Wawa.Modules;
 #else
@@ -7915,7 +7913,7 @@ public
         EqualityContract = nameof(EqualityContract),
         False = "false",
         FirstOrd = "st",
-#if !NET461_OR_GREATER && !NETSTANDARD2_0_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         HexCharactersTable = "0123456789ABCDEF",
 #endif
         Invalid = $"!<{nameof(InvalidOperationException)}>",
@@ -8438,7 +8436,7 @@ public
             _ => source.StringifyObject(depth - 1),
 #endif
         };
-#if !NET461_OR_GREATER && !NETSTANDARD2_0_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <remarks><para>The implementation is based on
     /// <a href="https://github.com/CommunityToolkit/dotnet/blob/7b53ae23dfc6a7fb12d0fc058b89b6e948f48448/src/CommunityToolkit.Diagnostics/Extensions/ValueTypeExtensions.cs#L44">
@@ -14993,7 +14991,11 @@ readonly
         =>
             MinMax<T, SMin>(enumerable);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this IMemoryOwner<T> enumerable,
@@ -15004,7 +15006,11 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Memory.Span, keySelector);
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this Memory<T> enumerable,
@@ -15034,7 +15040,11 @@ readonly
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this ReadOnlyMemory<T> enumerable,
@@ -15064,7 +15074,11 @@ readonly
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this IMemoryOwner<T> enumerable,
@@ -15075,7 +15089,11 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Memory.Span, keySelector);
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this Memory<T> enumerable,
@@ -15105,7 +15123,11 @@ readonly
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this ReadOnlyMemory<T> enumerable,
@@ -18840,7 +18862,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [HandlesResourceDisposal] IEnumerator enumerator,
@@ -18873,7 +18895,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="enumerable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [InstantHandle] IEnumerable enumerable,
@@ -18893,7 +18915,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="comparable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [InstantHandle] IStructuralComparable comparable,
@@ -18912,7 +18934,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="equatable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [InstantHandle] IStructuralEquatable equatable,
@@ -19052,7 +19074,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [HandlesResourceDisposal] IDictionaryEnumerator enumerator,
@@ -19089,7 +19111,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="dict"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             IDictionary dict,
@@ -19110,7 +19132,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryReflectivelyCollect(
             object value,

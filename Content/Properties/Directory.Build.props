@@ -156,7 +156,7 @@
         <PackageReference Include="InfoOf.Fody" Version="2.2" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.9" PrivateAssets="all"/>
-        <PackageReference Include="Absence.Fody" Version="2.0.5" PrivateAssets="all"/>
+        <PackageReference Include="Absence.Fody" Version="2.0.6" PrivateAssets="all"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
         <PackageReference Include="SerilogAnalyzer" Version="0.15" PrivateAssets="all"/>
