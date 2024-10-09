@@ -1888,7 +1888,9 @@ public
     /// <returns>The index of <paramref name="memory"/> within <paramref name="span"/>, or <c>-1</c>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static int IndexOf<T>(ReadOnlyMemory<T> memory, scoped ReadOnlySpan<T> span) =>
+#pragma warning disable 9191
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span));
+#pragma warning restore 9191
 #endif
     /// <summary>Gets the index of an element of a given <see cref="Span{T}"/> from its reference.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
@@ -7818,6 +7820,7 @@ public sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IL
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
+// ReSharper disable once RedundantNameQualifier
 /// <summary>Class for obtaining the underlying data for lists.</summary>
 #if !NET9_0_OR_GREATER
     /// <summary>Contains the cached method for obtaining the underlying array.</summary>
@@ -10320,6 +10323,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Debug<T>(
@@ -10334,6 +10338,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#endif
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
@@ -10392,6 +10397,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Error<T>(
@@ -10406,6 +10412,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#endif
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
@@ -10464,6 +10471,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Fatal<T>(
@@ -10478,6 +10486,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#endif
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
@@ -10536,6 +10545,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Info<T>(
@@ -10550,6 +10560,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#endif
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
@@ -10608,6 +10619,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Verbose<T>(
@@ -10622,6 +10634,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#endif
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
@@ -10680,6 +10693,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PooledSmallList<T> Warn<T>(
@@ -10694,6 +10708,7 @@ public enum KeyMods : ushort
 #endif
         =>
             x;
+#endif
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
@@ -10801,6 +10816,7 @@ public enum KeyMods : ushort
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Debug<T>(
         this PooledSmallList<T> value,
@@ -10820,6 +10836,7 @@ public enum KeyMods : ushort
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
         return value;
     }
+#endif
     /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -10896,6 +10913,7 @@ public enum KeyMods : ushort
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Error<T>(
         this PooledSmallList<T> value,
@@ -10915,6 +10933,7 @@ public enum KeyMods : ushort
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
         return value;
     }
+#endif
     /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -10991,6 +11010,7 @@ public enum KeyMods : ushort
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Fatal<T>(
         this PooledSmallList<T> value,
@@ -11010,6 +11030,7 @@ public enum KeyMods : ushort
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
         return value;
     }
+#endif
     /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -11086,6 +11107,7 @@ public enum KeyMods : ushort
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Info<T>(
         this PooledSmallList<T> value,
@@ -11105,6 +11127,7 @@ public enum KeyMods : ushort
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
         return value;
     }
+#endif
     /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -11181,6 +11204,7 @@ public enum KeyMods : ushort
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Verbose<T>(
         this PooledSmallList<T> value,
@@ -11200,6 +11224,7 @@ public enum KeyMods : ushort
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
         return value;
     }
+#endif
     /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -11276,6 +11301,7 @@ public enum KeyMods : ushort
         Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static PooledSmallList<T> Warn<T>(
         this PooledSmallList<T> value,
@@ -11295,6 +11321,7 @@ public enum KeyMods : ushort
         Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
         return value;
     }
+#endif
     /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
     public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
         this SplitSpan<TBody, TSeparator, TStrategy> value,
@@ -20932,6 +20959,21 @@ namespace System.Linq;
         }
     }
 #endif
+// SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace
+/// <summary>Methods for draining collections.</summary>
+    /// <summary>
+    /// Removes all items from <paramref name="source"/> that do not satisfy <paramref name="predicate"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of items in the collection.</typeparam>
+    /// <param name="source">The collection to drain.</param>
+    /// <param name="predicate">The predicate to apply.</param>
+    public static void Retain<T>(this IList<T> source, [InstantHandle] Predicate<T> predicate)
+    {
+        for (var i = 0; i < source.Count; i++)
+            if (!predicate(source[i]))
+                source.RemoveAt(i--);
+    }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #pragma warning disable IDE0032
