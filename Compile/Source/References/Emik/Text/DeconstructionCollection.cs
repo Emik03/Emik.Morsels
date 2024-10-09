@@ -134,7 +134,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [HandlesResourceDisposal] IEnumerator enumerator,
@@ -170,7 +170,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="enumerable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [InstantHandle] IEnumerable enumerable,
@@ -190,7 +190,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="comparable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [InstantHandle] IStructuralComparable comparable,
@@ -210,7 +210,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="equatable"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="list"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [InstantHandle] IStructuralEquatable equatable,
@@ -383,7 +383,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="enumerator"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             [HandlesResourceDisposal] IDictionaryEnumerator enumerator,
@@ -423,7 +423,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="dict"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         public static bool TryCollect(
             IDictionary dict,
@@ -445,7 +445,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <returns>
         /// Whether the parameter <paramref name="value"/> was deconstructed fully and <paramref name="visit"/>
         /// altered. When this method returns <see langword="false"/>, the parameter <paramref name="dictionary"/>
-        /// will still contain the elements that were able to be deconstructed, alongside an ellipsis.
+        /// will still contain the elements that were deconstructed, alongside an ellipsis.
         /// </returns>
         // ReSharper disable once CognitiveComplexity
         public static bool TryReflectivelyCollect(
