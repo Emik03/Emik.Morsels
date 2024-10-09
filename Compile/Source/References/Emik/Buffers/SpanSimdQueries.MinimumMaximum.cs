@@ -106,7 +106,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, SMin>(enumerable);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this IMemoryOwner<T> enumerable,
@@ -117,8 +121,11 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Memory.Span, keySelector);
-
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this Memory<T> enumerable,
@@ -148,7 +155,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T, TResult>(
         this ReadOnlyMemory<T> enumerable,
@@ -178,7 +189,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this IMemoryOwner<T> enumerable,
@@ -189,8 +204,11 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Memory.Span, keySelector);
-
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this Memory<T> enumerable,
@@ -220,7 +238,11 @@ static partial class SpanSimdQueries
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#else
+    /// <inheritdoc cref="EnumerableMinMax.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
+#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T, TResult>(
         this ReadOnlyMemory<T> enumerable,
