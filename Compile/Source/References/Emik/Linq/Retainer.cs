@@ -14,8 +14,18 @@ static partial class Retainer
     /// <param name="predicate">The predicate to apply.</param>
     public static void Retain<T>(this IList<T> source, [InstantHandle] Predicate<T> predicate)
     {
-        for (var i = 0; i < source.Count; i++)
-            if (!predicate(source[i]))
-                source.RemoveAt(i--);
+        int count = source.Count, i = 0;
+
+        while (i < count)
+        {
+            if (predicate(source[i]))
+            {
+                i++;
+                continue;
+            }
+
+            source.RemoveAt(i);
+            count--;
+        }
     }
 }
