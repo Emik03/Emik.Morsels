@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantUsingDirective UseSymbolAlias
+// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantNullableFlowAttribute RedundantUsingDirective UseSymbolAlias
 #if WAWA
 namespace Wawa.Modules;
 #else
@@ -35,7 +35,7 @@ static partial class Stringifier
         EqualityContract = nameof(EqualityContract),
         False = "false",
         FirstOrd = "st",
-#if !NET461_OR_GREATER && !NETSTANDARD2_0_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         HexCharactersTable = "0123456789ABCDEF",
 #endif
         Invalid = $"!<{nameof(InvalidOperationException)}>",
@@ -235,7 +235,7 @@ static partial class Stringifier
             ? default
             : path.SplitOnAny(Slashes.AsMemory()).Last.Trim();
 #else
-            ? ""
+            ? "" // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
             : Path.GetFileName(path).Trim() ?? "";
 #endif
     /// <summary>Extracts the file name from the path.</summary>
@@ -584,7 +584,7 @@ static partial class Stringifier
             _ => source.StringifyObject(depth - 1),
 #endif
         };
-#if !NET461_OR_GREATER && !NETSTANDARD2_0_OR_GREATER && !NETCOREAPP2_0_OR_GREATER
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <remarks><para>The implementation is based on
     /// <a href="https://github.com/CommunityToolkit/dotnet/blob/7b53ae23dfc6a7fb12d0fc058b89b6e948f48448/src/CommunityToolkit.Diagnostics/Extensions/ValueTypeExtensions.cs#L44">
