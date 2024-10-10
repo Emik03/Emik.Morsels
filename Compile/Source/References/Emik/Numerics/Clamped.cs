@@ -85,9 +85,8 @@ static partial class Clamped
         (value & value - 1) is 0 && value > 0;
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
+    public static uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
 
     /// <summary>Round the given integral value up to a power of 2.</summary>
     /// <remarks><para>
@@ -118,9 +117,8 @@ static partial class Clamped
     }
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ulong RoundUpToPowerOf2(this long value) => RoundUpToPowerOf2(unchecked((ulong)value));
+    public static ulong RoundUpToPowerOf2(this long value) => RoundUpToPowerOf2(unchecked((ulong)value));
 
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -141,15 +139,14 @@ static partial class Clamped
     }
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe nuint RoundUpToPowerOf2(this nint value) => RoundUpToPowerOf2(unchecked((nuint)value));
+    public static nuint RoundUpToPowerOf2(this nint value) => RoundUpToPowerOf2(unchecked((nuint)value));
 
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    // ReSharper disable RedundantUnsafeContext
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    // ReSharper disable once RedundantUnsafeContext
     public static unsafe nuint RoundUpToPowerOf2(this nuint value) =>
-#if NET6_0_OR_GREATER // ReSharper restore RedundantUnsafeContext
+#if NET6_0_OR_GREATER
 #pragma warning disable IDE0004 // ReSharper disable once RedundantCast
         (nuint)BitOperations.RoundUpToPowerOf2(value);
 #pragma warning restore IDE0004
