@@ -7,7 +7,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <RepositoryUrl>https://github.com/Emik03/Emik.Morsels</RepositoryUrl>
-        <DoNotMerge>^(?:(?!CommunityToolkit)(?!Serilog)(?!DefaultDocumentation\.Markdown).)+$</DoNotMerge>
+        <DoNotMerge>^(?:(?!CommunityToolkit)(?!DefaultDocumentation\.Markdown)(?!Serilog).)+$</DoNotMerge>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="DefaultDocumentation.Api" Version="0.8.3-beta1"/>
