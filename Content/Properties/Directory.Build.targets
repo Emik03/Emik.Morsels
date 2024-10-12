@@ -65,7 +65,6 @@
         <InformationalVersion>$(FileVersion)</InformationalVersion>
         <MarkdownIndexFilePath>$(ProjectDir)Documentation/index.md</MarkdownIndexFilePath>
         <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">$(RepositoryUrl)</PackageProjectUrl>
-        <DefaultDocumentationPlugins>$(Morsels)/References/Emik.DefaultDocumentation.dll</DefaultDocumentationPlugins>
         <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE;NO_SYSTEM_MEMORY</DefineConstants>
         <RootNamespace Condition="'$(RootNamespace)' == ''">$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <Copyright Condition="$(CopyrightSince) != ''">Copyright © Emik $(CopyrightSince) - $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
@@ -89,14 +88,12 @@
         <NoTests>true</NoTests>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
-        <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <NoWarn>$(NoWarn);AsyncifyInvocation;419;1574;1580;3001;3002;3003;3009;3024;8601;8604;8669;8767;9124</NoWarn>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
     <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Generated.Tests&quot;))">
         <IsPackable>false</IsPackable>
-        <DisableDefaultDocumentation>true</DisableDefaultDocumentation>
         <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
         <NoWarn>$(NoWarn);1591;1595;CA1707;NUnit2005;SA1600</NoWarn>
     </PropertyGroup>
@@ -115,7 +112,6 @@
         <EditorConfigFiles Remove="$(AssemblyName).Tests/**"/>
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.8.2"/>
-        <PackageReference Condition="$(DisableDefaultDocumentation) != 'true'" Include="DefaultDocumentation" Version="0.8.3-beta1" PrivateAssets="all"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.3.2" PrivateAssets="all"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.3.2" PrivateAssets="all"/>
@@ -212,10 +208,6 @@
                 <Aliases>core</Aliases>
             </ReferencePath>
         </ItemGroup>
-    </Target>
-    <!-- Copy index file to make Documentation folder nicer in GitHub. -->
-    <Target Name="CopyMarkdownIndex" AfterTargets="PostBuildEvent" Condition="$(DisableDefaultDocumentation) != 'true' and Exists('$(MarkdownIndexFilePath)')">
-        <Exec Command="$(CopyCommand) &quot;$(MarkdownIndexFilePath)&quot; &quot;$(ProjectDir)Documentation/README.md&quot;"/>
     </Target>
     <!-- Copy files to Keep Talking and Nobody Explodes Modkit repository. -->
     <Target Name="CopyToDestination" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)' == 'net35' and $(Destination) != ''">

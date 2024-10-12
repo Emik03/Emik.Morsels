@@ -43,19 +43,15 @@
         <DoNotMerge>^(?:(?!CommunityToolkit)(?!Serilog).)+$</DoNotMerge>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
-        <DefaultDocumentationFolder>Documentation</DefaultDocumentationFolder>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
         <Copyright>Copyright © Emik $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
-        <DefaultDocumentationFileNameFactory>Morsels</DefaultDocumentationFileNameFactory>
         <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectFullPath)../'))=./</PathMap>
-        <DefaultDocumentationInvalidCharReplacement>-</DefaultDocumentationInvalidCharReplacement>
         <GenerateNeutralResourcesLanguageAttribute>true</GenerateNeutralResourcesLanguageAttribute>
         <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
         <ValidateExecutableReferencesMatchSelfContained>true</ValidateExecutableReferencesMatchSelfContained>
         <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-        <DefaultDocumentationGeneratedAccessModifiers>Public,Protected,ProtectedInternal</DefaultDocumentationGeneratedAccessModifiers>
         <EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>true</EnableMicrosoftExtensionsConfigurationBinderSourceGenerator>
         <SignAssembly Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">true</SignAssembly>
         <AssemblyOriginatorKeyFile Condition="Exists($([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../')))">$([MSBuild]::GetPathOfFileAbove('private.snk', '$(MSBuildProjectFullPath)../'))</AssemblyOriginatorKeyFile>
