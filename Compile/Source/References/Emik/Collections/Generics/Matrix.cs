@@ -8,7 +8,8 @@ static partial class MatrixFactory
 {
     /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
     /// <typeparam name="T">The type of item within the list.</typeparam>
-    public sealed partial class Matrix<T> : IList<IList<T>>
+    // ReSharper disable once ArrangeTypeMemberModifiers
+    internal sealed partial class Matrix<T> : IList<IList<T>>
     {
         /// <summary>Represents a slice of a matrix.</summary>
         /// <param name="matrix">The matrix to reference.</param>
