@@ -23,57 +23,55 @@ static partial class FastFourierTransform
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="bre">The bluestein real part.</param>
     /// <param name="bim">The bluestein imaginary part.</param>
-    /// <param name="real">The real part.</param>
-    /// <param name="imaginary">The imaginary part.</param>
+    /// <param name="re">The real part.</param>
+    /// <param name="im">The imaginary part.</param>
     /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
     public static void FFT<T>(
         scoped ReadOnlySpan<T> bre,
         scoped ReadOnlySpan<T> bim,
-        scoped Span<T> real,
-        scoped Span<T> imaginary
+        scoped Span<T> re,
+        scoped Span<T> im
     )
         where T : IRootFunctions<T>, ITrigonometricFunctions<T>
     {
-        if (real.Length is var length &&
-            length != imaginary.Length ||
-            length != bre.Length ||
-            length != bim.Length)
-            throw new ArgumentOutOfRangeException(nameof(real), "All spans must be the same length.");
+        if (re.Length is var length && length != im.Length || length != bre.Length || length != bim.Length)
+            throw new ArgumentOutOfRangeException(nameof(re), "All spans must be the same length.");
 
         if (length is 0)
             return;
 
-        var m = (int)(length * 2 - 1).RoundUpToPowerOf2();
-        var rent = ArrayPool<T>.Shared.Rent(m * 4);
+        var subLength = (int)(length * 2 - 1).RoundUpToPowerOf2();
+        var rent = ArrayPool<T>.Shared.Rent(subLength * 4);
 
         try
         {
-            Span<T> ar = rent.AsSpan(m), ai = rent.AsSpan(m, m), br = rent.AsSpan(m * 2, m), bi = rent.AsSpan(m * 3, m);
+            Span<T> ar = rent.AsSpan(0, subLength),
+                ai = rent.AsSpan(subLength, subLength),
+                br = rent.AsSpan(subLength * 2, subLength),
+                bi = rent.AsSpan(subLength * 3, subLength);
+
             bre.CopyTo(br);
             bim.CopyTo(bi);
             ar.UnsafelySkip(length).Clear();
             ai.UnsafelySkip(length).Clear();
-            var index = m - length + 1;
+            var index = subLength - length + 1;
             br.UnsafelySlice(length, index - length).Clear();
             bi.UnsafelySlice(length, index - length).Clear();
 
-            for (; index < m; index++)
-                (br[index], bi[index]) = (bre.UnsafelyIndex(m - index), bim.UnsafelyIndex(m - index));
+            for (; index < subLength; index++)
+                (br[index], bi[index]) = (bre.UnsafelyIndex(subLength - index), bim.UnsafelyIndex(subLength - index));
 
             Radix2(br, bi, -1);
 
             for (var i = 0; i < length; i++)
             {
-                ar[i] = bre.UnsafelyIndex(i) * real.UnsafelyIndex(i) +
-                    bim.UnsafelyIndex(i) * imaginary.UnsafelyIndex(i);
-
-                ai[i] = bre.UnsafelyIndex(i) * imaginary.UnsafelyIndex(i) -
-                    bim.UnsafelyIndex(i) * real.UnsafelyIndex(i);
+                ar[i] = bre.UnsafelyIndex(i) * re.UnsafelyIndex(i) + bim.UnsafelyIndex(i) * im.UnsafelyIndex(i);
+                ai[i] = bre.UnsafelyIndex(i) * im.UnsafelyIndex(i) - bim.UnsafelyIndex(i) * re.UnsafelyIndex(i);
             }
 
             Radix2(ar, ai, -1);
 
-            for (var i = 0; i < m; i++)
+            for (var i = 0; i < subLength; i++)
             {
                 var r = ar.UnsafelyIndex(i);
                 ar[i] = r * br.UnsafelyIndex(i) - ai.UnsafelyIndex(i) * bi.UnsafelyIndex(i);
@@ -81,12 +79,12 @@ static partial class FastFourierTransform
             }
 
             Radix2(ar, ai, 1);
-            T n = T.One / T.CreateChecked(m), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
+            T n = T.One / T.CreateChecked(subLength), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
 
             for (var i = 0; i < length; i++)
             {
-                real[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
-                imaginary[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
+                re[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
+                im[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
             }
         }
         finally
