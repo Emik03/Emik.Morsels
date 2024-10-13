@@ -63,21 +63,12 @@
         <AssemblyVersion>$(FileVersion)</AssemblyVersion>
         <Out>&quot;$(OutDir)$(AssemblyName).dll&quot;</Out>
         <InformationalVersion>$(FileVersion)</InformationalVersion>
-        <MarkdownIndexFilePath>$(ProjectDir)Documentation/index.md</MarkdownIndexFilePath>
         <PackageProjectUrl Condition="'$(PackageProjectUrl)' == ''">$(RepositoryUrl)</PackageProjectUrl>
         <DefineConstants Condition="'$(IsKtane)' == 'true'">$(DefineConstants);KTANE;NO_SYSTEM_MEMORY</DefineConstants>
         <RootNamespace Condition="'$(RootNamespace)' == ''">$(AssemblyName.Substring(0, 1).ToUpper())$(AssemblyName.Substring(1))</RootNamespace>
         <Copyright Condition="$(CopyrightSince) != ''">Copyright © Emik $(CopyrightSince) - $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
         <DefineConstants Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(DefineConstants);NO_ALLOWS_REF_STRUCT</DefineConstants>
         <DefineConstants Condition="'$(IsCeleste)' == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
-    </PropertyGroup>
-    <!-- The file 'index.md' may not necessarily exist. In which case the assembly name is probably used. -->
-    <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
-        <MarkdownIndexFilePath>$(ProjectDir)Documentation/$(AssemblyName).md</MarkdownIndexFilePath>
-    </PropertyGroup>
-    <!-- This is for assemblies whose first letter is lowercase, where namespaces are uppercase instead. -->
-    <PropertyGroup Condition="!Exists('$(MarkdownIndexFilePath)')">
-        <MarkdownIndexFilePath>$(ProjectDir)Documentation/$(RootNamespace).md</MarkdownIndexFilePath>
     </PropertyGroup>
     <!-- Reference weaved reference dll's from Emik.Morsels. -->
     <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
@@ -103,7 +94,6 @@
     </PropertyGroup>
     <!-- Show implicitly added files on Solution Explorer. -->
     <ItemGroup>
-        <None Remove="Documentation/**"/>
         <None Remove="$(AssemblyName).Tests/**"/>
         <Compile Remove="$(AssemblyName).Tests/**"/>
         <PackageReference Remove="$(AssemblyName)"/>
