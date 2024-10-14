@@ -60,7 +60,7 @@ Emik.Morsels currently supports the following frameworks:
 - .NET Framework: 2.0 - 4.8.1
 - .NET Standard: 1.0 - 2.1
 - .NET Core: 1.0 - 3.1
-- .NET: 5.0 - 8.0
+- .NET: 5.0 - 9.0
 
 Different scripts and configurations within this repository will act accordingly to the current framework, such as polyfills, or by taking advantage of .NET 6+'s [`static abstract`](https://learn.microsoft.com/en-us/dotnet/core/compatibility/core-libraries/6.0/static-abstract-interface-methods) features.
 
