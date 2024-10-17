@@ -5991,8 +5991,14 @@ public partial struct SmallList<T> :
     {
         if (re.Length is var length && length != im.Length || length != bre.Length || length != bim.Length)
             throw new ArgumentOutOfRangeException(nameof(re), "All spans must be the same length.");
-        if (length is 0)
-            return;
+        switch (length)
+        {
+            case 0: return;
+            case >= 1024 when length.IsPow2():
+                Radix2Reorder(re, im);
+                NewMethod(re, im);
+                return;
+        }
         var subLength = (int)(length * 2 - 1).RoundUpToPowerOf2();
         var rent = ArrayPool<T>.Shared.Rent(subLength * 4);
         try
@@ -6005,19 +6011,19 @@ public partial struct SmallList<T> :
             bim.CopyTo(bi);
             ar.UnsafelySkip(length).Clear();
             ai.UnsafelySkip(length).Clear();
-            var index = subLength - length + 1;
-            br.UnsafelySlice(length, index - length).Clear();
-            bi.UnsafelySlice(length, index - length).Clear();
-            for (; index < subLength; index++)
-                (br[index], bi[index]) = (bre.UnsafelyIndex(subLength - index), bim.UnsafelyIndex(subLength - index));
+            var i = subLength - length + 1;
+            br.UnsafelySlice(length, i - length).Clear();
+            bi.UnsafelySlice(length, i - length).Clear();
+            for (; i < subLength; i++)
+                (br[i], bi[i]) = (bre.UnsafelyIndex(subLength - i), bim.UnsafelyIndex(subLength - i));
             Radix2(br, bi, -1);
-            for (var i = 0; i < length; i++)
+            for (i = 0; i < length; i++)
             {
                 ar[i] = bre.UnsafelyIndex(i) * re.UnsafelyIndex(i) + bim.UnsafelyIndex(i) * im.UnsafelyIndex(i);
                 ai[i] = bre.UnsafelyIndex(i) * im.UnsafelyIndex(i) - bim.UnsafelyIndex(i) * re.UnsafelyIndex(i);
             }
             Radix2(ar, ai, -1);
-            for (var i = 0; i < subLength; i++)
+            for (i = 0; i < subLength; i++)
             {
                 var r = ar.UnsafelyIndex(i);
                 ar[i] = r * br.UnsafelyIndex(i) - ai.UnsafelyIndex(i) * bi.UnsafelyIndex(i);
@@ -6025,7 +6031,7 @@ public partial struct SmallList<T> :
             }
             Radix2(ar, ai, 1);
             T n = T.One / T.CreateChecked(subLength), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
-            for (var i = 0; i < length; i++)
+            for (i = 0; i < length; i++)
             {
                 re[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
                 im[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
@@ -6036,6 +6042,42 @@ public partial struct SmallList<T> :
             ArrayPool<T>.Shared.Return(rent);
         }
     }
+    static unsafe void NewMethod<T>(Span<T> re, Span<T> im)
+        where T : IRootFunctions<T>, ITrigonometricFunctions<T>
+    {
+#pragma warning disable 8500
+#if CSHARPREPL
+        Span<T>* pre = &re, pim = &im;
+#else
+        fixed (Span<T>* pre = &re)
+        fixed (Span<T>* pim = &im)
+#endif
+            for (var l = 1; l < re.Length; l *= 2)
+            {
+                nint nre = (nint)pre, nim = (nint)pim;
+                var s = l;
+                void Body(Tuple<int, int> range)
+                {
+                    Span<T> real = *(Span<T>*)nre, imaginary = *(Span<T>*)nim;
+                    for (var i = range.Item1; i < range.Item2; i++)
+                    {
+                        var exponent = -T.One * T.CreateChecked(i) * T.Pi / T.CreateChecked(s);
+                        var wim = T.Sin(exponent);
+                        var wre = T.Cos(exponent);
+                        for (var j = i; j < real.Length; j += s << 1)
+                        {
+                            var (are, aim) = (real[j], imaginary[j]);
+                            var (tre, tim) = (wre * real[j + s] - wim * imaginary[j + s],
+                                wre * imaginary[j + s] + wim * real[j + s]);
+                            (real[j], imaginary[j], real[j + s], imaginary[j + s]) =
+                                (are + tre, aim + tre, are - tre, aim - tim);
+                        }
+                    }
+                }
+                Parallel.ForEach(Partitioner.Create(0, s, 64), Body);
+            }
+#pragma warning restore 8500
+    }
     /// <summary>Computes the Bluestein transform.</summary>
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="length">The length.</param>
@@ -6045,7 +6087,18 @@ public partial struct SmallList<T> :
     {
         T[] re = new T[length], im = new T[length];
         var scale = T.Pi / T.CreateChecked(length);
-        for (var i = 0; i < length; i++)
+        var i = 0;
+#if NET9_0_OR_GREATER
+        if (Vector<T>.IsSupported && Vector.IsHardwareAccelerated)
+            for (; i + Vector<T>.Count <= length; i += Vector<T>.Count)
+            {
+                var step = Vector.CreateSequence(T.CreateChecked(i), T.One);
+                var (sin, cos) = (scale * step * step).SinCos();
+                sin.StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(im), unchecked((nuint)i));
+                cos.StoreUnsafe(ref MemoryMarshal.GetArrayDataReference(re), unchecked((nuint)i));
+            }
+#endif
+        for (; i < length; i++)
             (im[i], re[i]) = (scale * T.CreateChecked(i) * T.CreateChecked(i)).SinCos();
         return (ImmutableCollectionsMarshal.AsImmutableArray(re), ImmutableCollectionsMarshal.AsImmutableArray(im));
     }
@@ -6058,15 +6111,7 @@ public partial struct SmallList<T> :
         where T : ITrigonometricFunctions<T>
     {
         System.Diagnostics.Debug.Assert(re.Length == im.Length, "buffers must be the same length");
-        for (int i = 0, j = 0; j < re.Length - 1; j++)
-        {
-            if (i > j)
-                (re[i], re[j], im[i], im[j]) =
-                    (re.UnsafelyIndex(j), re.UnsafelyIndex(i), im.UnsafelyIndex(j), im.UnsafelyIndex(i));
-            var length = re.Length;
-            do i ^= length >>= 1;
-            while ((i & length) is 0);
-        }
+        Radix2Reorder(re, im);
         for (var size = 1; size < re.Length; size *= 2)
             for (var k = 0; k < size && T.CreateChecked(e * k) * T.Pi / T.CreateChecked(size) is var a; k++)
                 for (var i = k; i < re.Length; i += size * 2)
@@ -6076,6 +6121,18 @@ public partial struct SmallList<T> :
                     (re[i + size], im[i + size]) = (re.UnsafelyIndex(i) - nextRe, im.UnsafelyIndex(i) - nextIm);
                     (re[i], im[i]) = (re.UnsafelyIndex(i) + nextRe, im.UnsafelyIndex(i) + nextIm);
                 }
+    }
+    static void Radix2Reorder<T>(Span<T> re, Span<T> im)
+    {
+        for (int i = 0, j = 0; j < re.Length - 1; j++)
+        {
+            if (i > j)
+                (re[i], re[j], im[i], im[j]) =
+                    (re.UnsafelyIndex(j), re.UnsafelyIndex(i), im.UnsafelyIndex(j), im.UnsafelyIndex(i));
+            var length = re.Length;
+            do i ^= length >>= 1;
+            while ((i & length) is 0);
+        }
     }
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -6441,6 +6498,22 @@ public partial struct SmallList<T> :
     public static int WriteSignificandLittleEndian<TSelf>(this TSelf x, Span<byte> destination)
         where TSelf : IFloatingPoint<TSelf> =>
         x.WriteSignificandLittleEndian(destination);
+#if NET9_0_OR_GREATER
+    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static (Vector<TSelf> Sin, Vector<TSelf> Cos) SinCos<TSelf>(this Vector<TSelf> x)
+    {
+        if (typeof(TSelf) == typeof(float))
+        {
+            var f = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<float>>(ref x));
+            return Unsafe.As<(Vector<float>, Vector<float>), (Vector<TSelf>, Vector<TSelf>)>(ref f);
+        }
+        if (typeof(TSelf) != typeof(double))
+            return default;
+        var d = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<double>>(ref x));
+        return Unsafe.As<(Vector<double>, Vector<double>), (Vector<TSelf>, Vector<TSelf>)>(ref d);
+    }
+#endif
     /// <inheritdoc cref="IBinaryInteger{TSelf}.LeadingZeroCount"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TSelf LeadingZeroCount<TSelf>(this TSelf x)
@@ -12659,31 +12732,31 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
         span.ReadOnly().SplitOn(separator);
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
+    public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string? span, char separator) =>
         span.AsSpan().SplitOn(separator);
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string span, string separator) =>
+    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string? span, string? separator) =>
         span.AsSpan().SplitOnAny(separator.AsSpan());
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string? span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitOnAny(separator);
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string separator) =>
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string? separator) =>
         span.SplitOnAny(separator.AsSpan());
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string span, string separator) =>
+    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string? span, string? separator) =>
         span.AsSpan().SplitOn(separator.AsSpan());
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitOn(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char, char, MatchAll> SplitOn(this string? span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitOn(separator);
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string separator) =>
+    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string? separator) =>
         span.SplitOn(separator.AsSpan());
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -12693,7 +12766,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 #else
         char,
 #endif
-        MatchAny> SplitSpanLines(this string span) =>
+        MatchAny> SplitSpanLines(this string? span) =>
         span.AsSpan().SplitLines();
     /// <summary>Splits a span by line breaks.</summary>
     /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
@@ -12730,7 +12803,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
 #else
         char,
 #endif
-        MatchAny> SplitSpanWhitespace(this string span) =>
+        MatchAny> SplitSpanWhitespace(this string? span) =>
         span.AsSpan().SplitWhitespace();
     /// <summary>Splits a span by whitespace.</summary>
     /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
@@ -12764,7 +12837,7 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, in SearchValues{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, SearchValues<char>, MatchAny> SplitSpanOn(
-        this string span,
+        this string? span,
         in SearchValues<char> separator
     ) =>
         span.AsSpan().SplitOn(separator);
@@ -13179,6 +13252,18 @@ readonly
 #if XNA
 // ReSharper disable once CheckNamespace
 /// <summary>Contains scaling methods for resolutions.</summary>
+    /// <summary>Gets the height of the screen.</summary>
+    /// <param name="device">The current width.</param>
+    /// <returns>The width of the screen.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Height(this GraphicsDevice device) =>
+        OperatingSystem.IsAndroid() ? device.DisplayMode.Height : device.Viewport.Height;
+    /// <summary>Gets the width of the screen.</summary>
+    /// <param name="device">The current width.</param>
+    /// <returns>The width of the screen.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Width(this GraphicsDevice device) =>
+        OperatingSystem.IsAndroid() ? device.DisplayMode.Width : device.Viewport.Width;
     /// <summary>Gets the resolution for <see cref="SpriteBatch.Draw(Texture2D, Rectangle, Color)"/>.</summary>
     /// <param name="device">The current width and height.</param>
     /// <param name="w">The native width.</param>
@@ -13186,9 +13271,7 @@ readonly
     /// <returns>The <see cref="Rectangle"/> for <see cref="SpriteBatch.Draw(Texture2D, Rectangle, Color)"/>.</returns>
     public static Rectangle Resolution(this GraphicsDevice device, float w, float h)
     {
-        var (currentWidth, currentHeight) = OperatingSystem.IsAndroid()
-            ? (device.DisplayMode.Width, device.DisplayMode.Height)
-            : (device.Viewport.Width, device.Viewport.Height);
+        var (currentWidth, currentHeight) = (device.Width(), device.Height());
         var (scaledWidth, scaledHeight) = (currentWidth / w, currentHeight / h);
         var min = scaledWidth.Min(scaledHeight);
         var (width, height) = ((int)(min * w), (int)(min * h));
@@ -14327,31 +14410,31 @@ readonly
         new(span, separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchOne> SplitOn(this string span, char separator) =>
+    public static SplitMemory<char, char, MatchOne> SplitOn(this string? span, char separator) =>
         new(span.AsMemory(), separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string span, string separator) =>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string? span, string? separator) =>
         span.AsMemory().SplitOnAny(separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string span, ReadOnlyMemory<char> separator) =>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string? span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitOnAny(separator);
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitOnAny(this ReadOnlyMemory<char> span, string separator) =>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this ReadOnlyMemory<char> span, string? separator) =>
         span.SplitOnAny(separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitOn(this string span, string separator) =>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this string? span, string? separator) =>
         span.AsMemory().SplitOn(separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitOn(this string span, ReadOnlyMemory<char> separator) =>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this string? span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitOn(separator);
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitOn(this ReadOnlyMemory<char> span, string separator) =>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this ReadOnlyMemory<char> span, string? separator) =>
         span.SplitOn(separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -14361,7 +14444,7 @@ readonly
 #else
         char,
 #endif
-        MatchAny> SplitLines(this string span) =>
+        MatchAny> SplitLines(this string? span) =>
         span.AsMemory().SplitLines();
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -14395,7 +14478,7 @@ readonly
 #else
         char,
 #endif
-        MatchAny> SplitWhitespace(this string span) =>
+        MatchAny> SplitWhitespace(this string? span) =>
         span.AsMemory().SplitWhitespace();
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -14425,7 +14508,7 @@ readonly
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, SearchValues<char>, MatchAny> SplitOn(
-        this string span,
+        this string? span,
         OnceMemoryManager<SearchValues<char>> separator
     ) =>
         span.AsMemory().SplitOn(separator);
