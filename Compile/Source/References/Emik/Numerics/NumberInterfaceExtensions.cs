@@ -435,7 +435,25 @@ static partial class NumberInterfaceExtensions
     public static int WriteSignificandLittleEndian<TSelf>(this TSelf x, Span<byte> destination)
         where TSelf : IFloatingPoint<TSelf> =>
         x.WriteSignificandLittleEndian(destination);
+#if NET9_0_OR_GREATER
+    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static (Vector<TSelf> Sin, Vector<TSelf> Cos) SinCos<TSelf>(this Vector<TSelf> x)
+    {
+        if (typeof(TSelf) == typeof(float))
+        {
+            var f = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<float>>(ref x));
+            return Unsafe.As<(Vector<float>, Vector<float>), (Vector<TSelf>, Vector<TSelf>)>(ref f);
+        }
 
+        if (typeof(TSelf) != typeof(double))
+            return default;
+
+        var d = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<double>>(ref x));
+
+        return Unsafe.As<(Vector<double>, Vector<double>), (Vector<TSelf>, Vector<TSelf>)>(ref d);
+    }
+#endif
     /// <inheritdoc cref="IBinaryInteger{TSelf}.LeadingZeroCount"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TSelf LeadingZeroCount<TSelf>(this TSelf x)
