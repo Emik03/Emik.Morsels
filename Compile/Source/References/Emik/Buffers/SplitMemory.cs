@@ -132,37 +132,37 @@ static partial class SplitMemoryFactory
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchOne> SplitOn(this string span, char separator) =>
+    public static SplitMemory<char, char, MatchOne> SplitOn(this string? span, char separator) =>
         new(span.AsMemory(), separator.AsMemory());
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string span, string separator) =>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string? span, string? separator) =>
         span.AsMemory().SplitOnAny(separator.AsMemory());
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string span, ReadOnlyMemory<char> separator) =>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this string? span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitOnAny(separator);
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAny> SplitOnAny(this ReadOnlyMemory<char> span, string separator) =>
+    public static SplitMemory<char, char, MatchAny> SplitOnAny(this ReadOnlyMemory<char> span, string? separator) =>
         span.SplitOnAny(separator.AsMemory());
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitOn(this string span, string separator) =>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this string? span, string? separator) =>
         span.AsMemory().SplitOn(separator.AsMemory());
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitOn(this string span, ReadOnlyMemory<char> separator) =>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this string? span, ReadOnlyMemory<char> separator) =>
         span.AsMemory().SplitOn(separator);
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char, char, MatchAll> SplitOn(this ReadOnlyMemory<char> span, string separator) =>
+    public static SplitMemory<char, char, MatchAll> SplitOn(this ReadOnlyMemory<char> span, string? separator) =>
         span.SplitOn(separator.AsMemory());
 
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
@@ -173,7 +173,7 @@ static partial class SplitMemoryFactory
 #else
         char,
 #endif
-        MatchAny> SplitLines(this string span) =>
+        MatchAny> SplitLines(this string? span) =>
         span.AsMemory().SplitLines();
 
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
@@ -209,7 +209,7 @@ static partial class SplitMemoryFactory
 #else
         char,
 #endif
-        MatchAny> SplitWhitespace(this string span) =>
+        MatchAny> SplitWhitespace(this string? span) =>
         span.AsMemory().SplitWhitespace();
 
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
@@ -240,7 +240,7 @@ static partial class SplitMemoryFactory
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, SearchValues<char>, MatchAny> SplitOn(
-        this string span,
+        this string? span,
         OnceMemoryManager<SearchValues<char>> separator
     ) =>
         span.AsMemory().SplitOn(separator);

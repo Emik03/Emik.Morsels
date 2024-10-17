@@ -165,37 +165,37 @@ static partial class SplitSpanFactory
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string span, char separator) =>
+    public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string? span, char separator) =>
         span.AsSpan().SplitOn(separator);
 
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string span, string separator) =>
+    public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string? span, string? separator) =>
         span.AsSpan().SplitOnAny(separator.AsSpan());
 
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this string? span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitOnAny(separator);
 
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string separator) =>
+    public static SplitSpan<char, char, MatchAny> SplitOnAny(this ReadOnlySpan<char> span, string? separator) =>
         span.SplitOnAny(separator.AsSpan());
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string span, string separator) =>
+    public static SplitSpan<char, char, MatchAll> SplitSpanOn(this string? span, string? separator) =>
         span.AsSpan().SplitOn(separator.AsSpan());
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitOn(this string span, ReadOnlySpan<char> separator) =>
+    public static SplitSpan<char, char, MatchAll> SplitOn(this string? span, ReadOnlySpan<char> separator) =>
         span.AsSpan().SplitOn(separator);
 
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string separator) =>
+    public static SplitSpan<char, char, MatchAll> SplitOn(this ReadOnlySpan<char> span, string? separator) =>
         span.SplitOn(separator.AsSpan());
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
@@ -206,7 +206,7 @@ static partial class SplitSpanFactory
 #else
         char,
 #endif
-        MatchAny> SplitSpanLines(this string span) =>
+        MatchAny> SplitSpanLines(this string? span) =>
         span.AsSpan().SplitLines();
 
     /// <summary>Splits a span by line breaks.</summary>
@@ -245,7 +245,7 @@ static partial class SplitSpanFactory
 #else
         char,
 #endif
-        MatchAny> SplitSpanWhitespace(this string span) =>
+        MatchAny> SplitSpanWhitespace(this string? span) =>
         span.AsSpan().SplitWhitespace();
 
     /// <summary>Splits a span by whitespace.</summary>
@@ -280,7 +280,7 @@ static partial class SplitSpanFactory
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, in SearchValues{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, SearchValues<char>, MatchAny> SplitSpanOn(
-        this string span,
+        this string? span,
         in SearchValues<char> separator
     ) =>
         span.AsSpan().SplitOn(separator);
