@@ -11,6 +11,7 @@ static partial class FastFourierTransform
     /// <param name="real">The real part.</param>
     /// <param name="imaginary">The imaginary part.</param>
     /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void FFT<T>(
         this (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) bluestein,
         scoped Span<T> real,
@@ -26,9 +27,8 @@ static partial class FastFourierTransform
     /// <param name="re">The real part.</param>
     /// <param name="im">The imaginary part.</param>
     /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
-#pragma warning disable MA0051
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void FFT<T>(
-#pragma warning restore MA0051
         scoped ReadOnlySpan<T> bre,
         scoped ReadOnlySpan<T> bim,
         scoped Span<T> re,
@@ -41,12 +41,6 @@ static partial class FastFourierTransform
 
         if (length is 0)
             return;
-
-        if (length.IsPow2())
-        {
-            Parallelize(re, im);
-            return;
-        }
 
         var subLength = (int)(length * 2 - 1).RoundUpToPowerOf2();
         var rent = ArrayPool<T>.Shared.Rent(subLength * 4);
@@ -105,6 +99,7 @@ static partial class FastFourierTransform
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="length">The length.</param>
     /// <returns>The real and imaginary parts.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) Bluestein<T>(this int length)
         where T : ITrigonometricFunctions<T>
     {
@@ -132,83 +127,52 @@ static partial class FastFourierTransform
     /// <param name="re">The real part.</param>
     /// <param name="im">The imaginary part.</param>
     /// <param name="e">The exponent.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void Radix2<T>(Span<T> re, Span<T> im, int e)
         where T : ITrigonometricFunctions<T>
     {
-        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
-        System.Diagnostics.Debug.Assert(re.Length == im.Length, "buffers must be the same length");
-        Radix2Reorder(re, im);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void NextStep(Span<T> re, Span<T> im, T a, int i, int j)
+        {
+            var nextRe = a.Cos() * re.UnsafelyIndex(j) - a.Sin() * im.UnsafelyIndex(j);
+            var nextIm = a.Cos() * im.UnsafelyIndex(j) + a.Sin() * re.UnsafelyIndex(j);
+            (re[j], im[j]) = (re.UnsafelyIndex(i) - nextRe, im.UnsafelyIndex(i) - nextIm);
+            (re[i], im[i]) = (re.UnsafelyIndex(i) + nextRe, im.UnsafelyIndex(i) + nextIm);
+        }
 
-        for (var size = 1; size < re.Length; size *= 2)
-            for (var k = 0; k < size && T.CreateChecked(e * k) * T.Pi / T.CreateChecked(size) is var a; k++)
-                for (var i = k; i < re.Length; i += size * 2)
-                {
-                    var nextRe = a.Cos() * re.UnsafelyIndex(i + size) - a.Sin() * im.UnsafelyIndex(i + size);
-                    var nextIm = a.Cos() * im.UnsafelyIndex(i + size) + a.Sin() * re.UnsafelyIndex(i + size);
-                    (re[i + size], im[i + size]) = (re.UnsafelyIndex(i) - nextRe, im.UnsafelyIndex(i) - nextIm);
-                    (re[i], im[i]) = (re.UnsafelyIndex(i) + nextRe, im.UnsafelyIndex(i) + nextIm);
-                }
-    }
-
-    static void Radix2Reorder<T>(Span<T> re, Span<T> im)
-    {
-        for (int i = 0, j = 0; j < re.Length - 1; j++)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void NextReorder(ref int i, int j, Span<T> re, Span<T> im)
         {
             if (i > j)
-                (re[i], re[j], im[i], im[j]) =
-                    (re.UnsafelyIndex(j), re.UnsafelyIndex(i), im.UnsafelyIndex(j), im.UnsafelyIndex(i));
+                (re[i], re[j], im[i], im[j]) = (re.UnsafelyIndex(j), re.UnsafelyIndex(i), im.UnsafelyIndex(j),
+                    im.UnsafelyIndex(i));
 
             var length = re.Length;
 
             do i ^= length >>= 1;
             while ((i & length) is 0);
         }
-    }
 
-    static unsafe void Parallelize<T>(Span<T> re, Span<T> im)
-        where T : IRootFunctions<T>, ITrigonometricFunctions<T>
-    {
-        Radix2Reorder(re, im);
-#pragma warning disable 8500
-        Span<T>* pre = &re, pim = &im;
-
-        for (var l = 1; l < re.Length; l *= 2)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Reorder(Span<T> re, Span<T> im)
         {
-            nint nre = (nint)pre, nim = (nint)pim;
-            var s = l;
-
-            void Body(Tuple<int, int> range)
-            {
-                Span<T> real = *(Span<T>*)nre, imaginary = *(Span<T>*)nim;
-#pragma warning restore 8500
-                for (var i = range.Item1; i < range.Item2; i++)
-                {
-                    var exponent = -T.One * T.CreateChecked(i) * T.Pi / T.CreateChecked(s);
-                    var wim = T.Sin(exponent);
-                    var wre = T.Cos(exponent);
-
-                    // (x.re * y.re - x.im * y.im,
-                    //  x.re * y.im + x.im * y.re)
-                    for (var j = i; j < real.Length; j += s << 1)
-                    {
-                        var (are, aim) = (real[j], imaginary[j]);
-
-                        var (tre, tim) = (wre * real[j + s] - wim * imaginary[j + s],
-                            wre * imaginary[j + s] + wim * real[j + s]);
-
-                        (real[j], imaginary[j], real[j + s], imaginary[j + s]) =
-                            (are + tre, aim + tre, are - tre, aim - tim);
-                    }
-                }
-            }
-
-            const int RangeSize = 64;
-
-            if (s >= RangeSize)
-                Parallel.ForEach(Partitioner.Create(0, s, RangeSize), Body);
-            else
-                Body(new(0, s));
+            for (int i = 0, j = 0; j < re.Length - 1; j++)
+                NextReorder(ref i, j, re, im);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Step(Span<T> re, Span<T> im, int e)
+        {
+            for (var s = 1; s < re.Length; s *= 2)
+                for (var k = 0; k < s && T.CreateChecked(e * k) * T.Pi / T.CreateChecked(s) is var a; k++)
+                    for (var i = k; i < re.Length; i += s * 2)
+                        NextStep(re, im, a, i, i + s);
+        }
+
+        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
+        System.Diagnostics.Debug.Assert(re.Length == im.Length, "buffers must be the same length");
+        Reorder(re, im);
+        Step(re, im, e);
     }
 }
 #endif
