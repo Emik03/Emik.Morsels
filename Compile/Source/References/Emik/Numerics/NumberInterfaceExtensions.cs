@@ -438,6 +438,31 @@ static partial class NumberInterfaceExtensions
 #if NET9_0_OR_GREATER
     /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Vector<TSelf> Hypot<TSelf>(this Vector<TSelf> x, Vector<TSelf> y)
+    {
+        if (typeof(TSelf) == typeof(float))
+        {
+            var f = Vector.Hypot(
+                Unsafe.As<Vector<TSelf>, Vector<float>>(ref x),
+                Unsafe.As<Vector<TSelf>, Vector<float>>(ref y)
+            );
+
+            return Unsafe.As<Vector<float>, Vector<TSelf>>(ref f);
+        }
+
+        if (typeof(TSelf) != typeof(double))
+            return default;
+
+        var d = Vector.Hypot(
+            Unsafe.As<Vector<TSelf>, Vector<double>>(ref x),
+            Unsafe.As<Vector<TSelf>, Vector<double>>(ref y)
+        );
+
+        return Unsafe.As<Vector<double>, Vector<TSelf>>(ref d);
+    }
+
+    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static (Vector<TSelf> Sin, Vector<TSelf> Cos) SinCos<TSelf>(this Vector<TSelf> x)
     {
         if (typeof(TSelf) == typeof(float))

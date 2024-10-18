@@ -11,7 +11,6 @@ static partial class FastFourierTransform
     /// <param name="real">The real part.</param>
     /// <param name="imaginary">The imaginary part.</param>
     /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void FFT<T>(
         this (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) bluestein,
         scoped Span<T> real,
@@ -26,8 +25,7 @@ static partial class FastFourierTransform
     /// <param name="bim">The bluestein imaginary part.</param>
     /// <param name="re">The real part.</param>
     /// <param name="im">The imaginary part.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    /// <exception cref="InvalidOperationException">Any span provided does not have the same length.</exception>
     public static void FFT<T>(
         scoped ReadOnlySpan<T> bre,
         scoped ReadOnlySpan<T> bim,
@@ -37,7 +35,7 @@ static partial class FastFourierTransform
         where T : IRootFunctions<T>, ITrigonometricFunctions<T>
     {
         if (re.Length is var length && length != im.Length || length != bre.Length || length != bim.Length)
-            throw new ArgumentOutOfRangeException(nameof(re), "All spans must be the same length.");
+            throw new InvalidOperationException($"re/{re.Length}, im/{im.Length}, bre/{bre.Length}, bim/{bim.Length}");
 
         if (length is 0)
             return;
@@ -99,7 +97,6 @@ static partial class FastFourierTransform
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="length">The length.</param>
     /// <returns>The real and imaginary parts.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) Bluestein<T>(this int length)
         where T : ITrigonometricFunctions<T>
     {
@@ -121,7 +118,72 @@ static partial class FastFourierTransform
 
         return (ImmutableCollectionsMarshal.AsImmutableArray(re), ImmutableCollectionsMarshal.AsImmutableArray(im));
     }
+#if NET9_0_OR_GREATER
+    /// <summary>Computes the Fast Fourier Transform in place and returns the maximum hypotenuse.</summary>
+    /// <typeparam name="T">The type of the samples.</typeparam>
+    /// <param name="bluestein">The bluestein transform.</param>
+    /// <param name="realBuffer">The part that will be replaced with the hypotenuse of the fourier transform.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
+    public static T MaxHypotFFT<T>(
+        this (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) bluestein,
+        scoped Span<T> realBuffer
+    )
+        where T : IFloatingPointIeee754<T>
+    {
+        var rent = ArrayPool<T>.Shared.Rent(realBuffer.Length);
 
+        try
+        {
+            var imaginaryBuffer = rent.AsSpan().UnsafelyTake(realBuffer.Length);
+            imaginaryBuffer.Clear();
+            bluestein.FFT(realBuffer, imaginaryBuffer);
+            var max = T.Epsilon;
+            ref var real = ref MemoryMarshal.GetReference(realBuffer);
+            ref var imaginary = ref MemoryMarshal.GetReference(imaginaryBuffer);
+
+            if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > realBuffer.Length)
+            {
+                ref readonly var end = ref Unsafe.Add(ref real, realBuffer.Length);
+
+                while (Unsafe.IsAddressLessThan(real, end))
+                {
+                    max = max.Max(real = real.Hypot(imaginary));
+                    // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+                    real = ref Unsafe.Add(ref real, 1)!;
+                    imaginary = ref Unsafe.Add(ref imaginary, 1)!;
+                }
+
+                return max;
+            }
+
+            var maxVector = Vector<T>.Zero;
+            ref var realLast = ref Unsafe.Add(ref real, realBuffer.Length - Vector<T>.Count);
+            ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, realBuffer.Length - Vector<T>.Count);
+            StoreUnsafe(ref real, imaginary, ref maxVector);
+            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+
+            while (Unsafe.IsAddressLessThan(real, realLast))
+            {
+                StoreUnsafe(ref real, imaginary, ref maxVector);
+                real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+                imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+                // ReSharper restore NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+            }
+
+            StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
+
+            for (var index = 0; index < Vector<T>.Count; index++)
+                max = max.Max(maxVector[index]);
+
+            return max;
+        }
+        finally
+        {
+            ArrayPool<T>.Shared.Return(rent);
+        }
+    }
+#endif
     /// <summary>Performs a radix-2 step.</summary>
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="re">The real part.</param>
@@ -174,5 +236,14 @@ static partial class FastFourierTransform
         Reorder(re, im);
         Step(re, im, e);
     }
+#if NET9_0_OR_GREATER
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static void StoreUnsafe<T>(ref T real, in T imaginary, ref Vector<T> max)
+    {
+        var hypot = Vector.LoadUnsafe(real).Hypot(Vector.LoadUnsafe(imaginary));
+        max = Vector.Max(max, hypot);
+        hypot.StoreUnsafe(ref real);
+    }
+#endif
 }
 #endif
