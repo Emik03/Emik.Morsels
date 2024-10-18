@@ -77,8 +77,7 @@
             NX0001;NX0002;NX0003;
             RCS1001;RCS1003;RCS1080;RCS1084;RCS1085;RCS1123;RCS1163;RCS1169;RCS1194;RCS1213;RCS1233;RCS1242;RCS1247;RCS1259;RCS1263;
             RS1035;
-            UEA0006;
-            VSTHRD002
+            UEA0006
         </NoWarn>
     </PropertyGroup>
     <!-- Fallback paths. -->
@@ -162,9 +161,9 @@
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.169" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.172" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.7" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.12.8" PrivateAssets="all"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.2" PrivateAssets="all"/>
         <PackageReference Include="Jubjubnest.Style.DotNet" Version="0.1.54" PrivateAssets="all"/>
@@ -176,9 +175,8 @@
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6169" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.7" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.12.8" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.11.20" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24454.1" PrivateAssets="all"/>
         <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.11.0-beta1.24454.1" PrivateAssets="all"/>

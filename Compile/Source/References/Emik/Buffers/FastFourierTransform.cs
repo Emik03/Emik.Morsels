@@ -122,11 +122,19 @@ static partial class FastFourierTransform
     /// <summary>Computes the Fast Fourier Transform in place and returns the maximum hypotenuse.</summary>
     /// <typeparam name="T">The type of the samples.</typeparam>
     /// <param name="bluestein">The bluestein transform.</param>
-    /// <param name="realBuffer">The part that will be replaced with the hypotenuse of the fourier transform.</param>
+    /// <param name="realBuffer">The buffer that will be replaced with the hypotenuse of the fourier transform.</param>
+    /// <param name="skipHypotOnLastHalf">
+    /// Whether to skip calculating the hypotenuse on the second half of the buffer. This is because the nature of the
+    /// fourier transform with all zeros for the imaginary buffer causes the real buffer to be always symmetrical.
+    /// If this is set to <see langword="true"/>, only the first half of the buffer will have the computed hypotenuse.
+    /// The second half will still be written to, but only with its real counterpart. If set to <see langword="false"/>,
+    /// the whole buffer will be written to, which guarantees that the buffer will end up symmetric.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException">Any span provided does not have the same length.</exception>
     public static T MaxHypotFFT<T>(
         this (ImmutableArray<T> Real, ImmutableArray<T> Imaginary) bluestein,
-        scoped Span<T> realBuffer
+        scoped Span<T> realBuffer,
+        bool skipHypotOnLastHalf = false
     )
         where T : IFloatingPointIeee754<T>
     {
@@ -140,10 +148,11 @@ static partial class FastFourierTransform
             var max = T.Epsilon;
             ref var real = ref MemoryMarshal.GetReference(realBuffer);
             ref var imaginary = ref MemoryMarshal.GetReference(imaginaryBuffer);
+            var length = skipHypotOnLastHalf ? (realBuffer.Length + 1) / 2 : realBuffer.Length;
 
-            if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > realBuffer.Length)
+            if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > length)
             {
-                ref readonly var end = ref Unsafe.Add(ref real, realBuffer.Length);
+                ref readonly var end = ref Unsafe.Add(ref real, length);
 
                 while (Unsafe.IsAddressLessThan(real, end))
                 {
@@ -157,8 +166,8 @@ static partial class FastFourierTransform
             }
 
             var maxVector = Vector<T>.Zero;
-            ref var realLast = ref Unsafe.Add(ref real, realBuffer.Length - Vector<T>.Count);
-            ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, realBuffer.Length - Vector<T>.Count);
+            ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
+            ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
             StoreUnsafe(ref real, imaginary, ref maxVector);
             real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
             imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
