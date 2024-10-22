@@ -357,6 +357,23 @@ static partial class Span
         var ptr = stackalloc byte[InBytes<T>(length)];
         return new(ptr, length);
     }
+
+    /// <summary>Creates the stack allocation of the type.</summary>
+    /// <typeparam name="T">The type of the resulting pointer.</typeparam>
+    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
+    /// <returns>The resulting <see cref="T"/> pointer pointing to the created stack allocation.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe T* StackallocPtr<T>([NonNegativeValue] in int length)
+    {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
+
+        if (IsReferenceOrContainsReferences<T>())
+            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
+
+        var ptr = stackalloc byte[InBytes<T>(length)];
+        return (T*)ptr;
+    }
 #endif
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
