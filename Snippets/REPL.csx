@@ -1777,6 +1777,19 @@ public
         var ptr = stackalloc byte[InBytes<T>(length)];
         return new(ptr, length);
     }
+    /// <summary>Creates the stack allocation of the type.</summary>
+    /// <typeparam name="T">The type of the resulting pointer.</typeparam>
+    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
+    /// <returns>The resulting <see cref="T"/> pointer pointing to the created stack allocation.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe T* StackallocPtr<T>([NonNegativeValue] in int length)
+    {
+        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
+        if (IsReferenceOrContainsReferences<T>())
+            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
+        var ptr = stackalloc byte[InBytes<T>(length)];
+        return (T*)ptr;
+    }
 #endif
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
@@ -5995,46 +6008,40 @@ public partial struct SmallList<T> :
             return;
         var subLength = (int)(length * 2 - 1).RoundUpToPowerOf2();
         var rent = ArrayPool<T>.Shared.Rent(subLength * 4);
-        try
+        Span<T> ar = rent.AsSpan(0, subLength),
+            ai = rent.AsSpan(subLength, subLength),
+            br = rent.AsSpan(subLength * 2, subLength),
+            bi = rent.AsSpan(subLength * 3, subLength);
+        bre.CopyTo(br);
+        bim.CopyTo(bi);
+        ar.UnsafelySkip(length).Clear();
+        ai.UnsafelySkip(length).Clear();
+        var i = subLength - length + 1;
+        br.UnsafelySlice(length, i - length).Clear();
+        bi.UnsafelySlice(length, i - length).Clear();
+        for (; i < subLength; i++)
+            (br[i], bi[i]) = (bre.UnsafelyIndex(subLength - i), bim.UnsafelyIndex(subLength - i));
+        Radix2(br, bi, -1);
+        for (i = 0; i < length; i++)
         {
-            Span<T> ar = rent.AsSpan(0, subLength),
-                ai = rent.AsSpan(subLength, subLength),
-                br = rent.AsSpan(subLength * 2, subLength),
-                bi = rent.AsSpan(subLength * 3, subLength);
-            bre.CopyTo(br);
-            bim.CopyTo(bi);
-            ar.UnsafelySkip(length).Clear();
-            ai.UnsafelySkip(length).Clear();
-            var i = subLength - length + 1;
-            br.UnsafelySlice(length, i - length).Clear();
-            bi.UnsafelySlice(length, i - length).Clear();
-            for (; i < subLength; i++)
-                (br[i], bi[i]) = (bre.UnsafelyIndex(subLength - i), bim.UnsafelyIndex(subLength - i));
-            Radix2(br, bi, -1);
-            for (i = 0; i < length; i++)
-            {
-                ar[i] = bre.UnsafelyIndex(i) * re.UnsafelyIndex(i) + bim.UnsafelyIndex(i) * im.UnsafelyIndex(i);
-                ai[i] = bre.UnsafelyIndex(i) * im.UnsafelyIndex(i) - bim.UnsafelyIndex(i) * re.UnsafelyIndex(i);
-            }
-            Radix2(ar, ai, -1);
-            for (i = 0; i < subLength; i++)
-            {
-                var r = ar.UnsafelyIndex(i);
-                ar[i] = r * br.UnsafelyIndex(i) - ai.UnsafelyIndex(i) * bi.UnsafelyIndex(i);
-                ai[i] = r * bi.UnsafelyIndex(i) + ai.UnsafelyIndex(i) * br.UnsafelyIndex(i);
-            }
-            Radix2(ar, ai, 1);
-            T n = T.One / T.CreateChecked(subLength), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
-            for (i = 0; i < length; i++)
-            {
-                re[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
-                im[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
-            }
+            ar[i] = bre.UnsafelyIndex(i) * re.UnsafelyIndex(i) + bim.UnsafelyIndex(i) * im.UnsafelyIndex(i);
+            ai[i] = bre.UnsafelyIndex(i) * im.UnsafelyIndex(i) - bim.UnsafelyIndex(i) * re.UnsafelyIndex(i);
         }
-        finally
+        Radix2(ar, ai, -1);
+        for (i = 0; i < subLength; i++)
         {
-            ArrayPool<T>.Shared.Return(rent);
+            var r = ar.UnsafelyIndex(i);
+            ar[i] = r * br.UnsafelyIndex(i) - ai.UnsafelyIndex(i) * bi.UnsafelyIndex(i);
+            ai[i] = r * bi.UnsafelyIndex(i) + ai.UnsafelyIndex(i) * br.UnsafelyIndex(i);
         }
+        Radix2(ar, ai, 1);
+        T n = T.One / T.CreateChecked(subLength), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
+        for (i = 0; i < length; i++)
+        {
+            re[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
+            im[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
+        }
+        ArrayPool<T>.Shared.Return(rent);
     }
     /// <summary>Computes the Bluestein transform.</summary>
     /// <typeparam name="T">The type of the samples.</typeparam>
@@ -6081,47 +6088,41 @@ public partial struct SmallList<T> :
         where T : IFloatingPointIeee754<T>
     {
         var rent = ArrayPool<T>.Shared.Rent(realBuffer.Length);
-        try
+        var imaginaryBuffer = rent.AsSpan().UnsafelyTake(realBuffer.Length);
+        imaginaryBuffer.Clear();
+        bluestein.FFT(realBuffer, imaginaryBuffer);
+        var max = T.Epsilon;
+        ref var real = ref MemoryMarshal.GetReference(realBuffer);
+        ref var imaginary = ref MemoryMarshal.GetReference(imaginaryBuffer);
+        var length = skipHypotOnLastHalf ? (realBuffer.Length + 1) / 2 : realBuffer.Length;
+        if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > length)
         {
-            var imaginaryBuffer = rent.AsSpan().UnsafelyTake(realBuffer.Length);
-            imaginaryBuffer.Clear();
-            bluestein.FFT(realBuffer, imaginaryBuffer);
-            var max = T.Epsilon;
-            ref var real = ref MemoryMarshal.GetReference(realBuffer);
-            ref var imaginary = ref MemoryMarshal.GetReference(imaginaryBuffer);
-            var length = skipHypotOnLastHalf ? (realBuffer.Length + 1) / 2 : realBuffer.Length;
-            if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > length)
+            ref readonly var end = ref Unsafe.Add(ref real, length);
+            while (Unsafe.IsAddressLessThan(real, end))
             {
-                ref readonly var end = ref Unsafe.Add(ref real, length);
-                while (Unsafe.IsAddressLessThan(real, end))
-                {
-                    max = max.Max(real = real.Hypot(imaginary));
-                    real = ref Unsafe.Add(ref real, 1)!;
-                    imaginary = ref Unsafe.Add(ref imaginary, 1)!;
-                }
-                return max;
+                max = max.Max(real = real.Hypot(imaginary));
+                real = ref Unsafe.Add(ref real, 1)!;
+                imaginary = ref Unsafe.Add(ref imaginary, 1)!;
             }
-            var maxVector = Vector<T>.Zero;
-            ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
-            ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
+            return max;
+        }
+        var maxVector = Vector<T>.Zero;
+        ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
+        ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
+        StoreUnsafe(ref real, imaginary, ref maxVector);
+        real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+        while (Unsafe.IsAddressLessThan(real, realLast))
+        {
             StoreUnsafe(ref real, imaginary, ref maxVector);
             real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
             imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
-            while (Unsafe.IsAddressLessThan(real, realLast))
-            {
-                StoreUnsafe(ref real, imaginary, ref maxVector);
-                real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-                imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
-            }
-            StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
-            for (var index = 0; index < Vector<T>.Count; index++)
-                max = max.Max(maxVector[index]);
-            return max;
         }
-        finally
-        {
-            ArrayPool<T>.Shared.Return(rent);
-        }
+        StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
+        for (var index = 0; index < Vector<T>.Count; index++)
+            max = max.Max(maxVector[index]);
+        ArrayPool<T>.Shared.Return(rent);
+        return max;
     }
 #endif
     /// <summary>Performs a radix-2 step.</summary>
@@ -7066,6 +7067,145 @@ public partial struct SmallList<T> :
     /// <returns>The value for the RGB channel.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static byte V(int color, byte saturation) => (byte)((byte)color + (M - saturation) * (M - (byte)color) / M);
+// SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace
+    [StructLayout(LayoutKind.Sequential)]
+    public readonly partial struct ButtonColorScheme(
+        uint background = 0,
+        uint title = 0,
+        uint buttonBorder = 0,
+        uint buttonBackground = 0,
+        uint buttonSelected = 0
+    )
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        public readonly unsafe partial struct ButtonData(uint flags, int buttonId, byte* text)
+        {
+            readonly uint _flags = flags;
+            readonly int _buttonId = buttonId;
+            readonly byte* _text = text;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public readonly unsafe partial struct Data(
+            uint flags,
+            nint window,
+            string? title,
+            string? message,
+            int numButtons,
+            ButtonData* buttons,
+            ButtonColorScheme* colorScheme
+        )
+        {
+            readonly uint _flags = flags;
+            readonly nint _window = window;
+            readonly string? _title = title, _message = message;
+            readonly int _numButtons = numButtons;
+            readonly ButtonData* _buttons = buttons;
+            readonly ButtonColorScheme* _colorScheme = colorScheme;
+        }
+        readonly byte
+            _backgroundR = (byte)(background >> 16),
+            _backgroundG = (byte)(background >> 8),
+            _backgroundB = (byte)background,
+            _titleR = (byte)(title >> 16),
+            _titleG = (byte)(title >> 8),
+            _titleB = (byte)title,
+            _buttonBorderR = (byte)(buttonBorder >> 16),
+            _buttonBorderG = (byte)(buttonBorder >> 8),
+            _buttonBorderB = (byte)buttonBorder,
+            _buttonBackgroundR = (byte)(buttonBackground >> 16),
+            _buttonBackgroundG = (byte)(buttonBackground >> 8),
+            _buttonBackgroundB = (byte)buttonBackground,
+            _buttonSelectedR = (byte)(buttonSelected >> 16),
+            _buttonSelectedG = (byte)(buttonSelected >> 8),
+            _buttonSelectedB = (byte)buttonSelected;
+    }
+    public static int? Error(
+        this string? title,
+        string? message,
+        ReadOnlySpan<string> buttons,
+        ButtonColorScheme? colorScheme = null,
+        nint window = 0
+    ) =>
+        Show(title, message, buttons, colorScheme, window, 16);
+    public static int? Info(
+        this string? title,
+        string? message,
+        ReadOnlySpan<string> buttons,
+        ButtonColorScheme? colorScheme = null,
+        nint window = 0
+    ) =>
+        Show(title, message, buttons, colorScheme, window, 64);
+    public static int? Warn(
+        this string? title,
+        string? message,
+        ReadOnlySpan<string> buttons,
+        ButtonColorScheme? colorScheme = null,
+        nint window = 0
+    ) =>
+        Show(title, message, buttons, colorScheme, window, 32);
+    static unsafe int? Show(
+        string? title,
+        string? message,
+        ReadOnlySpan<string> buttons,
+        ButtonColorScheme? colorScheme,
+        nint window,
+        uint flags
+    )
+    {
+        [DllImport("sdl2", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        static extern int Else(ref ButtonColorScheme.Data messageBoxData, out int buttonId);
+        [DllImport("SDL2.dll", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        static extern int Windows(ref ButtonColorScheme.Data messageBoxData, out int buttonId);
+        [DllImport("libSDL2.dylib", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        static extern int OSX(ref ButtonColorScheme.Data messageBoxData, out int buttonId);
+        [DllImport("libSDL2-2.0.so.0", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        static extern int Linux(ref ButtonColorScheme.Data messageBoxData, out int buttonId);
+        using var _ = buttons.Length.Alloc(out Span<Rented<byte>.Pinned> pins);
+        using var __ = buttons.Length.Alloc(out ButtonColorScheme.ButtonData* buttonDatas);
+        for (var i = 0; i < buttons.Length; i++)
+            fixed (char* chars = buttons[i])
+            {
+                var length = buttons[i].Length * 4 + 1;
+                pins[i] = new(length, out var bytes);
+                bytes[Encoding.UTF8.GetBytes(chars, buttons[i].Length, bytes, length) + 1] = 0;
+                buttonDatas[i] = new(3, i, bytes);
+            }
+        try
+        {
+            var color = colorScheme ?? default;
+            ButtonColorScheme.Data data = new(
+                flags,
+                window,
+                message,
+                title,
+                buttons.Length,
+                buttonDatas,
+                colorScheme.HasValue ? &color : null
+            );
+#if NET5_0_OR_GREATER
+            return (OperatingSystem.IsWindows() ? Windows(ref data, out var id) :
+                OperatingSystem.IsMacOS() ? OSX(ref data, out id) :
+                OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD() ? Linux(ref data, out id) :
+                Else(ref data, out id)) is 0
+                ? id
+                : null;
+#else
+#pragma warning disable MA0144
+            return (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows(ref d, out var buttonId) :
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? OSX(ref d, out buttonId) :
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Linux(ref d, out buttonId) :
+                Else(ref d, out buttonId)) is 0
+                ? buttonId
+                : null;
+#endif
+        }
+        finally
+        {
+            foreach (var pin in pins)
+                pin.Dispose();
+        }
+    }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantUsingDirective
 /// <summary>Extension methods to attempt to grab the length from enumerables.</summary>
@@ -18821,7 +18961,7 @@ readonly
             return leftLength is 0 && rightLength is 0 ? 1 : 0;
         if (leftLength is 1 && rightLength is 1)
             return EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0;
-        using var _ = rightLength.Alloc<byte>(out var span);
+        using var _ = rightLength.Alloc(out Span<byte> span);
         return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
@@ -20074,48 +20214,8 @@ static class GamePadStateExtensions
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
-// ReSharper disable once RedundantNameQualifier
-    /// <summary>Represents the rented array.</summary>
-    /// <typeparam name="T">The type of array to rent.</typeparam>
-    public struct Rented<T> : IDisposable
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        T[]? _array;
-#else
-        nint _ptr;
-        static Rented()
-        {
-            if (IsReferenceOrContainsReferences<T>())
-                throw new NotSupportedException($"Type {typeof(T)} cannot be rented in this framework.");
-        }
-#endif
-        /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
-        /// <param name="length">The length of the array to retrieve.</param>
-        /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
-        public unsafe Rented(int length, out Span<T> span) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
-#else
 #pragma warning disable 8500
-            span = new((void*)(_ptr = Marshal.AllocHGlobal(length * sizeof(T))), length);
-#pragma warning restore 8500
-#endif
-        /// <inheritdoc />
-        void IDisposable.Dispose()
-        {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            if (_array is null)
-                return;
-            ArrayPool<T>.Shared.Return(_array);
-            _array = null;
-#else
-            if (_ptr is 0)
-                return;
-            Marshal.FreeHGlobal(_ptr);
-            _ptr = 0;
-#endif
-        }
-    }
+// ReSharper disable once RedundantNameQualifier
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
     /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -20138,6 +20238,113 @@ static class GamePadStateExtensions
 #endif
                 _ => new(it, out span),
             };
+    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
+    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
+    /// <typeparam name="T">The type of buffer.</typeparam>
+    /// <param name="it">The length of the buffer.</param>
+    /// <param name="ptr">The temporary allocation.</param>
+    /// <returns>The allocated buffer.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+    public static unsafe Rented<T>.Pinned Alloc<T>(this in int it, out T* ptr) =>
+        it switch
+        {
+            <= 0 when (ptr = default) is var _ => default,
+#if !CSHARPREPL
+            _ when !IsReferenceOrContainsReferences<T>() &&
+                IsStack<T>(it) &&
+                (ptr = StackallocPtr<T>(it)) is var _ => default,
+#endif
+            _ => new(it, out ptr),
+        };
+/// <summary>Represents the rented array.</summary>
+/// <typeparam name="T">The type of array to rent.</typeparam>
+[StructLayout(LayoutKind.Auto)]
+public partial struct Rented<T> : IDisposable
+{
+    /// <summary>Represents the pinned array.</summary>
+    [StructLayout(LayoutKind.Auto)]
+    public unsafe partial struct Pinned : IDisposable
+    {
+        GCHandle _handle;
+        Rented<T> _rented;
+        /// <summary>Initializes a new instance of the <see cref="Pinned"/> struct.</summary>
+        /// <param name="rented">The rented array.</param>
+        /// <param name="ptr">The pointer to the allocated memory.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Pinned(Rented<T> rented, out T* ptr)
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        {
+            _rented = rented;
+            _handle = GCHandle.Alloc(rented._array, GCHandleType.Pinned);
+            ptr = (T*)_handle.AddrOfPinnedObject();
+        }
+#else
+            =>
+                ptr = (T*)(_rented = rented)._ptr;
+#endif
+        /// <summary>Initializes a new instance of the <see cref="Pinned"/> struct.</summary>
+        /// <param name="length">The length of the array to retrieve.</param>
+        /// <param name="ptr">The pointer to the allocated memory.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Pinned(int length, out T* ptr)
+            : this(new Rented<T>(length), out ptr) { }
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Dispose()
+        {
+            if (!_handle.IsAllocated)
+                return;
+            _handle.Free();
+            _handle = default;
+            _rented.Dispose();
+        }
+    }
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+    T[]? _array;
+#else
+    nint _ptr;
+    static Rented()
+    {
+        if (IsReferenceOrContainsReferences<T>())
+            throw new NotSupportedException($"Type {typeof(T)} cannot be rented in this framework.");
+    }
+#endif
+    /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
+    /// <param name="length">The length of the array to retrieve.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public unsafe Rented(int length) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        _array = ArrayPool<T>.Shared.Rent(length);
+#else
+        _ptr = Marshal.AllocHGlobal(length * sizeof(T));
+#endif
+    /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
+    /// <param name="length">The length of the array to retrieve.</param>
+    /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public unsafe Rented(int length, out Span<T> span) =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
+#else
+        span = new((void*)(_ptr = Marshal.AllocHGlobal(length * sizeof(T))), length);
+#endif
+    /// <inheritdoc />
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Dispose()
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        if (_array is null)
+            return;
+        ArrayPool<T>.Shared.Return(_array);
+        _array = null;
+#else
+        if (_ptr is 0)
+            return;
+        Marshal.FreeHGlobal(_ptr);
+        _ptr = 0;
+#endif
+    }
+}
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer

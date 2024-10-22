@@ -261,6 +261,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
     static string ToFullName(string x) => x switch
     {
         "using static Two;" => "",
+        "using static Rent;" => "",
         "using static Span;" => "",
         "using static Peeks;" => "",
         "using static EnumMath;" => "",
