@@ -43,54 +43,49 @@ static partial class FastFourierTransform
         var subLength = (int)(length * 2 - 1).RoundUpToPowerOf2();
         var rent = ArrayPool<T>.Shared.Rent(subLength * 4);
 
-        try
+        Span<T> ar = rent.AsSpan(0, subLength),
+            ai = rent.AsSpan(subLength, subLength),
+            br = rent.AsSpan(subLength * 2, subLength),
+            bi = rent.AsSpan(subLength * 3, subLength);
+
+        bre.CopyTo(br);
+        bim.CopyTo(bi);
+        ar.UnsafelySkip(length).Clear();
+        ai.UnsafelySkip(length).Clear();
+        var i = subLength - length + 1;
+        br.UnsafelySlice(length, i - length).Clear();
+        bi.UnsafelySlice(length, i - length).Clear();
+
+        for (; i < subLength; i++)
+            (br[i], bi[i]) = (bre.UnsafelyIndex(subLength - i), bim.UnsafelyIndex(subLength - i));
+
+        Radix2(br, bi, -1);
+
+        for (i = 0; i < length; i++)
         {
-            Span<T> ar = rent.AsSpan(0, subLength),
-                ai = rent.AsSpan(subLength, subLength),
-                br = rent.AsSpan(subLength * 2, subLength),
-                bi = rent.AsSpan(subLength * 3, subLength);
-
-            bre.CopyTo(br);
-            bim.CopyTo(bi);
-            ar.UnsafelySkip(length).Clear();
-            ai.UnsafelySkip(length).Clear();
-            var i = subLength - length + 1;
-            br.UnsafelySlice(length, i - length).Clear();
-            bi.UnsafelySlice(length, i - length).Clear();
-
-            for (; i < subLength; i++)
-                (br[i], bi[i]) = (bre.UnsafelyIndex(subLength - i), bim.UnsafelyIndex(subLength - i));
-
-            Radix2(br, bi, -1);
-
-            for (i = 0; i < length; i++)
-            {
-                ar[i] = bre.UnsafelyIndex(i) * re.UnsafelyIndex(i) + bim.UnsafelyIndex(i) * im.UnsafelyIndex(i);
-                ai[i] = bre.UnsafelyIndex(i) * im.UnsafelyIndex(i) - bim.UnsafelyIndex(i) * re.UnsafelyIndex(i);
-            }
-
-            Radix2(ar, ai, -1);
-
-            for (i = 0; i < subLength; i++)
-            {
-                var r = ar.UnsafelyIndex(i);
-                ar[i] = r * br.UnsafelyIndex(i) - ai.UnsafelyIndex(i) * bi.UnsafelyIndex(i);
-                ai[i] = r * bi.UnsafelyIndex(i) + ai.UnsafelyIndex(i) * br.UnsafelyIndex(i);
-            }
-
-            Radix2(ar, ai, 1);
-            T n = T.One / T.CreateChecked(subLength), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
-
-            for (i = 0; i < length; i++)
-            {
-                re[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
-                im[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
-            }
+            ar[i] = bre.UnsafelyIndex(i) * re.UnsafelyIndex(i) + bim.UnsafelyIndex(i) * im.UnsafelyIndex(i);
+            ai[i] = bre.UnsafelyIndex(i) * im.UnsafelyIndex(i) - bim.UnsafelyIndex(i) * re.UnsafelyIndex(i);
         }
-        finally
+
+        Radix2(ar, ai, -1);
+
+        for (i = 0; i < subLength; i++)
         {
-            ArrayPool<T>.Shared.Return(rent);
+            var r = ar.UnsafelyIndex(i);
+            ar[i] = r * br.UnsafelyIndex(i) - ai.UnsafelyIndex(i) * bi.UnsafelyIndex(i);
+            ai[i] = r * bi.UnsafelyIndex(i) + ai.UnsafelyIndex(i) * br.UnsafelyIndex(i);
         }
+
+        Radix2(ar, ai, 1);
+        T n = T.One / T.CreateChecked(subLength), halfRescale = (T.One / T.CreateChecked(length)).Sqrt();
+
+        for (i = 0; i < length; i++)
+        {
+            re[i] = (n * bre.UnsafelyIndex(i) * ar[i] - n * -bim.UnsafelyIndex(i) * ai[i]) * halfRescale;
+            im[i] = (n * bre.UnsafelyIndex(i) * ai[i] + n * -bim.UnsafelyIndex(i) * ar[i]) * halfRescale;
+        }
+
+        ArrayPool<T>.Shared.Return(rent);
     }
 
     /// <summary>Computes the Bluestein transform.</summary>
@@ -139,58 +134,51 @@ static partial class FastFourierTransform
         where T : IFloatingPointIeee754<T>
     {
         var rent = ArrayPool<T>.Shared.Rent(realBuffer.Length);
+        var imaginaryBuffer = rent.AsSpan().UnsafelyTake(realBuffer.Length);
+        imaginaryBuffer.Clear();
+        bluestein.FFT(realBuffer, imaginaryBuffer);
+        var max = T.Epsilon;
+        ref var real = ref MemoryMarshal.GetReference(realBuffer);
+        ref var imaginary = ref MemoryMarshal.GetReference(imaginaryBuffer);
+        var length = skipHypotOnLastHalf ? (realBuffer.Length + 1) / 2 : realBuffer.Length;
 
-        try
+        if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > length)
         {
-            var imaginaryBuffer = rent.AsSpan().UnsafelyTake(realBuffer.Length);
-            imaginaryBuffer.Clear();
-            bluestein.FFT(realBuffer, imaginaryBuffer);
-            var max = T.Epsilon;
-            ref var real = ref MemoryMarshal.GetReference(realBuffer);
-            ref var imaginary = ref MemoryMarshal.GetReference(imaginaryBuffer);
-            var length = skipHypotOnLastHalf ? (realBuffer.Length + 1) / 2 : realBuffer.Length;
+            ref readonly var end = ref Unsafe.Add(ref real, length);
 
-            if (!Vector<T>.IsSupported || !Vector.IsHardwareAccelerated || Vector<T>.Count > length)
+            while (Unsafe.IsAddressLessThan(real, end))
             {
-                ref readonly var end = ref Unsafe.Add(ref real, length);
-
-                while (Unsafe.IsAddressLessThan(real, end))
-                {
-                    max = max.Max(real = real.Hypot(imaginary));
-                    // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-                    real = ref Unsafe.Add(ref real, 1)!;
-                    imaginary = ref Unsafe.Add(ref imaginary, 1)!;
-                }
-
-                return max;
+                max = max.Max(real = real.Hypot(imaginary));
+                // ReSharper disable NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
+                real = ref Unsafe.Add(ref real, 1)!;
+                imaginary = ref Unsafe.Add(ref imaginary, 1)!;
             }
-
-            var maxVector = Vector<T>.Zero;
-            ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
-            ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
-            StoreUnsafe(ref real, imaginary, ref maxVector);
-            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
-
-            while (Unsafe.IsAddressLessThan(real, realLast))
-            {
-                StoreUnsafe(ref real, imaginary, ref maxVector);
-                real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
-                imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
-                // ReSharper restore NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-            }
-
-            StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
-
-            for (var index = 0; index < Vector<T>.Count; index++)
-                max = max.Max(maxVector[index]);
 
             return max;
         }
-        finally
+
+        var maxVector = Vector<T>.Zero;
+        ref var realLast = ref Unsafe.Add(ref real, length - Vector<T>.Count);
+        ref readonly var imaginaryLast = ref Unsafe.Add(ref imaginary, length - Vector<T>.Count);
+        StoreUnsafe(ref real, imaginary, ref maxVector);
+        real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+        imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+
+        while (Unsafe.IsAddressLessThan(real, realLast))
         {
-            ArrayPool<T>.Shared.Return(rent);
+            StoreUnsafe(ref real, imaginary, ref maxVector);
+            real = ref Unsafe.Add(ref real, Vector<T>.Count)!;
+            imaginary = ref Unsafe.Add(ref imaginary, Vector<T>.Count)!;
+            // ReSharper restore NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
         }
+
+        StoreUnsafe(ref realLast, imaginaryLast, ref maxVector);
+
+        for (var index = 0; index < Vector<T>.Count; index++)
+            max = max.Max(maxVector[index]);
+
+        ArrayPool<T>.Shared.Return(rent);
+        return max;
     }
 #endif
     /// <summary>Performs a radix-2 step.</summary>
