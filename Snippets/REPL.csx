@@ -7093,40 +7093,61 @@ public partial struct SmallList<T> :
         readonly Button* _buttons = buttons;
         readonly nint _colorScheme;
     }
-    public static int? Error(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
+    /// <summary>Displays a message box with an error icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    public static int Error(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
         Show(title, message, buttons, 0, 16);
-    public static int? Error(
-        this string? title,
-        string? message,
-        nint ptr,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, buttons, ptr, 16);
-    public static int? Info(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
+    /// <summary>Displays a message box with an error icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    public static int Error(this string? title, string? message, nint window, ReadOnlySpan<string> buttons = default) =>
+        Show(title, message, buttons, window, 16);
+    /// <summary>Displays a message box with an informational icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    public static int Info(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
         Show(title, message, buttons, 0, 64);
-    public static int? Info(this string? title, string? message, nint ptr, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, ptr, 64);
-    public static int? Warn(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
+    /// <summary>Displays a message box with an informational icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    public static int Info(this string? title, string? message, nint window, ReadOnlySpan<string> buttons = default) =>
+        Show(title, message, buttons, window, 64);
+    /// <summary>Displays a message box with a warning icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    public static int Warn(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
         Show(title, message, buttons, 0, 32);
-    public static int? Warn(this string? title, string? message, nint ptr, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, ptr, 32);
-#pragma warning disable MA0144
-    static unsafe int? Show(
-        string? title,
-        string? message,
-        ReadOnlySpan<string> buttons,
-        nint ptr,
-        uint flags
-    )
+    /// <summary>Displays a message box with a warning icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    public static int Warn(this string? title, string? message, nint window, ReadOnlySpan<string> buttons = default) =>
+        Show(title, message, buttons, window, 32);
+    static unsafe int Show(string? title, string? message, ReadOnlySpan<string> buttons, nint window, uint flags)
     {
         [DllImport("sdl2", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
         static extern int Else(ref MessageBoxData messageBoxData, out int buttonId);
-        [DllImport("SDL2.dll", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
-        [DllImport("libSDL2.dylib", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int OSX(ref MessageBoxData messageBoxData, out int buttonId);
         [DllImport("libSDL2-2.0.so.0", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
         static extern int Linux(ref MessageBoxData messageBoxData, out int buttonId);
+        [DllImport("libSDL2.dylib", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        static extern int OSX(ref MessageBoxData messageBoxData, out int buttonId);
+        [DllImport("SDL2.dll", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
+        static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
         const int Flags = 3;
         var nonZeroLength = buttons.Length.Max(1);
         using var _ = nonZeroLength.Alloc(out Span<Rented<byte>.Pinned> pins);
@@ -7150,22 +7171,21 @@ public partial struct SmallList<T> :
                 }
         try
         {
-            MessageBoxData messageBoxData = new(flags, ptr, title, message, nonZeroLength, buttonDatas);
+            MessageBoxData data = new(flags, window, title, message, nonZeroLength, buttonDatas);
 #if NET5_0_OR_GREATER
-            return (OperatingSystem.IsWindows() ? Windows(ref messageBoxData, out var buttonId) :
-                OperatingSystem.IsMacOS() ? OSX(ref messageBoxData, out buttonId) :
-                OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD() ? Linux(ref messageBoxData, out buttonId) :
-                Else(ref messageBoxData, out buttonId)) is 0
-                ? buttonId
-                : null;
+            return (OperatingSystem.IsWindows() ? Windows(ref data, out var buttonId) :
+                OperatingSystem.IsMacOS() ? OSX(ref data, out buttonId) :
+                OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD() ? Linux(ref data, out buttonId) :
 #else
-            return (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows(ref d, out var buttonId) :
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? OSX(ref d, out buttonId) :
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Linux(ref d, out buttonId) :
-                Else(ref d, out buttonId)) is 0
-                ? buttonId
-                : null;
+#pragma warning disable MA0144
+            return (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows(ref data, out var buttonId) :
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? OSX(ref data, out buttonId) :
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Linux(ref data, out buttonId) :
+#pragma warning restore MA0144
 #endif
+                Else(ref data, out buttonId)) is 0
+                ? buttonId
+                : -1;
         }
         finally
         {
