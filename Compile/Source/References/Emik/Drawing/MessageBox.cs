@@ -42,54 +42,75 @@ static partial class MessageBox
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message to display.</param>
     /// <param name="buttons">The buttons to display.</param>
-    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
     public static int Error(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, 0, 16);
+        Show(title, message, 0, buttons, 16);
 
     /// <summary>Displays a message box with an error icon.</summary>
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message to display.</param>
     /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
     /// <param name="buttons">The buttons to display.</param>
-    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
     public static int Error(this string? title, string? message, nint window, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, window, 16);
+        Show(title, message, window, buttons, 16);
 
     /// <summary>Displays a message box with an informational icon.</summary>
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message to display.</param>
     /// <param name="buttons">The buttons to display.</param>
-    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
     public static int Info(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, 0, 64);
+        Show(title, message, 0, buttons, 64);
 
     /// <summary>Displays a message box with an informational icon.</summary>
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message to display.</param>
     /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
     /// <param name="buttons">The buttons to display.</param>
-    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
     public static int Info(this string? title, string? message, nint window, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, window, 64);
+        Show(title, message, window, buttons, 64);
 
     /// <summary>Displays a message box with a warning icon.</summary>
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message to display.</param>
     /// <param name="buttons">The buttons to display.</param>
-    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
     public static int Warn(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, 0, 32);
+        Show(title, message, 0, buttons, 32);
 
     /// <summary>Displays a message box with a warning icon.</summary>
     /// <param name="title">The title of the message box.</param>
     /// <param name="message">The message to display.</param>
     /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
     /// <param name="buttons">The buttons to display.</param>
-    /// <returns>The index within <paramref name="buttons"/> that was pressed, or -1 if an error occurred.</returns>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
     public static int Warn(this string? title, string? message, nint window, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, buttons, window, 32);
+        Show(title, message, window, buttons, 32);
 
-    static unsafe int Show(string? title, string? message, ReadOnlySpan<string> buttons, nint window, uint flags)
+    /// <summary>Displays a message box.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <param name="flags">The flags for the message box.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    static unsafe int Show(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
     {
         [DllImport("sdl2", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
         static extern int Else(ref MessageBoxData messageBoxData, out int buttonId);
