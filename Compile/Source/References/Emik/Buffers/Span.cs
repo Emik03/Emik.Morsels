@@ -361,7 +361,7 @@ static partial class Span
     /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting pointer.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
-    /// <returns>The resulting <see cref="T"/> pointer pointing to the created stack allocation.</returns>
+    /// <returns>The resulting <typeparamref name="T"/> pointer pointing to the created stack allocation.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe T* StackallocPtr<T>([NonNegativeValue] in int length)
     {
