@@ -22,6 +22,20 @@ static partial class AggregateExceptionFactory
     public static void ThrowAny(this ICollection<Exception> exceptions, string? message = null) =>
         ExpectNull(Aggregate(exceptions));
 
+    /// <summary>Summarizes the collection of <see cref="Exception"/> instances.</summary>
+    /// <param name="exceptions">The collection of <see cref="Exception"/> instances.</param>
+    /// <param name="separator">The separator to use.</param>
+    /// <returns>One long <see cref="string"/>.</returns>
+    public static string Messages(this AggregateException exceptions, char separator) =>
+        exceptions.InnerExceptions.Select(x => x.Message).Conjoin(separator);
+
+    /// <summary>Summarizes the collection of <see cref="Exception"/> instances.</summary>
+    /// <param name="exceptions">The collection of <see cref="Exception"/> instances.</param>
+    /// <param name="separator">The separator to use.</param>
+    /// <returns>One long <see cref="string"/>.</returns>
+    public static string Messages(this AggregateException exceptions, string separator = ", ") =>
+        exceptions.InnerExceptions.Select(x => x.Message).Conjoin(separator);
+
     /// <summary>
     /// Creates an <see cref="AggregateException"/> from a collection of <see cref="Exception"/> instances.
     /// </summary>
