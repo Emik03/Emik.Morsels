@@ -140,7 +140,7 @@ static partial class MessageBox
         static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
 
         const int Flags = 3;
-        var nonZeroLength = buttons.Length.Max(1);
+        var nonZeroLength = Math.Max(buttons.Length, 1);
         using var _ = nonZeroLength.Alloc(out Span<Rented<byte>.Pinned> pins);
         using var __ = nonZeroLength.Alloc(out MessageBoxData.Button* buttonDatas);
 
