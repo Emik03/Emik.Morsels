@@ -83,9 +83,8 @@
         <NoWarn>$(NoWarn);419;1574;1580;3001;3002;3003;3009;3024;8601;8604;8669;8767;9124</NoWarn>
     </PropertyGroup>
     <!-- Properties for Unit Test projects. -->
-    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Generated.Tests&quot;))">
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <IsPackable>false</IsPackable>
-        <DefineConstants>$(DefineConstants);UNIT_TESTS</DefineConstants>
         <NoWarn>$(NoWarn);1591;1595;CA1707;NUnit2005;SA1600</NoWarn>
     </PropertyGroup>
     <!-- Use separate copy of Celeste if one is specified. -->
