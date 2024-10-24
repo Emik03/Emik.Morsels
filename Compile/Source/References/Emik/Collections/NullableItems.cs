@@ -46,25 +46,4 @@ static partial class NullableItems
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     [return: NotNullIfNotNull(nameof(set))]
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
-
-    /// <summary>Returns the list if all items are non-null.</summary>
-    /// <typeparam name="T">The type of list.</typeparam>
-    /// <param name="list">The list to filter.</param>
-    /// <returns>
-    /// The parameter <paramref name="list"/> if all items are non-<see langword="null"/>,
-    /// otherwise <see langword="null"/>.
-    /// </returns>
-    [Pure]
-    public static IList<T>? ItemNotNull<T>(this IList<T?>? list)
-    {
-        if (list is null)
-            return null;
-
-        // ReSharper disable once ForCanBeConvertedToForeach LoopCanBeConvertedToQuery
-        for (var i = 0; i < list.Count; i++)
-            if (list[i] is null)
-                return null;
-
-        return list;
-    }
 }

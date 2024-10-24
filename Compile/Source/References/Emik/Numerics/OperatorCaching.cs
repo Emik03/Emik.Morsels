@@ -120,7 +120,7 @@ static partial class OperatorCaching
     /// <returns>This method does not return.</returns>
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
-        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
+        throw new MissingMethodException(typeof(T).FullName, "op_Addition/op_Division/op_Increment");
 
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>

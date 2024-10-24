@@ -22,7 +22,6 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define NO_ALLOWS_REF_STRUCT
-#define FORCE_SERILOG
 #define CSHARPREPL
 #define DEBUG
 global using System;
@@ -184,36 +183,6 @@ global using Emik.Results;
 global using Emik.Results.Extensions;
 global using FastGenericNew;
 global using JetBrains.Annotations;
-global using Serilog;
-global using Serilog.Capturing;
-global using Serilog.Configuration;
-global using Serilog.Context;
-global using Serilog.Core;
-global using Serilog.Core.Enrichers;
-global using Serilog.Core.Filters;
-global using Serilog.Core.Pipeline;
-global using Serilog.Core.Sinks;
-global using Serilog.Data;
-global using Serilog.Debugging;
-global using Serilog.Events;
-global using Serilog.Filters;
-global using Serilog.Formatting;
-global using Serilog.Formatting.Compact;
-global using Serilog.Formatting.Display;
-global using Serilog.Formatting.Json;
-global using Serilog.Parsing;
-global using Serilog.Policies;
-global using Serilog.Rendering;
-global using Serilog.Settings;
-global using Serilog.Settings.KeyValuePairs;
-global using Serilog.Sinks;
-global using Serilog.Sinks.File;
-global using Serilog.Sinks.SystemConsole;
-global using Serilog.Sinks.SystemConsole.Formatting;
-global using Serilog.Sinks.SystemConsole.Output;
-global using Serilog.Sinks.SystemConsole.Platform;
-global using Serilog.Sinks.SystemConsole.Rendering;
-global using Serilog.Sinks.SystemConsole.Themes;
 global using TextCopy;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
@@ -228,12 +197,8 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
-using static JetBrains.Annotations.CollectionAccessType;
-using Enum = System.Enum;
-using static System.Linq.Expressions.Expression;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
-using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static System.Linq.Expressions.Expression;
 using static System.Enum;
@@ -241,10 +206,8 @@ using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
 using static JetBrains.Annotations.CollectionAccessType;
-using static System.Linq.Expressions.Expression;
 using static JetBrains.Annotations.CollectionAccessType;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
-using static JetBrains.Annotations.CollectionAccessType;
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides extension methods to convert representations of text into destination types.</summary>
@@ -1352,17 +1315,25 @@ public
 // ReSharper disable once CheckNamespace
 #pragma warning disable IDE0180
 /// <summary>Extension methods for randomized getters.</summary>
+    static readonly Func<int, int, int> s_rng =
+#if KTANE
+        UnityEngine.Random.Range;
+#elif NET6_0_OR_GREATER
+        Random.Shared.Next;
+#else
+        new Random().Next;
+#endif
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
+    /// <param name="selector">The indices to swap with.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     public static IList<T> Shuffle<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
     )
     {
-        selector ??= Rand();
+        selector ??= s_rng;
         var list = iterable.ToIList();
         for (var j = list.Count; j >= 1; j--)
         {
@@ -1378,7 +1349,7 @@ public
     /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
     public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
     {
-        selector ??= Rand();
+        selector ??= s_rng;
         for (var j = iterable.Length; j >= 1; j--)
         {
             var item = selector(0, j);
@@ -1393,7 +1364,7 @@ public
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
+    /// <param name="selector">The indices to swap with.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     [MustUseReturnValue]
     public static T PickRandom<T>(
@@ -1411,7 +1382,7 @@ public
             return list[selector(0, list.Count)];
 #endif
         }
-        selector ??= Rand();
+        selector ??= s_rng;
         return iterable switch
         {
             IList<T> list => list[selector(0, list.Count)],
@@ -1431,18 +1402,9 @@ public
         Func<int, int, int>? selector = null
     )
     {
-        selector ??= Rand();
+        selector ??= s_rng;
         return iterable[selector(0, iterable.Length)];
     }
-    [Pure]
-    static Func<int, int, int> Rand() =>
-#if KTANE
-        UnityEngine.Random.Range;
-#elif NET6_0_OR_GREATER
-        Random.Shared.Next;
-#else
-        new Random().Next;
-#endif
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
@@ -2572,123 +2534,6 @@ public
             }
         }
         BuildFrom(symbol, builder);
-    }
-#endif
-// SPDX-License-Identifier: MPL-2.0
-#if XNA
-// ReSharper disable BitwiseOperatorOnEnumWithoutFlags InconsistentNaming NullableWarningSuppressionIsUsed
-// ReSharper disable once CheckNamespace
-/// <summary>Provides thread-safe access to keyboard input.</summary>
-#pragma warning disable CA1810
-    static ConcurrentKeyboard()
-#pragma warning restore CA1810
-    {
-        Trace.Assert(Unsafe.SizeOf<Keys>() is sizeof(int), $"sizeof({nameof(Keys)}) is 4");
-        Trace.Assert(Unsafe.SizeOf<KeyMods>() is sizeof(ushort), $"sizeof({nameof(KeyMods)}) is 2");
-        Trace.Assert(Unsafe.SizeOf<KeyboardState>() >= sizeof(uint) * 8 + sizeof(byte), "Memory layout is known.");
-        Trace.Assert(TryGetType(out var type), $"{nameof(type)} is not null");
-        Trace.Assert(TryGetField(type, out var delegateField), $"{nameof(delegateField)} is not null");
-        Trace.Assert(TryGetValue(delegateField, out Delegate? del), $"{nameof(del)} is not null");
-        s_modState = CompileModState(del);
-        Trace.Assert(TryGetField(out var keyField), $"{nameof(keyField)} is not null");
-        Trace.Assert(TryGetValue(keyField, out List<Keys>? keys), $"{nameof(keys)} is not null");
-        s_keys = keys;
-        Trace.Assert(TryFindInvalidState(out var invalid), $"{nameof(ToState)} breaks on {invalid}");
-    }
-    static readonly Func<KeyMods> s_modState;
-    static readonly List<Keys> s_keys;
-    /// <summary>Thread-safe version of <see cref="Keyboard.GetState()"/>.</summary>
-    /// <returns>The current <see cref="KeyboardState"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState GetState() => s_keys.AsSpan().ToState(GetModState());
-    /// <summary>
-    /// Converts the <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> into the summed <see cref="KeyboardState"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// This operation treats the provided <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> as a set for computation,
-    /// meaning that repeated <see cref="Keys"/> of the same value have the same effect as if it appeared once.
-    /// </para></remarks>
-    /// <param name="keys">The <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> to process.</param>
-    /// <param name="mods">The <see cref="KeyMods"/> for modifiers.</param>
-    /// <returns>
-    /// The <see cref="KeyboardState"/> that comes from both parameters
-    /// <paramref name="keys"/> and <paramref name="mods"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState ToState(this scoped in ReadOnlySpan<Keys> keys, KeyMods mods = KeyMods.None)
-    {
-        var bits = (ushort)mods;
-        KeyboardState output = default;
-        var reader = MemoryMarshal.Cast<Keys, int>(keys);
-        ref var start = ref MemoryMarshal.GetReference(reader);
-        ref var end = ref Unsafe.Add(ref start, reader.Length);
-        ref var writer = ref Unsafe.As<KeyboardState, uint>(ref output);
-        while (Unsafe.IsAddressLessThan(ref start, ref end))
-            Unsafe.Add(ref writer, start >> 5 & 7) |= 1u << (start & 31);
-        Unsafe.As<uint, byte>(ref Unsafe.Add(ref writer, 8)) = (byte)((bits & 4096) >> 11 | (bits & 8192) >> 13);
-        return output;
-    }
-    /// <summary>
-    /// Converts the <see cref="Span{T}"/> of <see cref="Keys"/> into the summed <see cref="KeyboardState"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// This operation treats the provided <see cref="Span{T}"/> of <see cref="Keys"/> as a set for computation,
-    /// meaning that repeated <see cref="Keys"/> of the same value have the same effect as if it appeared once.
-    /// </para></remarks>
-    /// <param name="keys">The <see cref="ReadOnlySpan{T}"/> of <see cref="Keys"/> to process.</param>
-    /// <param name="mods">The <see cref="KeyMods"/> for modifiers.</param>
-    /// <returns>
-    /// The <see cref="KeyboardState"/> that comes from both parameters
-    /// <paramref name="keys"/> and <paramref name="mods"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyboardState ToState(this scoped in Span<Keys> keys, KeyMods mods = KeyMods.None) =>
-        keys.ReadOnly().ToState(mods);
-    /// <summary>Gets the current set of key modifiers that are active.</summary>
-    /// <returns>The <see cref="KeyMods"/> representing the current modifiers active.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static KeyMods GetModState() => s_modState();
-    [Pure]
-    static bool TryFindInvalidState([NotNullWhen(false)] out Enum? invalid)
-    {
-        static bool IsModifierCausingInvalidState(KeyMods mod) =>
-            ((ReadOnlySpan<Keys>)[]).ToState(mod) is { CapsLock: var capsLock, NumLock: var numLock } state &&
-            capsLock != mod is KeyMods.CapsLock ||
-            numLock != mod is KeyMods.NumLock ||
-            state.GetPressedKeyCount() is not 0;
-        static bool IsKeyCausingInvalidState(Keys key) =>
-            Span.In(key).ToState() is not { CapsLock: false, NumLock: false } state ||
-            state.IsKeyUp(key) ||
-            state.GetPressedKeyCount() is not 1;
-        var keyModTests = EnumMath.GetValues<KeyMods>().Where(IsModifierCausingInvalidState).Cast<Enum>();
-        var keyTests = EnumMath.GetValues<Keys>().Where(IsKeyCausingInvalidState).Cast<Enum>();
-        invalid = keyModTests.Concat(keyTests).Filter().FirstOrDefault();
-        return invalid is null;
-    }
-    [MustUseReturnValue]
-    static bool TryGetField([NotNullWhen(true)] out FieldInfo? field) =>
-        (field = typeof(Keyboard).GetField("_keys", BindingFlags.NonPublic | BindingFlags.Static)) is not null;
-    [MustUseReturnValue]
-    static bool TryGetField(in Type type, [NotNullWhen(true)] out FieldInfo? field) =>
-        (field = type.GetField(nameof(GetModState), BindingFlags.Public | BindingFlags.Static)) is not null;
-    [MustUseReturnValue]
-    static bool TryGetType([NotNullWhen(true)] out Type? type) =>
-#pragma warning disable REFL037
-        (type = typeof(Keyboard).Assembly.GetType("Sdl+Keyboard")) is not null;
-#pragma warning restore REFL037
-    [MustUseReturnValue]
-    static bool TryGetValue(in FieldInfo delegateField, [NotNullWhen(true)] out Delegate? del) =>
-        (del = delegateField.GetValue(null) as Delegate) is not null;
-    [MustUseReturnValue]
-    static bool TryGetValue(in FieldInfo field, [NotNullWhen(true)] out List<Keys>? keys) =>
-        (keys = field.GetValue(null) as List<Keys>) is not null;
-    [Pure]
-    static Func<KeyMods> CompileModState(in Delegate del)
-    {
-        var constant = Expression.Constant(del);
-        var invoke = Expression.Invoke(constant);
-        var mods = Expression.Convert(invoke, typeof(KeyMods));
-        return Expression.Lambda<Func<KeyMods>>(mods).Compile();
     }
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -7902,75 +7747,6 @@ readonly
     }
 }
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace NullnessAnnotationConflictWithJetBrainsAnnotations
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="ClampedList{T}"/>.</summary>
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="ClampedList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="ClampedList{T}"/>.</param>
-    /// <returns>A <see cref="ClampedList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static ClampedList<T>? ToClamped<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as ClampedList<T> ?? new(iterable.ToIList());
-#endif
-/// <summary>
-/// Encapsulates an <see cref="IList{T}"/> where indices are always clamped and therefore never be out of range.
-/// </summary>
-/// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-public sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
-{
-    /// <inheritdoc cref="IList{T}.this"/>
-    [Pure]
-    public T this[int index]
-    {
-        [CollectionAccess(Read)] get => list[Clamp(index)];
-        [CollectionAccess(ModifyExistingContent)] set => list[Clamp(index)] = value;
-    }
-    /// <inheritdoc/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => list.Count;
-    /// <inheritdoc/>
-    [CollectionAccess(UpdatedContent)]
-    public void Add(T item) => list.Add(item);
-    /// <inheritdoc/>
-    [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => list.Clear();
-    /// <inheritdoc/>
-    [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
-    /// <inheritdoc/>
-    [CollectionAccess(UpdatedContent)]
-    public void Insert(int index, T item) => list.Insert(Clamp(index), item);
-    /// <inheritdoc/>
-    [CollectionAccess(ModifyExistingContent)]
-    public void RemoveAt(int index) => list.RemoveAt(Clamp(index));
-    /// <inheritdoc cref="ICollection{T}.Contains"/>
-    [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => list.Contains(item);
-    /// <inheritdoc/>
-    [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T item) => list.Remove(item);
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => list.IndexOf(item);
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
-    public override string ToString() => list.ToString().OrEmpty();
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    int Clamp(int index) => Count is var i && i is not 0 ? index.Clamp(0, i) : throw CannotBeEmpty;
-}
-// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides methods for unfolding.</summary>
     /// <summary>Applies a selector and collects the returned items recursively until the value becomes null.</summary>
@@ -8311,93 +8087,12 @@ public sealed partial class ClampedList<T>([ProvidesContext] IList<T> list) : IL
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 // ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantNullableFlowAttribute RedundantUsingDirective UseSymbolAlias
-#if WAWA
-namespace Wawa.Modules;
-#else
-#endif
-#if !(NET20 || NET30)
-#endif
 /// <summary>Provides stringification methods.</summary>
 // ReSharper disable once BadPreprocessorIndent
-#if WAWA
-public
-#endif
-    const int MaxIteration = 32, MaxRecursion = 3;
-    unsafe delegate nuint VoidPointer(void* v);
-#if !WAWA
     const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
-#endif
-    const string
-        Apology = "I am so sorry that you have to deal with double pointers, but this cannot be supported.",
-        BitFlagSeparator = " | ",
-        Else = "th",
-        EqualityContract = nameof(EqualityContract),
-        False = "false",
-        FirstOrd = "st",
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        HexCharactersTable = "0123456789ABCDEF",
-#endif
-        Invalid = $"!<{nameof(InvalidOperationException)}>",
-        KeyValueSeparator = ": ",
-        Null = "null",
-        SecondOrd = "nd",
-        Separator = ", ",
-        Slashes = @"/\",
-        ThirdOrd = "rd",
-        True = "true",
-        Unsupported = $"!<{nameof(NotSupportedException)}>",
-        UnsupportedPlatform = $"!<{nameof(PlatformNotSupportedException)}>";
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static readonly Dictionary<Type, bool>
-#if !WAWA
-        s_fullyUnmanaged = [],
-#endif
-        s_hasMethods = [];
-    static readonly Dictionary<Type, Delegate> s_stringifiers = [];
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static readonly Dictionary<Type, string> s_unfoldedNames = new()
-    {
-        [typeof(bool)] = "bool",
-        [typeof(byte)] = "byte",
-        [typeof(char)] = "char",
-        [typeof(decimal)] = "decimal",
-        [typeof(double)] = "double",
-        [typeof(float)] = "float",
-        [typeof(int)] = "int",
-        [typeof(long)] = "long",
-        [typeof(nint)] = "nint",
-        [typeof(nuint)] = "nuint",
-        [typeof(object)] = "object",
-        [typeof(sbyte)] = "sbyte",
-        [typeof(short)] = "short",
-        [typeof(string)] = "string",
-        [typeof(uint)] = "uint",
-        [typeof(ulong)] = "ulong",
-        [typeof(ushort)] = "ushort",
-        [typeof(void)] = "void",
-    };
-#endif
-    static readonly ConstantExpression
-        s_exEmpty = Constant(""),
-#if !NETFRAMEWORK || NET40_OR_GREATER
-        s_exInvalid = Constant(Invalid),
-        s_exUnsupported = Constant(Unsupported),
-        s_exUnsupportedPlatform = Constant(UnsupportedPlatform),
-#endif
-        s_exSeparator = Constant(Separator),
-        s_exTrue = Constant(true);
-    static readonly unsafe MethodInfo s_readVoidPointer = ((VoidPointer)ReadVoidPointer).Method;
-    static readonly MethodInfo
-        s_boolStringify = ((Func<bool, int, bool, string>)Stringify).Method,
-        s_combine = ((Func<string, string, string>)string.Concat).Method,
-        s_readPointer = s_boolStringify.DeclaringType!
-           .GetMethod(nameof(ReadPointer), BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)!
-           .GetGenericMethodDefinition(),
-        s_stringify = s_boolStringify.GetGenericMethodDefinition();
-#endif
-#if !WAWA
+    static readonly Dictionary<Type, bool> s_fullyUnmanaged = [];
 #if NET8_0_OR_GREATER
-    static readonly OnceMemoryManager<SearchValues<char>> s_slashes = new(SearchValues.Create(Slashes));
+    static readonly OnceMemoryManager<SearchValues<char>> s_slashes = new(SearchValues.Create(@"/\"));
 #endif
 #pragma warning disable MA0110, SYSLIB1045
     static readonly Regex
@@ -8409,24 +8104,6 @@ public
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
 #pragma warning restore MA0110, SYSLIB1045
 #endif
-    /// <summary>Gets the field count of the version.</summary>
-    /// <param name="version">The <see cref="Version"/> to use.</param>
-    /// <returns>The field count of the parameter <paramref name="version"/>.</returns>
-    [Pure]
-    public static int FieldCount(
-#if !WAWA
-        this
-#endif
-            Version? version
-    ) =>
-        version switch
-        {
-            (_, <= 0, <= 0, <= 0) => 1,
-            (_, _, <= 0, <= 0) => 2,
-            (_, _, _, <= 0) => 3,
-            _ => 4,
-        };
-#if !WAWA
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -8460,11 +8137,7 @@ public
             return accumulator;
         }
 #endif
-        return expression?.Collapse()
-           .SplitSpanLines()
-           .Aggregate(prefix.ToBuilder(), Accumulator)
-           .Trim()
-           .ToString();
+        return expression?.Collapse().SplitSpanLines().Aggregate(prefix.ToBuilder(), Accumulator).Trim().ToString();
 #else
         return expression
           ?.Collapse()
@@ -8527,34 +8200,6 @@ public
             ? ""
             : Path.GetFileName(path).Trim() ?? "";
 #endif
-    /// <summary>Extracts the file name from the path.</summary>
-    /// <remarks><para>
-    /// The return type depends on what framework is used. Ensure that the caller doesn't care about the return type.
-    /// </para></remarks>
-    /// <param name="path">The path to extract the file name from.</param>
-    /// <returns>The file name.</returns>
-    [Pure]
-#if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
-    [return: NotNullIfNotNull(nameof(path))]
-#endif
-    public static
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        ReadOnlyMemory<char>
-#else
-        string
-#endif
-        UntrimmedFileName(this string? path) =>
-        path is null
-#if NET8_0_OR_GREATER
-            ? default
-            : path.SplitOn(s_slashes).Last;
-#elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            ? default
-            : path.SplitOnAny(Slashes.AsMemory()).Last;
-#else
-            ? ""
-            : Path.GetFileName(path) ?? "";
-#endif
     /// <summary>Creates the prettified form of the string.</summary>
     /// <param name="s">The string to prettify.</param>
     /// <returns>The prettified string.</returns>
@@ -8597,7 +8242,6 @@ public
             };
         return $"{sb}";
     }
-#endif
 #if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
     /// <summary>Concatenates an enumeration of <see cref="char"/> into a <see cref="string"/>.</summary>
     /// <remarks><para>
@@ -8619,14 +8263,7 @@ public
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
-    public static string Conjoin<T>(
-        [InstantHandle]
-#if !WAWA
-        this
-#endif
-            IEnumerable<T> values,
-        char separator
-    ) =>
+    public static string Conjoin<T>([InstantHandle] this IEnumerable<T> values, char separator) =>
         $"{new StringBuilder().AppendMany(values, separator)}";
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
@@ -8634,36 +8271,19 @@ public
     /// <param name="separator">The separator between each item.</param>
     /// <returns>One long <see cref="string"/>.</returns>
     [Pure]
-    public static string Conjoin<T>(
-        [InstantHandle]
-#if !WAWA
-        this
-#endif
-            IEnumerable<T> values,
-        string separator = Separator
-    ) =>
+    public static string Conjoin<T>([InstantHandle] this IEnumerable<T> values, string separator = ", ") =>
         $"{new StringBuilder().AppendMany(values, separator)}";
     /// <summary>Converts the <see cref="Stopwatch"/> to its concise <see cref="string"/> representation.</summary>
     /// <param name="stopwatch">The <see cref="Stopwatch"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="stopwatch"/>.</returns>
     [Pure]
-    public static string ToConciseString(
-#if !WAWA
-        this
-#endif
-            Stopwatch? stopwatch
-    ) =>
+    public static string ToConciseString(this Stopwatch? stopwatch) =>
         stopwatch is null ? "0" : ToConciseString(stopwatch.Elapsed);
     /// <summary>Converts the <see cref="TimeSpan"/> to its concise <see cref="string"/> representation.</summary>
     /// <param name="time">The <see cref="TimeSpan"/> to convert.</param>
     /// <returns>The <see cref="string"/> representation of <paramref name="time"/>.</returns>
     [Pure]
-    public static string ToConciseString(
-#if !WAWA
-        this
-#endif
-        TimeSpan time
-    )
+    public static string ToConciseString(this TimeSpan time)
     {
         var sign = time.Ticks < 0 ? "-" : "";
         var ticks = Math.Abs(time.Ticks);
@@ -8684,179 +8304,24 @@ public
             _ => $"{sign}{ticks / 10.0}µs",
         };
     }
-    /// <summary>Converts a <see cref="Pointer"/> to a <see cref="string"/>.</summary>
-    /// <param name="value">The <see cref="Pointer"/> to convert.</param>
-    /// <returns>The <see cref="string"/> representation of <paramref name="value"/>.</returns>
-    [CLSCompliant(false), Pure]
-    public static unsafe string ToHexString(
-#if !WAWA
-        this
-#endif
-            Pointer? value
-    ) =>
-        (value is null ? 0 : (nuint)Pointer.Unbox(value)).ToHexString();
     /// <summary>Gets the short display form of the version.</summary>
     /// <param name="version">The <see cref="Version"/> to convert.</param>
     /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
     [Pure]
-    public static string ToShortString(
-#if !WAWA
-        this
-#endif
-            Version? version
-    )
+    public static string ToShortString(this Version? version)
     {
         if (version is not var (major, minor, build, revision) ||
             major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
             return "v0";
-        var length = Length(major, revision, minor, build);
+        var length = (major.DigitCount() + 1 is var l && revision > 0 ?
+                minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
+                build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
+                    minor > 0 ? minor.DigitCount() + 1 : 0) +
+            l;
         Span<char> span = stackalloc char[length];
         Format(span, version);
         return span.ToString();
     }
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-#if !WAWA
-    /// <summary>Gets the full type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the full name of.</param>
-    /// <returns>The full name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static string UnfoldedFullName(this Type? type) =>
-        type is null ? Null :
-        s_unfoldedNames.TryGetValue(type, out var val) ? val :
-        s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.FullName)}";
-#endif
-    /// <summary>Gets the type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the name of.</param>
-    /// <returns>The name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static string UnfoldedName(
-#if !WAWA
-        this
-#endif
-            Type? type
-    ) =>
-        type is null ? Null :
-        s_unfoldedNames.TryGetValue(type, out var val) ? val :
-        s_unfoldedNames[type] = $"{type.UnfoldedName(new(), x => x.Name)}";
-#endif
-    /// <summary>Converts a number to an ordinal.</summary>
-    /// <param name="i">The number to convert.</param>
-    /// <param name="indexByZero">Determines whether to index from zero or one.</param>
-    /// <returns>The parameter <paramref name="i"/> as an ordinal.</returns>
-    [Pure]
-    public static string Nth(
-#if !WAWA
-        this
-#endif
-            int i,
-        bool indexByZero = false
-    ) =>
-        indexByZero ? (i + 1).ToOrdinal() : i.ToOrdinal();
-    /// <inheritdoc cref="string.Split(string[], StringSplitOptions)"/>
-    public static string[] Chop(
-#if !WAWA
-        this
-#endif
-            string source,
-        string separator
-    ) =>
-        source.Split(separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-    /// <summary>
-    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
-    /// in which case each item within is printed out separately.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-    public static string Stringify<T>(
-#if !WAWA
-        this
-#endif
-            T? source
-    ) =>
-        Stringify(source, MaxRecursion);
-    /// <summary>
-    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
-    /// in which case each item within is printed out separately.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <param name="depth">Determines how deep the recursive function should go.</param>
-    /// <param name="useQuotes">
-    /// Determines whether <see cref="string"/> and <see cref="char"/> have a " and ' surrounding them.
-    /// </param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-    public static string Stringify<T>(
-#if !WAWA
-        this
-#endif
-            T? source,
-        int depth,
-        bool useQuotes = false
-    ) =>
-        source switch
-        {
-            null => Null,
-            true => True,
-            false => False,
-            nint x => $"{x}",
-            nuint x => $"{x}",
-            char x => useQuotes ? Escape(x) : $"{x}",
-            string x => useQuotes ? @$"""{x}""" : x,
-            Enum x when x.AsInt() is var i && x.GetType().IsDefined(typeof(FlagsAttribute), false) is var b =>
-                $"{x.GetType().Name}({(b ? $"0x{i:x}" : i)}) = {(b
-                    ? Conjoin(i.AsBits().Select(x.GetType().Into), BitFlagSeparator)
-                    : x)}",
-            TimeSpan x => ToConciseString(x),
-            Type x => UnfoldedName(x),
-            Pointer x => ToHexString(x),
-            Version x => ToShortString(x),
-#if KTANE
-            Object x => x.name,
-#endif
-            IConvertible x => x.ToString(CultureInfo.InvariantCulture),
-            ICustomFormatter x => x.Format("", x, CultureInfo.InvariantCulture),
-            _ when depth <= 0 =>
-#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
-                source.ToString(),
-#else
-                source.StringifyObject(depth - 1),
-#endif
-#if NET40_OR_GREATER || NETSTANDARD || NETCOREAPP
-            IEnumerable<char> x => useQuotes ? @$"""{x.Concat()}""" : x.Concat(),
-#else
-            IEnumerable<char> x => useQuotes ? @$"""{Conjoin(x, "")}""" : Conjoin(x, ""),
-#endif
-            IDictionary { Count: 0 } => "{ }",
-            IDictionary x => $"{{ {x.DictionaryStringifier(depth - 1, useQuotes)} }}",
-            ICollection { Count: var count } x => Count(x, depth - 1, useQuotes, count),
-            IEnumerable x => $"[{EnumeratorStringifier(x.GetEnumerator(), depth - 1, useQuotes)}]",
-#if NET471_OR_GREATER || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            ITuple x => $"({EnumeratorStringifier(x.AsEnumerable().GetEnumerator(), depth - 1, useQuotes)})",
-#endif
-#if !NETFRAMEWORK || NET40_OR_GREATER
-            IStructuralComparable x when new FakeComparer(depth - 1) is var c && x.CompareTo(x, c) is var _ => $"{c}",
-            IStructuralEquatable x when new FakeComparer(depth - 1) is var c && x.GetHashCode(c) is var _ => $"{c}",
-#endif
-#if ROSLYN
-            ISymbol x => x.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-#endif
-#if NET20 || NET30 || !(!NETSTANDARD || NETSTANDARD2_0_OR_GREATER)
-            _ => source.ToString(),
-#else
-            _ => source.StringifyObject(depth - 1),
-#endif
-        };
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <remarks><para>The implementation is based on
@@ -8895,28 +8360,6 @@ public
     }
 #pragma warning restore 8500
 #endif
-    /// <summary>Forces the use of reflective stringification.</summary>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <param name="depth">The amount of nesting.</param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-#if !WAWA
-    public
-#endif
-        static string UseStringifier<T>(this T source, int depth = MaxRecursion)
-    {
-        if (!typeof(T).IsValueType && source is null)
-            return Null;
-        if (!s_stringifiers.ContainsKey(typeof(T)))
-            s_stringifiers[typeof(T)] = GenerateStringifier<T>();
-        var name = source?.GetType() is { } type && type != typeof(T)
-            ? $"{UnfoldedName(type)} as {UnfoldedName(typeof(T))}"
-            : UnfoldedName(typeof(T));
-        return ((Func<T, int, string>)s_stringifiers[typeof(T)])(source, depth) is not "" and var str
-            ? $"{name} {{ {str} }}"
-            : name;
-    }
 #if NET6_0_OR_GREATER
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
@@ -8955,7 +8398,7 @@ public
     public static DefaultInterpolatedStringHandler AppendMany<T>(
         this ref DefaultInterpolatedStringHandler dish,
         [InstantHandle] IEnumerable<T> values,
-        string separator = Separator
+        string separator = ", "
     )
     {
         if (separator is "")
@@ -8980,21 +8423,17 @@ public
         }
         return dish;
     }
-#endif
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
     /// <param name="values">The values to join.</param>
     /// <param name="separator">The separator between each item.</param>
     /// <returns>The parameter <paramref name="builder"/>.</returns>
-#if !WAWA
-    public
-#endif
-        static StringBuilder AppendMany<T>(
-            this StringBuilder builder,
-            [InstantHandle] IEnumerable<T> values,
-            char separator
-        )
+    public static StringBuilder AppendMany<T>(
+        this StringBuilder builder,
+        [InstantHandle] IEnumerable<T> values,
+        char separator
+    )
     {
         using var enumerator = values.GetEnumerator();
         if (enumerator.MoveNext())
@@ -9011,14 +8450,11 @@ public
     /// <param name="values">The values to join.</param>
     /// <param name="separator">The separator between each item.</param>
     /// <returns>The parameter <paramref name="builder"/>.</returns>
-#if !WAWA
-    public
-#endif
-        static StringBuilder AppendMany<T>(
-            this StringBuilder builder,
-            [InstantHandle] IEnumerable<T> values,
-            string separator = Separator
-        )
+    public static StringBuilder AppendMany<T>(
+        this StringBuilder builder,
+        [InstantHandle] IEnumerable<T> values,
+        string separator = ", "
+    )
     {
         if (separator is "")
             switch (values)
@@ -9035,7 +8471,6 @@ public
             builder.Append(separator).Append(enumerator.Current);
         return builder;
     }
-#if !WAWA
     /// <summary>Gets the type name, with its generics extended.</summary>
     /// <param name="type">The <see cref="Type"/> to get the name of.</param>
     /// <returns>The name of the parameter <paramref name="type"/>.</returns>
@@ -9055,27 +8490,16 @@ public
                     ),
                     x => IsUnmanaged(x.FieldType)
                 ));
-#endif
-    static void AppendKeyValuePair(this StringBuilder builder, string key, string value) =>
-        builder.Append(key).Append(KeyValueSeparator).Append(value);
     static void Push(char c, scoped ref Span<char> span)
     {
         span[0] = c;
-#if WAWA
-        span = span.Slice(1);
-#else
         span = span.UnsafelySkip(1);
-#endif
     }
     static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
     {
         if (!next.TryFormat(span, out var slice))
             System.Diagnostics.Debug.Fail("TryFormat");
-#if WAWA
-        span = span.Slice(slice);
-#else
         span = span.UnsafelySkip(slice);
-#endif
     }
     static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
     {
@@ -9108,104 +8532,6 @@ public
         }
         System.Diagnostics.Debug.Assert(span.IsEmpty, "span is drained");
     }
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    [MustUseReturnValue]
-    static bool CanUse(PropertyInfo p) =>
-        p is { CanRead: true, PropertyType.Name: not "SyntaxTree" } &&
-        p.GetIndexParameters().Length is 0 &&
-        Array.TrueForAll(p.GetCustomAttributes(true), x => x?.GetType() != typeof(ObsoleteAttribute));
-#endif
-    [Pure]
-    static bool IsEqualityContract(PropertyInfo x) =>
-        x is { CanRead: true, CanWrite: false, Name: EqualityContract } &&
-        x.PropertyType == typeof(Type) &&
-        x.GetIndexParameters().Length is 0;
-    [Pure]
-    static bool IsRecord<T>() =>
-        Array.Exists(
-            typeof(T).GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.NonPublic),
-            IsEqualityContract
-        );
-    [Pure]
-    static int Length(int major, int revision, int minor, int build) =>
-        (major.DigitCount() + 1 is var length && revision > 0 ?
-            minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
-            build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
-                minor > 0 ? minor.DigitCount() + 1 : 0) +
-        length;
-    [Inline, Pure]
-    static int Mod(this int i) => Math.Abs(i) / 10 % 10 is 1 ? 0 : Math.Abs(i) % 10;
-    [MustUseReturnValue]
-    static string Count(IEnumerable e, int depth, bool useQuotes, int count) =>
-        count is 0
-            ? "[Count: 0]"
-            : $"[Count: {count}; {EnumeratorStringifier(e.GetEnumerator(), depth, useQuotes, count)}]";
-    [Pure]
-    static string Escape(char c) =>
-        c switch
-        {
-            '\'' => "'\\''",
-            '\"' => "'\\\"'",
-            '\\' => @"'\\'",
-            '\0' => "'\\0'",
-            '\a' => "'\\a'",
-            '\b' => "'\\b'",
-            '\f' => "'\\f'",
-            '\n' => "'\\n'",
-            '\r' => "'\\r'",
-            '\t' => "'\\t'",
-            '\v' => "'\\v'",
-            _ => $"{c}",
-        };
-    [Pure]
-    static string Etcetera(this int? i) => i is null ? "…" : $"…{i} more";
-    [Pure]
-    static string ToOrdinal(this int i) =>
-        $"{i}{Mod(i) switch
-        {
-            1 => FirstOrd,
-            2 => SecondOrd,
-            3 => ThirdOrd,
-            _ => Else,
-        }}";
-    [Pure]
-    static object Into(this Type type, int i) =>
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-        Enum.ToObject(type, i);
-#else
-        Enum.Parse(type, $"{i}");
-#endif
-    [MustUseReturnValue]
-    static StringBuilder EnumeratorStringifier(
-        [HandlesResourceDisposal] this IEnumerator iterator,
-        [NonNegativeValue] int depth,
-        bool useQuotes,
-        [NonNegativeValue] int? count = null
-    )
-    {
-        try
-        {
-            StringBuilder builder = new();
-            if (iterator.MoveNext())
-                builder.Append(Stringify(iterator.Current, depth, useQuotes));
-            var i = 0;
-            while (iterator.MoveNext())
-            {
-                if (checked(++i) >= MaxIteration)
-                {
-                    builder.Append(Separator).Append(Etcetera(count - i));
-                    break;
-                }
-                builder.Append(Separator).Append(Stringify(iterator.Current, depth, useQuotes));
-            }
-            return builder;
-        }
-        finally
-        {
-            (iterator as IDisposable)?.Dispose();
-        }
-    }
-#if !WAWA
     [MustUseReturnValue]
     static StringBuilder Indent(this StringBuilder sb, string indent, int nest)
     {
@@ -9214,244 +8540,6 @@ public
             sb.Append(indent);
         return sb;
     }
-#endif
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    [MustUseReturnValue]
-    static string StringifyObject<T>(this T source, int depth)
-    {
-        if (source is null)
-            return Null;
-        if (!s_hasMethods.ContainsKey(typeof(T)))
-            s_hasMethods[typeof(T)] =
-                source.GetType().GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType != typeof(object) &&
-                !IsRecord<T>();
-        if (depth < 0)
-            return s_hasMethods[typeof(T)] ? source.ToString() ?? Null : UnfoldedName(source.GetType());
-        if (source.GetType() is var t && t != typeof(T))
-            return (string)s_stringify.MakeGenericMethod(t).Invoke(null, [source, depth, false])!;
-        return UseStringifier(source, depth);
-    }
-    [MustUseReturnValue]
-    static Func<T, int, string> GenerateStringifier<T>()
-    {
-        static MethodCallExpression Combine(Expression prev, Expression curr)
-        {
-            var call = Call(s_combine, prev, s_exSeparator);
-            return Call(s_combine, call, curr);
-        }
-        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy;
-        ParameterExpression
-            exInstance = Parameter(typeof(T), nameof(T)),
-            exDepth = Parameter(typeof(int), nameof(Int32));
-        var deepProperties = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetProperties()) : [];
-        var deepFields = typeof(T).IsInterface ? typeof(T).GetInterfaces().SelectMany(x => x.GetFields()) : [];
-        var properties = typeof(T)
-           .GetProperties(Flags)
-           .Concat(deepProperties)
-           .Where(CanUse)
-           .OrderBy(x => x.Name, StringComparer.Ordinal)
-#if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(p => GetMethodCaller<T, PropertyInfo>(p, exInstance, exDepth, static x => x.PropertyType));
-#else
-           .Select(p => GetMethodCaller(p, exInstance, exDepth, static x => x.PropertyType));
-#endif
-        var fields = typeof(T)
-           .GetFields(Flags)
-           .Concat(deepFields)
-           .OrderBy(x => x.Name, StringComparer.Ordinal)
-#if NETFRAMEWORK && !NET40_OR_GREATER
-           .Select(f => GetMethodCaller<T, FieldInfo>(f, exInstance, exDepth, static x => x.FieldType));
-#else
-           .Select(f => GetMethodCaller(f, exInstance, exDepth, static x => x.FieldType));
-#endif
-        var all = fields
-           .Concat(properties)
-#if WAWA
-           .ToList();
-#else
-           .ToICollection();
-#endif
-        var exResult = all.Count is 0 ? s_exEmpty : all.Aggregate(Combine);
-        return Lambda<Func<T, int, string>>(exResult, exInstance, exDepth).Compile();
-    }
-    [MustUseReturnValue]
-#pragma warning disable CA1859
-#if NETFRAMEWORK && !NET40_OR_GREATER
-    static Expression GetMethodCaller<T, TMember>(
-#else
-    static Expression GetMethodCaller<TMember>(
-#endif
-#pragma warning restore CA1859
-        TMember info,
-        ParameterExpression exInstance,
-        ParameterExpression exDepth,
-        [InstantHandle, RequireStaticDelegate(IsError = true)] Func<TMember, Type> selector
-    )
-        where TMember : MemberInfo
-    {
-        var type = selector(info);
-        var exConstant = Constant($"{info.Name}{KeyValueSeparator}");
-        Expression exAcc = MakeMemberAccess(exInstance, info);
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
-        if (type.IsByRef || type.IsByRefLike)
-#else
-        if (type.IsByRef)
-#endif
-            return Call(
-                s_combine,
-                exConstant,
-                type.GetMethod(nameof(ToString), Type.EmptyTypes) is { } method
-                    ? Expression.Call(exAcc, method)
-                    : Expression.Constant(UnfoldedName(exAcc.Type))
-            );
-        while (type.IsPointer && (type = type.GetElementType()!) is var _)
-            exAcc = type.IsPointer
-                ? throw new NotSupportedException(Apology)
-                : Call(type == typeof(void) ? s_readVoidPointer : s_readPointer.MakeGenericMethod(type), exAcc);
-        Expression exCall =
-            Call(s_stringify.MakeGenericMethod(type == typeof(void) ? typeof(nuint) : type), exAcc, exDepth, s_exTrue);
-#if NETFRAMEWORK && !NET40_OR_GREATER
-        var call = Lambda<Func<T, int, string>>(exCall, exInstance, exDepth).Compile();
-        Expression<Func<T, int, string>> wrapped = (t, i) => TryStringify(t, i, call);
-        exCall = Invoke(wrapped, exInstance, exDepth);
-#else
-        CatchBlock
-            invalid = Catch(typeof(InvalidOperationException), s_exInvalid),
-            unsupported = Catch(typeof(NotSupportedException), s_exUnsupported),
-            unsupportedPlatform = Catch(typeof(PlatformNotSupportedException), s_exUnsupportedPlatform);
-        exCall = TryCatch(exCall, unsupportedPlatform, unsupported, invalid);
-#endif
-        return Call(s_combine, exConstant, exCall);
-    }
-#endif
-#if NETFRAMEWORK && !NET40_OR_GREATER
-    static string TryStringify<T>(T instance, int depth, [InstantHandle] Func<T, int, string> stringify)
-    {
-        try
-        {
-            return stringify(instance, depth);
-        }
-        catch (PlatformNotSupportedException)
-        {
-            return UnsupportedPlatform;
-        }
-        catch (NotSupportedException)
-        {
-            return Unsupported;
-        }
-        catch (InvalidOperationException)
-        {
-            return Invalid;
-        }
-    }
-#endif
-    [Pure]
-    static StringBuilder DictionaryStringifier(this IDictionary dictionary, int depth, bool useQuotes)
-    {
-        var iterator = dictionary.GetEnumerator();
-        try
-        {
-            StringBuilder builder = new();
-            if (iterator.MoveNext())
-                builder.AppendKeyValuePair(
-                    Stringify(iterator.Key, depth, useQuotes),
-                    Stringify(iterator.Value, depth, useQuotes)
-                );
-            var i = 0;
-            while (iterator.MoveNext())
-            {
-                if (checked(++i) >= MaxIteration)
-                {
-                    builder.Append(Separator).Append(Etcetera(dictionary.Count - i));
-                    break;
-                }
-                builder
-                   .Append(Separator)
-                   .AppendKeyValuePair(
-                        Stringify(iterator.Key, depth, useQuotes),
-                        Stringify(iterator.Value, depth, useQuotes)
-                    );
-            }
-            return builder;
-        }
-        finally
-        {
-            (iterator as IDisposable)?.Dispose();
-        }
-    }
-#if !NET20 && !NET30 && !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
-    static StringBuilder UnfoldedName(this Type? type, StringBuilder builder, Converter<Type, string?> naming)
-    {
-        StringBuilder Append(Type x)
-        {
-            builder.Append(',').Append(' ');
-            return x.UnfoldedName(builder, naming);
-        }
-        if (type is null)
-            return builder;
-        if (s_unfoldedNames.TryGetValue(type, out var val))
-            return builder.Append(val);
-        if (type.GetElementType() is { } underlying)
-            return UnfoldedElementName(type, builder, naming, underlying);
-        if ((naming(type) ?? "") is var name && !type.IsGenericType)
-            return builder.Append(name);
-        var length = name.IndexOf('`') is var i && i is -1 ? name.Length : i;
-        var types = type.GetGenericArguments();
-        types.FirstOrDefault()?.UnfoldedName(builder.Append(name, 0, length).Append('<'), naming);
-        types.Skip(1).Select(Append).Enumerate();
-        return builder.Append('>');
-    }
-    static StringBuilder UnfoldedElementName(
-        Type type,
-        StringBuilder builder,
-        Converter<Type, string?> naming,
-        Type underlying
-    )
-    {
-        if (type.IsByRef)
-            builder.Append("ref ");
-        builder.Append(UnfoldedName(underlying, new(), naming));
-        if (type.IsArray)
-            builder.Append('[').Append(']');
-        if (type.IsPointer)
-            builder.Append('*');
-        return builder;
-    }
-#endif
-#if WAWA
-    static IEnumerable<int> AsBits(this int i)
-    {
-        for (var j = 1; j is not 0; j <<= 1)
-            if ((i & j) is not 0)
-                yield return j;
-    }
-#endif
-    static unsafe nuint ReadVoidPointer(void* ptr) => (nuint)ptr;
-#pragma warning disable 8500
-    static unsafe T? ReadPointer<T>(T* ptr) => (nuint)ptr >= 1 << 11 ? *ptr : default;
-#pragma warning restore 8500
-#if !NETFRAMEWORK || NET40_OR_GREATER
-    sealed class FakeComparer(int depth) : IComparer, IEqualityComparer
-    {
-        StringBuilder? _builder;
-        /// <inheritdoc />
-        public override string ToString() =>
-            _builder?.Remove(_builder.Length - Separator.Length, Separator.Length).Append(')').ToString() ?? "()";
-        /// <inheritdoc />
-        bool IEqualityComparer.Equals(object? x, object? y) => Append(x, true);
-        /// <inheritdoc />
-        int IComparer.Compare(object? x, object? y) => Append(x, 0);
-        /// <inheritdoc />
-        int IEqualityComparer.GetHashCode(object? obj) => Append(obj, 0);
-        T Append<T>(object? obj, T ret)
-        {
-#pragma warning disable RCS1196
-            (_builder ??= new("(")).Append(Stringify(obj, depth)).Append(Separator);
-#pragma warning restore RCS1196
-            return ret;
-        }
-    }
-#endif
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
@@ -10276,9 +9364,7 @@ public ref
                .Any();
         [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Throw(FieldInfo _) =>
-            throw new TypeLoadException(
-                $"\"{typeof(TRef).UnfoldedName()}\" contains fields other than {typeof(T).UnfoldedName()}."
-            );
+            throw new TypeLoadException($"\"{typeof(TRef).Name}\" contains fields other than {typeof(T).Name}.");
     }
 }
 #endif
@@ -10418,7 +9504,7 @@ public enum KeyMods : ushort
     /// <returns>This method does not return.</returns>
     [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Fail<T>() =>
-        throw new MissingMethodException(typeof(T).UnfoldedFullName(), "op_Addition/op_Division/op_Increment");
+        throw new MissingMethodException(typeof(T).FullName, "op_Addition/op_Division/op_Increment");
     /// <summary>Caches operators.</summary>
     /// <typeparam name="T">The containing member of operators.</typeparam>
     public sealed partial class DirectOperators<T>
@@ -10520,1508 +9606,6 @@ public enum KeyMods : ushort
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides methods to use callbacks within a statement.</summary>
-#if FORCE_SERILOG || !RELEASE
-#if ROSLYN
-    /// <summary>The Serilog sink that creates <see cref="Diagnostic"/> instances.</summary>
-    public sealed partial class DiagnosticSink : ILogEventSink
-    {
-        /// <summary>Contains the state of the <see cref="Accumulator"/>.</summary>
-        public sealed class Accumulator
-        {
-            /// <summary>The maximum number of arguments when called from <see cref="Peeks.Do{T}"/>.</summary>
-            const int UsualMaxCapacity = 5;
-            readonly List<string> _list = new(UsualMaxCapacity);
-            readonly StringBuilder _builder = new();
-            int _index;
-            /// <summary>Gets the message template.</summary>
-            public string Template => $"{_builder}";
-            /// <summary>Gets the list of property names.</summary>
-            public IReadOnlyList<string> Names => _list;
-            /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
-            /// <param name="accumulator">The accumulator.</param>
-            /// <param name="token">The token to process.</param>
-            /// <returns>The parameter <paramref name="accumulator"/>.</returns>
-            public static Accumulator Next(Accumulator accumulator, MessageTemplateToken token) =>
-                accumulator.Next(token);
-            /// <summary>Deconstructs the <see cref="Accumulator"/>.</summary>
-            /// <param name="template">The message template.</param>
-            /// <param name="names">The list of property names. </param>
-            public void Deconstruct(out string template, out IReadOnlyList<string> names) =>
-                (template, names) = (Template, Names);
-            /// <summary>Steps the <see cref="Accumulator"/> forward.</summary>
-            /// <param name="token">The token to process.</param>
-            /// <returns>Itself.</returns>
-            public Accumulator Next(MessageTemplateToken token)
-            {
-                if (token is TextToken { Text: var text })
-                {
-                    _builder.Append(text);
-                    return this;
-                }
-                if (token is not PropertyToken property)
-                    throw Unreachable;
-                _builder.Append('{').Append(_index++).Append('}');
-                _list.Add(property.PropertyName);
-                return this;
-            }
-        }
-        /// <summary>Gets the logged diagnostics.</summary>
-        [Pure]
-        public ConcurrentQueue<Diagnostic> UnreportedDiagnostics { get; } = [];
-        /// <summary>Gets or sets the additional locations.</summary>
-        [Pure]
-        public IEnumerable<Location>? AdditionalLocations { get; set; }
-        /// <summary>Gets or sets the location.</summary>
-        [Pure]
-        public Location Location { get; set; } = Location.None;
-        /// <inheritdoc />
-        public void Emit(LogEvent logEvent)
-        {
-            var (template, list) = logEvent.MessageTemplate.Tokens.Aggregate(new Accumulator(), Accumulator.Next);
-            var level = ToDiagnosticSeverity(logEvent.Level);
-            DiagnosticDescriptor descriptor = new(Name, $"{s_guid}", template, Name, level, true);
-            var args = list.Select(object? (x) => logEvent.Properties[x]).ToArray();
-            var diagnostic = Diagnostic.Create(descriptor, Location, AdditionalLocations, args);
-            UnreportedDiagnostics.Enqueue(diagnostic);
-        }
-        static DiagnosticSeverity ToDiagnosticSeverity(LogEventLevel level) =>
-            level switch
-            {
-                LogEventLevel.Debug => DiagnosticSeverity.Info,
-                LogEventLevel.Error => DiagnosticSeverity.Error,
-                LogEventLevel.Fatal => DiagnosticSeverity.Error,
-                LogEventLevel.Information => DiagnosticSeverity.Info,
-                LogEventLevel.Verbose => DiagnosticSeverity.Info,
-                LogEventLevel.Warning => DiagnosticSeverity.Warning,
-                _ => throw Unreachable,
-            };
-    }
-#endif
-    /// <summary>The character often used to identify scripted assemblies.</summary>
-    public const char R = '\u211b';
-    /// <summary>The escape sequence to clear the screen.</summary>
-    public const string Clear = "\x1b\x5b\x48\x1b\x5b\x32\x4a\x1b\x5b\x33\x4a";
-#if ROSLYN
-    const string Name = nameof(DiagnosticSink);
-    static readonly DiagnosticSink s_diagnosticSink = new();
-    static readonly Guid s_guid = Guid.NewGuid();
-#endif
-#if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    static readonly string s_path =
-        Path.Combine(Path.GetTempPath(), typeof(Bits<>).Assembly.GetName().Name is [not R, ..] name ? name : $"{R}");
-    static readonly ITextFormatter s_json =
-#if CSHARPREPL
-        new JsonFormatter();
-#else
-        new CompactJsonFormatter();
-#endif
-    static readonly Serilog.Core.Logger
-        s_clef = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.File(s_json, $"{s_path}.clef").CreateLogger(),
-#if ROSLYN
-        s_roslyn = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(s_diagnosticSink).CreateLogger();
-#else
-        s_console = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Console().CreateLogger();
-#endif
-#endif
-#endif
-#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
-    static readonly string s_debugFile = Path.Combine(Path.GetTempPath(), "morsels.log");
-#if !RELEASE && !CSHARPREPL
-    static Peeks() => File.Create(s_debugFile).Dispose();
-#endif
-#endif
-    /// <summary>An event that is invoked every time <see cref="Write"/> is called.</summary>
-    public static event Action<string> OnWrite =
-#if NETSTANDARD1_0 || NETSTANDARD1_1 || NETSTANDARD1_2
-        Shout;
-#else
-        (Action<string>)Shout +
-#if KTANE
-        UnityEngine.Debug.Log +
-#endif
-        Console.WriteLine;
-#endif
-#if NETFRAMEWORK || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <summary>Gets all the types currently loaded.</summary>
-    [Pure]
-    public static IEnumerable<Type> AllTypes =>
-        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
-#endif
-#if !RELEASE && ROSLYN
-    /// <inheritdoc cref="DiagnosticSink.UnreportedDiagnostics"/>
-    [Pure]
-    public static ConcurrentQueue<Diagnostic> Diagnostics => s_diagnosticSink.UnreportedDiagnostics;
-    /// <summary>Gets the placeholder diagnostic.</summary>
-    [Pure]
-    public static DiagnosticDescriptor Bare { get; } = new(Name, $"{s_guid}", "", Name, DiagnosticSeverity.Error, true);
-#endif
-#pragma warning disable CS1574
-    /// <summary>
-    /// Invokes <see cref="System.Diagnostics.Debug.WriteLine(string)"/>, and <see cref="Trace.WriteLine(string)"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// This method exists to be able to hook both conditional methods in <see cref="OnWrite"/>,
-    /// and to allow the consumer to be able to remove this method to the same <see cref="OnWrite"/>.
-    /// </para></remarks>
-    /// <param name="message">The value to send a message.</param>
-#pragma warning restore CS1574
-    public static void Shout(string message)
-    {
-        System.Diagnostics.Debug.WriteLine(message);
-#if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
-#pragma warning disable S6670
-        Trace.WriteLine(message);
-#pragma warning restore S6670
-#endif
-#if !NETSTANDARD || NETSTANDARD1_3_OR_GREATER
-        if (File.Exists(s_debugFile))
-            File.AppendAllText(s_debugFile, $"[{DateTime.Now.ToLongTimeString()}]: {message}\n");
-#endif
-    }
-    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
-    /// <param name="message">The value to send a message.</param>
-    /// <exception cref="InvalidOperationException">
-    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
-    /// every callback has been manually removed as it is always valid by default.
-    /// </exception>
-    public static void Write(this string message) => (OnWrite ?? throw new InvalidOperationException(message))(message);
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-    /// <summary>Quick and dirty debugging function, invokes <see cref="OnWrite"/>.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The value to stringify.</param>
-    /// <exception cref="InvalidOperationException">
-    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
-    /// every callback has been manually removed as it is always valid by default.
-    /// </exception>
-#pragma warning disable RCS1196
-    public static void Write<T>(T value) => Write(Stringifier.Stringify(value));
-#pragma warning restore RCS1196
-#if NET462_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-#if !FORCE_SERILOG && RELEASE
-#if ROSLYN
-    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Location Mark(this Location location, [UsedImplicitly] params Location[]? additionalLocations) =>
-        location;
-    /// <summary>Marks the location in the next set of lints.</summary>
-    /// <param name="location">The primary location.</param>
-    /// <param name="additionalLocations">Additional locations.</param>
-    /// <returns>The parameter <paramref name="location"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Location Mark(this Location location, [UsedImplicitly] IEnumerable<Location>? additionalLocations) =>
-        location;
-#endif
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
-    /// <typeparam name="T">The type of the value to write.</typeparam>
-    /// <param name="x">The value to write.</param>
-    /// <param name="map">When specified, overrides the value that is logged.</param>
-    /// <param name="visit">The maximum number of times to recurse through an enumeration.</param>
-    /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
-    /// <param name="recurse">The maximum number of times to recurse a nested object or dictionary.</param>
-    /// <returns>The parameter <paramref name="x"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Debug<T>(
-        this T x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    ) =>
-        x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Debug<T>(
-        this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PooledSmallList<T> Debug<T>(
-        this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#endif
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Debug<T>(
-        this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Error<T>(
-        this T x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    ) =>
-        x;
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Error<T>(
-        this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PooledSmallList<T> Error<T>(
-        this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#endif
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Error<T>(
-        this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Fatal<T>(
-        this T x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    ) =>
-        x;
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Fatal<T>(
-        this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PooledSmallList<T> Fatal<T>(
-        this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#endif
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Fatal<T>(
-        this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Info<T>(
-        this T x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    ) =>
-        x;
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Info<T>(
-        this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PooledSmallList<T> Info<T>(
-        this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#endif
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Info<T>(
-        this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Verbose<T>(
-        this T x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    ) =>
-        x;
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Verbose<T>(
-        this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PooledSmallList<T> Verbose<T>(
-        this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#endif
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Verbose<T>(
-        this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T Warn<T>(
-        this T x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    ) =>
-        x;
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Span<T> Warn<T>(
-        this Span<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static PooledSmallList<T> Warn<T>(
-        this PooledSmallList<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T, object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#endif
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> x,
-        [InstantHandle, UsedImplicitly] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-        =>
-            x;
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int)"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ReadOnlySpan<T> Warn<T>(
-        this ReadOnlySpan<T> x,
-        [InstantHandle, UsedImplicitly] Converter<T[], object?>? map = null,
-        [NonNegativeValue, UsedImplicitly] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue, UsedImplicitly] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue, UsedImplicitly] int recurse = DeconstructionCollection.DefaultRecurseLength
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            x;
-#else
-#if ROSLYN
-    /// <inheritdoc cref="Mark(Location, IEnumerable{Location})"/>
-    public static Location Mark(this Location location, params Location[]? additionalLocations) =>
-        Mark(location, (IEnumerable<Location>?)additionalLocations);
-    /// <summary>Marks the location in the next set of lints.</summary>
-    /// <param name="location">The primary location.</param>
-    /// <param name="additionalLocations">Additional locations.</param>
-    /// <returns>The parameter <paramref name="location"/>.</returns>
-    public static Location Mark(this Location location, IEnumerable<Location>? additionalLocations)
-    {
-        s_diagnosticSink.Location = location;
-        s_diagnosticSink.AdditionalLocations = additionalLocations;
-        return location;
-    }
-    /// <summary>Marks the locations in the next set of lints.</summary>
-    /// <param name="locations">The locations.</param>
-    /// <returns>The first location within the parameter <paramref name="locations"/>.</returns>
-    public static Location Mark(this IEnumerable<Location>? locations)
-    {
-        var (first, rest) = locations;
-        try
-        {
-            return Mark(first, rest);
-        }
-        finally
-        {
-            (rest as IDisposable)?.Dispose();
-        }
-    }
-#endif
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Debug"/> level.</summary>
-    /// <typeparam name="T">The type of the value to write.</typeparam>
-    /// <param name="x">The value to write.</param>
-    /// <param name="map">When specified, overrides the value that is logged.</param>
-    /// <param name="visit">The maximum number of times to recurse through an enumeration.</param>
-    /// <param name="str">The maximum length of any given <see cref="string"/>.</param>
-    /// <param name="recurse">The maximum number of times to recurse a nested object or dictionary.</param>
-    /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="x"/>.</param>
-    /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
-    /// <param name="name">Automatically filled by compilers; the member's name where this method was called.</param>
-    /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
-    /// <returns>The parameter <paramref name="x"/>.</returns>
-    public static T Debug<T>(
-        this T x,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(x))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    ) =>
-        Do(x, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static Span<T> Debug<T>(
-        this Span<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static PooledSmallList<T> Debug<T>(
-        this PooledSmallList<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> value,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static ReadOnlySpan<T> Debug<T>(
-        this ReadOnlySpan<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Debug);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Error"/> level.</summary>
-    public static T Error<T>(
-        this T value,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    ) =>
-        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static Span<T> Error<T>(
-        this Span<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static PooledSmallList<T> Error<T>(
-        this PooledSmallList<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Error<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> value,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
-        return value;
-    }
-    /// <inheritdoc cref="Error{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static ReadOnlySpan<T> Error<T>(
-        this ReadOnlySpan<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Error);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Fatal"/> level.</summary>
-    public static T Fatal<T>(
-        this T value,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    ) =>
-        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static Span<T> Fatal<T>(
-        this Span<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static PooledSmallList<T> Fatal<T>(
-        this PooledSmallList<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Fatal<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> value,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
-        return value;
-    }
-    /// <inheritdoc cref="Fatal{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static ReadOnlySpan<T> Fatal<T>(
-        this ReadOnlySpan<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Fatal);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Information"/> level.</summary>
-    public static T Info<T>(
-        this T value,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    ) =>
-        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static Span<T> Info<T>(
-        this Span<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static PooledSmallList<T> Info<T>(
-        this PooledSmallList<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Info<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> value,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
-        return value;
-    }
-    /// <inheritdoc cref="Info{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static ReadOnlySpan<T> Info<T>(
-        this ReadOnlySpan<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Information);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Verbose"/> level.</summary>
-    public static T Verbose<T>(
-        this T value,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    ) =>
-        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static Span<T> Verbose<T>(
-        this Span<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static PooledSmallList<T> Verbose<T>(
-        this PooledSmallList<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Verbose<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> value,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
-        return value;
-    }
-    /// <inheritdoc cref="Verbose{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static ReadOnlySpan<T> Verbose<T>(
-        this ReadOnlySpan<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Verbose);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    /// <summary>Write a log event with the <see cref="LogEventLevel.Warning"/> level.</summary>
-    public static T Warn<T>(
-        this T value,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    ) =>
-        Do(value, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static Span<T> Warn<T>(
-        this Span<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static PooledSmallList<T> Warn<T>(
-        this PooledSmallList<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArrayLazily, map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Warn<TBody, TSeparator, TStrategy>(
-        this SplitSpan<TBody, TSeparator, TStrategy> value,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        Do(value.ToArrays(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
-        return value;
-    }
-    /// <inheritdoc cref="Warn{T}(T, Converter{T, object}, int, int, int, string, string, string, int)"/>
-    public static ReadOnlySpan<T> Warn<T>(
-        this ReadOnlySpan<T> value,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [NonNegativeValue] int visit = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int str = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurse = DeconstructionCollection.DefaultRecurseLength,
-        [CallerArgumentExpression(nameof(value))] string? expression = "",
-        [CallerFilePath] string? path = null,
-        [CallerMemberName] string? name = null,
-        [CallerLineNumber] int line = default
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        Do(value.ToArray(), map, visit, str, recurse, expression, path, name, line, LogEventLevel.Warning);
-        return value;
-    }
-    static T Do<T>(
-        T value,
-        [InstantHandle] Converter<T, object?>? map,
-        [NonNegativeValue] int visit,
-        [NonNegativeValue] int str,
-        [NonNegativeValue] int recurse,
-        string? expression,
-        string? path,
-        string? name,
-        int line,
-        LogEventLevel level
-    )
-    {
-        static object? Memory(T value) =>
-            value switch
-            {
-                null => null,
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-                Memory<char> m => m.ToString(),
-                ReadOnlyMemory<char> m => m.ToString(),
-                _ when value.GetType().GetMethod(nameof(Memory<int>.ToArray), []) is
-                    {
-                        IsStatic: false, ReturnParameter.ParameterType: var ret, IsGenericMethod: false,
-                    } method &&
-                    ret != typeof(void) => method.Invoke(value, null),
-#endif
-                _ => value,
-            };
-        var x = (map ?? Memory)(value).ToDeconstructed(visit, str, recurse) is var deconstructed &&
-            deconstructed is DeconstructionCollection { Serialized: var serialized }
-                ? serialized
-                : deconstructed;
-#if ROSLYN
-        var y = (x as DeconstructionCollection)?.ToStringWithoutNewLines() ?? x;
-#endif
-        if (expression.CollapseToSingleLine() is var ex && path.FileName() is not { Length: not 0 } file)
-        {
-            s_clef.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
-#if ROSLYN
-            s_roslyn.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, y);
-#else
-            s_console.Write(level, "[{@Member}:{@Line} ({@Expression})] {@Value}", name, line, ex, x);
-#endif
-            return value;
-        }
-        s_clef.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
-#if ROSLYN
-        s_roslyn.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, y);
-#else
-        s_console.Write(level, "[{$File}.{@Member}:{@Line} ({@Expression})] {@Value}", file, name, line, ex, x);
-#endif
-        return value;
-    }
-#endif
-#else
-    /// <summary>Quick and dirty debugging function.</summary>
-    /// <typeparam name="T">The type of value.</typeparam>
-    /// <param name="value">The value to stringify and return.</param>
-    /// <param name="shouldPrettify">Determines whether to prettify the resulting <see cref="string"/>.</param>
-    /// <param name="shouldLogExpression">Determines whether <paramref name="expression"/> is logged.</param>
-    /// <param name="map">The map callback.</param>
-    /// <param name="filter">The filter callback.</param>
-    /// <param name="logger">The logging callback.</param>
-    /// <param name="expression">Automatically filled by compilers; the source code of <paramref name="value"/>.</param>
-    /// <param name="path">Automatically filled by compilers; the file's path where this method was called.</param>
-    /// <param name="line">Automatically filled by compilers; the line number where this method was called.</param>
-    /// <param name="member">Automatically filled by compilers; the member's name where this method was called.</param>
-    /// <exception cref="InvalidOperationException">
-    /// <see cref="OnWrite"/> is <see langword="null"/>, which can only happen if
-    /// every callback has been manually removed as it is always valid by default.
-    /// </exception>
-    /// <returns>The parameter <paramref name="value"/>.</returns>
-    [return: NotNullIfNotNull(nameof(value))]
-    public static T Debug<T>(
-        this T value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = true,
-        [InstantHandle] Converter<T, object?>? map = null,
-        [InstantHandle] Predicate<T>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-    {
-        const string
-            Indent = "\n        ",
-            Of = $"{Indent}of ";
-        if (!(filter ?? (_ => true))(value))
-            return value;
-        logger ??= Write;
-        var stringified = (map ?? (x => x))(value) switch
-        {
-            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x,
-            string x => x,
-            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
-            var x => Stringifier.Stringify(x),
-        };
-        var logExpression = shouldLogExpression ? expression.CollapseToSingleLine(Of) : "";
-        var log = $"{stringified}{logExpression}{Indent}at {member} in {path.FileName()}:line {line}";
-        logger(log);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    [return: NotNullIfNotNull(nameof(value))]
-    public static T Debug<T, TAs>(
-        this T value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = true,
-        [InstantHandle] Converter<T, TAs?>? map = null,
-        [InstantHandle] Predicate<T>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-    {
-        if (!(filter ?? (_ => true))(value))
-            return value;
-        var stringified = (map ?? (x => x is TAs t ? t : default))(value) switch
-        {
-            var x when typeof(T) == typeof(string) && !(shouldLogExpression = false) => x as object,
-            string x => x,
-            var x when shouldPrettify => Stringifier.Stringify(x).Prettify(),
-            var x => Stringifier.Stringify(x),
-        };
-        Debug(
-            stringified,
-            false,
-            shouldLogExpression,
-            logger: logger,
-            expression: expression,
-            path: path,
-            line: line,
-            member: member
-        );
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static Span<T> Debug<T>(
-        this in Span<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [InstantHandle] Predicate<T[]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        _ = value
-           .ToArray()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-        return value;
-    }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static PooledSmallList<T> Debug<T>(
-        this in PooledSmallList<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [InstantHandle] Predicate<T[]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        _ = value
-           .View
-           .ToArray()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-        return value;
-    }
-#endif
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static SplitSpan<TBody, TSeparator, TStrategy> Debug<TBody, TSeparator, TStrategy>(
-        this in SplitSpan<TBody, TSeparator, TStrategy> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<TBody[][], object?>? map = null,
-        [InstantHandle] Predicate<TBody[][]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where TBody : unmanaged, IEquatable<TBody>
-#else
-        where TBody : IEquatable<TBody>?
-#endif
-#if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TSeparator>?
-#endif
-    {
-        _ = value
-           .ToArrays()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-        return value;
-    }
-    /// <inheritdoc cref="Debug{T}(T, bool, bool, Converter{T, object?}?, Predicate{T}?, Action{string}?, string?, string?, int, string?)"/>
-    public static ReadOnlySpan<T> Debug<T>(
-        this ReadOnlySpan<T> value,
-        bool shouldPrettify = true,
-        bool shouldLogExpression = false,
-        [InstantHandle] Converter<T[], object?>? map = null,
-        [InstantHandle] Predicate<T[]>? filter = null,
-        [InstantHandle] Action<string>? logger = null,
-        [CallerArgumentExpression(nameof(value))] string? expression = null,
-        [CallerFilePath] string? path = null,
-        [CallerLineNumber] int line = default,
-        [CallerMemberName] string? member = null
-    )
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        _ = value
-           .ToArray()
-           .Debug(shouldPrettify, shouldLogExpression, map, filter, logger, expression, path, line, member);
-        return value;
-    }
-#endif
-#endif
     /// <summary>Executes an <see cref="Action{T}"/>, and returns the argument.</summary>
     /// <typeparam name="T">The type of value and action parameter.</typeparam>
     /// <param name="value">The value to pass into the callback.</param>
@@ -12048,14 +9632,6 @@ public enum KeyMods : ushort
         return value;
     }
 #endif
-    /// <summary>Executes the function, and returns the result.</summary>
-    /// <typeparam name="T">The type of value and input parameter.</typeparam>
-    /// <typeparam name="TResult">The type of output and return value.</typeparam>
-    /// <param name="value">The value to pass into the callback.</param>
-    /// <param name="converter">The callback to perform.</param>
-    /// <returns>The return value of <paramref name="converter"/> after passing in <paramref name="value"/>.</returns>
-    public static TResult Then<T, TResult>(this T value, [InstantHandle] Converter<T, TResult> converter) =>
-        converter(value);
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace RedundantUsingDirective.Global
@@ -12705,95 +10281,24 @@ public enum KeyMods : ushort
         Array.AsReadOnly(array ?? []);
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="CircularList{T}"/>.</summary>
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="CircularList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="CircularList{T}"/>.</param>
-    /// <returns>A <see cref="CircularList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static CircularList<T>? ToCircular<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as CircularList<T> ?? new(iterable.ToIList());
-#endif
-/// <summary>
-/// Encapsulates an <see cref="IList{T}"/> where elements are treated as circular;
-/// indices wrap around and will therefore never be out of range.
-/// </summary>
-/// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : IList<T>, IReadOnlyList<T>
-{
-    /// <inheritdoc cref="IList{T}.this"/>
-    [Pure]
-    public T this[int index]
-    {
-        [CollectionAccess(Read)] get => list[Mod(index)];
-        [CollectionAccess(ModifyExistingContent)] set => list[Mod(index)] = value;
-    }
-    /// <inheritdoc/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure, ValueRange(1, int.MaxValue)]
-    public int Count => list.Count;
-    /// <inheritdoc/>
-    [CollectionAccess(UpdatedContent)]
-    public void Add(T item) => list.Add(item);
-    /// <inheritdoc/>
-    [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => list.Clear();
-    /// <inheritdoc/>
-    [CollectionAccess(Read)]
-    public void CopyTo(T[] array, int arrayIndex) => list.CopyTo(array, arrayIndex);
-    /// <inheritdoc/>
-    [CollectionAccess(UpdatedContent)]
-    public void Insert(int index, T item) => list.Insert(Mod(index), item);
-    /// <inheritdoc/>
-    [CollectionAccess(ModifyExistingContent)]
-    public void RemoveAt(int index) => list.RemoveAt(Mod(index));
-    /// <inheritdoc cref="ICollection{T}.Contains"/>
-    [CollectionAccess(Read), Pure]
-    public bool Contains(T item) => list.Contains(item);
-    /// <inheritdoc/>
-    [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T item) => list.Remove(item);
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    public int IndexOf(T item) => list.IndexOf(item);
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    public IEnumerator<T> GetEnumerator() => list.GetEnumerator();
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
-    public override string ToString() => list.ToString().OrEmpty();
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    int Mod(int index) => Count is not 0 and var count ? index.Mod(count) : throw CannotBeEmpty;
-}
-// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace
 /// <summary>Contains a myriad of strings that list all whitespace characters.</summary>
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
+    /// <summary>All Unicode characters where <c>White_Space=yes</c>, and are line breaks.</summary>
     public const string Breaking = "\n\v\f\r\u0085\u2028\u2029";
-    /// <summary>All unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
+    /// <summary>All Unicode characters where <c>White_Space=yes</c>, and are not a line break.</summary>
     public const string NonBreaking =
         "\t\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000";
-    /// <summary>All unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
+    /// <summary>All Unicode characters where <c>White_Space=no</c>, but appears to be whitespace.</summary>
     public const string Related = "\u180E\u200B\u200C\u200D\u2060\uFEFF";
-    /// <summary>All unicode characters where <c>White_Space=yes</c>.</summary>
+    /// <summary>All Unicode characters where <c>White_Space=yes</c>.</summary>
     public const string Unicode = $"{Breaking}{NonBreaking}";
-    /// <summary>All unicode characters that appear to be whitespace.</summary>
+    /// <summary>All Unicode characters that appear to be whitespace.</summary>
     public const string Combined = $"{Unicode}{Related}";
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Breaking"/>
     public static OnceMemoryManager<SearchValues<char>> BreakingSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Breaking));
+    } = new(SearchValues.Create(Breaking));
     /// <inheritdoc cref="NonBreaking"/>
     public static OnceMemoryManager<SearchValues<char>> NonBreakingSearch
     {
@@ -12803,20 +10308,17 @@ public sealed partial class CircularList<T>([ProvidesContext] IList<T> list) : I
     public static OnceMemoryManager<SearchValues<char>> RelatedSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Related));
+    } = new(SearchValues.Create(Related));
     /// <inheritdoc cref="Unicode"/>
     public static OnceMemoryManager<SearchValues<char>> UnicodeSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Unicode));
+    } = new(SearchValues.Create(Unicode));
     /// <inheritdoc cref="Combined"/>
     public static OnceMemoryManager<SearchValues<char>> CombinedSearch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get;
-    } =
-        new(SearchValues.Create(Combined));
+    } = new(SearchValues.Create(Combined));
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
@@ -13305,11 +10807,7 @@ readonly
     public readonly override string ToString() =>
         typeof(TBody) == typeof(char)
             ? Aggregate(new StringBuilder(), StringBuilderAccumulator).ToString()
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            : ToArrays().Stringify(3, true);
-#else
-            : throw new NotSupportedException();
-#endif
+            : $"[[{ToArrays().Conjoin("], [")}]]";
     /// <summary>
     /// Converts the elements of the collection to a <see cref="string"/> representation,
     /// using the specified divider between elements.
@@ -14316,6 +11814,10 @@ readonly
     }
     /// <summary>The number of bits in a byte.</summary>
     public const int BitsInByte = 8;
+    /// <summary>Gets all the types currently loaded.</summary>
+    [Pure]
+    public static IEnumerable<Type> AllTypes =>
+        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
     /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
     /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
     /// <param name="disposable">The disposable to dispose.</param>
@@ -15309,7 +12811,7 @@ readonly
     /// <param name="state">The <see cref="GamePadButtons"/> to convert.</param>
     /// <returns>The <see cref="Buttons"/> equivalent.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Buttons AsButtons(this GamePadButtons state) => Unsafe.As<GamePadButtons, Buttons>(ref state);
+    public static Buttons AsButtons(this GamePadButtons state) => (Buttons)state.GetHashCode();
     /// <summary>Converts <see cref="MouseState"/> to <see cref="MouseButtons"/>.</summary>
     /// <param name="state">The <see cref="MouseState"/> to convert.</param>
     /// <returns>The <see cref="MouseButtons"/> equivalent.</returns>
@@ -17324,23 +14826,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     [return: NotNullIfNotNull(nameof(set))]
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
-    /// <summary>Returns the list if all items are non-null.</summary>
-    /// <typeparam name="T">The type of list.</typeparam>
-    /// <param name="list">The list to filter.</param>
-    /// <returns>
-    /// The parameter <paramref name="list"/> if all items are non-<see langword="null"/>,
-    /// otherwise <see langword="null"/>.
-    /// </returns>
-    [Pure]
-    public static IList<T>? ItemNotNull<T>(this IList<T?>? list)
-    {
-        if (list is null)
-            return null;
-        for (var i = 0; i < list.Count; i++)
-            if (list[i] is null)
-                return null;
-        return list;
-    }
 // SPDX-License-Identifier: MPL-2.0
 // NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableIndex.cs when .NET 9 is released
 // and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
@@ -17356,87 +14841,6 @@ namespace System.Linq;
     /// <returns>The enumerable that incorporates the element's index into a tuple.</returns>
     public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source) =>
         source is TSource[] { Length: 0 } ? [] : source.Select((x, i) => (i, x));
-#endif
-// SPDX-License-Identifier: MPL-2.0
-#if NET40_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable CheckNamespace RedundantNameQualifier
-/// <summary>Provides methods to do math on enums without overhead from boxing.</summary>
-[UsedImplicitly]
-    const string ParameterName = "value";
-    static readonly ConstantExpression s_parameterName = Constant(ParameterName, typeof(string));
-    static readonly ConstructorInfo s_newArgument = typeof(ArgumentException).GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public,
-            null,
-            [typeof(string), typeof(string)],
-            null
-        ) ??
-        throw Unreachable;
-    static readonly ConstructorInfo s_newInvalidEnumArgument = typeof(InvalidEnumArgumentException).GetConstructor(
-            BindingFlags.Instance | BindingFlags.Public,
-            null,
-            [typeof(string), typeof(int), typeof(Type)],
-            null
-        ) ??
-        throw Unreachable;
-    /// <summary>Converts the value to a constant <see cref="string"/>.</summary>
-    /// <remarks><para>
-    /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <exception cref="InvalidEnumArgumentException">The value doesn't represent an exact value.</exception>
-    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
-    [Pure]
-    public static string AsString<T>(this T value)
-        where T : Enum =>
-        typeof(T) == typeof(Enum) ? value.ToString() : StringCaching<T>.From(value);
-    /// <summary>Converts the <see cref="string"/> to a constant value.</summary>
-    /// <remarks><para>
-    /// Combinations via <see cref="FlagsAttribute"/> are ignored. Only explicit fields count.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of <see cref="Enum"/> to perform the operation on.</typeparam>
-    /// <param name="value">The value.</param>
-    /// <exception cref="ArgumentException">The value doesn't represent an exact value.</exception>
-    /// <returns>The negated value of the parameter <paramref name="value"/>.</returns>
-    [Pure]
-    public static T As<T>(this string value)
-        where T : Enum =>
-        typeof(T) == typeof(Enum) ? (T)Enum.Parse(typeof(T), value) : StringCaching<T>.To(value);
-    static class StringCaching<T>
-        where T : Enum
-    {
-        public static Converter<T, string> From { get; } = Make<Converter<T, string>>(false);
-        public static Converter<string, T> To { get; } = Make<Converter<string, T>>(true);
-        static TFunc Make<TFunc>(bool isToT)
-            where TFunc : Delegate
-        {
-            var parameter = Parameter(isToT ? typeof(string) : typeof(T), ParameterName);
-            var cases = Cases(isToT);
-            var thrower = Thrower(parameter, isToT);
-            var ret = Switch(parameter, thrower, cases);
-            return Lambda<TFunc>(ret, parameter).Compile();
-        }
-        static SwitchCase[] Cases(bool isToT) =>
-            [..typeof(T).GetFields(BindingFlags.Static | BindingFlags.Public).Select(x => Case(x, isToT))];
-        static SwitchCase Case(FieldInfo x, bool isToT)
-        {
-            var str = Constant(x.Name, typeof(string));
-            var t = Constant(x.GetValue(null), typeof(T));
-            var from = isToT ? str : t;
-            var to = isToT ? t : str;
-            return SwitchCase(to, from);
-        }
-        static UnaryExpression Thrower(Expression parameter, bool isToT) =>
-            Throw(isToT ? Format(parameter) : InvalidEnumArgument(parameter), isToT ? typeof(T) : typeof(string));
-        static NewExpression Format(Expression parameter) => New(s_newArgument, parameter, s_parameterName);
-        static NewExpression InvalidEnumArgument(Expression parameter) =>
-            New(
-                s_newInvalidEnumArgument,
-                s_parameterName,
-                Convert(parameter, typeof(int)),
-                Constant(typeof(T), typeof(Type))
-            );
-    }
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
@@ -19194,6 +16598,30 @@ readonly
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
 #pragma warning disable 9107
+    [Pure]
+    [return: NotNullIfNotNull(nameof(it))]
+    public static T Debug<T>(
+        this T it,
+        Predicate<T>? predicate = null,
+        Converter<T, object>? converter = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [CallerArgumentExpression(nameof(it))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = 0
+    )
+    {
+        if (predicate?.Invoke(it) is false)
+            return it;
+        File.AppendAllText(
+            Path.Combine(Path.GetTempPath(), "morsels.log"),
+            $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
+                (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n"
+        );
+        return it;
+    }
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
     /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
@@ -19727,10 +17155,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
     }
     /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
-    public const int
-        DefaultVisitLength = 80,
-        DefaultStringLength = 400,
-        DefaultRecurseLength = 20;
+    public const int DefaultVisitLength = 80, DefaultStringLength = 400, DefaultRecurseLength = 20;
     /// <summary>Gets the comparer used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     [Pure]
     public static IEqualityComparer<object?> Comparer { get; } = new DeconstructionComparer();
@@ -19792,8 +17217,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             case not null when value.GetType().GetCustomAttributes().Any(IsChoiceAttribute): return value.ToString();
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
-            case Type x: return x.UnfoldedName();
-            case Pointer x: return x.ToHexString();
+            case Type x: return x.ToString();
+            case Pointer x: return ToHexString(x);
             case Version x: return x.ToShortString();
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
@@ -19889,14 +17314,16 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             DeconstructionCollection x => x.Simplify(),
             Version x => x.ToShortString(),
-            Pointer x => x.ToHexString(),
-            Type x => x.UnfoldedName(),
+            Pointer x => ToHexString(x),
+            Type x => x.ToString(),
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),
             string x => ToString(x),
             null or IConvertible => value,
             _ => ToString(value),
         };
+    [Pure]
+    static unsafe string ToHexString(Pointer x) => ((nint)Pointer.Unbox(x)).ToHexString();
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -20604,8 +18031,7 @@ public abstract class FixedGenerator(
         }
         readonly int _countPerListEager;
         readonly Func<int>? _countPerListLazy;
-        readonly IList<T>? _listEager;
-        readonly Func<IList<T>>? _listLazy;
+        readonly object? _list;
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
         /// <param name="countPerList">The length per count.</param>
@@ -20613,12 +18039,8 @@ public abstract class FixedGenerator(
         {
             _countPerListEager = countPerList > 0
                 ? countPerList
-                : throw new ArgumentOutOfRangeException(
-                    nameof(countPerList),
-                    countPerList,
-                    "Value must be at least 1."
-                );
-            _listEager = list;
+                : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Must be at least 1.");
+            _list = list;
         }
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
@@ -20626,7 +18048,7 @@ public abstract class FixedGenerator(
         public Matrix(IList<T> list, Func<int> countPerList)
         {
             _countPerListLazy = countPerList;
-            _listEager = list;
+            _list = list;
         }
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
@@ -20635,12 +18057,8 @@ public abstract class FixedGenerator(
         {
             _countPerListEager = countPerList > 0
                 ? countPerList
-                : throw new ArgumentOutOfRangeException(
-                    nameof(countPerList),
-                    countPerList,
-                    "Value must be at least 1."
-                );
-            _listLazy = list;
+                : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Must be at least 1.");
+            _list = list;
         }
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
@@ -20648,7 +18066,7 @@ public abstract class FixedGenerator(
         public Matrix(Func<IList<T>> list, Func<int> countPerList)
         {
             _countPerListLazy = countPerList;
-            _listLazy = list;
+            _list = list;
         }
         /// <inheritdoc cref="IList{T}.this"/>
         public IList<T> this[[NonNegativeValue] int index]
@@ -20688,7 +18106,7 @@ public abstract class FixedGenerator(
         {
             [Pure]
 #pragma warning disable 8603
-            get => _listLazy?.Invoke() ?? _listEager;
+            get => (_list as Func<IList<T>>)?.Invoke() ?? _list as IList<T>;
 #pragma warning restore 8603
         }
 #if !WAWA
@@ -20960,116 +18378,6 @@ public abstract class FixedGenerator(
     [Pure]
     public static UnicodeCategory GetUnicodeCategory(this char c) => char.GetUnicodeCategory(c);
 #endif
-// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace
-#if !NET20 && !NET30
-/// <summary>Extension methods that act as factories for <see cref="GuardedList{T}"/>.</summary>
-    /// <summary>Wraps an <see cref="IList{T}"/> (upcasted/created) to <see cref="GuardedList{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterable">The collection to turn into a <see cref="GuardedList{T}"/>.</param>
-    /// <returns>A <see cref="GuardedList{T}"/> of <paramref name="iterable"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterable))]
-    public static GuardedList<T>? ToGuardedLazily<T>(this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as GuardedList<T> ?? new(iterable.ToIList());
-#endif
-/// <summary>
-/// Encapsulates an <see cref="IList{T}"/> where applying an index will always result in an optional value;
-/// an out of range value will always give the <see langword="default"/> value.
-/// </summary>
-/// <typeparam name="T">The generic type of the encapsulated <see cref="IList{T}"/>.</typeparam>
-/// <param name="list">The <see cref="IList{T}"/> to encapsulate.</param>
-public sealed partial class GuardedList<T>([ProvidesContext] IList<T> list) : IList<T?>, IReadOnlyList<T?>
-{
-    /// <inheritdoc cref="IList{T}.this"/>
-    [Pure]
-    public T? this[int index]
-    {
-        [CollectionAccess(Read)] get => IsIn(index) ? list[index] : default;
-        [CollectionAccess(ModifyExistingContent)]
-        set
-        {
-            if (value is not null && IsIn(index))
-                list[index] = value;
-        }
-    }
-    /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), Pure]
-    public bool IsReadOnly => list.IsReadOnly;
-    /// <inheritdoc />
-    bool ICollection<T?>.IsReadOnly => IsReadOnly;
-    /// <inheritdoc cref="ICollection{T}.Count"/>
-    [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), NonNegativeValue, Pure]
-    public int Count => list.Count;
-    /// <inheritdoc />
-    int ICollection<T?>.Count => Count;
-    /// <inheritdoc cref="ICollection{T}.Add"/>
-    [CollectionAccess(UpdatedContent)]
-    public void Add(T? item)
-    {
-        if (item is not null)
-            list.Add(item);
-    }
-    /// <inheritdoc cref="ICollection{T}.Clear"/>
-    [CollectionAccess(ModifyExistingContent)]
-    public void Clear() => list.Clear();
-    /// <inheritdoc cref="ICollection{T}.CopyTo"/>
-    [CollectionAccess(Read)]
-    public void CopyTo(T?[] array, int arrayIndex)
-    {
-        if (Count <= array.Length - arrayIndex)
-            list.CopyTo(array as T[], arrayIndex);
-    }
-    /// <inheritdoc/>
-    [CollectionAccess(UpdatedContent)]
-    public void Insert(int index, T? item)
-    {
-        if (item is not null && IsIn(index))
-            list.Insert(index, item);
-    }
-    /// <inheritdoc/>
-    [CollectionAccess(ModifyExistingContent)]
-    public void RemoveAt(int index)
-    {
-        if (IsIn(index))
-            list.RemoveAt(index);
-    }
-    /// <inheritdoc />
-    void ICollection<T?>.Add(T? item) => Add(item);
-    /// <inheritdoc />
-    void ICollection<T?>.Clear() => Clear();
-    /// <inheritdoc />
-    void ICollection<T?>.CopyTo(T?[] array, int arrayIndex) => CopyTo(array, arrayIndex);
-    /// <inheritdoc cref="ICollection{T}.Contains"/>
-    [CollectionAccess(Read), Pure]
-    public bool Contains(T? item) => item is not null && list.Contains(item);
-    /// <inheritdoc cref="ICollection{T}.Remove"/>
-    [CollectionAccess(Read | ModifyExistingContent), Pure]
-    public bool Remove(T? item) => item is not null && list.Remove(item);
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
-    bool ICollection<T?>.Contains(T? item) => Contains(item);
-    /// <inheritdoc />
-    [CollectionAccess(Read | ModifyExistingContent), Pure]
-    bool ICollection<T?>.Remove(T? item) => Remove(item);
-    /// <inheritdoc cref="IList{T}.IndexOf"/>
-    [CollectionAccess(Read), Pure]
-    public int IndexOf(T? item) => item is null ? -1 : list.IndexOf(item);
-    /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
-    [CollectionAccess(Read), MustDisposeResource, Pure]
-    public IEnumerator<T?> GetEnumerator() => list.GetEnumerator().ItemCanBeNull();
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    IEnumerator<T?> IEnumerable<T?>.GetEnumerator() => list.GetEnumerator().ItemCanBeNull();
-    /// <inheritdoc/>
-    [CollectionAccess(Read), Pure]
-    IEnumerator IEnumerable.GetEnumerator() => list.GetEnumerator();
-    /// <inheritdoc />
-    [CollectionAccess(Read), Pure]
-    public override string ToString() => list.ToString().OrEmpty();
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool IsIn(int index) => index >= 0 && index < Count;
-}
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantNameQualifier
 /// <summary>Implements a <see cref="GetOffsetAndLength"/> overload that doesn't rely on tuples.</summary>
@@ -22242,138 +19550,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         }
     }
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace
-/// <summary>Provides methods for heap-allocation analysis.</summary>
-    /// <summary>
-    /// A <see langword="string"/> to use in an <see cref="ObsoleteAttribute"/> to indicate that the API isn't meant
-    /// for production, but not for deprecated reasons.
-    /// </summary>
-    const string NotForProduction = "NOT deprecated. While this can be used in Release builds to run this on " +
-        "optimized code; This API exists for debugging builds and should be excluded from final production builds.";
-    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
-    /// <param name="action">The dangerous callback.</param>
-    /// <returns>An exception, if caught.</returns>
-    [Inline, Obsolete(NotForProduction)]
-    public static Exception? Swallow([InstantHandle] this Action action)
-    {
-        try
-        {
-            action();
-            return null;
-        }
-        catch (Exception ex)
-        {
-            return ex;
-        }
-    }
-    /// <summary>Swallows all exceptions from a callback; Use with caution.</summary>
-    /// <typeparam name="T">The type of return.</typeparam>
-    /// <param name="func">The dangerous callback.</param>
-    /// <returns>The value returned from <paramref name="func"/>, or the exception caught.</returns>
-    [Inline, Obsolete(NotForProduction)]
-    public static (T?, Exception?) Swallow<T>([InstantHandle] this Func<T> func)
-    {
-        try
-        {
-            return (func(), null);
-        }
-        catch (Exception ex)
-        {
-            return (default, ex);
-        }
-    }
-    /// <summary>Gets the amount of bytes a callback uses.</summary>
-    /// <remarks><para>
-    /// This method temporarily tunes the <see cref="GC"/> to <see cref="GCLatencyMode.LowLatency"/>
-    /// for accurate results. As such, the parameter <paramref name="heap"/> should not cause
-    /// substantial allocation such that collecting mid-way is required.
-    /// </para></remarks>
-    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
-    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
-    /// <returns>The number of bytes the <see cref="GC"/> allocated from calling <paramref name="heap"/>.</returns>
-    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    public static long CountAllocation([InstantHandle, RequireStaticDelegate] Action heap, bool willWarmup = true)
-    {
-        if (willWarmup)
-            heap.Swallow();
-#if !(NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER)
-        var mode = GCSettings.LatencyMode;
-#endif
-        try
-        {
-#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            GC.TryStartNoGCRegion(ushort.MaxValue, ushort.MaxValue);
-#else
-            GCSettings.LatencyMode = GCLatencyMode.LowLatency;
-#endif
-#if NETCOREAPP3_0_OR_GREATER
-            var before = GC.GetTotalAllocatedBytes(true);
-#else
-            var before = GC.GetTotalMemory(true);
-#endif
-            heap.Swallow();
-#if NETCOREAPP3_0_OR_GREATER
-            var after = GC.GetTotalAllocatedBytes(true);
-#else
-            var after = GC.GetTotalMemory(false);
-#endif
-            return after - before;
-        }
-        finally
-        {
-#if NET46_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            if (GCSettings.LatencyMode is GCLatencyMode.NoGCRegion)
-                GC.EndNoGCRegion();
-#else
-            GCSettings.LatencyMode = mode;
-#endif
-        }
-    }
-    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
-    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
-    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
-    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
-    /// <returns>
-    /// An array where each entry is a separate test of the number of bytes
-    /// the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
-    /// </returns>
-    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    public static long[] CountAllocations(
-        [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = byte.MaxValue,
-        bool willWarmup = true
-    )
-    {
-        if (willWarmup)
-            heap.Swallow();
-        var all = new long[times];
-        for (var i = 0; i < times; i++)
-            all[i] += CountAllocation(heap, false);
-        return all;
-    }
-    /// <summary>Gets multiple instances of the amount of bytes a callback uses.</summary>
-    /// <param name="heap">The callback that causes some amount of heap allocation.</param>
-    /// <param name="times">The amount of times to invoke <paramref name="heap"/>.</param>
-    /// <param name="willWarmup">Whether it should call the method once to initialize static/lazy-based values.</param>
-    /// <returns>
-    /// An array where each entry is a separate test of the number of bytes
-    /// the <see cref="GC"/> allocated from calling <paramref name="heap"/>.
-    /// </returns>
-    [Inline, MustUseReturnValue, NonNegativeValue, Obsolete(NotForProduction)]
-    public static bool HasAllocations(
-        [InstantHandle, RequireStaticDelegate] Action heap,
-        [NonNegativeValue] int times = byte.MaxValue,
-        bool willWarmup = true
-    )
-    {
-        if (willWarmup)
-            heap.Swallow();
-        for (var i = 0; i < times; i++)
-            if (CountAllocation(heap, false) is not 0)
-                return true;
-        return false;
-    }
-// SPDX-License-Identifier: MPL-2.0
 // NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableAggregate.cs when .NET 9 is released
 // and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
 #if !CSHARPREPL
@@ -22532,23 +19708,6 @@ partial class ResolveDelegateAttribute : Attribute
     public ResolveDelegateAttribute(bool inline = true) => Inline = inline;
     /// <summary>Inline after resolve.</summary>
     public bool Inline { get; }
-}
-/// <summary>Provides stringification methods.</summary>
-static class Stringifier
-{
-    /// <summary>
-    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
-    /// in which case each item within is printed out separately.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-    public static string Stringify<T>(T? source) => source.Stringify();
 }
 /// <summary>Polyfill for <c>nameof()</c>.</summary>
 static class Morsels;

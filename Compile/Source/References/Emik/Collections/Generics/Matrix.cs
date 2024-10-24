@@ -113,9 +113,7 @@ static partial class MatrixFactory
 
         readonly Func<int>? _countPerListLazy;
 
-        readonly IList<T>? _listEager;
-
-        readonly Func<IList<T>>? _listLazy;
+        readonly object? _list;
 
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
         /// <param name="list">The list to encapsulate.</param>
@@ -126,13 +124,9 @@ static partial class MatrixFactory
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             _countPerListEager = countPerList > 0
                 ? countPerList
-                : throw new ArgumentOutOfRangeException(
-                    nameof(countPerList),
-                    countPerList,
-                    "Value must be at least 1."
-                );
+                : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Must be at least 1.");
 
-            _listEager = list;
+            _list = list;
         }
 
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
@@ -141,7 +135,7 @@ static partial class MatrixFactory
         public Matrix(IList<T> list, Func<int> countPerList)
         {
             _countPerListLazy = countPerList;
-            _listEager = list;
+            _list = list;
         }
 
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
@@ -153,13 +147,9 @@ static partial class MatrixFactory
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             _countPerListEager = countPerList > 0
                 ? countPerList
-                : throw new ArgumentOutOfRangeException(
-                    nameof(countPerList),
-                    countPerList,
-                    "Value must be at least 1."
-                );
+                : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Must be at least 1.");
 
-            _listLazy = list;
+            _list = list;
         }
 
         /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
@@ -168,7 +158,7 @@ static partial class MatrixFactory
         public Matrix(Func<IList<T>> list, Func<int> countPerList)
         {
             _countPerListLazy = countPerList;
-            _listLazy = list;
+            _list = list;
         }
 
         /// <inheritdoc cref="IList{T}.this"/>
@@ -211,9 +201,8 @@ static partial class MatrixFactory
         public IList<T> List
         {
             [Pure]
-#pragma warning disable 8603 // Unreachable.
-            // ReSharper disable once AssignNullToNotNullAttribute
-            get => _listLazy?.Invoke() ?? _listEager;
+#pragma warning disable 8603 // ReSharper disable once AssignNullToNotNullAttribute
+            get => (_list as Func<IList<T>>)?.Invoke() ?? _list as IList<T>;
 #pragma warning restore 8603
         }
 #if !WAWA

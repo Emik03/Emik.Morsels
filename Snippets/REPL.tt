@@ -29,7 +29,6 @@
 #define NETSTANDARD1_0_OR_GREATER
 #define NETSTANDARD
 #define NO_ALLOWS_REF_STRUCT
-#define FORCE_SERILOG
 #define CSHARPREPL
 #define DEBUG
 <# /*
@@ -219,36 +218,6 @@ global using Emik.Results;
 global using Emik.Results.Extensions;
 global using FastGenericNew;
 global using JetBrains.Annotations;
-global using Serilog;
-global using Serilog.Capturing;
-global using Serilog.Configuration;
-global using Serilog.Context;
-global using Serilog.Core;
-global using Serilog.Core.Enrichers;
-global using Serilog.Core.Filters;
-global using Serilog.Core.Pipeline;
-global using Serilog.Core.Sinks;
-global using Serilog.Data;
-global using Serilog.Debugging;
-global using Serilog.Events;
-global using Serilog.Filters;
-global using Serilog.Formatting;
-global using Serilog.Formatting.Compact;
-global using Serilog.Formatting.Display;
-global using Serilog.Formatting.Json;
-global using Serilog.Parsing;
-global using Serilog.Policies;
-global using Serilog.Rendering;
-global using Serilog.Settings;
-global using Serilog.Settings.KeyValuePairs;
-global using Serilog.Sinks;
-global using Serilog.Sinks.File;
-global using Serilog.Sinks.SystemConsole;
-global using Serilog.Sinks.SystemConsole.Formatting;
-global using Serilog.Sinks.SystemConsole.Output;
-global using Serilog.Sinks.SystemConsole.Platform;
-global using Serilog.Sinks.SystemConsole.Rendering;
-global using Serilog.Sinks.SystemConsole.Themes;
 global using TextCopy;
 global using static Emik.Results.Please;
 global using static Emik.Results.Result;
@@ -396,23 +365,6 @@ partial class ResolveDelegateAttribute : Attribute
     public ResolveDelegateAttribute(bool inline = true) => Inline = inline;
     /// <summary>Inline after resolve.</summary>
     public bool Inline { get; }
-}
-/// <summary>Provides stringification methods.</summary>
-static class Stringifier
-{
-    /// <summary>
-    /// Converts <paramref name="source"/> into a <see cref="string"/> representation of <paramref name="source"/>.
-    /// </summary>
-    /// <remarks><para>
-    /// Unlike <see cref="object.ToString"/>, the values of all properties are printed out,
-    /// unless they explicitly define a <see cref="object.ToString"/>, or implement <see cref="IEnumerable{T}"/>,
-    /// in which case each item within is printed out separately.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of the source.</typeparam>
-    /// <param name="source">The item to get a <see cref="string"/> representation of.</param>
-    /// <returns><paramref name="source"/> as <see cref="string"/>.</returns>
-    [MustUseReturnValue]
-    public static string Stringify<T>(T? source) => source.Stringify();
 }
 /// <summary>Polyfill for <c>nameof()</c>.</summary>
 static class Morsels;

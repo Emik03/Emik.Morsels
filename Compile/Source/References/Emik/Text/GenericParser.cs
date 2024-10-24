@@ -35,7 +35,6 @@ static partial class GenericParser
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped in ReadOnlySpan<char> s, out bool success) =>
         FindTryParseFor<T>.WithCharSpan(s, out success);
-
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

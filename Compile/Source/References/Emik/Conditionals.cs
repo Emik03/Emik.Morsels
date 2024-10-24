@@ -77,7 +77,6 @@ static partial class Conditionals
         first.IsDefault || second.IsDefault ? first.IsDefault && second.IsDefault :
         comparer is null ? first.SequenceEqual(second) : first.SequenceEqual(second, comparer);
 #endif
-
 #if !NET20 && !NET30
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>

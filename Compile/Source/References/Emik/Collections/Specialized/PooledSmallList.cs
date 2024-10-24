@@ -709,9 +709,7 @@ ref
 
         [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Throw(FieldInfo _) =>
-            throw new TypeLoadException(
-                $"\"{typeof(TRef).UnfoldedName()}\" contains fields other than {typeof(T).UnfoldedName()}."
-            );
+            throw new TypeLoadException($"\"{typeof(TRef).Name}\" contains fields other than {typeof(T).Name}.");
     }
 }
 #endif

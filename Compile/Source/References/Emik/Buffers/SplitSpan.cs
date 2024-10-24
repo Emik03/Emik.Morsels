@@ -562,11 +562,8 @@ readonly
     public readonly override string ToString() =>
         typeof(TBody) == typeof(char)
             ? Aggregate(new StringBuilder(), StringBuilderAccumulator).ToString()
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-            : ToArrays().Stringify(3, true);
-#else
-            : throw new NotSupportedException();
-#endif
+            : $"[[{ToArrays().Conjoin("], [")}]]";
+
     /// <summary>
     /// Converts the elements of the collection to a <see cref="string"/> representation,
     /// using the specified divider between elements.

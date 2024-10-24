@@ -10,7 +10,7 @@ static partial class ButtonExtensions
     /// <param name="state">The <see cref="GamePadButtons"/> to convert.</param>
     /// <returns>The <see cref="Buttons"/> equivalent.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // Not `in` because `GamePadButtons` is 4 bytes large.
-    public static Buttons AsButtons(this GamePadButtons state) => Unsafe.As<GamePadButtons, Buttons>(ref state);
+    public static Buttons AsButtons(this GamePadButtons state) => (Buttons)state.GetHashCode();
 
     /// <summary>Converts <see cref="MouseState"/> to <see cref="MouseButtons"/>.</summary>
     /// <param name="state">The <see cref="MouseState"/> to convert.</param>

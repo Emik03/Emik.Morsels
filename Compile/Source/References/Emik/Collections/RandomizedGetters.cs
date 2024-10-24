@@ -6,17 +6,25 @@ namespace Emik.Morsels;
 /// <summary>Extension methods for randomized getters.</summary>
 static partial class RandomizedGetters
 {
+    static readonly Func<int, int, int> s_rng =
+#if KTANE
+        UnityEngine.Random.Range;
+#elif NET6_0_OR_GREATER
+        Random.Shared.Next;
+#else // ReSharper disable once RedundantNameQualifier
+        new Random().Next;
+#endif
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
+    /// <param name="selector">The indices to swap with.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     public static IList<T> Shuffle<T>(
         [InstantHandle] this IEnumerable<T> iterable,
         [InstantHandle] Func<int, int, int>? selector = null
     )
     {
-        selector ??= Rand();
+        selector ??= s_rng;
         var list = iterable.ToIList();
 
         for (var j = list.Count; j >= 1; j--)
@@ -38,7 +46,7 @@ static partial class RandomizedGetters
     /// <inheritdoc cref="Shuffle{T}(IEnumerable{T}, Func{int, int, int})" />
     public static Span<T> Shuffle<T>(this Span<T> iterable, [InstantHandle] Func<int, int, int>? selector = null)
     {
-        selector ??= Rand();
+        selector ??= s_rng;
 
         for (var j = iterable.Length; j >= 1; j--)
         {
@@ -59,7 +67,7 @@ static partial class RandomizedGetters
     /// <summary>Shuffles a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to shuffle.</param>
-    /// <param name="selector">The indices to swap with, when left unspecified, uses <see cref="Rand"/>.</param>
+    /// <param name="selector">The indices to swap with.</param>
     /// <returns>A randomized list of items in the parameter <paramref name="selector"/>.</returns>
     [MustUseReturnValue] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static T PickRandom<T>(
@@ -78,7 +86,7 @@ static partial class RandomizedGetters
 #endif
         }
 
-        selector ??= Rand();
+        selector ??= s_rng;
 
         return iterable switch
         {
@@ -101,19 +109,8 @@ static partial class RandomizedGetters
         Func<int, int, int>? selector = null
     )
     {
-        selector ??= Rand();
+        selector ??= s_rng;
         return iterable[selector(0, iterable.Length)];
     }
-
-    [Pure]
-    static Func<int, int, int> Rand() =>
-#if KTANE
-        UnityEngine.Random.Range;
-#elif NET6_0_OR_GREATER
-        Random.Shared.Next;
-#else
-        // ReSharper disable once RedundantNameQualifier
-        new Random().Next;
-#endif
 }
 #endif

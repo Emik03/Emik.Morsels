@@ -61,6 +61,11 @@ static partial class MethodGroupings
     /// <summary>The number of bits in a byte.</summary>
     public const int BitsInByte = 8;
 
+    /// <summary>Gets all the types currently loaded.</summary>
+    [Pure]
+    public static IEnumerable<Type> AllTypes =>
+        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+
     /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
     /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
     /// <param name="disposable">The disposable to dispose.</param>

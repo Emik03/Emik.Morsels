@@ -29,6 +29,7 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
         <Features>$(Features);struct;flow-analysis</Features>
+        <DoNotMerge>^(?:(?!CommunityToolkit).)+$</DoNotMerge>
         <OptimizationPreference>speed</OptimizationPreference>
         <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
@@ -40,7 +41,6 @@
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <DoNotMerge>^(?:(?!CommunityToolkit)(?!Serilog).)+$</DoNotMerge>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
@@ -155,7 +155,6 @@
         <PackageReference Include="Absence.Fody" Version="2.0.7" PrivateAssets="all"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
-        <PackageReference Include="SerilogAnalyzer" Version="0.15" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.8.2" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all"/>
@@ -197,9 +196,5 @@
         <Reference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
         <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.4.6" PrivateAssets="all"/>
         <PackageReference Condition="($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp')))" Include="FastGenericNew.SourceGenerator" Version="3.3.1" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="Serilog" Version="4.1.0" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="Serilog.Sinks.File" Version="6.0" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="Serilog.Sinks.Console" Version="6.0" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net462')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="Serilog.Formatting.Compact" Version="3.0" PrivateAssets="all"/>
     </ItemGroup>
 </Project>

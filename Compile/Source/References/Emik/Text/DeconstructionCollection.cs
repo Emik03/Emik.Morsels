@@ -6,6 +6,33 @@ namespace Emik.Morsels;
 #pragma warning disable 9107
 static partial class DeconstructionCollectionExtensions
 {
+    [Pure]
+    [return: NotNullIfNotNull(nameof(it))]
+    public static T Debug<T>(
+        this T it,
+        Predicate<T>? predicate = null,
+        Converter<T, object>? converter = null,
+        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
+        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
+        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        [CallerArgumentExpression(nameof(it))] string? expression = null,
+        [CallerFilePath] string? path = null,
+        [CallerMemberName] string? name = null,
+        [CallerLineNumber] int line = 0
+    )
+    {
+        if (predicate?.Invoke(it) is false)
+            return it;
+
+        File.AppendAllText(
+            Path.Combine(Path.GetTempPath(), "morsels.log"),
+            $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
+                (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n"
+        );
+
+        return it;
+    }
+
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
     /// <param name="value">The complex object to convert.</param>
     /// <param name="visitLength">The maximum number of times to recurse through an enumeration.</param>
@@ -642,10 +669,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     }
 
     /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
-    public const int
-        DefaultVisitLength = 80,
-        DefaultStringLength = 400,
-        DefaultRecurseLength = 20;
+    public const int DefaultVisitLength = 80, DefaultStringLength = 400, DefaultRecurseLength = 20;
 
     /// <summary>Gets the comparer used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     [Pure]
@@ -719,8 +743,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             case not null when value.GetType().GetCustomAttributes().Any(IsChoiceAttribute): return value.ToString();
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
-            case Type x: return x.UnfoldedName();
-            case Pointer x: return x.ToHexString();
+            case Type x: return x.ToString();
+            case Pointer x: return ToHexString(x);
             case Version x: return x.ToShortString();
             case IDictionary x when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionary, seen):
                 return Ok(dictionary, out any);
@@ -825,13 +849,16 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             DeconstructionCollection x => x.Simplify(),
             Version x => x.ToShortString(),
-            Pointer x => x.ToHexString(),
-            Type x => x.UnfoldedName(),
+            Pointer x => ToHexString(x),
+            Type x => x.ToString(),
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),
             string x => ToString(x),
             null or IConvertible => value,
             _ => ToString(value),
         };
+
+    [Pure]
+    static unsafe string ToHexString(Pointer x) => ((nint)Pointer.Unbox(x)).ToHexString();
 }
 #endif

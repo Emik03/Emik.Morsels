@@ -31,20 +31,6 @@ static partial class Pancake
     ) =>
         enumerable.Flatten2().Flatten2();
 
-    /// <inheritdoc cref="Flatten{T}"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten5<T>(
-        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>> enumerable
-    ) =>
-        enumerable.Flatten4().Flatten();
-
-    /// <inheritdoc cref="Flatten{T}"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten6<T>(
-        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>>> enumerable
-    ) =>
-        enumerable.Flatten4().Flatten2();
-
     /// <summary>
     /// Flattens the nested collection by taking all the first elements of the enumerations,
     /// then all the second elements of the enumerations, the third, and so on.
