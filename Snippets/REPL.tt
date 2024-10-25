@@ -223,6 +223,7 @@ global using static Emik.Results.Please;
 global using static Emik.Results.Result;
 global using static FastGenericNew.FastNew;
 global using static TextCopy.ClipboardService;
+global using ComptimeString = System.Buffers.SearchValues<char>;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
@@ -242,6 +243,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using Range = System.Range;" => "",
         "global using GamePadStates" => "",
         "global using static Undergo;" => "",
+        "using ComptimeString = char;" => "",
         "using static OperatorCaching;" => "",
         "using static SplitSpanFactory;" => "",
         "using static SplitMemoryFactory;" => "",
@@ -249,6 +251,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "global using static TupleExtracts;" => "",
         "global using static FixedGenerator;" => "",
         "global using static MethodGroupings;" => "",
+        "using ComptimeString = SearchValues<char>;" => "",
         "using static Enum;" => "using static System.Enum;",
         "using static Math;" => "using static System.Math;",
         "using FieldInfo = System.Reflection.FieldInfo;" => "",

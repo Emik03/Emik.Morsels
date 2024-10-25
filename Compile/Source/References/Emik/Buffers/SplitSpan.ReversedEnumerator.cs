@@ -168,7 +168,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             }
 
         Retry:
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             switch (body.LastIndexOf(sep))
 #else
             int lower = 0, upper = body.Length - sep.Length;

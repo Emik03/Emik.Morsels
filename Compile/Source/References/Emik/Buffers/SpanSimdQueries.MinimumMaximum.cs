@@ -2,12 +2,11 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 static partial class SpanSimdQueries
 {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -25,7 +24,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMax>(enumerable.Span);
-#endif
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
@@ -36,7 +35,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -45,7 +44,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMax>(enumerable.Span);
-#endif
+
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -56,7 +55,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -74,7 +73,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable.Span);
-#endif
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
@@ -85,7 +84,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -94,7 +93,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable.Span);
-#endif
+
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -105,7 +104,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -136,7 +135,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
-#endif
+
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -154,7 +153,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -170,7 +168,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -188,7 +185,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -219,7 +215,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -237,7 +232,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -253,7 +247,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -302,7 +295,7 @@ static partial class SpanSimdQueries
             _ when typeof(TS) == typeof(SMin) => Comparer<T>.Default.Compare(l, r) < 0,
             _ => throw Unreachable,
         };
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
 #if !NET8_0_OR_GREATER
@@ -315,7 +308,6 @@ static partial class SpanSimdQueries
             System.Numerics.Vector.LoadUnsafe(source);
 #else
             Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
-#endif
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
@@ -330,7 +322,7 @@ static partial class SpanSimdQueries
 
         if (span.IsEmpty)
             return default!;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
         if (!IsNumericPrimitive<T>() ||
 #if NET7_0_OR_GREATER
             !System.Numerics.Vector<T>.IsSupported ||
@@ -338,7 +330,6 @@ static partial class SpanSimdQueries
             !System.Numerics.Vector.IsHardwareAccelerated ||
             span.Length < System.Numerics.Vector<T>.Count
         )
-#endif
         {
             value = span.UnsafelyIndex(0);
 
@@ -348,7 +339,7 @@ static partial class SpanSimdQueries
 
             return value;
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
@@ -383,7 +374,6 @@ static partial class SpanSimdQueries
                 value = best[i];
 
         return value;
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
@@ -397,23 +387,7 @@ static partial class SpanSimdQueries
     {
         if (enumerable.IsEmpty)
             return default!;
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var bestValue = enumerable[0];
-        var bestKey = converter(bestValue);
 
-        for (var i = 1; i < enumerable.Length; i++)
-            if (converter(enumerable[i]) is var next &&
-                0 switch
-                {
-                    _ when typeof(TS) == typeof(SMax) => Compare<TResult, TS>(next, bestKey),
-                    _ when typeof(TS) == typeof(SMin) => Compare<TResult, TS>(next, bestKey),
-                    _ => throw Unreachable,
-                })
-            {
-                bestKey = next;
-                bestValue = enumerable[i];
-            }
-#else
         ref var bestValue = ref MemoryMarshal.GetReference(enumerable);
         ref var current = ref Unsafe.Add(ref bestValue, 1);
         ref var last = ref Unsafe.Add(ref bestValue, enumerable.Length);
@@ -431,7 +405,7 @@ static partial class SpanSimdQueries
                 bestKey = next;
                 bestValue = ref current;
             }
-#endif
+
         return bestValue;
     }
 
@@ -439,3 +413,4 @@ static partial class SpanSimdQueries
 
     struct SMax;
 }
+#endif

@@ -20,19 +20,6 @@ static partial class IncludedSyntaxNodeRegistrant
     public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
         context.AddSource(generated.HintName, generated.Source);
 
-    /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
-    /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable RCS1175
-    public static void Drain(this in SyntaxNodeAnalysisContext context)
-#pragma warning restore RCS1175
-    {
-#if !RELEASE && ROSLYN
-        while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
-            context.ReportDiagnostic(diagnostic);
-#endif
-    }
-
     /// <summary>
     /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
     /// </summary>
@@ -426,11 +413,11 @@ static partial class IncludedSyntaxNodeRegistrant
             new(
                 diagnostic.Descriptor.Id,
                 diagnostic.Descriptor.Title,
-                $"{diagnostic.Descriptor.MessageFormat} {message.Stringify()}",
+                $"{diagnostic.Descriptor.MessageFormat} {message.ToDeconstructed()}",
                 diagnostic.Descriptor.Category,
                 diagnostic.Descriptor.DefaultSeverity,
                 diagnostic.Descriptor.IsEnabledByDefault,
-                $"{diagnostic.Descriptor.Description} {message.Stringify()}",
+                $"{diagnostic.Descriptor.Description} {message.ToDeconstructed()}",
                 diagnostic.Descriptor.HelpLinkUri,
                 diagnostic.Descriptor.CustomTags.ToArrayLazily()
             ),
@@ -567,13 +554,8 @@ static partial class IncludedSyntaxNodeRegistrant
         {
             if (context.Node is not TSyntaxNode node || context.IsExcludedFromAnalysis())
                 return;
-#if !RELEASE
-            node.GetLocation().Mark();
-#endif
+
             action(context, node);
-#if !RELEASE
-            context.Drain();
-#endif
         };
 
     [Pure]

@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-
 namespace Emik.Morsels;
 #pragma warning disable IDE0032, RCS1158
 using static Span;
 using static SplitSpanFactory;
+#if NET8_0_OR_GREATER
+using ComptimeString = SearchValues<char>;
+#else
+using ComptimeString = char;
+#endif
 
 /// <summary>Methods to split spans into multiple spans.</summary>
 static partial class SplitSpanFactory
@@ -89,7 +93,7 @@ static partial class SplitSpanFactory
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
@@ -200,13 +204,7 @@ static partial class SplitSpanFactory
 
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitSpanLines(this string? span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitSpanLines(this string? span) =>
         span.AsSpan().SplitLines();
 
     /// <summary>Splits a span by line breaks.</summary>
@@ -214,13 +212,7 @@ static partial class SplitSpanFactory
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, Whitespaces.BreakingSearch.GetSpan());
 #else
@@ -228,24 +220,12 @@ static partial class SplitSpanFactory
 #endif
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this Span<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitLines(this Span<char> span) =>
         span.ReadOnly().SplitLines();
 
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitSpanWhitespace(this string? span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitSpanWhitespace(this string? span) =>
         span.AsSpan().SplitWhitespace();
 
     /// <summary>Splits a span by whitespace.</summary>
@@ -253,13 +233,7 @@ static partial class SplitSpanFactory
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, Whitespaces.UnicodeSearch.Memory.Span);
 #else
@@ -267,13 +241,7 @@ static partial class SplitSpanFactory
 #endif
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this Span<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitWhitespace(this Span<char> span) =>
         span.ReadOnly().SplitWhitespace();
 #endif
 #if NET8_0_OR_GREATER

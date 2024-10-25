@@ -45,11 +45,10 @@ static partial class MemoryMarshal
             fromSize is not 1 &&
             (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
             (int)(fromLength / toSize);
-
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var ptr = span.Pointer;
-#else
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         fixed (TFrom* ptr = span)
+#else
+        var ptr = span.Pointer;
 #endif
             return new(ptr, toLength);
     }
@@ -81,11 +80,10 @@ static partial class MemoryMarshal
             fromSize is not 1 &&
             (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
             (int)(fromLength / toSize);
-
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var ptr = span.Pointer;
-#else
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         fixed (TFrom* ptr = span)
+#else
+        var ptr = span.Pointer;
 #endif
             return new(ptr, toLength);
     }
@@ -101,14 +99,14 @@ static partial class MemoryMarshal
     /// <returns>The lifetime of the returned span will not be validated for safety by span-aware languages.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe Span<T> CreateSpan<T>(scoped ref T reference, int length)
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        =>
+            Cache<T>.Span(ref reference, length);
+#else
     {
         fixed (T* ptr = &reference)
             return new(ptr, length);
     }
-#else
-        =>
-            Cache<T>.Span(ref reference, length);
 #endif
     /// <summary>
     /// Create a new read-only span over a portion of a regular managed object. This can be useful

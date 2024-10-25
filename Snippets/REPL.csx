@@ -188,6 +188,7 @@ global using static Emik.Results.Please;
 global using static Emik.Results.Result;
 global using static FastGenericNew.FastNew;
 global using static TextCopy.ClipboardService;
+global using ComptimeString = System.Buffers.SearchValues<char>;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using Expression = System.Linq.Expressions.Expression;
 global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
@@ -1575,7 +1576,7 @@ public
     public static bool SequenceEqual<T>(
         this Memory<T> span,
         ReadOnlyMemory<T> other,
-        IEqualityComparer<T>? comparer = null
+        IEqualityComparer<T>? comparer
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T}, IEqualityComparer{T})"/>
@@ -1583,10 +1584,10 @@ public
     public static bool SequenceEqual<T>(
         this ReadOnlyMemory<T> span,
         ReadOnlyMemory<T> other,
-        IEqualityComparer<T>? comparer = null
+        IEqualityComparer<T>? comparer
     ) =>
         span.Span.SequenceEqual(other.Span, comparer);
-#else
+#endif
     /// <inheritdoc cref="System.MemoryExtensions.SequenceEqual{T}(Span{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool SequenceEqual<T>(this Memory<T> span, ReadOnlyMemory<T> other)
@@ -1597,22 +1598,6 @@ public
     public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
         where T : IEquatable<T>? =>
         span.Span.SequenceEqual(other.Span);
-#endif
-#endif
-    /// <summary>Reads the raw memory of the object.</summary>
-    /// <typeparam name="T">The type of value to read.</typeparam>
-    /// <param name="value">The value to read.</param>
-    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe byte[] Raw<T>(T value)
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-        =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
-#else
-            new Span<byte>(&value, sizeof(T)).ToArray();
 #endif
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
@@ -1630,6 +1615,21 @@ public
 #endif
         =>
             InBytes<T>(length) <= MaxStackalloc;
+    /// <summary>Reads the raw memory of the object.</summary>
+    /// <typeparam name="T">The type of value to read.</typeparam>
+    /// <param name="value">The value to read.</param>
+    /// <returns>The raw memory of the parameter <paramref name="value"/>.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe byte[] Raw<T>(T value)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+        =>
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
+#else
+            new Span<byte>(&value, sizeof(T)).ToArray();
+#endif
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
     /// <param name="length">The amount of items.</param>
@@ -1643,7 +1643,7 @@ public
 #endif
         =>
             length *
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.SizeOf<T>();
 #else
             sizeof(T);
@@ -1667,7 +1667,7 @@ public
         =>
             *(nuint*)&_;
 #endif
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -1690,8 +1690,6 @@ public
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(In(reference));
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Converts the <see cref="Memory{T}"/> to the <see cref="ReadOnlyMemory{T}"/>.</summary>
     /// <typeparam name="T">The type of memory.</typeparam>
     /// <param name="memory">The memory to convert.</param>
@@ -1727,31 +1725,25 @@ public
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 #if !CSHARPREPL
     /// <summary>Creates the stack allocation of the type.</summary>
+    /// <typeparam name="T">The type of the resulting pointer.</typeparam>
+    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
+    /// <returns>The length of the stack-allocation.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe T* StackallocPtr<T>([NonNegativeValue] int length)
+    {
+        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
+        if (IsReferenceOrContainsReferences<T>())
+            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
+        var p = stackalloc byte[InBytes<T>(length)];
+        return (T*)p;
+    }
+    /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
     /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
-    {
-        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-        if (IsReferenceOrContainsReferences<T>())
-            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-        var ptr = stackalloc byte[InBytes<T>(length)];
-        return new(ptr, length);
-    }
-    /// <summary>Creates the stack allocation of the type.</summary>
-    /// <typeparam name="T">The type of the resulting pointer.</typeparam>
-    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
-    /// <returns>The resulting <typeparamref name="T"/> pointer pointing to the created stack allocation.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe T* StackallocPtr<T>([NonNegativeValue] in int length)
-    {
-        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-        if (IsReferenceOrContainsReferences<T>())
-            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-        var ptr = stackalloc byte[InBytes<T>(length)];
-        return (T*)ptr;
-    }
+    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length) =>
+        new(StackallocPtr<T>(length), length);
 #endif
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
@@ -1771,7 +1763,7 @@ public
         =>
             ref Unsafe.AsRef(source);
 #endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="memory">The memory to split.</param>
@@ -1853,7 +1845,7 @@ public
         head = span.UnsafelyIndex(0);
         tail = span.UnsafelySkip(1);
     }
-#if NET461_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER || NO_SYSTEM_MEMORY
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>
     /// Gets the index of an element of a given <see cref="Memory{T}"/> from its <see cref="Span{T}"/>.
     /// </summary>
@@ -1918,12 +1910,12 @@ public
         where T : IEquatable<T>?
 #endif
     {
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var searchSpace = (T*)span.Pointer;
-        var value = (T*)values.Pointer;
-#else
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         fixed (T* searchSpace = span)
         fixed (T* value = values)
+#else
+        var searchSpace = (T*)span.Pointer;
+        var value = (T*)values.Pointer;
 #endif
             return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
     }
@@ -1951,8 +1943,6 @@ public
         memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is var i and not -1
             ? memory.Slice(i, span.Length)
             : default;
-#endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
     /// <param name="owner">The <see cref="IMemoryOwner{T}"/> to get an item from.</param>
@@ -2203,7 +2193,7 @@ public
     public static T UnsafelyIndex<T>(this scoped ReadOnlySpan<T> body, [NonNegativeValue] int index)
     {
         System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
 #else
         return body[index];
@@ -2231,7 +2221,7 @@ public
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
         return body.Slice(start, length);
@@ -2255,7 +2245,7 @@ public
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)index < (uint)body.Length, "index is in range");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         return Unsafe.Add(ref MemoryMarshal.GetReference(body), index);
 #else
         return body[index];
@@ -2283,7 +2273,7 @@ public
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
         return body.Slice(start, length);
@@ -2548,18 +2538,6 @@ public
     /// <param name="generated">The tuple containing the hint name and source.</param>
     public static void AddSource(SourceProductionContext context, GeneratedSource generated) =>
         context.AddSource(generated.HintName, generated.Source);
-    /// <summary>Drains the <see cref="Peeks.Diagnostics"/> <see cref="ConcurrentQueue{T}"/>.</summary>
-    /// <param name="context">The context that can be used to report <see cref="Diagnostic"/> instances.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable RCS1175
-    public static void Drain(this in SyntaxNodeAnalysisContext context)
-#pragma warning restore RCS1175
-    {
-#if !RELEASE && ROSLYN
-        while (Peeks.Diagnostics.TryDequeue(out var diagnostic))
-            context.ReportDiagnostic(diagnostic);
-#endif
-    }
     /// <summary>
     /// Returns the <see cref="TypeDeclarationSyntax"/> annotated with the provided <see cref="AttributeSyntax"/>.
     /// </summary>
@@ -2912,11 +2890,11 @@ public
             new(
                 diagnostic.Descriptor.Id,
                 diagnostic.Descriptor.Title,
-                $"{diagnostic.Descriptor.MessageFormat} {message.Stringify()}",
+                $"{diagnostic.Descriptor.MessageFormat} {message.ToDeconstructed()}",
                 diagnostic.Descriptor.Category,
                 diagnostic.Descriptor.DefaultSeverity,
                 diagnostic.Descriptor.IsEnabledByDefault,
-                $"{diagnostic.Descriptor.Description} {message.Stringify()}",
+                $"{diagnostic.Descriptor.Description} {message.ToDeconstructed()}",
                 diagnostic.Descriptor.HelpLinkUri,
                 diagnostic.Descriptor.CustomTags.ToArrayLazily()
             ),
@@ -3041,13 +3019,7 @@ public
         {
             if (context.Node is not TSyntaxNode node || context.IsExcludedFromAnalysis())
                 return;
-#if !RELEASE
-            node.GetLocation().Mark();
-#endif
             action(context, node);
-#if !RELEASE
-            context.Drain();
-#endif
         };
     [Pure]
     static IEnumerable<INamespaceOrTypeSymbol> GetAllNamespaceOrTypeSymbolMembers(INamespaceOrTypeSymbol x) =>
@@ -3817,7 +3789,7 @@ public enum MouseButtons : byte
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_1_OR_GREATER
 // ReSharper disable once CheckNamespace EmptyNamespace
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
@@ -9942,6 +9914,9 @@ public enum KeyMods : ushort
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #pragma warning disable IDE0032, RCS1158
+#if NET8_0_OR_GREATER
+#else
+#endif
 /// <summary>Methods to split spans into multiple spans.</summary>
     /// <summary>The type that indicates to match all elements.</summary>
     public struct MatchAll;
@@ -10015,7 +9990,7 @@ public enum KeyMods : ushort
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
-#if NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
@@ -10108,26 +10083,14 @@ public enum KeyMods : ushort
         span.SplitOn(separator.AsSpan());
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitSpanLines(this string? span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitSpanLines(this string? span) =>
         span.AsSpan().SplitLines();
     /// <summary>Splits a span by line breaks.</summary>
     /// <remarks><para>Line breaks are considered any character in <see cref="Breaking"/>.</para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitLines(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, BreakingSearch.GetSpan());
 #else
@@ -10135,36 +10098,18 @@ public enum KeyMods : ushort
 #endif
     /// <inheritdoc cref="SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this Span<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitLines(this Span<char> span) =>
         span.ReadOnly().SplitLines();
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitSpanWhitespace(this string? span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitSpanWhitespace(this string? span) =>
         span.AsSpan().SplitWhitespace();
     /// <summary>Splits a span by whitespace.</summary>
     /// <remarks><para>Whitespace is considered any character in <see cref="Unicode"/>.</para></remarks>
     /// <param name="span">The span to split.</param>
     /// <returns>The enumerable object that references the parameter <paramref name="span"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitWhitespace(this ReadOnlySpan<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, UnicodeSearch.Memory.Span);
 #else
@@ -10172,13 +10117,7 @@ public enum KeyMods : ushort
 #endif
     /// <inheritdoc cref="SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitSpan<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this Span<char> span) =>
+    public static SplitSpan<char, ComptimeString, MatchAny> SplitWhitespace(this Span<char> span) =>
         span.ReadOnly().SplitWhitespace();
 #endif
 #if NET8_0_OR_GREATER
@@ -11653,6 +11592,9 @@ readonly
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable IDE0032
+#if NET8_0_OR_GREATER
+#else
+#endif
 /// <summary>Methods to split spans into multiple spans.</summary>
     /// <summary>
     /// Defines the values for <see cref="SplitMemory{TBody, TSeparator, TStrategy}"/> without a compile-time strategy.
@@ -11704,7 +11646,6 @@ readonly
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, OnceMemoryManager<T> separator)
@@ -11715,7 +11656,6 @@ readonly
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
-#endif
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
@@ -11786,23 +11726,11 @@ readonly
         span.SplitOn(separator.AsMemory());
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this string? span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitLines(this string? span) =>
         span.AsMemory().SplitLines();
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, BreakingSearch.Memory);
 #else
@@ -11810,33 +11738,15 @@ readonly
 #endif
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this Memory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitLines(this Memory<char> span) =>
         span.ReadOnly().SplitLines();
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this string? span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitWhitespace(this string? span) =>
         span.AsMemory().SplitWhitespace();
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, UnicodeSearch.Memory);
 #else
@@ -11844,13 +11754,7 @@ readonly
 #endif
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this Memory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitWhitespace(this Memory<char> span) =>
         span.ReadOnly().SplitWhitespace();
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
@@ -12444,9 +12348,9 @@ readonly
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this IMemoryOwner<T> enumerable)
@@ -12463,7 +12367,6 @@ readonly
 #endif
         =>
             MinMax<T, SMax>(enumerable.Span);
-#endif
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped Span<T> enumerable)
@@ -12474,7 +12377,6 @@ readonly
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this ReadOnlyMemory<T> enumerable)
@@ -12483,7 +12385,6 @@ readonly
 #endif
         =>
             MinMax<T, SMax>(enumerable.Span);
-#endif
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Max<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -12494,7 +12395,6 @@ readonly
 #endif
         =>
             MinMax<T, SMax>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this IMemoryOwner<T> enumerable)
@@ -12511,7 +12411,6 @@ readonly
 #endif
         =>
             MinMax<T, SMin>(enumerable.Span);
-#endif
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped Span<T> enumerable)
@@ -12522,7 +12421,6 @@ readonly
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this ReadOnlyMemory<T> enumerable)
@@ -12531,7 +12429,6 @@ readonly
 #endif
         =>
             MinMax<T, SMin>(enumerable.Span);
-#endif
     /// <inheritdoc cref="Enumerable.Min{T}(IEnumerable{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Min<T>(this scoped ReadOnlySpan<T> enumerable)
@@ -12542,7 +12439,6 @@ readonly
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12573,7 +12469,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12591,7 +12486,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12607,7 +12501,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12625,7 +12518,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable, keySelector);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12656,7 +12548,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12674,7 +12565,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable, keySelector);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12690,7 +12580,6 @@ readonly
 #endif
         =>
             MinMax<T, TResult, SMin>(enumerable.Span, keySelector);
-#endif
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MinBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -12738,7 +12627,6 @@ readonly
             _ when typeof(TS) == typeof(SMin) => Comparer<T>.Default.Compare(l, r) < 0,
             _ => throw Unreachable,
         };
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
 #if !NET8_0_OR_GREATER
@@ -12752,7 +12640,6 @@ readonly
 #else
             Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
 #endif
-#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
 #if UNMANAGED_SPAN
@@ -12764,7 +12651,6 @@ readonly
         T value;
         if (span.IsEmpty)
             return default!;
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         if (!IsNumericPrimitive<T>() ||
 #if NET7_0_OR_GREATER
             !System.Numerics.Vector<T>.IsSupported ||
@@ -12772,7 +12658,6 @@ readonly
             !System.Numerics.Vector.IsHardwareAccelerated ||
             span.Length < System.Numerics.Vector<T>.Count
         )
-#endif
         {
             value = span.UnsafelyIndex(0);
             for (var i = 1; i < span.Length; i++)
@@ -12780,7 +12665,6 @@ readonly
                     value = next;
             return value;
         }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
         ref var current = ref MemoryMarshal.GetReference(span);
         ref var lastVectorStart = ref Unsafe.Add(ref current, span.Length - System.Numerics.Vector<T>.Count);
         var best = LoadUnsafe(current);
@@ -12810,7 +12694,6 @@ readonly
             })
                 value = best[i];
         return value;
-#endif
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
     static T MinMax<T, TResult, TS>(
@@ -12823,22 +12706,6 @@ readonly
     {
         if (enumerable.IsEmpty)
             return default!;
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var bestValue = enumerable[0];
-        var bestKey = converter(bestValue);
-        for (var i = 1; i < enumerable.Length; i++)
-            if (converter(enumerable[i]) is var next &&
-                0 switch
-                {
-                    _ when typeof(TS) == typeof(SMax) => Compare<TResult, TS>(next, bestKey),
-                    _ when typeof(TS) == typeof(SMin) => Compare<TResult, TS>(next, bestKey),
-                    _ => throw Unreachable,
-                })
-            {
-                bestKey = next;
-                bestValue = enumerable[i];
-            }
-#else
         ref var bestValue = ref MemoryMarshal.GetReference(enumerable);
         ref var current = ref Unsafe.Add(ref bestValue, 1);
         ref var last = ref Unsafe.Add(ref bestValue, enumerable.Length);
@@ -12855,11 +12722,11 @@ readonly
                 bestKey = next;
                 bestValue = ref current;
             }
-#endif
         return bestValue;
     }
     struct SMin;
     struct SMax;
+#endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides methods to create and operate on <see cref="AggregateException"/> instances.</summary>
@@ -13843,7 +13710,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 return false;
             }
         Retry:
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             switch (body.LastIndexOf(sep))
 #else
             int lower = 0, upper = body.Length - sep.Length;
@@ -14019,8 +13886,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     }
 }
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once RedundantUsingDirective
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
@@ -14034,7 +13901,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.ReadOnly().Average();
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this ReadOnlyMemory<T> span)
@@ -14043,7 +13909,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.Average();
-#endif
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
@@ -14067,7 +13932,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.ReadOnly().Sum();
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -14076,7 +13940,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.Sum();
-#endif
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
@@ -14089,16 +13952,11 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         where T : struct
 #endif
     {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
-#if NET7_0_OR_GREATER
-            System.Numerics.Vector<T>.IsSupported &&
-#endif
             System.Numerics.Vector.IsHardwareAccelerated &&
             System.Numerics.Vector<T>.Count > 2 &&
             span.Length >= System.Numerics.Vector<T>.Count * 4)
             return SumVectorized(span);
-#endif
         if (typeof(T).IsEnum)
             return UnderlyingSum(span);
         T sum = default!;
@@ -14211,7 +14069,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             sum = Adder(sum, converter(x));
         return sum;
     }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -14228,8 +14085,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.ReadOnly().Average();
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -14246,8 +14101,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.ReadOnly().Sum();
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -14276,8 +14129,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.ReadOnly().Average(converter);
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -14306,8 +14157,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.ReadOnly().Sum(converter);
-#endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
@@ -14320,8 +14169,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         return Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref source));
     }
 #endif
-#endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
@@ -14387,7 +14234,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         }
         return result;
     }
-#endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T UnderlyingSum<T>(scoped ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
@@ -17297,6 +17143,7 @@ static class GamePadStateExtensions
 // ReSharper disable once CheckNamespace
 #pragma warning disable 8500
 // ReSharper disable once RedundantNameQualifier
+/// <summary>Extension methods to allocate temporary buffers.</summary>
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
     /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <typeparam name="T">The type of buffer.</typeparam>
@@ -17344,7 +17191,7 @@ public partial struct Rented<T> : IDisposable
 {
     /// <summary>Represents the pinned array.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public unsafe partial struct Pinned : IDisposable
+    public partial struct Pinned : IDisposable
     {
         GCHandle _handle;
         Rented<T> _rented;
@@ -17352,7 +17199,7 @@ public partial struct Rented<T> : IDisposable
         /// <param name="rented">The rented array.</param>
         /// <param name="ptr">The pointer to the allocated memory.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Pinned(Rented<T> rented, out T* ptr)
+        public unsafe Pinned(Rented<T> rented, out T* ptr)
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         {
             _rented = rented;
@@ -17367,7 +17214,7 @@ public partial struct Rented<T> : IDisposable
         /// <param name="length">The length of the array to retrieve.</param>
         /// <param name="ptr">The pointer to the allocated memory.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Pinned(int length, out T* ptr)
+        public unsafe Pinned(int length, out T* ptr)
             : this(new Rented<T>(length), out ptr) { }
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

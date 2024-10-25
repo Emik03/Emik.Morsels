@@ -7,6 +7,11 @@ namespace Emik.Morsels;
 using static Span;
 using static SplitMemoryFactory;
 using static SplitSpanFactory;
+#if NET8_0_OR_GREATER
+using ComptimeString = SearchValues<char>;
+#else
+using ComptimeString = char;
+#endif
 
 /// <summary>Methods to split spans into multiple spans.</summary>
 static partial class SplitMemoryFactory
@@ -67,7 +72,6 @@ static partial class SplitMemoryFactory
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this ReadOnlyMemory<T> span, OnceMemoryManager<T> separator)
@@ -79,7 +83,7 @@ static partial class SplitMemoryFactory
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
-#endif
+
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
@@ -167,24 +171,12 @@ static partial class SplitMemoryFactory
 
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this string? span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitLines(this string? span) =>
         span.AsMemory().SplitLines();
 
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitLines(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, Whitespaces.BreakingSearch.Memory);
 #else
@@ -192,35 +184,17 @@ static partial class SplitMemoryFactory
 #endif
     /// <inheritdoc cref="SplitSpanFactory.SplitLines(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitLines(this Memory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitLines(this Memory<char> span) =>
         span.ReadOnly().SplitLines();
 
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this string? span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitWhitespace(this string? span) =>
         span.AsMemory().SplitWhitespace();
 
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitWhitespace(this ReadOnlyMemory<char> span) =>
 #if NET8_0_OR_GREATER
         new(span, Whitespaces.UnicodeSearch.Memory);
 #else
@@ -228,13 +202,7 @@ static partial class SplitMemoryFactory
 #endif
     /// <inheritdoc cref="SplitSpanFactory.SplitWhitespace(ReadOnlySpan{char})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static SplitMemory<char,
-#if NET8_0_OR_GREATER
-        SearchValues<char>,
-#else
-        char,
-#endif
-        MatchAny> SplitWhitespace(this Memory<char> span) =>
+    public static SplitMemory<char, ComptimeString, MatchAny> SplitWhitespace(this Memory<char> span) =>
         span.ReadOnly().SplitWhitespace();
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>

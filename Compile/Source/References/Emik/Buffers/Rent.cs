@@ -7,6 +7,7 @@ namespace Emik.Morsels;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
 
+/// <summary>Extension methods to allocate temporary buffers.</summary>
 static partial class Rent
 {
     /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
@@ -59,7 +60,7 @@ partial struct Rented<T> : IDisposable
 {
     /// <summary>Represents the pinned array.</summary>
     [StructLayout(LayoutKind.Auto)]
-    public unsafe partial struct Pinned : IDisposable
+    public partial struct Pinned : IDisposable
     {
         GCHandle _handle;
 
@@ -69,7 +70,7 @@ partial struct Rented<T> : IDisposable
         /// <param name="rented">The rented array.</param>
         /// <param name="ptr">The pointer to the allocated memory.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Pinned(Rented<T> rented, out T* ptr)
+        public unsafe Pinned(Rented<T> rented, out T* ptr)
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         {
             _rented = rented;
@@ -84,7 +85,7 @@ partial struct Rented<T> : IDisposable
         /// <param name="length">The length of the array to retrieve.</param>
         /// <param name="ptr">The pointer to the allocated memory.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Pinned(int length, out T* ptr)
+        public unsafe Pinned(int length, out T* ptr)
             : this(new Rented<T>(length), out ptr) { }
 
         /// <inheritdoc />

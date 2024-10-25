@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once RedundantUsingDirective
 using static OperatorCaching;
 using static Span;
@@ -21,7 +20,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.ReadOnly().Average();
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this ReadOnlyMemory<T> span)
@@ -30,7 +29,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.Span.Average();
-#endif
+
     /// <summary>Gets the average.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the average of.</param>
@@ -55,7 +54,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.ReadOnly().Sum();
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this ReadOnlyMemory<T> span)
@@ -64,7 +63,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.Span.Sum();
-#endif
+
     /// <summary>Gets the sum.</summary>
     /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The span to get the sum of.</param>
@@ -77,16 +76,12 @@ static partial class SpanSimdQueries
         where T : struct
 #endif
     {
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
         if (IsNumericPrimitive<T>() &&
-#if NET7_0_OR_GREATER
-            System.Numerics.Vector<T>.IsSupported &&
-#endif
             System.Numerics.Vector.IsHardwareAccelerated &&
             System.Numerics.Vector<T>.Count > 2 &&
             span.Length >= System.Numerics.Vector<T>.Count * 4)
             return SumVectorized(span);
-#endif
+
         if (typeof(T).IsEnum)
             return UnderlyingSum(span);
 
@@ -207,7 +202,6 @@ static partial class SpanSimdQueries
         return sum;
     }
 
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Average{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Average<T>(this IMemoryOwner<T> span)
@@ -225,9 +219,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.Span.ReadOnly().Average();
-#endif
 
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="Sum{T}(ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T Sum<T>(this IMemoryOwner<T> span)
@@ -245,8 +237,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.Span.ReadOnly().Sum();
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Average{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Average<T, TResult>(
@@ -276,8 +267,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.Span.ReadOnly().Average(converter);
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="Sum{T, TResult}(ReadOnlySpan{T}, Converter{T, TResult})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static TResult Sum<T, TResult>(
@@ -307,8 +297,7 @@ static partial class SpanSimdQueries
 #endif
         =>
             span.Span.ReadOnly().Sum(converter);
-#endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
+
     [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
@@ -321,8 +310,6 @@ static partial class SpanSimdQueries
         return Unsafe.ReadUnaligned<Vector<T>>(ref Unsafe.As<T, byte>(ref source));
     }
 #endif
-#endif
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable MA0051
     static T SumVectorized<T>(scoped ReadOnlySpan<T> span)
@@ -406,7 +393,7 @@ static partial class SpanSimdQueries
 
         return result;
     }
-#endif
+
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T UnderlyingSum<T>(scoped ReadOnlySpan<T> span) =>
         typeof(T).GetEnumUnderlyingType() switch
