@@ -3252,394 +3252,6 @@ public
         public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
     }
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace
-/// <summary>Similar to <see cref="Each"/>, but with control flow, using <see cref="ControlFlow"/>.</summary>
-// ReSharper disable LoopCanBePartlyConvertedToQuery NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<ControlFlow> func)
-    {
-        for (var i = 0; i < upper; i++)
-            if (func() is ControlFlow.Break)
-                break;
-        return upper;
-    }
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor([NonNegativeValue] this int upper, [InstantHandle] Func<int, ControlFlow> func)
-    {
-        for (var i = 0; i < upper; i++)
-            if (func(i) is ControlFlow.Break)
-                break;
-        return upper;
-    }
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor<TExternal>(
-        [NonNegativeValue] this int upper,
-        TExternal external,
-        [InstantHandle] Func<TExternal, ControlFlow> func
-    )
-    {
-        for (var i = 0; i < upper; i++)
-            if (func(external) is ControlFlow.Break)
-                break;
-        return upper;
-    }
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static int BreakableFor<TExternal>(
-        [NonNegativeValue] this int upper,
-        TExternal external,
-        [InstantHandle] Func<int, TExternal, ControlFlow> func
-    )
-    {
-        for (var i = 0; i < upper; i++)
-            if (func(i, external) is ControlFlow.Break)
-                break;
-        return upper;
-    }
-#if !NET20 && !NET30
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<T, ControlFlow> func
-    )
-    {
-        var list = iterable.ToICollection();
-        foreach (var item in list)
-            if (func(item) is ControlFlow.Break)
-                break;
-        return list;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        TExternal external,
-        [InstantHandle] Func<T, TExternal, ControlFlow> func
-    )
-    {
-        var list = iterable.ToICollection();
-        foreach (var item in list)
-            if (func(item, external) is ControlFlow.Break)
-                break;
-        return list;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        [InstantHandle] Func<T, int, ControlFlow> func
-    )
-    {
-        var list = iterable.ToICollection();
-        var i = 0;
-        foreach (var item in list)
-            if (func(item, checked(i++)) is ControlFlow.Break)
-                break;
-        return list;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of iterator.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="iterable">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="iterable"/>.</param>
-    /// <returns>The parameter <paramref name="iterable"/>.</returns>
-    public static ICollection<T> BreakableFor<T, TExternal>(
-        [InstantHandle] this IEnumerable<T> iterable,
-        TExternal external,
-        [InstantHandle] Func<T, int, TExternal, ControlFlow> func
-    )
-    {
-        var list = iterable.ToICollection();
-        var i = 0;
-        foreach (var item in list)
-            if (func(item, checked(i++), external) is ControlFlow.Break)
-                break;
-        return list;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        [InstantHandle] Func<TKey, TValue, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value) is ControlFlow.Break)
-                break;
-        return dictionary;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        TExternal external,
-        [InstantHandle] Func<TKey, TValue, TExternal, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value, external) is ControlFlow.Break)
-                break;
-        return dictionary;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        [InstantHandle] Func<TKey, TValue, int, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        var i = 0;
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value, checked(i++)) is ControlFlow.Break)
-                break;
-        return dictionary;
-    }
-    /// <summary>
-    /// The <see langword="foreach"/> statement executes a statement or a block of statements for each element in an
-    /// instance of the type that implements the <see cref="IEnumerable{T}"/> interface.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="TKey">The type of key in the dictionary.</typeparam>
-    /// <typeparam name="TValue">The type of value in the dictionary.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="dictionary">The collection of items to go through one-by-one.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action to do on each item in <paramref name="dictionary"/>.</param>
-    /// <returns>The parameter <paramref name="dictionary"/>.</returns>
-    public static IDictionary<TKey, TValue> BreakableFor<TKey, TValue, TExternal>(
-        [InstantHandle] this IDictionary<TKey, TValue> dictionary,
-        TExternal external,
-        [InstantHandle] Func<TKey, TValue, int, TExternal, ControlFlow> func
-    )
-        where TKey : notnull
-    {
-        var i = 0;
-        foreach (var kvp in dictionary)
-            if (func(kvp.Key, kvp.Value, checked(i++), external) is ControlFlow.Break)
-                break;
-        return dictionary;
-    }
-#endif
-#if NET7_0_OR_GREATER
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<ControlFlow> func)
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i!++)
-            if (func() is ControlFlow.Break)
-                break;
-        return upper;
-    }
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T>([NonNegativeValue] this T upper, [InstantHandle] Func<T, ControlFlow> func)
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i!++)
-            if (func(i!) is ControlFlow.Break)
-                break;
-        return upper;
-    }
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T, TExternal>(
-        [NonNegativeValue] this T upper,
-        TExternal external,
-        [InstantHandle] Func<TExternal, ControlFlow> func
-    )
-        where T : IComparisonOperators<T?, T?, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i!++)
-            if (func(external) is ControlFlow.Break)
-                break;
-        return upper;
-    }
-    /// <summary>
-    /// The <see langword="for"/> statement executes a statement or a block of statements while a specified
-    /// Boolean expression evaluates to <see langword="true"/>.
-    /// </summary>
-    /// <remarks><para><a href="https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/statements/iteration-statements#the-for-statement">
-    /// See here for more information.
-    /// </a></para></remarks>
-    /// <typeparam name="T">The type of number for the loop.</typeparam>
-    /// <typeparam name="TExternal">The type of external parameter to pass into the callback.</typeparam>
-    /// <param name="upper">The length to reach to in the for loop.</param>
-    /// <param name="external">Any external parameter to be passed repeatedly into the callback.</param>
-    /// <param name="func">The action for each loop.</param>
-    /// <returns>The parameter <paramref name="upper"/>.</returns>
-    [NonNegativeValue]
-    public static T BreakableFor<T, TExternal>(
-        [NonNegativeValue] this T upper,
-        TExternal external,
-        [InstantHandle] Func<T, TExternal, ControlFlow> func
-    )
-        where T : IComparisonOperators<T?, T, bool>, IIncrementOperators<T>
-    {
-        for (T? i = default; i < upper; i!++)
-            if (func(i!, external) is ControlFlow.Break)
-                break;
-        return upper;
-    }
-#endif
-/// <summary>Determines control flow for loops in <see cref="Each"/>.</summary>
-public enum ControlFlow : byte
-{
-    /// <summary>The value indicating that the loop should continue.</summary>
-    Continue,
-    /// <summary>The value indicating that the loop should break.</summary>
-    Break,
-}
-// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
 #pragma warning disable 8500, IDE0251, MA0102
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
@@ -5532,6 +5144,16 @@ public partial struct SmallList<T> :
                 var x => _list._rest![x - InlinedLength],
             }) is var _;
     }
+}
+// SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace
+/// <summary>Determines control flow for loops.</summary>
+public enum ControlFlow : byte
+{
+    /// <summary>The value indicating that the loop should continue.</summary>
+    Continue,
+    /// <summary>The value indicating that the loop should break.</summary>
+    Break,
 }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantNameQualifier
@@ -8103,7 +7725,6 @@ readonly
         s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
 #pragma warning restore MA0110, SYSLIB1045
-#endif
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -8195,7 +7816,7 @@ readonly
             : path.SplitOn(s_slashes).Last.Trim();
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitOnAny(Slashes.AsMemory()).Last.Trim();
+            : path.SplitOnAny(@"/\".AsMemory()).Last.Trim();
 #else
             ? ""
             : Path.GetFileName(path).Trim() ?? "";
@@ -8333,10 +7954,7 @@ readonly
     /// <param name="value">The value to convert.</param>
     /// <returns>The hex <see cref="string"/>.</returns>
     [Pure]
-#if !WAWA
-    public
-#endif
-        static unsafe string ToHexString<T>(this T value)
+    public static unsafe string ToHexString<T>(this T value)
 #if KTANE
         where T : struct
 #else
@@ -8423,6 +8041,7 @@ readonly
         }
         return dish;
     }
+#endif
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
@@ -18699,18 +18318,6 @@ readonly
         this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>> enumerable
     ) =>
         enumerable.Flatten2().Flatten2();
-    /// <inheritdoc cref="Flatten{T}"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten5<T>(
-        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>> enumerable
-    ) =>
-        enumerable.Flatten4().Flatten();
-    /// <inheritdoc cref="Flatten{T}"/>
-    [LinqTunnel, Pure]
-    public static IEnumerable<T> Flatten6<T>(
-        this IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<IEnumerable<T>>>>>>> enumerable
-    ) =>
-        enumerable.Flatten4().Flatten2();
     /// <summary>
     /// Flattens the nested collection by taking all the first elements of the enumerations,
     /// then all the second elements of the enumerations, the third, and so on.

@@ -22,7 +22,6 @@ static partial class Stringifier
         s_brackets = new(@"\[(?>(?:\[(?<A>)|\](?<-A>)|[^\[\]]+){2,})\]", Options),
         s_parentheses = new(@"\((?>(?:\((?<A>)|\)(?<-A>)|[^()]+){2,})\)", Options);
 #pragma warning restore MA0110, SYSLIB1045
-#endif
     /// <summary>Creates the collapsed form of the string.</summary>
     /// <param name="s">The string to collapse.</param>
     /// <returns>The collapsed string.</returns>
@@ -120,7 +119,7 @@ static partial class Stringifier
             : path.SplitOn(s_slashes).Last.Trim();
 #elif ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             ? default
-            : path.SplitOnAny(Slashes.AsMemory()).Last.Trim();
+            : path.SplitOnAny(@"/\".AsMemory()).Last.Trim();
 #else
             ? "" // ReSharper disable once NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
             : Path.GetFileName(path).Trim() ?? "";
@@ -269,10 +268,7 @@ static partial class Stringifier
     /// <param name="value">The value to convert.</param>
     /// <returns>The hex <see cref="string"/>.</returns>
     [Pure]
-#if !WAWA
-    public
-#endif
-        static unsafe string ToHexString<T>(this T value)
+    public static unsafe string ToHexString<T>(this T value)
 #if KTANE
         where T : struct
 #else
@@ -369,7 +365,7 @@ static partial class Stringifier
 
         return dish;
     }
-
+#endif
     /// <summary>Appends an enumeration onto the <see cref="StringBuilder"/>.</summary>
     /// <typeparam name="T">The type of each item in the collection.</typeparam>
     /// <param name="builder">The <see cref="StringBuilder"/> to mutate and <see langword="return"/>.</param>
