@@ -28,16 +28,12 @@ static partial class Span
             /// Gets a value indicating whether the conversion between types
             /// <typeparamref name="TFrom"/> and <see name="TTo"/> in <see cref="To{TTo}"/> is defined.
             /// </summary>
-            public static unsafe bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
+            public static bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
                 typeof(TTo) == typeof(TFrom);
 #else
                 typeof(TFrom) == typeof(TTo) ||
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
                 Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>() &&
-#else
-                sizeof(TFrom) >= sizeof(TTo) &&
-#endif
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
                     !IsReferenceOrContainsReferences<TFrom>() && !IsReferenceOrContainsReferences<TTo>());
 #endif
@@ -274,7 +270,7 @@ static partial class Span
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
 #else
-            new Span<byte>(&value, sizeof(T)).ToArray();
+            new Span<byte>(&value, Unsafe.SizeOf<T>()).ToArray();
 #endif
     /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
     /// <typeparam name="T">The type of array.</typeparam>
@@ -283,23 +279,19 @@ static partial class Span
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    public static unsafe int InBytes<T>([NonNegativeValue] int length)
+    public static int InBytes<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
         =>
-            length *
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            Unsafe.SizeOf<T>();
-#else
-            sizeof(T);
-#endif
+            length * Unsafe.SizeOf<T>();
+
     /// <summary>Returns the memory address of a given reference object.</summary>
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe nuint ToAddress<T>(this T? _)
+    public static nuint ToAddress<T>(this T? _)
         where T : class =>
         Ret<nuint>.From(_);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
@@ -510,7 +502,7 @@ static partial class Span
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         =>
             Unsafe.ByteOffset(ref MemoryMarshal.GetReference(span), ref value) is var byteOffset &&
-            byteOffset / (nint)(uint)sizeof(T) is var elementOffset &&
+            byteOffset / (nint)(uint)Unsafe.SizeOf<T>() is var elementOffset &&
             (nuint)elementOffset < (uint)span.Length
                 ? (int)elementOffset
                 : -1;

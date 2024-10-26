@@ -125,7 +125,7 @@ partial struct Rented<T> : IDisposable
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         _array = ArrayPool<T>.Shared.Rent(length);
 #else
-        _ptr = Marshal.AllocHGlobal(length * sizeof(T));
+        _ptr = Marshal.AllocHGlobal(length * Unsafe.SizeOf<T>());
 #endif
     /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
     /// <param name="length">The length of the array to retrieve.</param>
@@ -136,7 +136,7 @@ partial struct Rented<T> : IDisposable
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
 #else
-        span = new((void*)(_ptr = Marshal.AllocHGlobal(length * sizeof(T))), length);
+        span = new((void*)(_ptr = Marshal.AllocHGlobal(length * Unsafe.SizeOf<T>())), length);
 #endif
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

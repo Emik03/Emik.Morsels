@@ -119,7 +119,7 @@ ref
     }
 
     /// <summary>Gets and transfers responsibility of disposing the inner unmanaged array to the caller.</summary>
-    public unsafe nint DangerouslyTransferOwnershipUnmanaged
+    public nint DangerouslyTransferOwnershipUnmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
          MustUseReturnValue("Dispose unmanaged array with System.Runtime.InteropServices.Marshal.FreeHGlobal")]
@@ -277,7 +277,7 @@ ref
 
     /// <inheritdoc cref="IDisposable.Dispose"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public unsafe void Dispose()
+    public void Dispose()
     {
         switch (_rental.ToAddress())
         {

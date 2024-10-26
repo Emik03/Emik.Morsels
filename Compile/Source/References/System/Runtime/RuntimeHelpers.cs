@@ -16,7 +16,7 @@ static partial class RuntimeHelpers
     /// </para></remarks>
     public static unsafe int OffsetToStringData
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => sizeof(nint) + 4;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Unsafe.SizeOf<nint>() + 4;
     }
 
     /// <summary>

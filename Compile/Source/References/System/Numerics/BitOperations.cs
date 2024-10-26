@@ -43,8 +43,8 @@ static partial class BitOperations
     /// <param name="value">The value.</param>
     /// <returns>The population count of the mask.</returns>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int PopCount(nuint value) =>
-        sizeof(nuint) is 8 ? PopCount((ulong)value) : PopCount((uint)value);
+    public static int PopCount(nuint value) =>
+        Unsafe.SizeOf<nuint>() is 8 ? PopCount((ulong)value) : PopCount((uint)value);
 
     /// <summary>Returns the population count (number of bits set) of an unsigned 32-integer mask.</summary>
     /// <remarks><para>Similar in behavior to the x86 instruction POPCNT.</para></remarks>
@@ -124,7 +124,7 @@ static partial class BitOperations
 
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe nuint RoundUpToPowerOf2(nuint value) =>
-        sizeof(nuint) is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
+    public static nuint RoundUpToPowerOf2(nuint value) =>
+        Unsafe.SizeOf<nuint>() is 4 ? RoundUpToPowerOf2((uint)value) : (nuint)RoundUpToPowerOf2((ulong)value);
 }
 #endif

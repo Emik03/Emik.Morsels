@@ -276,12 +276,12 @@ static partial class Stringifier
 #endif
 #pragma warning disable 8500
     {
-        var p = stackalloc char[sizeof(T) * 2];
+        var p = stackalloc char[Unsafe.SizeOf<T>() * 2];
         p[0] = '0';
         p[1] = 'x';
 
         fixed (char* rh = HexCharactersTable)
-            for (int i = 0, j = sizeof(T) * 2; i < sizeof(T); i++, j -= 2)
+            for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
             {
                 var b = ((byte*)&value)[i];
                 var low = b & 0x0f;
@@ -290,7 +290,7 @@ static partial class Stringifier
                 p[j] = *(rh + high);
             }
 
-        return new(p, 0, sizeof(T) * 2 + 2);
+        return new(p, 0, Unsafe.SizeOf<T>() * 2 + 2);
     }
 #pragma warning restore 8500
 #endif

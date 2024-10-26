@@ -19,13 +19,13 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void And(scoped in T read, scoped ref T write)
+    public static void And(scoped in T read, scoped ref T write)
     {
         ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
             r = ref Unsafe.As<T, byte>(ref AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -34,12 +34,12 @@ readonly
                 r = ref Unsafe.Add(ref r, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -48,11 +48,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -61,11 +61,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -74,7 +74,7 @@ readonly
                 r = ref Unsafe.Add(ref r, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return;
         }
 #endif
@@ -118,13 +118,13 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void AndNot(scoped in T read, scoped ref T write)
+    public static void AndNot(scoped in T read, scoped ref T write)
     {
         ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
             r = ref Unsafe.As<T, byte>(ref AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -133,12 +133,12 @@ readonly
                 r = ref Unsafe.Add(ref r, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -147,11 +147,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -160,11 +160,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -173,7 +173,7 @@ readonly
                 r = ref Unsafe.Add(ref r, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return;
         }
 #endif
@@ -216,11 +216,11 @@ readonly
     /// <summary>Computes the Bitwise-NOT computation, writing it to the first argument.</summary>
     /// <param name="reference">The <typeparamref name="T"/> to read and write from.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Not(scoped ref T reference)
+    public static void Not(scoped ref T reference)
     {
         ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -228,12 +228,12 @@ readonly
                 x = ref Unsafe.Add(ref x, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -241,11 +241,11 @@ readonly
                 x = ref Unsafe.Add(ref x, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -253,11 +253,11 @@ readonly
                 x = ref Unsafe.Add(ref x, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -265,7 +265,7 @@ readonly
                 x = ref Unsafe.Add(ref x, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return;
         }
 #endif
@@ -304,13 +304,13 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Or(scoped in T read, scoped ref T write)
+    public static void Or(scoped in T read, scoped ref T write)
     {
         ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
             r = ref Unsafe.As<T, byte>(ref AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -319,12 +319,12 @@ readonly
                 r = ref Unsafe.Add(ref r, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -333,11 +333,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -346,11 +346,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -359,7 +359,7 @@ readonly
                 r = ref Unsafe.Add(ref r, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return;
         }
 #endif
@@ -403,13 +403,13 @@ readonly
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
     /// <param name="write">The <typeparamref name="T"/> to write to.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Xor(scoped in T read, scoped ref T write)
+    public static void Xor(scoped in T read, scoped ref T write)
     {
         ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
             r = ref Unsafe.As<T, byte>(ref AsRef(write)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -418,12 +418,12 @@ readonly
                 r = ref Unsafe.Add(ref r, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -432,11 +432,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -445,11 +445,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -458,7 +458,7 @@ readonly
                 r = ref Unsafe.Add(ref r, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return;
         }
 #endif
@@ -506,13 +506,13 @@ readonly
     /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool Eq(scoped in T left, scoped in T right)
+    public static bool Eq(scoped in T left, scoped in T right)
     {
         ref byte l = ref Unsafe.As<T, byte>(ref AsRef(left)),
             r = ref Unsafe.As<T, byte>(ref AsRef(right)),
             upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -523,12 +523,12 @@ readonly
                 r = ref Unsafe.Add(ref r, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return true;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -539,11 +539,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return true;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -554,11 +554,11 @@ readonly
                 r = ref Unsafe.Add(ref r, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return true;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -569,7 +569,7 @@ readonly
                 r = ref Unsafe.Add(ref r, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return true;
         }
 #endif
@@ -628,11 +628,11 @@ readonly
     /// points to a value with all zeros; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool Eq0(scoped in T reference)
+    public static bool Eq0(scoped in T reference)
     {
         ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, 1);
 #if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        if (Vector512.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 64)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 63)))
             {
@@ -642,12 +642,12 @@ readonly
                 x = ref Unsafe.Add(ref x, 64);
             }
 
-            if (sizeof(T) % 64 is 0)
+            if (Unsafe.SizeOf<T>() % 64 is 0)
                 return true;
         }
 #endif
 #if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        if (Vector256.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 32)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 31)))
             {
@@ -657,11 +657,11 @@ readonly
                 x = ref Unsafe.Add(ref x, 32);
             }
 
-            if (sizeof(T) % 32 is 0)
+            if (Unsafe.SizeOf<T>() % 32 is 0)
                 return true;
         }
 
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        if (Vector128.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 16)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 15)))
             {
@@ -671,11 +671,11 @@ readonly
                 x = ref Unsafe.Add(ref x, 16);
             }
 
-            if (sizeof(T) % 16 is 0)
+            if (Unsafe.SizeOf<T>() % 16 is 0)
                 return true;
         }
 
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        if (Vector64.IsHardwareAccelerated && Unsafe.SizeOf<T>() >= 8)
         {
             while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 7)))
             {
@@ -685,7 +685,7 @@ readonly
                 x = ref Unsafe.Add(ref x, 8);
             }
 
-            if (sizeof(T) % 8 is 0)
+            if (Unsafe.SizeOf<T>() % 8 is 0)
                 return true;
         }
 #endif
