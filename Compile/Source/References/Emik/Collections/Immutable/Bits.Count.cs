@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8500
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500, IDE0004
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
 namespace Emik.Morsels;
+
+using static Span;
 
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
@@ -14,13 +17,20 @@ readonly
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe T this[[NonNegativeValue] int index]
+    public T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            fixed (T* ptr = &_value)
-                return Nth(ptr, index);
+            ref var f = ref Unsafe.AsRef(bits);
+            ref var l = ref Unsafe.Add(ref f, 1);
+
+            if (Unsafe.SizeOf<T>() >= sizeof(uint))
+                MovePopCount(ref f, ref l, ref index);
+
+            return Find(ref f, ref l, index) is not 0 and var i
+                ? Create(ref f, ref l, i)
+                : throw new ArgumentOutOfRangeException(nameof(index), index, null);
         }
     }
 
@@ -34,169 +44,136 @@ readonly
 
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe int Count
+    public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            fixed (T* ptr = &_value)
-                return PopCount(ptr);
+            ref var f = ref Unsafe.AsRef(bits);
+            ref var l = ref Unsafe.Add(ref f, 1);
+            var sum = 0;
+
+            if (Unsafe.SizeOf<T>() >= Unsafe.SizeOf<nint>())
+            {
+                while (Unsafe.IsAddressLessThan(
+                    ref f,
+                    ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() + 1)
+                ))
+                {
+                    sum += BitOperations.PopCount(Unsafe.As<T, nuint>(ref l));
+                    f = ref Unsafe.Add(ref f, 1);
+                }
+
+                if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() is 0)
+                    return sum;
+            }
+
+            while (Unsafe.IsAddressLessThan(
+                ref f,
+                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<ulong>() + 1)
+            ))
+            {
+                sum += BitOperations.PopCount(Unsafe.As<T, ulong>(ref l));
+                f = ref Unsafe.Add(ref f, 1);
+            }
+
+            if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<ulong>() is 0)
+                return sum;
+
+            while (Unsafe.IsAddressLessThan(
+                ref f,
+                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<uint>() + 1)
+            ))
+            {
+                sum += BitOperations.PopCount(Unsafe.As<T, uint>(ref l));
+                f = ref Unsafe.Add(ref f, 1);
+            }
+
+            return Unsafe.SizeOf<T>() % sizeof(uint) is 0
+                ? sum
+                : sum +
+                BitOperations.PopCount(
+                    (Unsafe.SizeOf<T>() % sizeof(uint)) switch
+                    {
+                        1 => Unsafe.As<T, byte>(ref f),
+                        2 => Unsafe.As<T, ushort>(ref f),
+                        3 => Unsafe.As<T, ushort>(ref f) | (uint)Unsafe.Add(ref Unsafe.As<T, byte>(ref f), 2) << 16,
+                        _ => throw new InvalidOperationException("Unsafe.SizeOf<T>() is assumed to be within [1, 3]."),
+                    }
+                );
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable CognitiveComplexity
-    static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
+    static void MovePopCount(ref T f, ref T l, ref int x)
     {
-        for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
-            if (BitOperations.PopCount(*(nuint*)ptr) is var i && i <= x)
+        if (Unsafe.SizeOf<T>() >= Unsafe.SizeOf<nint>())
+            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() + 1)) &&
+                BitOperations.PopCount(Unsafe.As<T, nuint>(ref f)) is var i &&
+                i <= x)
+            {
                 x -= i;
-            else
-                break;
+                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<nuint>());
+            }
 
-        for (; sizeof(T) % sizeof(nuint) >= sizeof(ulong) && ptr <= upper - sizeof(ulong); ptr += sizeof(ulong))
-            if (BitOperations.PopCount(*(ulong*)ptr) is var i && i <= x)
+        if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() >= sizeof(ulong))
+            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)sizeof(ulong) + 1)) &&
+                BitOperations.PopCount(Unsafe.As<T, ulong>(ref f)) is var i &&
+                i <= x)
+            {
                 x -= i;
-            else
-                break;
+                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<ulong>());
+            }
 
-        for (; sizeof(T) % sizeof(ulong) >= sizeof(uint) && ptr <= upper - sizeof(uint); ptr += sizeof(uint))
-            if (BitOperations.PopCount(*(uint*)ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
+        if (Unsafe.SizeOf<T>() % sizeof(ulong) < sizeof(uint))
+            return;
+
+        while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)sizeof(uint) + 1)) &&
+            BitOperations.PopCount(Unsafe.As<T, uint>(ref f)) is var i &&
+            i <= x)
+        {
+            x -= i;
+            f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<uint>());
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe byte Find(ref byte* ptr, in byte* upper, int x)
+    static byte Find(ref T f, ref T l, int x)
     {
-        for (; ptr < upper; ptr++)
+        while (Unsafe.IsAddressLessThan(ref f, ref l) && Unsafe.As<T, byte>(ref f) is var b)
         {
-            if ((*ptr & 1) is not 0 && x-- is 0)
+            if ((b & 1) is not 0 && x-- is 0)
                 return 1;
 
-            if ((*ptr & 1 << 1) is not 0 && x-- is 0)
+            if ((b & 1 << 1) is not 0 && x-- is 0)
                 return 1 << 1;
 
-            if ((*ptr & 1 << 2) is not 0 && x-- is 0)
+            if ((b & 1 << 2) is not 0 && x-- is 0)
                 return 1 << 2;
 
-            if ((*ptr & 1 << 3) is not 0 && x-- is 0)
+            if ((b & 1 << 3) is not 0 && x-- is 0)
                 return 1 << 3;
 
-            if ((*ptr & 1 << 4) is not 0 && x-- is 0)
+            if ((b & 1 << 4) is not 0 && x-- is 0)
                 return 1 << 4;
 
-            if ((*ptr & 1 << 5) is not 0 && x-- is 0)
+            if ((b & 1 << 5) is not 0 && x-- is 0)
                 return 1 << 5;
 
-            if ((*ptr & 1 << 6) is not 0 && x-- is 0)
+            if ((b & 1 << 6) is not 0 && x-- is 0)
                 return 1 << 6;
 
-            if ((*ptr & 1 << 7) is not 0 && x-- is 0)
+            if ((b & 1 << 7) is not 0 && x-- is 0)
                 return 1 << 7;
+
+            f = ref Unsafe.AddByteOffset(ref f, 1);
         }
 
         return 0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable MA0051
-    static unsafe int PopCount(T* value)
-#pragma warning restore MA0051
-    {
-        var ptr = (nuint*)value++;
-        var sum = 0;
-
-        if (sizeof(T) / (sizeof(nuint) * 16) > 0)
-        {
-            for (; ptr <= (nuint*)value - 16; ptr += 16)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]) +
-                    BitOperations.PopCount(ptr[4]) +
-                    BitOperations.PopCount(ptr[5]) +
-                    BitOperations.PopCount(ptr[6]) +
-                    BitOperations.PopCount(ptr[7]) +
-                    BitOperations.PopCount(ptr[8]) +
-                    BitOperations.PopCount(ptr[9]) +
-                    BitOperations.PopCount(ptr[10]) +
-                    BitOperations.PopCount(ptr[11]) +
-                    BitOperations.PopCount(ptr[12]) +
-                    BitOperations.PopCount(ptr[13]) +
-                    BitOperations.PopCount(ptr[14]) +
-                    BitOperations.PopCount(ptr[15]);
-
-            if (sizeof(T) % sizeof(nuint) * 16 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 16) / (sizeof(nuint) * 8) > 0)
-        {
-            for (; ptr <= (nuint*)value - 8; ptr += 8)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]) +
-                    BitOperations.PopCount(ptr[4]) +
-                    BitOperations.PopCount(ptr[5]) +
-                    BitOperations.PopCount(ptr[6]) +
-                    BitOperations.PopCount(ptr[7]);
-
-            if (sizeof(T) % sizeof(nuint) * 8 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 8) / (sizeof(nuint) * 4) > 0)
-        {
-            for (; ptr <= (nuint*)value - 4; ptr += 4)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]);
-
-            if (sizeof(T) % sizeof(nuint) * 4 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 4) / (sizeof(nuint) * 2) > 0)
-        {
-            for (; ptr <= (nuint*)value - 2; ptr += 2)
-                sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
-
-            if (sizeof(T) % sizeof(nuint) * 2 is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
-        {
-            for (; ptr < value; ptr++)
-                sum += BitOperations.PopCount(*ptr);
-
-            if (sizeof(T) % sizeof(nuint) is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return sum;
-
-        if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
-        {
-            for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
-                sum += BitOperations.PopCount(*ptr);
-
-            if (sizeof(T) % sizeof(nuint) is 0)
-                return sum;
-        }
-
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return sum;
-
-        return sum + PopCountRemainder((byte*)ptr);
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
-    static unsafe int TrailingZeroCount(nuint value)
+    static int TrailingZeroCount(nuint value)
 #if NET7_0_OR_GREATER
         =>
             BitOperations.TrailingZeroCount(value);
@@ -204,11 +181,11 @@ readonly
     {
         const int BitsInUInt = BitsInByte * sizeof(uint);
 
-        for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
+        for (var i = 0; i < (Unsafe.SizeOf<nint>() + sizeof(uint) - 1) / sizeof(uint); i++)
             if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
                 return j + i * BitsInUInt;
 
-        return sizeof(nuint) * BitsInByte;
+        return Unsafe.SizeOf<nint>() * BitsInByte;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -251,42 +228,12 @@ readonly
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
         };
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe int PopCountRemainder(byte* remainder) =>
-        BitOperations.PopCount(
-            (sizeof(T) % sizeof(ulong)) switch
-            {
-                1 => *remainder,
-                2 => *(ushort*)remainder,
-                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
-                4 => *(uint*)remainder,
-                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
-                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
-                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
-                _ => throw new InvalidOperationException("sizeof(T) is assumed to be within [1, 7]."),
-            }
-        );
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Create(T* p, byte* ptr, byte i)
+    static T Create(ref T p, ref T ptr, byte i)
     {
         T t = default;
-        ((byte*)&t)[ptr - (byte*)p] = i;
+        Unsafe.Add(ref Unsafe.As<T, byte>(ref p), Unsafe.ByteOffset(ref ptr, ref p)) = i;
         return t;
     }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Nth(T* p, [NonNegativeValue] int index)
-    {
-        var x = index;
-        var ptr = (byte*)p;
-        var upper = (byte*)(p + 1);
-
-        if (sizeof(T) >= sizeof(uint))
-            MovePopCount(ref ptr, upper, ref x);
-
-        return Find(ref ptr, upper, x) is not 0 and var i
-            ? Create(p, ptr, i)
-            : throw new ArgumentOutOfRangeException(nameof(index), index, null);
-    }
 }
+#endif

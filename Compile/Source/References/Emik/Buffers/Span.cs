@@ -41,14 +41,6 @@ static partial class Span
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
                     !IsReferenceOrContainsReferences<TFrom>() && !IsReferenceOrContainsReferences<TTo>());
 #endif
-            /// <summary>
-            /// Gets the error that occurs when converting between types would cause undefined behavior.
-            /// </summary>
-            public static NotSupportedException Error
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-                get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
-            }
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
             static bool IsReinterpretable(Type first, Type second)
@@ -78,16 +70,21 @@ static partial class Span
         /// <typeparamref name="TFrom"/> to the destination type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
-#if NET9_0_OR_GREATER
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
-                ? Unsafe.As<ReadOnlySpan<TFrom>, ReadOnlySpan<TTo>>(ref AsRef(source))
-                : throw Is<TFrom>.Error;
+        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source)
+        {
+            System.Diagnostics.Debug.Assert(Is<TFrom>.Supported, "No out-of-bounds access.");
+#if (NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP) && !CSHARPREPL
+            // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
+            // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
+            // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
 #else
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
-                ? *(ReadOnlySpan<TTo>*)&source
-                : throw Is<TFrom>.Error;
+            return *(ReadOnlySpan<TTo>*)&source;
 #endif
+        }
+
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
         /// to a <see cref="Span{T}"/> of type <see name="TTo"/> in <see cref="To{TTo}"/>.
@@ -102,14 +99,53 @@ static partial class Span
         /// type <typeparamref name="TFrom"/> to the destination type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
-#if NET9_0_OR_GREATER
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
-                ? Unsafe.As<Span<TFrom>, Span<TTo>>(ref AsRef(source))
-                : throw Is<TFrom>.Error;
+        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source)
+        {
+            System.Diagnostics.Debug.Assert(Is<TFrom>.Supported, "No out-of-bounds access.");
+#if (NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP) && !CSHARPREPL
+            // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
+            // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
+            // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
 #else
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
+            return *(Span<TTo>*)&source;
 #endif
+        }
+    }
+
+    /// <summary>Provides interpret methods.</summary>
+    /// <typeparam name="TTo">The type to convert to.</typeparam>
+    public static class Ret<TTo>
+#if !NO_ALLOWS_REF_STRUCT
+        where TTo : allows ref struct
+#endif
+    {
+        /// <summary>Performs a reinterpret cast from <typeparamref name="TFrom"/> to <see name="TTo"/>.</summary>
+        /// <typeparam name="TFrom">The type to convert from.</typeparam>
+        /// <param name="source">The value to convert.</param>
+        /// <returns>The result of the reinterpret cast.</returns>
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static unsafe TTo From<TFrom>(TFrom source)
+#if !NO_ALLOWS_REF_STRUCT
+            where TFrom : allows ref struct
+#endif
+        {
+            System.Diagnostics.Debug.Assert(Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>(), "No out-of-bounds access.");
+#if CSHARPREPL
+            return Unsafe.As<TFrom, TTo>(ref source);
+#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+            // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
+            // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
+            // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+#else
+            return *(TTo*)&source;
+#endif
+        }
     }
 
     /// <summary>The maximum size for stack allocations in bytes.</summary>
@@ -264,22 +300,8 @@ static partial class Span
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint ToAddress<T>(this T? _)
-        where T : class
-#if CSHARPREPL
-        =>
-            Unsafe.As<T?, nuint>(ref _);
-#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NET5_0_OR_GREATER
-    {
-        // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
-        // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
-        // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
-        IL.Emit.Ldarg_0();
-        return IL.Return<nuint>();
-    }
-#else
-        =>
-            *(nuint*)&_;
-#endif
+        where T : class =>
+        Ret<nuint>.From(_);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
@@ -340,11 +362,11 @@ static partial class Span
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 #if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
     /// <summary>Creates the stack allocation of the type.</summary>
-    /// <typeparam name="T">The type of the resulting pointer.</typeparam>
+    /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
-    /// <returns>The length of the stack-allocation.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe T* StackallocPtr<T>([NonNegativeValue] int length)
+    /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
@@ -352,17 +374,13 @@ static partial class Span
         if (IsReferenceOrContainsReferences<T>())
             throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
 
-        var p = stackalloc byte[InBytes<T>(length)];
-        return (T*)p;
+        Span<byte> span = stackalloc byte[InBytes<T>(length)];
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
+#else
+        return new(span.Pointer, length);
+#endif
     }
-
-    /// <summary>Creates the stack allocation of the type.</summary>
-    /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
-    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
-    /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length) =>
-        new(StackallocPtr<T>(length), length);
 #endif
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>

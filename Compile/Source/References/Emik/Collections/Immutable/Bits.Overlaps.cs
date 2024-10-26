@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable 8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 namespace Emik.Morsels;
@@ -59,8 +60,8 @@ readonly
         if (!IsSingle(item))
             return false;
 
-        And(_value, ref item);
-        return !EqZero(item);
+        And(bits, ref item);
+        return !Eq0(item);
     }
 
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
@@ -98,7 +99,7 @@ readonly
             else
                 return false;
 
-        return !Eq(_value, t);
+        return !Eq(bits, t);
     }
 
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
@@ -129,6 +130,7 @@ readonly
             else
                 return false;
 
-        return Eq(_value, t);
+        return Eq(bits, t);
     }
 }
+#endif

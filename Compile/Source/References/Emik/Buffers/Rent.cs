@@ -51,6 +51,13 @@ static partial class Rent
 #endif
             _ => new(it, out ptr), // Heap allocation
         };
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T* StackallocPtr<T>(int it)
+    {
+        var ptr = stackalloc byte[InBytes<T>(it)];
+        return (T*)ptr;
+    }
 }
 
 /// <summary>Represents the rented array.</summary>

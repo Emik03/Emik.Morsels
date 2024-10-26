@@ -1444,14 +1444,6 @@ public
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
                     !IsReferenceOrContainsReferences<TFrom>() && !IsReferenceOrContainsReferences<TTo>());
 #endif
-            /// <summary>
-            /// Gets the error that occurs when converting between types would cause undefined behavior.
-            /// </summary>
-            public static NotSupportedException Error
-            {
-                [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-                get => new($"Cannot convert from {typeof(TFrom).Name} to {typeof(TTo).Name}.");
-            }
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
             static bool IsReinterpretable(Type first, Type second)
@@ -1478,16 +1470,17 @@ public
         /// <typeparamref name="TFrom"/> to the destination type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source) =>
-#if NET9_0_OR_GREATER
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
-                ? Unsafe.As<ReadOnlySpan<TFrom>, ReadOnlySpan<TTo>>(ref AsRef(source))
-                : throw Is<TFrom>.Error;
+        public static unsafe ReadOnlySpan<TTo> From<TFrom>(ReadOnlySpan<TFrom> source)
+        {
+            System.Diagnostics.Debug.Assert(Is<TFrom>.Supported, "No out-of-bounds access.");
+#if (NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP) && !CSHARPREPL
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
 #else
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
-                ? *(ReadOnlySpan<TTo>*)&source
-                : throw Is<TFrom>.Error;
+            return *(ReadOnlySpan<TTo>*)&source;
 #endif
+        }
         /// <summary>
         /// Converts a <see cref="Span{T}"/> of type <typeparamref name="TFrom"/>
         /// to a <see cref="Span{T}"/> of type <see name="TTo"/> in <see cref="To{TTo}"/>.
@@ -1502,14 +1495,46 @@ public
         /// type <typeparamref name="TFrom"/> to the destination type <see name="TTo"/> in <see cref="To{TTo}"/>.
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source) =>
-#if NET9_0_OR_GREATER
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported
-                ? Unsafe.As<Span<TFrom>, Span<TTo>>(ref AsRef(source))
-                : throw Is<TFrom>.Error;
+        public static unsafe Span<TTo> From<TFrom>(Span<TFrom> source)
+        {
+            System.Diagnostics.Debug.Assert(Is<TFrom>.Supported, "No out-of-bounds access.");
+#if (NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP) && !CSHARPREPL
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
 #else
-            typeof(TTo) == typeof(TFrom) || Is<TFrom>.Supported ? *(Span<TTo>*)&source : throw Is<TFrom>.Error;
+            return *(Span<TTo>*)&source;
 #endif
+        }
+    }
+    /// <summary>Provides interpret methods.</summary>
+    /// <typeparam name="TTo">The type to convert to.</typeparam>
+    public static class Ret<TTo>
+#if !NO_ALLOWS_REF_STRUCT
+        where TTo : allows ref struct
+#endif
+    {
+        /// <summary>Performs a reinterpret cast from <typeparamref name="TFrom"/> to <see name="TTo"/>.</summary>
+        /// <typeparam name="TFrom">The type to convert from.</typeparam>
+        /// <param name="source">The value to convert.</param>
+        /// <returns>The result of the reinterpret cast.</returns>
+        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        public static unsafe TTo From<TFrom>(TFrom source)
+#if !NO_ALLOWS_REF_STRUCT
+            where TFrom : allows ref struct
+#endif
+        {
+            System.Diagnostics.Debug.Assert(Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>(), "No out-of-bounds access.");
+#if CSHARPREPL
+            return Unsafe.As<TFrom, TTo>(ref source);
+#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+#else
+            return *(TTo*)&source;
+#endif
+        }
     }
     /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
@@ -1654,19 +1679,8 @@ public
     /// <returns>The memory address of the reference object.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe nuint ToAddress<T>(this T? _)
-        where T : class
-#if CSHARPREPL
-        =>
-            Unsafe.As<T?, nuint>(ref _);
-#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NET5_0_OR_GREATER
-    {
-        IL.Emit.Ldarg_0();
-        return IL.Return<nuint>();
-    }
-#else
-        =>
-            *(nuint*)&_;
-#endif
+        where T : class =>
+        Ret<nuint>.From(_);
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
@@ -1725,25 +1739,22 @@ public
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
 #if !CSHARPREPL
     /// <summary>Creates the stack allocation of the type.</summary>
-    /// <typeparam name="T">The type of the resulting pointer.</typeparam>
-    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
-    /// <returns>The length of the stack-allocation.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe T* StackallocPtr<T>([NonNegativeValue] int length)
-    {
-        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-        if (IsReferenceOrContainsReferences<T>())
-            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-        var p = stackalloc byte[InBytes<T>(length)];
-        return (T*)p;
-    }
-    /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
     /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length) =>
-        new(StackallocPtr<T>(length), length);
+    public static Span<T> Stackalloc<T>([NonNegativeValue] in int length)
+    {
+        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
+        if (IsReferenceOrContainsReferences<T>())
+            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
+        Span<byte> span = stackalloc byte[InBytes<T>(length)];
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
+#else
+        return new(span.Pointer, length);
+#endif
+    }
 #endif
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
@@ -3224,6 +3235,7 @@ public
         public IEnumerator<T> GetEnumerator() => enumerable.GetEnumerator();
     }
 // SPDX-License-Identifier: MPL-2.0
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
 #pragma warning disable 8500, IDE0251, MA0102
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
@@ -3233,24 +3245,15 @@ public
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-        =>
-            source;
+        where T : unmanaged =>
+        source;
     /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAnd<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
         foreach (var next in source)
@@ -3263,18 +3266,13 @@ public
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAndNot<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
         foreach (var next in source)
             Bits<T>.AndNot(next, ref t);
         return t;
     }
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
     /// <summary>Returns the reference that contains the most bits.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -3291,18 +3289,13 @@ public
     public static T BitwiseMin<T>(this IEnumerable<T> source)
         where T : unmanaged =>
         source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
-#endif
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseOr<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
         foreach (var next in source)
@@ -3315,11 +3308,7 @@ public
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseXor<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
         foreach (var next in source)
@@ -3337,14 +3326,8 @@ public
 readonly
 #endif
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
-#if KTANE
-    where T : struct
-#else
     where T : unmanaged
-#endif
 {
-    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
-    readonly T _value = bits;
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
     bool ICollection<T>.IsReadOnly
@@ -3355,7 +3338,7 @@ readonly
     [CollectionAccess(Read), ProvidesContext]
     public readonly T Current
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => bits;
     }
     /// <summary>Implicitly calls the constructor.</summary>
     /// <param name="value">The value to pass into the constructor.</param>
@@ -3437,7 +3420,7 @@ readonly
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    public readonly Enumerator GetEnumerator() => _value;
+    public readonly Enumerator GetEnumerator() => bits;
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
     readonly IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
@@ -3461,23 +3444,19 @@ readonly
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult Coerce<TResult>()
-#if KTANE
-        where TResult : struct
-#else
+    public TResult Coerce<TResult>()
         where TResult : unmanaged
-#endif
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Copy(T value)
         {
             TResult ret = default;
-            *(T*)&ret = value;
+            Unsafe.As<TResult, T>(ref ret) = value;
             return ret;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => *(TResult*)&value;
-        return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
+        static TResult Read(T value) => Unsafe.As<T, TResult>(ref value);
+        return Unsafe.SizeOf<T>() >= Unsafe.SizeOf<TResult>() ? Read(bits) : Copy(bits);
     }
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
     /// <remarks><para>
@@ -3496,24 +3475,20 @@ readonly
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult CoerceLeft<TResult>()
-#if KTANE
-        where TResult : struct
-#else
+    public TResult CoerceLeft<TResult>()
         where TResult : unmanaged
-#endif
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Copy(T value)
         {
             TResult ret = default;
-            ((T*)(&ret + 1))[-1] = value;
+            Unsafe.Subtract(ref Unsafe.As<TResult, T>(ref Unsafe.Add(ref ret, 1)), 1) = value;
             return ret;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
-        return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
-            sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
+        static TResult Read(T value) => Unsafe.Subtract(ref Unsafe.As<T, TResult>(ref Unsafe.Add(ref value, 1)), 1);
+        return Unsafe.SizeOf<T>() == Unsafe.SizeOf<TResult>() ? Coerce<TResult>() :
+            Unsafe.SizeOf<T>() > Unsafe.SizeOf<TResult>() ? Read(bits) : Copy(bits);
     }
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
@@ -3521,7 +3496,6 @@ readonly
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
         const int Start = -1;
-        readonly T _value = value;
         /// <summary>Gets the current mask.</summary>
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
         public nuint Mask
@@ -3540,23 +3514,23 @@ readonly
         [CollectionAccess(Read)]
         public readonly Bits<T> AsBits
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => value;
         }
         /// <summary>Gets the underlying value that is being enumerated.</summary>
         [CollectionAccess(Read)]
         public readonly T AsValue
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => value;
         }
         /// <inheritdoc />
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None)]
-        public readonly unsafe T Current
+        public readonly T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get
             {
                 T t = default;
-                *((nuint*)&t + Index) ^= Mask;
+                Unsafe.Add(ref Unsafe.As<T, nuint>(ref t), Index) = Mask;
                 return t;
             }
         }
@@ -3588,7 +3562,7 @@ readonly
         }
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe bool MoveNext()
+        public bool MoveNext()
         {
             Mask <<= 1;
             if (Mask is 0)
@@ -3596,11 +3570,10 @@ readonly
                 Index++;
                 Mask++;
             }
-            fixed (T* ptr = &_value)
-                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
-                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
-                    return true;
-            Index = sizeof(T) / sizeof(nuint);
+            if (Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>() is not 0 && FindNativelySized() ||
+                Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() is not 0 && FindRest())
+                return true;
+            Index = Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>();
             Mask = FalsyMask();
             return false;
         }
@@ -3614,44 +3587,46 @@ readonly
         /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
         /// <returns>The <see cref="string"/> result of this instance.</returns>
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-        public unsafe string ToRemainingString()
+        public string ToRemainingString()
         {
-            var ptr = stackalloc char[s_typeSize];
-            new Span<char>(ptr, s_typeSize).Fill('0');
-            var last = ptr + s_typeSize - 1;
+            Span<char> span = stackalloc char[Unsafe.SizeOf<T>() * BitsInByte];
+            ref var last = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), Unsafe.SizeOf<T>() * BitsInByte - 1);
+            span.Fill('0');
             while (MoveNext())
-                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
-            return new(ptr, 0, s_typeSize);
+                Unsafe.Add(ref last, (int)(Index * (Unsafe.SizeOf<nint>() * BitsInByte) - TrailingZeroCount(Mask))) ^=
+                    '\x01';
+            return span.ToString();
         }
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
+        static nuint FalsyMask() => (nuint)1 << Unsafe.SizeOf<nint>() * BitsInByte - 2;
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
+        static nuint LastRest() => ((nuint)1 << Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() * BitsInByte) - 1;
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindNativelySized(T* ptr)
+        bool FindNativelySized()
         {
             if (Index < 0)
                 return false;
-            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
+            for (; Index < Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>(); Index++, Mask = 1)
                 for (; Mask is not 0; Mask <<= 1)
-                    if (IsNonZero(ptr))
+                    if (IsNonZero())
                         return true;
             return false;
         }
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindRest(T* ptr)
+        bool FindRest()
         {
-            if (Index != sizeof(T) / sizeof(nuint))
+            if (Index != Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>())
                 return false;
             for (; (Mask & LastRest()) is not 0; Mask <<= 1)
-                if (IsNonZero(ptr))
+                if (IsNonZero())
                     return true;
             return false;
         }
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
+        bool IsNonZero() => (Unsafe.Add(ref Unsafe.As<T, nuint>(ref AsRef(value)), Index) & Mask) is not 0;
     }
 }
+#endif
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30
 // ReSharper disable CheckNamespace RedundantNameQualifier
@@ -3789,7 +3764,7 @@ public enum MouseButtons : byte
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
-#if NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable once CheckNamespace EmptyNamespace
 /// <summary>Encapsulates a single value to be exposed as a <see cref="Memory{T}"/> of size 1.</summary>
 /// <typeparam name="T">The type of value.</typeparam>
@@ -4045,7 +4020,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         switch (iterable)
         {
             case string str:
-                return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
+                return str.Length is 0 ? fallback : Ret<T>.From(str[0]);
 #if NETCOREAPP || ROSLYN
             case ImmutableArray<T> array:
                 return array.IsDefaultOrEmpty ? fallback : array[0];
@@ -4072,7 +4047,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
         iterable switch
         {
-            string str => str is [.., var last] ? Reinterpret<T>(last) : fallback,
+            string str => str is [.., var last] ? Ret<T>.From(last) : fallback,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => array is [.., var last] ? last : fallback,
 #endif
@@ -4158,7 +4133,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             return default;
         return iterable switch
         {
-            string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
+            string str => index < str.Length ? Ret<T>.From(str[index]) : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
 #endif
@@ -4186,7 +4161,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             return default;
         return iterable switch
         {
-            string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
+            string str => index < str.Length ? Ret<T>.From(str[str.Length - index - 1]) : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array =>
                 !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
@@ -4199,18 +4174,6 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         };
     }
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Reinterpret<T>(char c)
-    {
-        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 8500
-        return *(T*)&c;
-#pragma warning restore 8500
-#else
-        return Unsafe.As<char, T>(ref c);
-#endif
-    }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
@@ -6687,8 +6650,9 @@ public enum ControlFlow : byte
             _ => enumerable.TryGetNonEnumeratedCount(out var count) ? count : null,
         };
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8500, MA0051
-// ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity StructCanBeMadeReadOnly
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500, IDE0004, MA0051
+// ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -6704,9 +6668,87 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void And(scoped in T read, scoped ref T write)
     {
-        fixed (T* r = &read)
-        fixed (T* w = &write)
-            And(r, w);
+        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+            upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                Vector512.BitwiseAnd(Vector512.LoadUnsafe(l), Vector512.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 64);
+                r = ref Unsafe.Add(ref r, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                Vector256.BitwiseAnd(Vector256.LoadUnsafe(l), Vector256.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 32);
+                r = ref Unsafe.Add(ref r, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                Vector128.BitwiseAnd(Vector128.LoadUnsafe(l), Vector128.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 16);
+                r = ref Unsafe.Add(ref r, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                Vector64.BitwiseAnd(Vector64.LoadUnsafe(l), Vector64.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 8);
+                r = ref Unsafe.Add(ref r, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            Unsafe.As<byte, nuint>(ref r) &= Unsafe.As<byte, nuint>(ref l);
+            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            Unsafe.As<byte, ulong>(ref r) &= Unsafe.As<byte, ulong>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ulong));
+            r = ref Unsafe.Add(ref r, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            Unsafe.As<byte, uint>(ref r) &= Unsafe.As<byte, uint>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(uint));
+            r = ref Unsafe.Add(ref r, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            Unsafe.As<byte, ushort>(ref r) &= Unsafe.As<byte, ushort>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ushort));
+            r = ref Unsafe.Add(ref r, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
+        {
+            Unsafe.As<byte, byte>(ref r) &= Unsafe.As<byte, byte>(ref l);
+            l = ref Unsafe.Add(ref l, 1);
+            r = ref Unsafe.Add(ref r, 1);
+        }
     }
     /// <summary>Computes the Bitwise-AND-NOT computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -6714,17 +6756,163 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void AndNot(scoped in T read, scoped ref T write)
     {
-        fixed (T* r = &read)
-        fixed (T* w = &write)
-            AndNot(r, w);
+        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+            upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                Vector512.AndNot(Vector512.LoadUnsafe(l), Vector512.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 64);
+                r = ref Unsafe.Add(ref r, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                Vector256.AndNot(Vector256.LoadUnsafe(l), Vector256.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 32);
+                r = ref Unsafe.Add(ref r, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                Vector128.AndNot(Vector128.LoadUnsafe(l), Vector128.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 16);
+                r = ref Unsafe.Add(ref r, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                Vector64.AndNot(Vector64.LoadUnsafe(l), Vector64.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 8);
+                r = ref Unsafe.Add(ref r, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            Unsafe.As<byte, nuint>(ref r) &= ~Unsafe.As<byte, nuint>(ref l);
+            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            Unsafe.As<byte, ulong>(ref r) &= ~Unsafe.As<byte, ulong>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ulong));
+            r = ref Unsafe.Add(ref r, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            Unsafe.As<byte, uint>(ref r) &= ~Unsafe.As<byte, uint>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(uint));
+            r = ref Unsafe.Add(ref r, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            Unsafe.As<byte, ushort>(ref r) &= (ushort)~Unsafe.As<byte, ushort>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ushort));
+            r = ref Unsafe.Add(ref r, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
+        {
+            Unsafe.As<byte, byte>(ref r) &= (byte)~Unsafe.As<byte, byte>(ref l);
+            l = ref Unsafe.Add(ref l, 1);
+            r = ref Unsafe.Add(ref r, 1);
+        }
     }
     /// <summary>Computes the Bitwise-NOT computation, writing it to the first argument.</summary>
     /// <param name="reference">The <typeparamref name="T"/> to read and write from.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Not(scoped ref T reference)
     {
-        fixed (T* ptr = &reference)
-            Not(ptr);
+        ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, Unsafe.SizeOf<T>());
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                Vector512.OnesComplement(Vector512.LoadUnsafe(x)).StoreUnsafe(ref x);
+                x = ref Unsafe.Add(ref x, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                Vector256.OnesComplement(Vector256.LoadUnsafe(x)).StoreUnsafe(ref x);
+                x = ref Unsafe.Add(ref x, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                Vector128.OnesComplement(Vector128.LoadUnsafe(x)).StoreUnsafe(ref x);
+                x = ref Unsafe.Add(ref x, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                Vector64.OnesComplement(Vector64.LoadUnsafe(x)).StoreUnsafe(ref x);
+                x = ref Unsafe.Add(ref x, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            Unsafe.As<byte, nuint>(ref x) = ~Unsafe.As<byte, nuint>(ref x);
+            x = ref Unsafe.Add(ref x, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            Unsafe.As<byte, ulong>(ref x) = ~Unsafe.As<byte, ulong>(ref x);
+            x = ref Unsafe.Add(ref x, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            Unsafe.As<byte, uint>(ref x) = ~Unsafe.As<byte, uint>(ref x);
+            x = ref Unsafe.Add(ref x, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            Unsafe.As<byte, ushort>(ref x) = (ushort)~Unsafe.As<byte, ushort>(ref x);
+            x = ref Unsafe.Add(ref x, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref upper))
+        {
+            Unsafe.As<byte, byte>(ref x) &= (byte)~Unsafe.As<byte, byte>(ref x);
+            x = ref Unsafe.Add(ref x, 1);
+        }
     }
     /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -6732,9 +6920,87 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Or(scoped in T read, scoped ref T write)
     {
-        fixed (T* r = &read)
-        fixed (T* w = &write)
-            Or(r, w);
+        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+            upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                Vector512.BitwiseOr(Vector512.LoadUnsafe(l), Vector512.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 64);
+                r = ref Unsafe.Add(ref r, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                Vector256.BitwiseOr(Vector256.LoadUnsafe(l), Vector256.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 32);
+                r = ref Unsafe.Add(ref r, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                Vector128.BitwiseOr(Vector128.LoadUnsafe(l), Vector128.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 16);
+                r = ref Unsafe.Add(ref r, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                Vector64.BitwiseOr(Vector64.LoadUnsafe(l), Vector64.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 8);
+                r = ref Unsafe.Add(ref r, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            Unsafe.As<byte, nuint>(ref r) |= Unsafe.As<byte, nuint>(ref l);
+            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            Unsafe.As<byte, ulong>(ref r) |= Unsafe.As<byte, ulong>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ulong));
+            r = ref Unsafe.Add(ref r, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            Unsafe.As<byte, uint>(ref r) |= Unsafe.As<byte, uint>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(uint));
+            r = ref Unsafe.Add(ref r, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            Unsafe.As<byte, ushort>(ref r) |= Unsafe.As<byte, ushort>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ushort));
+            r = ref Unsafe.Add(ref r, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
+        {
+            Unsafe.As<byte, byte>(ref r) |= Unsafe.As<byte, byte>(ref l);
+            l = ref Unsafe.Add(ref l, 1);
+            r = ref Unsafe.Add(ref r, 1);
+        }
     }
     /// <summary>Computes the Bitwise-XOR computation, writing it to the second argument.</summary>
     /// <param name="read">The <typeparamref name="T"/> to read from.</param>
@@ -6742,9 +7008,87 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe void Xor(scoped in T read, scoped ref T write)
     {
-        fixed (T* r = &read)
-        fixed (T* w = &write)
-            Xor(r, w);
+        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(read)),
+            r = ref Unsafe.As<T, byte>(ref AsRef(write)),
+            upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                Vector512.Xor(Vector512.LoadUnsafe(l), Vector512.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 64);
+                r = ref Unsafe.Add(ref r, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                Vector256.Xor(Vector256.LoadUnsafe(l), Vector256.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 32);
+                r = ref Unsafe.Add(ref r, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                Vector128.Xor(Vector128.LoadUnsafe(l), Vector128.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 16);
+                r = ref Unsafe.Add(ref r, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                Vector64.Xor(Vector64.LoadUnsafe(l), Vector64.LoadUnsafe(r)).StoreUnsafe(ref r);
+                l = ref Unsafe.Add(ref l, 8);
+                r = ref Unsafe.Add(ref r, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            Unsafe.As<byte, nuint>(ref r) ^= Unsafe.As<byte, nuint>(ref l);
+            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            Unsafe.As<byte, ulong>(ref r) ^= Unsafe.As<byte, ulong>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ulong));
+            r = ref Unsafe.Add(ref r, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            Unsafe.As<byte, uint>(ref r) ^= Unsafe.As<byte, uint>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(uint));
+            r = ref Unsafe.Add(ref r, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            Unsafe.As<byte, ushort>(ref r) ^= Unsafe.As<byte, ushort>(ref l);
+            l = ref Unsafe.Add(ref l, sizeof(ushort));
+            r = ref Unsafe.Add(ref r, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
+        {
+            Unsafe.As<byte, byte>(ref r) ^= Unsafe.As<byte, byte>(ref l);
+            l = ref Unsafe.Add(ref l, 1);
+            r = ref Unsafe.Add(ref r, 1);
+        }
     }
     /// <summary>Determines whether both references of <typeparamref name="T"/> contain the same bits.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -6756,9 +7100,97 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe bool Eq(scoped in T left, scoped in T right)
     {
-        fixed (T* l = &left)
-        fixed (T* r = &right)
-            return Eq(l, r);
+        ref byte l = ref Unsafe.As<T, byte>(ref AsRef(left)),
+            r = ref Unsafe.As<T, byte>(ref AsRef(right)),
+            upper = ref Unsafe.Add(ref l, Unsafe.SizeOf<T>());
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                if (!Vector512.EqualsAll(Vector512.LoadUnsafe(l), Vector512.LoadUnsafe(r)))
+                    return false;
+                l = ref Unsafe.Add(ref l, 64);
+                r = ref Unsafe.Add(ref r, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return true;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                if (!Vector256.EqualsAll(Vector256.LoadUnsafe(l), Vector256.LoadUnsafe(r)))
+                    return false;
+                l = ref Unsafe.Add(ref l, 32);
+                r = ref Unsafe.Add(ref r, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return true;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                if (!Vector128.EqualsAll(Vector128.LoadUnsafe(l), Vector128.LoadUnsafe(r)))
+                    return false;
+                l = ref Unsafe.Add(ref l, 16);
+                r = ref Unsafe.Add(ref r, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return true;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                if (!Vector64.EqualsAll(Vector64.LoadUnsafe(l), Vector64.LoadUnsafe(r)))
+                    return false;
+                l = ref Unsafe.Add(ref l, 8);
+                r = ref Unsafe.Add(ref r, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return true;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            if (Unsafe.As<byte, nuint>(ref l) != Unsafe.As<byte, nuint>(ref r))
+                return false;
+            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            if (Unsafe.As<byte, ulong>(ref l) != Unsafe.As<byte, ulong>(ref r))
+                return false;
+            l = ref Unsafe.Add(ref l, sizeof(ulong));
+            r = ref Unsafe.Add(ref r, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            if (Unsafe.As<byte, uint>(ref l) != Unsafe.As<byte, uint>(ref r))
+                return false;
+            l = ref Unsafe.Add(ref l, sizeof(uint));
+            r = ref Unsafe.Add(ref r, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            if (Unsafe.As<byte, ushort>(ref l) == Unsafe.As<byte, ushort>(ref r))
+                return false;
+            l = ref Unsafe.Add(ref l, sizeof(ushort));
+            r = ref Unsafe.Add(ref r, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
+        {
+            if (l != r)
+                return false;
+            l = ref Unsafe.Add(ref l, 1);
+            r = ref Unsafe.Add(ref r, 1);
+        }
+        return true;
     }
     /// <summary>Determines whether both references of <typeparamref name="T"/> contain the same bits.</summary>
     /// <param name="reference">The reference to determine if it is zeroed.</param>
@@ -6767,12 +7199,89 @@ readonly
     /// points to a value with all zeros; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool EqZero(scoped in T reference)
+    public static unsafe bool Eq0(scoped in T reference)
     {
-        fixed (T* ptr = &reference)
-            return EqZero(ptr);
+        ref byte x = ref Unsafe.As<T, byte>(ref AsRef(reference)), upper = ref Unsafe.Add(ref x, 1);
+#if NET8_0_OR_GREATER
+        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 63)))
+            {
+                if (!Vector512.EqualsAll(Vector512.LoadUnsafe(x), Vector512<byte>.Zero))
+                    return false;
+                x = ref Unsafe.Add(ref x, 64);
+            }
+            if (sizeof(T) % 64 is 0)
+                return true;
+        }
+#endif
+#if NET7_0_OR_GREATER
+        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 31)))
+            {
+                if (!Vector256.EqualsAll(Vector256.LoadUnsafe(x), Vector256<byte>.Zero))
+                    return false;
+                x = ref Unsafe.Add(ref x, 32);
+            }
+            if (sizeof(T) % 32 is 0)
+                return true;
+        }
+        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 15)))
+            {
+                if (!Vector128.EqualsAll(Vector128.LoadUnsafe(x), Vector128<byte>.Zero))
+                    return false;
+                x = ref Unsafe.Add(ref x, 16);
+            }
+            if (sizeof(T) % 16 is 0)
+                return true;
+        }
+        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        {
+            while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, 7)))
+            {
+                if (!Vector64.EqualsAll(Vector64.LoadUnsafe(x), Vector64<byte>.Zero))
+                    return false;
+                x = ref Unsafe.Add(ref x, 8);
+            }
+            if (sizeof(T) % 8 is 0)
+                return true;
+        }
+#endif
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            if (Unsafe.As<byte, nuint>(ref x) is not 0)
+                return false;
+            x = ref Unsafe.Add(ref x, Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
+        {
+            if (Unsafe.As<byte, ulong>(ref x) is not 0)
+                return false;
+            x = ref Unsafe.Add(ref x, sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, sizeof(uint) - 1)))
+        {
+            if (Unsafe.As<byte, uint>(ref x) is not 0)
+                return false;
+            x = ref Unsafe.Add(ref x, sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ushort) - 1)))
+        {
+            if (Unsafe.As<byte, ushort>(ref x) is not 0)
+                return false;
+            x = ref Unsafe.Add(ref x, sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref x, ref upper))
+        {
+            if (x is not 0)
+                return false;
+            x = ref Unsafe.Add(ref x, 1);
+        }
+        return true;
     }
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
     /// <summary>Clamps a value such that it is not smaller or larger than the defined amount.</summary>
     /// <param name="number">The bits to clamp.</param>
     /// <param name="min">The minimum accepted value.</param>
@@ -6793,11 +7302,40 @@ readonly
     /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ref readonly T Max(in T left, in T right)
+    public static ref readonly T Max(in T left, in T right)
     {
-        fixed (T* r = &left)
-        fixed (T* w = &right)
-            return ref Unsafe.AsRef<T>(Max(r, w));
+        ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        {
+            if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
+                return ref Unsafe.As<T, nuint>(ref l) > Unsafe.As<T, nuint>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)Unsafe.SizeOf<nuint>());
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, sizeof(ulong) - 1)))
+        {
+            if (Unsafe.As<T, ulong>(ref l) != Unsafe.As<T, ulong>(ref r))
+                return ref Unsafe.As<T, ulong>(ref l) > Unsafe.As<T, ulong>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)sizeof(ulong));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, sizeof(uint) - 1)))
+        {
+            if (Unsafe.As<T, uint>(ref l) != Unsafe.As<T, uint>(ref r))
+                return ref Unsafe.As<T, uint>(ref l) > Unsafe.As<T, uint>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)sizeof(uint));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, sizeof(ushort) - 1)))
+        {
+            if (Unsafe.As<T, ushort>(ref l) != Unsafe.As<T, ushort>(ref r))
+                return ref Unsafe.As<T, ushort>(ref l) > Unsafe.As<T, ushort>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)sizeof(ushort));
+        }
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
+        {
+            if (Unsafe.As<T, byte>(ref l) != Unsafe.As<T, byte>(ref r))
+                return ref Unsafe.As<T, byte>(ref l) > Unsafe.As<T, byte>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, 1);
+        }
+        return ref left;
     }
     /// <summary>Returns the reference that contains the lesser bits.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -6807,539 +7345,43 @@ readonly
     /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ref readonly T Min(in T left, in T right)
+    public static ref readonly T Min(in T left, in T right)
     {
-        fixed (T* r = &left)
-        fixed (T* w = &right)
-            return ref Unsafe.AsRef<T>(Min(r, w));
-    }
-#endif
-    /// <summary>Computes the Bitwise-AND computation, writing it to the second argument.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
-    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void And(T* read, T* write)
-    {
-        byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, Unsafe.SizeOf<nuint>() - 1)))
         {
-            for (; l <= upper - 64; l += 64, r += 64)
-                *(Vector512<byte>*)r = Vector512.BitwiseAnd(Vector512.Load(l), Vector512.Load(r));
-            if (sizeof(T) % 64 is 0)
-                return;
+            if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
+                return ref Unsafe.As<T, nuint>(ref l) < Unsafe.As<T, nuint>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)Unsafe.SizeOf<nuint>());
         }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, sizeof(ulong) - 1)))
         {
-            for (; l <= upper - 32; l += 32, r += 32)
-                *(Vector256<byte>*)r = Vector256.BitwiseAnd(Vector256.Load(l), Vector256.Load(r));
-            if (sizeof(T) % 32 is 0)
-                return;
+            if (Unsafe.As<T, ulong>(ref l) != Unsafe.As<T, ulong>(ref r))
+                return ref Unsafe.As<T, ulong>(ref l) < Unsafe.As<T, ulong>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)sizeof(ulong));
         }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, sizeof(uint) - 1)))
         {
-            for (; l <= upper - 16; l += 16, r += 16)
-                *(Vector128<byte>*)r = Vector128.BitwiseAnd(Vector128.Load(l), Vector128.Load(r));
-            if (sizeof(T) % 16 is 0)
-                return;
+            if (Unsafe.As<T, uint>(ref l) != Unsafe.As<T, uint>(ref r))
+                return ref Unsafe.As<T, uint>(ref l) < Unsafe.As<T, uint>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)sizeof(uint));
         }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, sizeof(ushort) - 1)))
         {
-            for (; l <= upper - 8; l += 8, r += 8)
-                *(Vector64<byte>*)r = Vector64.BitwiseAnd(Vector64.Load(l), Vector64.Load(r));
-            if (sizeof(T) % 8 is 0)
-                return;
+            if (Unsafe.As<T, ushort>(ref l) != Unsafe.As<T, ushort>(ref r))
+                return ref Unsafe.As<T, ushort>(ref l) < Unsafe.As<T, ushort>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, (nint)sizeof(ushort));
         }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            *(nuint*)r = *(nuint*)l & *(nuint*)r;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
-            *(ulong*)r = *(ulong*)l & *(ulong*)r;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
-            *(uint*)r = *(uint*)l & *(uint*)r;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
-            *(ushort*)r = (ushort)(*(ushort*)l & *(ushort*)r);
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return;
-        for (; l < upper; l++, r++)
-            *r = (byte)(*l & *r);
-    }
-    /// <summary>Computes the Bitwise-AND-NOT computation, writing it to the second argument.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
-    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void AndNot(T* read, T* write)
-    {
-        byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
+        while (Unsafe.IsAddressLessThan(ref l, ref upper))
         {
-            for (; l <= upper - 64; l += 64, r += 64)
-                *(Vector512<byte>*)r = Vector512.AndNot(Vector512.Load(l), Vector512.Load(r));
-            if (sizeof(T) % 64 is 0)
-                return;
+            if (Unsafe.As<T, byte>(ref l) != Unsafe.As<T, byte>(ref r))
+                return ref Unsafe.As<T, byte>(ref l) < Unsafe.As<T, byte>(ref r) ? ref left : ref right;
+            l = ref Unsafe.AddByteOffset(ref l, 1);
         }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; l <= upper - 32; l += 32, r += 32)
-                *(Vector256<byte>*)r = Vector256.AndNot(Vector256.Load(l), Vector256.Load(r));
-            if (sizeof(T) % 32 is 0)
-                return;
-        }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; l <= upper - 16; l += 16, r += 16)
-                *(Vector128<byte>*)r = Vector128.AndNot(Vector128.Load(l), Vector128.Load(r));
-            if (sizeof(T) % 16 is 0)
-                return;
-        }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; l <= upper - 8; l += 8, r += 8)
-                *(Vector64<byte>*)r = Vector64.AndNot(Vector64.Load(l), Vector64.Load(r));
-            if (sizeof(T) % 8 is 0)
-                return;
-        }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            *(nuint*)r = *(nuint*)l & ~*(nuint*)r;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
-            *(ulong*)r = *(ulong*)l & ~*(ulong*)r;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
-            *(uint*)r = *(uint*)l & ~*(uint*)r;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
-            *(ushort*)r = (ushort)(*(ushort*)l & ~*(ushort*)r);
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return;
-        for (; l < upper; l++, r++)
-            *r = (byte)(*l & ~*r);
-    }
-    /// <summary>Computes the Bitwise-NOT computation, writing it to the second argument.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="ptr">The <typeparamref name="T"/> to read and write from.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Not(T* ptr)
-    {
-        byte* x = (byte*)ptr, upper = (byte*)(ptr + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; x <= upper - 64; x += 64)
-                *(Vector512<byte>*)x = Vector512.OnesComplement(Vector512.Load(x));
-            if (sizeof(T) % 64 is 0)
-                return;
-        }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; x <= upper - 32; x += 32)
-                *(Vector256<byte>*)x = Vector256.OnesComplement(Vector256.Load(x));
-            if (sizeof(T) % 32 is 0)
-                return;
-        }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; x <= upper - 16; x += 16)
-                *(Vector128<byte>*)x = Vector128.OnesComplement(Vector128.Load(x));
-            if (sizeof(T) % 16 is 0)
-                return;
-        }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; x <= upper - 8; x += 8)
-                *(Vector64<byte>*)x = Vector64.OnesComplement(Vector64.Load(x));
-            if (sizeof(T) % 8 is 0)
-                return;
-        }
-#endif
-        for (; x <= upper - sizeof(nuint); x += sizeof(nuint))
-            *(nuint*)x = ~*(nuint*)x;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-        for (; x <= upper - sizeof(ulong); x += sizeof(ulong))
-            *(ulong*)x = ~*(ulong*)x;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return;
-        for (; x <= upper - sizeof(uint); x += sizeof(uint))
-            *(uint*)x = ~*(uint*)x;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return;
-        for (; x <= upper - sizeof(ushort); x += sizeof(ushort))
-            *(ushort*)x = (ushort)~*(ushort*)x;
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return;
-        for (; x < upper; x++)
-            *x = (byte)~*x;
-    }
-    /// <summary>Computes the Bitwise-OR computation, writing it to the second argument.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
-    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Or(T* read, T* write)
-    {
-        byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; l <= upper - 64; l += 64, r += 64)
-               *(Vector512<byte>*)r = Vector512.BitwiseOr(Vector512.Load(l), Vector512.Load(r));
-            if (sizeof(T) % 64 is 0)
-                return;
-        }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; l <= upper - 32; l += 32, r += 32)
-                *(Vector256<byte>*)r = Vector256.BitwiseOr(Vector256.Load(l), Vector256.Load(r));
-            if (sizeof(T) % 32 is 0)
-                return;
-        }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; l <= upper - 16; l += 16, r += 16)
-                *(Vector128<byte>*)r = Vector128.BitwiseOr(Vector128.Load(l), Vector128.Load(r));
-            if (sizeof(T) % 16 is 0)
-                return;
-        }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; l <= upper - 8; l += 8, r += 8)
-                *(Vector64<byte>*)r = Vector64.BitwiseOr(Vector64.Load(l), Vector64.Load(r));
-            if (sizeof(T) % 8 is 0)
-                return;
-        }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            *(nuint*)r = *(nuint*)l | *(nuint*)r;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
-            *(ulong*)r = *(ulong*)l | *(ulong*)r;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
-            *(uint*)r = *(uint*)l | *(uint*)r;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
-            *(ushort*)r = (ushort)(*(ushort*)l | *(ushort*)r);
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return;
-        for (; l < upper; l++, r++)
-            *r = (byte)(*l | *r);
-    }
-    /// <summary>Computes the Bitwise-XOR computation, writing it to the second argument.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="read">The <typeparamref name="T"/> to read from.</param>
-    /// <param name="write">The <typeparamref name="T"/> to write to.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe void Xor(T* read, T* write)
-    {
-        byte* l = (byte*)read, r = (byte*)write, upper = (byte*)(read + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; l <= upper - 64; l += 64, r += 64)
-                *(Vector512<byte>*)r = Vector512.Xor(Vector512.Load(l), Vector512.Load(r));
-            if (sizeof(T) % 64 is 0)
-                return;
-        }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; l <= upper - 32; l += 32, r += 32)
-                *(Vector256<byte>*)r = Vector256.Xor(Vector256.Load(l), Vector256.Load(r));
-            if (sizeof(T) % 32 is 0)
-                return;
-        }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; l <= upper - 16; l += 16, r += 16)
-                *(Vector128<byte>*)r = Vector128.Xor(Vector128.Load(l), Vector128.Load(r));
-            if (sizeof(T) % 16 is 0)
-                return;
-        }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; l <= upper - 8; l += 8, r += 8)
-                *(Vector64<byte>*)r = Vector64.Xor(Vector64.Load(l), Vector64.Load(r));
-            if (sizeof(T) % 8 is 0)
-                return;
-        }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            *(nuint*)r = *(nuint*)l ^ *(nuint*)r;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
-            *(ulong*)r = *(ulong*)l ^ *(ulong*)r;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
-            *(uint*)r = *(uint*)l ^ *(uint*)r;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
-            *(ushort*)r = (ushort)(*(ushort*)l ^ *(ushort*)r);
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return;
-        for (; l < upper; l++, r++)
-            *r = (byte)(*l ^ *r);
-    }
-    /// <summary>Determines whether both pointers of <typeparamref name="T"/> contain the same bits.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
-    /// point to values with the same bits as each other; otherwise, <see langword="false"/>.
-    /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool Eq(T* left, T* right)
-    {
-        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; l <= upper - 64; l += 64, r += 64)
-                if (!Vector512.EqualsAll(Vector512.Load(l), Vector512.Load(r)))
-                    return false;
-            if (sizeof(T) % 64 is 0)
-                return true;
-        }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; l <= upper - 32; l += 32, r += 32)
-                if (!Vector256.EqualsAll(Vector256.Load(l), Vector256.Load(r)))
-                    return false;
-            if (sizeof(T) % 32 is 0)
-                return true;
-        }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; l <= upper - 16; l += 16, r += 16)
-                if (!Vector128.EqualsAll(Vector128.Load(l), Vector128.Load(r)))
-                    return false;
-            if (sizeof(T) % 16 is 0)
-                return true;
-        }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; l <= upper - 8; l += 8, r += 8)
-                if (!Vector64.EqualsAll(Vector64.Load(l), Vector64.Load(r)))
-                    return false;
-            if (sizeof(T) % 8 is 0)
-                return true;
-        }
-#endif
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint), r += sizeof(nuint))
-            if (*(nuint*)l != *(nuint*)r)
-                return false;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return true;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong), r += sizeof(ulong))
-            if (*(ulong*)l != *(ulong*)r)
-                return false;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return true;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint), r += sizeof(uint))
-            if (*(uint*)l != *(uint*)r)
-                return false;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return true;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort), r += sizeof(ushort))
-            if (*(ushort*)l != *(ushort*)r)
-                return false;
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return true;
-        for (; l < upper; l++, r++)
-            if (*l != *r)
-                return false;
-        return true;
-    }
-    /// <summary>Determines whether the pointer of <typeparamref name="T"/> contains all zeros.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="ptr">The pointer to determine if it is zeroed.</param>
-    /// <returns>
-    /// The value <see langword="true"/> if the parameter <paramref name="ptr"/>
-    /// points to a value with all zeros; otherwise, <see langword="false"/>.
-    /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe bool EqZero(T* ptr)
-    {
-        byte* x = (byte*)ptr, upper = (byte*)(ptr + 1);
-#if NET8_0_OR_GREATER
-        if (Vector512.IsHardwareAccelerated && sizeof(T) >= 64)
-        {
-            for (; x <= upper - 64; x += 64)
-                if (!Vector512.EqualsAll(Vector512.Load(x), Vector512<byte>.Zero))
-                    return false;
-            if (sizeof(T) % 64 is 0)
-                return true;
-        }
-#endif
-#if NET7_0_OR_GREATER
-        if (Vector256.IsHardwareAccelerated && sizeof(T) >= 32)
-        {
-            for (; x <= upper - 32; x += 32)
-                if (!Vector256.EqualsAll(Vector256.Load(x), Vector256<byte>.Zero))
-                    return false;
-            if (sizeof(T) % 32 is 0)
-                return true;
-        }
-        if (Vector128.IsHardwareAccelerated && sizeof(T) >= 16)
-        {
-            for (; x <= upper - 16; x += 16)
-                if (!Vector128.EqualsAll(Vector128.Load(x), Vector128<byte>.Zero))
-                    return false;
-            if (sizeof(T) % 16 is 0)
-                return true;
-        }
-        if (Vector64.IsHardwareAccelerated && sizeof(T) >= 8)
-        {
-            for (; x <= upper - 8; x += 8)
-                if (!Vector64.EqualsAll(Vector64.Load(x), Vector64<byte>.Zero))
-                    return false;
-            if (sizeof(T) % 8 is 0)
-                return true;
-        }
-#endif
-        for (; x <= upper - sizeof(nuint); x += sizeof(nuint))
-            if (*(nuint*)x is not 0)
-                return false;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return true;
-        for (; x <= upper - sizeof(ulong); x += sizeof(ulong))
-            if (*(ulong*)x is not 0)
-                return false;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return true;
-        for (; x <= upper - sizeof(uint); x += sizeof(uint))
-            if (*(uint*)x is not 0)
-                return false;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return true;
-        for (; x <= upper - sizeof(ushort); x += sizeof(ushort))
-            if (*(ushort*)x is not 0)
-                return false;
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return true;
-        for (; x < upper; x++)
-            if (*x is not 0)
-                return false;
-        return true;
-    }
-    /// <summary>Clamps a value such that it is not smaller or larger than the defined amount.</summary>
-    /// <param name="number">The bits to clamp.</param>
-    /// <param name="min">The minimum accepted value.</param>
-    /// <param name="max">The maximum accepted value.</param>
-    /// <returns>
-    /// The parameter <paramref name="number"/> if its bits are greater or equal to the parameter
-    /// <paramref name="min"/>, and lesser or equal to the parameter <paramref name="number"/>; otherwise,
-    /// <paramref name="min"/> if the parameter <paramref name="number"/> is lesser than
-    /// <paramref name="min"/>; otherwise, <paramref name="max"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe T* Clamp(T* number, T* min, T* max) => Max(Min(number, max), min);
-    /// <summary>Returns the pointer that contains the greater bits.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The parameter <paramref name="left"/> if its bits are greater or equal to the
-    /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
-    /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe T* Max(T* left, T* right)
-    {
-        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint))
-            if (*(nuint*)l != *(nuint*)r)
-                return *(nuint*)l >= *(nuint*)r ? left : right;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return left;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong))
-            if (*(ulong*)l != *(ulong*)r)
-                return *(ulong*)l >= *(ulong*)r ? left : right;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return left;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint))
-            if (*(uint*)l != *(uint*)r)
-                return *(uint*)l >= *(uint*)r ? left : right;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return left;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort))
-            if (*(ushort*)l != *(ushort*)r)
-                return *(ushort*)l >= *(ushort*)r ? left : right;
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return left;
-        for (; l < upper; l++)
-            if (*l != *r)
-                return *l >= *r ? left : right;
-        return left;
-    }
-    /// <summary>Returns the pointer that contains the lesser bits.</summary>
-    /// <remarks><para>This method assumes the pointers are fixed.</para></remarks>
-    /// <param name="left">The left-hand side.</param>
-    /// <param name="right">The right-hand side.</param>
-    /// <returns>
-    /// The parameter <paramref name="left"/> if its bits are lesser or equal to the
-    /// parameter <paramref name="right"/>; otherwise, <paramref name="right"/>.
-    /// </returns>
-    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe T* Min(T* left, T* right)
-    {
-        byte* l = (byte*)left, r = (byte*)right, upper = (byte*)(left + 1);
-        for (; l <= upper - sizeof(nuint); l += sizeof(nuint))
-            if (*(nuint*)l != *(nuint*)r)
-                return *(nuint*)l <= *(nuint*)r ? left : right;
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return left;
-        for (; l <= upper - sizeof(ulong); l += sizeof(ulong))
-            if (*(ulong*)l != *(ulong*)r)
-                return *(ulong*)l <= *(ulong*)r ? left : right;
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return left;
-        for (; l <= upper - sizeof(uint); l += sizeof(uint))
-            if (*(uint*)l != *(uint*)r)
-                return *(uint*)l <= *(uint*)r ? left : right;
-        if (sizeof(T) % sizeof(uint) is 0)
-            return left;
-        for (; l <= upper - sizeof(ushort); l += sizeof(ushort))
-            if (*(ushort*)l != *(ushort*)r)
-                return *(ushort*)l <= *(ushort*)r ? left : right;
-        if (sizeof(T) % sizeof(ushort) is 0)
-            return left;
-        for (; l < upper; l++)
-            if (*l != *r)
-                return *l <= *r ? left : right;
-        return left;
+        return ref left;
     }
 }
+#endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides methods for unfolding.</summary>
@@ -11046,13 +11088,6 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
     /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
     /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
     [Pure]
-    public static Once<T> Yield<T>(this T source, Func<bool> condition) => condition() ? source : [];
-    /// <summary>Creates a <see cref="Once{T}"/> from an item.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="source">The item.</param>
-    /// <param name="condition">The condition that must be true for <paramref name="source"/> to be used.</param>
-    /// <returns>The <see cref="Once{T}"/> instance that can be yielded once.</returns>
-    [Pure]
     public static Once<T> Yield<T>(this T source, Predicate<T> condition) => condition(source) ? source : [];
     /// <summary>Creates a <see cref="Once{T}"/> from an item if it isn't null.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -12638,7 +12673,7 @@ readonly
 #elif NET8_0_OR_GREATER
             System.Numerics.Vector.LoadUnsafe(source);
 #else
-            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
+            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref AsRef(source)));
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
@@ -14940,8 +14975,9 @@ public ref partial struct ImmutableArrayBuilder<T>
             : iterable as IReadOnlyList<T> ?? new ReadOnlyList<T>(iterable as IList<T> ?? [.. iterable]);
 #endif
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 8500
-// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext StructCanBeMadeReadOnly
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#pragma warning disable 8500, IDE0004
+// ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -14953,13 +14989,18 @@ readonly
 {
     /// <inheritdoc cref="IList{T}.this[int]"/>
     [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe T this[[NonNegativeValue] int index]
+    public T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            fixed (T* ptr = &_value)
-                return Nth(ptr, index);
+            ref var f = ref Unsafe.AsRef(bits);
+            ref var l = ref Unsafe.Add(ref f, 1);
+            if (Unsafe.SizeOf<T>() >= sizeof(uint))
+                MovePopCount(ref f, ref l, ref index);
+            return Find(ref f, ref l, index) is not 0 and var i
+                ? Create(ref f, ref l, i)
+                : throw new ArgumentOutOfRangeException(nameof(index), index, null);
         }
     }
     /// <inheritdoc cref="IList{T}.this"/>
@@ -14971,150 +15012,125 @@ readonly
     }
     /// <inheritdoc cref="ICollection{T}.Count"/>
     [CollectionAccess(CollectionAccessType.Read)]
-    public unsafe int Count
+    public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            fixed (T* ptr = &_value)
-                return PopCount(ptr);
+            ref var f = ref Unsafe.AsRef(bits);
+            ref var l = ref Unsafe.Add(ref f, 1);
+            var sum = 0;
+            if (Unsafe.SizeOf<T>() >= Unsafe.SizeOf<nint>())
+            {
+                while (Unsafe.IsAddressLessThan(
+                    ref f,
+                    ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() + 1)
+                ))
+                {
+                    sum += BitOperations.PopCount(Unsafe.As<T, nuint>(ref l));
+                    f = ref Unsafe.Add(ref f, 1);
+                }
+                if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() is 0)
+                    return sum;
+            }
+            while (Unsafe.IsAddressLessThan(
+                ref f,
+                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<ulong>() + 1)
+            ))
+            {
+                sum += BitOperations.PopCount(Unsafe.As<T, ulong>(ref l));
+                f = ref Unsafe.Add(ref f, 1);
+            }
+            if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<ulong>() is 0)
+                return sum;
+            while (Unsafe.IsAddressLessThan(
+                ref f,
+                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<uint>() + 1)
+            ))
+            {
+                sum += BitOperations.PopCount(Unsafe.As<T, uint>(ref l));
+                f = ref Unsafe.Add(ref f, 1);
+            }
+            return Unsafe.SizeOf<T>() % sizeof(uint) is 0
+                ? sum
+                : sum +
+                BitOperations.PopCount(
+                    (Unsafe.SizeOf<T>() % sizeof(uint)) switch
+                    {
+                        1 => Unsafe.As<T, byte>(ref f),
+                        2 => Unsafe.As<T, ushort>(ref f),
+                        3 => Unsafe.As<T, ushort>(ref f) | (uint)Unsafe.Add(ref Unsafe.As<T, byte>(ref f), 2) << 16,
+                        _ => throw new InvalidOperationException("Unsafe.SizeOf<T>() is assumed to be within [1, 3]."),
+                    }
+                );
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe void MovePopCount(ref byte* ptr, in byte* upper, ref int x)
+    static void MovePopCount(ref T f, ref T l, ref int x)
     {
-        for (; sizeof(T) >= sizeof(nuint) && ptr <= upper - sizeof(nuint); ptr += sizeof(nuint))
-            if (BitOperations.PopCount(*(nuint*)ptr) is var i && i <= x)
+        if (Unsafe.SizeOf<T>() >= Unsafe.SizeOf<nint>())
+            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() + 1)) &&
+                BitOperations.PopCount(Unsafe.As<T, nuint>(ref f)) is var i &&
+                i <= x)
+            {
                 x -= i;
-            else
-                break;
-        for (; sizeof(T) % sizeof(nuint) >= sizeof(ulong) && ptr <= upper - sizeof(ulong); ptr += sizeof(ulong))
-            if (BitOperations.PopCount(*(ulong*)ptr) is var i && i <= x)
+                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<nuint>());
+            }
+        if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() >= sizeof(ulong))
+            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)sizeof(ulong) + 1)) &&
+                BitOperations.PopCount(Unsafe.As<T, ulong>(ref f)) is var i &&
+                i <= x)
+            {
                 x -= i;
-            else
-                break;
-        for (; sizeof(T) % sizeof(ulong) >= sizeof(uint) && ptr <= upper - sizeof(uint); ptr += sizeof(uint))
-            if (BitOperations.PopCount(*(uint*)ptr) is var i && i <= x)
-                x -= i;
-            else
-                break;
+                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<ulong>());
+            }
+        if (Unsafe.SizeOf<T>() % sizeof(ulong) < sizeof(uint))
+            return;
+        while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)sizeof(uint) + 1)) &&
+            BitOperations.PopCount(Unsafe.As<T, uint>(ref f)) is var i &&
+            i <= x)
+        {
+            x -= i;
+            f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<uint>());
+        }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe byte Find(ref byte* ptr, in byte* upper, int x)
+    static byte Find(ref T f, ref T l, int x)
     {
-        for (; ptr < upper; ptr++)
+        while (Unsafe.IsAddressLessThan(ref f, ref l) && Unsafe.As<T, byte>(ref f) is var b)
         {
-            if ((*ptr & 1) is not 0 && x-- is 0)
+            if ((b & 1) is not 0 && x-- is 0)
                 return 1;
-            if ((*ptr & 1 << 1) is not 0 && x-- is 0)
+            if ((b & 1 << 1) is not 0 && x-- is 0)
                 return 1 << 1;
-            if ((*ptr & 1 << 2) is not 0 && x-- is 0)
+            if ((b & 1 << 2) is not 0 && x-- is 0)
                 return 1 << 2;
-            if ((*ptr & 1 << 3) is not 0 && x-- is 0)
+            if ((b & 1 << 3) is not 0 && x-- is 0)
                 return 1 << 3;
-            if ((*ptr & 1 << 4) is not 0 && x-- is 0)
+            if ((b & 1 << 4) is not 0 && x-- is 0)
                 return 1 << 4;
-            if ((*ptr & 1 << 5) is not 0 && x-- is 0)
+            if ((b & 1 << 5) is not 0 && x-- is 0)
                 return 1 << 5;
-            if ((*ptr & 1 << 6) is not 0 && x-- is 0)
+            if ((b & 1 << 6) is not 0 && x-- is 0)
                 return 1 << 6;
-            if ((*ptr & 1 << 7) is not 0 && x-- is 0)
+            if ((b & 1 << 7) is not 0 && x-- is 0)
                 return 1 << 7;
+            f = ref Unsafe.AddByteOffset(ref f, 1);
         }
         return 0;
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable MA0051
-    static unsafe int PopCount(T* value)
-#pragma warning restore MA0051
-    {
-        var ptr = (nuint*)value++;
-        var sum = 0;
-        if (sizeof(T) / (sizeof(nuint) * 16) > 0)
-        {
-            for (; ptr <= (nuint*)value - 16; ptr += 16)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]) +
-                    BitOperations.PopCount(ptr[4]) +
-                    BitOperations.PopCount(ptr[5]) +
-                    BitOperations.PopCount(ptr[6]) +
-                    BitOperations.PopCount(ptr[7]) +
-                    BitOperations.PopCount(ptr[8]) +
-                    BitOperations.PopCount(ptr[9]) +
-                    BitOperations.PopCount(ptr[10]) +
-                    BitOperations.PopCount(ptr[11]) +
-                    BitOperations.PopCount(ptr[12]) +
-                    BitOperations.PopCount(ptr[13]) +
-                    BitOperations.PopCount(ptr[14]) +
-                    BitOperations.PopCount(ptr[15]);
-            if (sizeof(T) % sizeof(nuint) * 16 is 0)
-                return sum;
-        }
-        if (sizeof(T) % (sizeof(nuint) * 16) / (sizeof(nuint) * 8) > 0)
-        {
-            for (; ptr <= (nuint*)value - 8; ptr += 8)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]) +
-                    BitOperations.PopCount(ptr[4]) +
-                    BitOperations.PopCount(ptr[5]) +
-                    BitOperations.PopCount(ptr[6]) +
-                    BitOperations.PopCount(ptr[7]);
-            if (sizeof(T) % sizeof(nuint) * 8 is 0)
-                return sum;
-        }
-        if (sizeof(T) % (sizeof(nuint) * 8) / (sizeof(nuint) * 4) > 0)
-        {
-            for (; ptr <= (nuint*)value - 4; ptr += 4)
-                sum += BitOperations.PopCount(*ptr) +
-                    BitOperations.PopCount(ptr[1]) +
-                    BitOperations.PopCount(ptr[2]) +
-                    BitOperations.PopCount(ptr[3]);
-            if (sizeof(T) % sizeof(nuint) * 4 is 0)
-                return sum;
-        }
-        if (sizeof(T) % (sizeof(nuint) * 4) / (sizeof(nuint) * 2) > 0)
-        {
-            for (; ptr <= (nuint*)value - 2; ptr += 2)
-                sum += BitOperations.PopCount(*ptr) + BitOperations.PopCount(ptr[1]);
-            if (sizeof(T) % sizeof(nuint) * 2 is 0)
-                return sum;
-        }
-        if (sizeof(T) % (sizeof(nuint) * 2) / sizeof(nuint) > 0)
-        {
-            for (; ptr < value; ptr++)
-                sum += BitOperations.PopCount(*ptr);
-            if (sizeof(T) % sizeof(nuint) is 0)
-                return sum;
-        }
-        if (sizeof(T) % sizeof(nuint) is 0)
-            return sum;
-        if (sizeof(T) % sizeof(nuint) / sizeof(ulong) > 0)
-        {
-            for (; ptr < value; ptr = (nuint*)((ulong*)ptr + 1))
-                sum += BitOperations.PopCount(*ptr);
-            if (sizeof(T) % sizeof(nuint) is 0)
-                return sum;
-        }
-        if (sizeof(T) % sizeof(ulong) is 0)
-            return sum;
-        return sum + PopCountRemainder((byte*)ptr);
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe int TrailingZeroCount(nuint value)
+    static int TrailingZeroCount(nuint value)
 #if NET7_0_OR_GREATER
         =>
             BitOperations.TrailingZeroCount(value);
 #else
     {
         const int BitsInUInt = BitsInByte * sizeof(uint);
-        for (var i = 0; i < (sizeof(nuint) + sizeof(uint) - 1) / sizeof(uint); i++)
+        for (var i = 0; i < (Unsafe.SizeOf<nint>() + sizeof(uint) - 1) / sizeof(uint); i++)
             if (Map((uint)(value << i * BitsInUInt)) is var j and not 32)
                 return j + i * BitsInUInt;
-        return sizeof(nuint) * BitsInByte;
+        return Unsafe.SizeOf<nint>() * BitsInByte;
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static int Map([ValueRange(0, 1u << 31)] uint value) =>
@@ -15156,41 +15172,15 @@ readonly
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
         };
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe int PopCountRemainder(byte* remainder) =>
-        BitOperations.PopCount(
-            (sizeof(T) % sizeof(ulong)) switch
-            {
-                1 => *remainder,
-                2 => *(ushort*)remainder,
-                3 => *(ushort*)remainder | (ulong)remainder[2] << 16,
-                4 => *(uint*)remainder,
-                5 => *(uint*)remainder | (ulong)remainder[4] << 32,
-                6 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32,
-                7 => *(uint*)remainder | (ulong)*(ushort*)remainder[4] << 32 | (ulong)remainder[6] << 48,
-                _ => throw new InvalidOperationException("sizeof(T) is assumed to be within [1, 7]."),
-            }
-        );
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Create(T* p, byte* ptr, byte i)
+    static T Create(ref T p, ref T ptr, byte i)
     {
         T t = default;
-        ((byte*)&t)[ptr - (byte*)p] = i;
+        Unsafe.Add(ref Unsafe.As<T, byte>(ref p), Unsafe.ByteOffset(ref ptr, ref p)) = i;
         return t;
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T Nth(T* p, [NonNegativeValue] int index)
-    {
-        var x = index;
-        var ptr = (byte*)p;
-        var upper = (byte*)(p + 1);
-        if (sizeof(T) >= sizeof(uint))
-            MovePopCount(ref ptr, upper, ref x);
-        return Find(ref ptr, upper, x) is not 0 and var i
-            ? Create(p, ptr, i)
-            : throw new ArgumentOutOfRangeException(nameof(index), index, null);
-    }
 }
+#endif
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
@@ -16080,11 +16070,10 @@ readonly
     {
         if (predicate?.Invoke(it) is false)
             return it;
-        File.AppendAllText(
-            Path.Combine(Path.GetTempPath(), "morsels.log"),
-            $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
-                (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n"
-        );
+        var text = $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
+            (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
+        Console.WriteLine(text);
+        File.AppendAllText(Path.Combine(Path.GetTempPath(), "morsels.log"), text);
         return it;
     }
     /// <summary>Takes the complex object and turns it into a structure that is serializable.</summary>
@@ -17184,6 +17173,12 @@ static class GamePadStateExtensions
 #endif
             _ => new(it, out ptr),
         };
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static unsafe T* StackallocPtr<T>(int it)
+    {
+        var ptr = stackalloc byte[InBytes<T>(it)];
+        return (T*)ptr;
+    }
 /// <summary>Represents the rented array.</summary>
 /// <typeparam name="T">The type of array to rent.</typeparam>
 [StructLayout(LayoutKind.Auto)]
@@ -17406,318 +17401,6 @@ public abstract class FixedGenerator(
             yield return (T[])window.Clone();
         }
     }
-// SPDX-License-Identifier: MPL-2.0
-#if !NET20 && !NET30
-// ReSharper disable once CheckNamespace
-/// <summary>Extension methods that act as factories for <see cref="Matrix{T}"/>.</summary>
-    /// <summary>Maps a 1-dimensional collection as 2-dimensional.</summary>
-    /// <typeparam name="T">The type of item within the list.</typeparam>
-    internal sealed partial class Matrix<T> : IList<IList<T>>
-    {
-        /// <summary>Represents a slice of a matrix.</summary>
-        /// <param name="matrix">The matrix to reference.</param>
-        /// <param name="ordinal">The first index of the matrix.</param>
-        sealed class Slice([ProvidesContext] Matrix<T> matrix, [NonNegativeValue] int ordinal) : IList<T>
-        {
-            /// <inheritdoc />
-            public T this[[NonNegativeValue] int index]
-            {
-                [Pure] get => matrix.List[Count * ordinal + index];
-                set => matrix.List[Count * ordinal + index] = value;
-            }
-            /// <inheritdoc />
-            public bool IsReadOnly
-            {
-                [Pure] get => matrix.List.IsReadOnly;
-            }
-            /// <inheritdoc />
-            public int Count
-            {
-                [Pure] get => matrix.CountPerList;
-            }
-            /// <inheritdoc />
-            public void Add(T item) => matrix.List.Insert(Count * (ordinal + 1), item);
-            /// <inheritdoc />
-            public void Clear()
-            {
-                for (int i = 0, count = Count; i < count; i++)
-                    matrix.List.RemoveAt(count * ordinal);
-            }
-            /// <inheritdoc />
-            public void CopyTo(T[] array, [NonNegativeValue] int arrayIndex)
-            {
-                for (int i = 0, count = Count; i < count; i++)
-                    array[arrayIndex + i] = matrix.List[count * ordinal + i];
-            }
-            /// <inheritdoc />
-            public void Insert([NonNegativeValue] int index, T item)
-            {
-                if (Count is var count && index >= 0 && index < count)
-                    matrix.List.Insert(Count * ordinal + index, item);
-            }
-            /// <inheritdoc />
-            public void RemoveAt([NonNegativeValue] int index)
-            {
-                if (Count is var count && index >= 0 && index < count)
-                    matrix.List.RemoveAt(Count * ordinal + index);
-            }
-            /// <inheritdoc />
-            [Pure]
-            public bool Contains(T item) => IndexOf(item) is not -1;
-            /// <inheritdoc />
-            public bool Remove(T item)
-            {
-                for (int i = 0, count = Count; i < count; i++)
-                    if (count * ordinal + i is var view && EqualityComparer<T>.Default.Equals(matrix.List[view], item))
-                    {
-                        matrix.List.RemoveAt(view);
-                        return true;
-                    }
-                return false;
-            }
-            /// <inheritdoc />
-            [Pure, ValueRange(-1, int.MaxValue)]
-            public int IndexOf(T item)
-            {
-                for (int i = 0, count = Count; i < count; i++)
-                    if (EqualityComparer<T>.Default.Equals(matrix.List[count * ordinal + i], item))
-                        return i;
-                return -1;
-            }
-            /// <inheritdoc />
-            [Pure]
-            public IEnumerator<T> GetEnumerator()
-            {
-                var count = Count;
-                return matrix.List.Skip(count * ordinal).Take(count).GetEnumerator();
-            }
-            /// <inheritdoc />
-            [Pure]
-            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        }
-        readonly int _countPerListEager;
-        readonly Func<int>? _countPerListLazy;
-        readonly object? _list;
-        /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-        /// <param name="list">The list to encapsulate.</param>
-        /// <param name="countPerList">The length per count.</param>
-        public Matrix(IList<T> list, [ValueRange(1, int.MaxValue)] int countPerList)
-        {
-            _countPerListEager = countPerList > 0
-                ? countPerList
-                : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Must be at least 1.");
-            _list = list;
-        }
-        /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-        /// <param name="list">The list to encapsulate.</param>
-        /// <param name="countPerList">The length per count.</param>
-        public Matrix(IList<T> list, Func<int> countPerList)
-        {
-            _countPerListLazy = countPerList;
-            _list = list;
-        }
-        /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-        /// <param name="list">The list to encapsulate.</param>
-        /// <param name="countPerList">The length per count.</param>
-        public Matrix(Func<IList<T>> list, [ValueRange(1, int.MaxValue)] int countPerList)
-        {
-            _countPerListEager = countPerList > 0
-                ? countPerList
-                : throw new ArgumentOutOfRangeException(nameof(countPerList), countPerList, "Must be at least 1.");
-            _list = list;
-        }
-        /// <summary>Initializes a new instance of the <see cref="Matrix{T}"/> class.</summary>
-        /// <param name="list">The list to encapsulate.</param>
-        /// <param name="countPerList">The length per count.</param>
-        public Matrix(Func<IList<T>> list, Func<int> countPerList)
-        {
-            _countPerListLazy = countPerList;
-            _list = list;
-        }
-        /// <inheritdoc cref="IList{T}.this"/>
-        public IList<T> this[[NonNegativeValue] int index]
-        {
-            [Pure] get => new Slice(this, index);
-            set => Add(value);
-        }
-#if !WAWA
-        /// <summary>Performs the index operation on the <see cref="Matrix{T}"/>.</summary>
-        /// <param name="x">The <c>x</c> position, which is the list to take.</param>
-        /// <param name="y">The <c>y</c> position, which is the element from the list to take.</param>
-        public T this[[NonNegativeValue] int x, [NonNegativeValue] int y]
-        {
-            [Pure] get => List[Count * x + y];
-            set => List[Count * x + y] = value;
-        }
-#endif
-        /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            [Pure] get => List.IsReadOnly;
-        }
-        /// <inheritdoc cref="ICollection{T}.Count" />
-        [NonNegativeValue]
-        public int Count
-        {
-            [Pure] get => List.Count / CountPerList;
-        }
-        /// <summary>Gets the amount of items per list.</summary>
-        public int CountPerList
-        {
-            [Pure] get => _countPerListLazy?.Invoke() ?? _countPerListEager;
-        }
-        /// <summary>Gets the encapsulated list.</summary>
-        [ProvidesContext]
-        public IList<T> List
-        {
-            [Pure]
-#pragma warning disable 8603
-            get => (_list as Func<IList<T>>)?.Invoke() ?? _list as IList<T>;
-#pragma warning restore 8603
-        }
-#if !WAWA
-        /// <summary>
-        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
-        /// by using the constructor <see cref="Matrix{T}(IList{T}, int)"/>.
-        /// </summary>
-        /// <param name="tuple">The parameter to pass onto the constructor.</param>
-        /// <returns>
-        /// The new instance of Matrix{T} by passing the parameter <paramref name="tuple"/>
-        /// to the constructor <see cref="Matrix{T}(IList{T}, int)"/>.
-        /// </returns>
-        [Pure]
-        public static implicit operator Matrix<T>((IList<T> List, int CountPerList) tuple) =>
-            new(tuple.List, tuple.CountPerList);
-        /// <summary>
-        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
-        /// by using the constructor <see cref="Matrix{T}(IList{T}, Func{int})"/>.
-        /// </summary>
-        /// <param name="tuple">The parameter to pass onto the constructor.</param>
-        /// <returns>
-        /// The new instance of Matrix{T} by passing the parameter <paramref name="tuple"/>
-        /// to the constructor <see cref="Matrix{T}(IList{T}, Func{int})"/>.
-        /// </returns>
-        [Pure]
-        public static implicit operator Matrix<T>((IList<T> List, Func<int> CountPerList) tuple) =>
-            new(tuple.List, tuple.CountPerList);
-        /// <summary>
-        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
-        /// by using the constructor <see cref="Matrix{T}(Func{IList{T}}, int)"/>.
-        /// </summary>
-        /// <param name="tuple">The parameter to pass onto the constructor.</param>
-        /// <returns>
-        /// The new instance of <see cref="Matrix{T}"/> by passing the parameter <paramref name="tuple"/>
-        /// to the constructor <see cref="Matrix{T}(Func{IList{T}}, int)"/>.
-        /// </returns>
-        [Pure]
-        public static implicit operator Matrix<T>((Func<IList<T>> List, int CountPerList) tuple) =>
-            new(tuple.List, tuple.CountPerList);
-        /// <summary>
-        /// Implicitly converts the parameter by creating the new instance of <see cref="Matrix{T}"/>
-        /// by using the constructor <see cref="Matrix{T}(Func{IList{T}}, Func{int})"/>.
-        /// </summary>
-        /// <param name="tuple">The parameter to pass onto the constructor.</param>
-        /// <returns>
-        /// The new instance of <see cref="Matrix{T}"/> by passing the parameter <paramref name="tuple"/>
-        /// to the constructor <see cref="Matrix{T}(Func{IList{T}}, Func{int})"/>.
-        /// </returns>
-        [Pure]
-        public static implicit operator Matrix<T>((Func<IList<T>> List, Func<int> CountPerList) tuple) =>
-            new(tuple.List, tuple.CountPerList);
-#endif
-        /// <inheritdoc />
-        public void Add(IList<T>? item)
-        {
-            if (item is null)
-                return;
-            for (int i = 0, count = item.Count; i < count; i++)
-                List.Add(item[i]);
-        }
-        /// <inheritdoc />
-        public void Clear() => List.Clear();
-        /// <inheritdoc />
-        [Pure]
-        public bool Contains(IList<T>? item) => IndexOf(item) is not -1;
-        /// <inheritdoc />
-        public void CopyTo(IList<T>[] array, [NonNegativeValue] int arrayIndex)
-        {
-            for (var i = 0; i < Count; i++)
-                array[arrayIndex + i] = this[i];
-        }
-        /// <inheritdoc />
-        public void Insert([NonNegativeValue] int index, IList<T>? item)
-        {
-            if (item is not null)
-                this[index] = item;
-        }
-        /// <inheritdoc />
-        public void RemoveAt([NonNegativeValue] int index) => this[index].Clear();
-        /// <inheritdoc />
-        public bool Remove(IList<T>? item)
-        {
-            if (item is null)
-                return false;
-            for (int i = 0, count = Count; i < count; i++)
-                if (this[i].SequenceEqual(item))
-                {
-                    RemoveAt(i);
-                    return true;
-                }
-            return false;
-        }
-        /// <inheritdoc />
-        [Pure, ValueRange(-1, int.MaxValue)]
-        public int IndexOf(IList<T>? item)
-        {
-            if (item is null)
-                return -1;
-            for (int i = 0, count = Count; i < count; i++)
-                if (this[i].SequenceEqual(item))
-                    return i;
-            return -1;
-        }
-        /// <inheritdoc />
-        [Pure]
-        public IEnumerator<IList<T>> GetEnumerator() =>
-            Enumerable.Range(0, Count).Select(IList<T> (x) => new Slice(this, x)).GetEnumerator();
-        /// <inheritdoc />
-        [Pure]
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-    }
-#endif
-#if !WAWA
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(this IEnumerable<T>? iterator, [NonNegativeValue] int countPerList) =>
-        iterator is null ? null : new(iterator.ToIList(), countPerList);
-#endif
-    /// <summary>Wraps an <see cref="IList{T}"/> in a <see cref="Matrix{T}"/>.</summary>
-    /// <typeparam name="T">The type of the <paramref name="iterator"/> and the <see langword="return"/>.</typeparam>
-    /// <param name="iterator">The collection to turn into a <see cref="Matrix{T}"/>.</param>
-    /// <param name="countPerList">The length per count.</param>
-    /// <returns>A <see cref="Matrix{T}"/> that wraps the parameter <paramref name="iterator"/>.</returns>
-    [Pure]
-    [return: NotNullIfNotNull(nameof(iterator))]
-    public static Matrix<T>? AsMatrix<T>(
-        this
-#if WAWA
-            IList<T>?
-#else
-            IEnumerable<T>?
-#endif
-            iterator,
-        Func<int> countPerList
-    ) =>
-#if WAWA
-        iterator is null ? null : new(iterator, countPerList);
-#else
-        iterator is null ? null : new(iterator.ToIList(), countPerList);
-#endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Provides extension methods for <see cref="char"/>.</summary>
@@ -17991,6 +17674,7 @@ public abstract class FixedGenerator(
     }
 #endif
 // SPDX-License-Identifier: MPL-2.0
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 #pragma warning disable 8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
@@ -18048,8 +17732,8 @@ readonly
     {
         if (!IsSingle(item))
             return false;
-        And(_value, ref item);
-        return !EqZero(item);
+        And(bits, ref item);
+        return !Eq0(item);
     }
     /// <inheritdoc cref="ISet{T}.IsProperSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -18077,7 +17761,7 @@ readonly
                 Or(next, ref t);
             else
                 return false;
-        return !Eq(_value, t);
+        return !Eq(bits, t);
     }
     /// <inheritdoc cref="ISet{T}.IsSubsetOf" />
     [CollectionAccess(CollectionAccessType.Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -18102,9 +17786,10 @@ readonly
                 Or(next, ref t);
             else
                 return false;
-        return Eq(_value, t);
+        return Eq(bits, t);
     }
 }
+#endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods to generate random numbers.</summary>

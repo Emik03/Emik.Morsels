@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
 #pragma warning disable 8500, IDE0251, MA0102
 namespace Emik.Morsels;
 
 using static CollectionAccessType;
+using static Span;
 
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
 static partial class BitsFactory
@@ -15,13 +16,8 @@ static partial class BitsFactory
     /// <returns>The <see cref="Bits{T}"/> instance with the parameter <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Bits<T> AsBits<T>(this T source)
-#if KTANE
-        where T : struct
-#else
-        where T : unmanaged
-#endif
-        =>
-            source;
+        where T : unmanaged =>
+        source;
 
     /// <summary>Computes the Bitwise-AND of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -29,11 +25,7 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAnd<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
 
@@ -49,11 +41,7 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseAndNot<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
 
@@ -62,7 +50,7 @@ static partial class BitsFactory
 
         return t;
     }
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
+
     /// <summary>Returns the reference that contains the most bits.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
@@ -80,18 +68,14 @@ static partial class BitsFactory
     public static T BitwiseMin<T>(this IEnumerable<T> source)
         where T : unmanaged =>
         source.Aggregate(default(T), (acc, next) => Bits<T>.Min(acc, next));
-#endif
+
     /// <summary>Computes the Bitwise-OR of the <see cref="IEnumerable{T}"/>.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
     /// <param name="source">The item.</param>
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseOr<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
 
@@ -107,11 +91,7 @@ static partial class BitsFactory
     /// <returns>The value <typeparamref name="T"/> containing the Bitwise-OR of <paramref name="source"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T BitwiseXor<T>(this IEnumerable<T> source)
-#if KTANE
-        where T : struct
-#else
         where T : unmanaged
-#endif
     {
         T t = default;
 
@@ -133,17 +113,8 @@ public
 readonly
 #endif
     partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
-#if KTANE
-    where T : struct
-#else
     where T : unmanaged
-#endif
 {
-    static readonly unsafe int s_nativeSize = sizeof(nuint) * BitsInByte, s_typeSize = sizeof(T) * BitsInByte;
-
-    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
-    readonly T _value = bits;
-
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
     [CollectionAccess(None)]
     bool ICollection<T>.IsReadOnly
@@ -155,7 +126,7 @@ readonly
     [CollectionAccess(Read), ProvidesContext] // ReSharper disable once ConvertToAutoProperty
     public readonly T Current
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => bits;
     }
 
     /// <summary>Implicitly calls the constructor.</summary>
@@ -258,7 +229,7 @@ readonly
     /// </summary>
     /// <returns>Itself.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
-    public readonly Enumerator GetEnumerator() => _value;
+    public readonly Enumerator GetEnumerator() => bits;
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource(false), Pure]
@@ -284,25 +255,21 @@ readonly
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult Coerce<TResult>()
-#if KTANE
-        where TResult : struct
-#else
+    public TResult Coerce<TResult>()
         where TResult : unmanaged
-#endif
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Copy(T value)
         {
             TResult ret = default;
-            *(T*)&ret = value;
+            Unsafe.As<TResult, T>(ref ret) = value;
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => *(TResult*)&value;
+        static TResult Read(T value) => Unsafe.As<T, TResult>(ref value);
 
-        return sizeof(T) >= sizeof(TResult) ? Read(_value) : Copy(_value);
+        return Unsafe.SizeOf<T>() >= Unsafe.SizeOf<TResult>() ? Read(bits) : Copy(bits);
     }
 
     /// <summary>Reinterprets the bits in <see cref="Current"/> as <typeparamref name="TResult"/>.</summary>
@@ -322,26 +289,22 @@ readonly
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public unsafe TResult CoerceLeft<TResult>()
-#if KTANE
-        where TResult : struct
-#else
+    public TResult CoerceLeft<TResult>()
         where TResult : unmanaged
-#endif
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static TResult Copy(T value)
         {
             TResult ret = default;
-            ((T*)(&ret + 1))[-1] = value;
+            Unsafe.Subtract(ref Unsafe.As<TResult, T>(ref Unsafe.Add(ref ret, 1)), 1) = value;
             return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static TResult Read(T value) => ((TResult*)(&value + 1))[-1];
+        static TResult Read(T value) => Unsafe.Subtract(ref Unsafe.As<T, TResult>(ref Unsafe.Add(ref value, 1)), 1);
 
-        return sizeof(T) == sizeof(TResult) ? Coerce<TResult>() :
-            sizeof(T) > sizeof(TResult) ? Read(_value) : Copy(_value);
+        return Unsafe.SizeOf<T>() == Unsafe.SizeOf<TResult>() ? Coerce<TResult>() :
+            Unsafe.SizeOf<T>() > Unsafe.SizeOf<TResult>() ? Read(bits) : Copy(bits);
     }
 
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
@@ -350,8 +313,6 @@ readonly
     public partial struct Enumerator(T value) : IEnumerator<T>
     {
         const int Start = -1;
-
-        readonly T _value = value;
 
         /// <summary>Gets the current mask.</summary>
         [CollectionAccess(None)]
@@ -373,25 +334,25 @@ readonly
         [CollectionAccess(Read)]
         public readonly Bits<T> AsBits
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => value;
         }
 
         /// <summary>Gets the underlying value that is being enumerated.</summary>
         [CollectionAccess(Read)]
         public readonly T AsValue
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _value;
+            [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => value;
         }
 
         /// <inheritdoc />
         [CollectionAccess(None)]
-        public readonly unsafe T Current
+        public readonly T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
             get
             {
                 T t = default;
-                *((nuint*)&t + Index) ^= Mask;
+                Unsafe.Add(ref Unsafe.As<T, nuint>(ref t), Index) = Mask;
                 return t;
             }
         }
@@ -430,7 +391,7 @@ readonly
 
         /// <inheritdoc />
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe bool MoveNext()
+        public bool MoveNext()
         {
             Mask <<= 1;
 
@@ -440,12 +401,11 @@ readonly
                 Mask++;
             }
 
-            fixed (T* ptr = &_value)
-                if (sizeof(T) / sizeof(nuint) is not 0 && FindNativelySized(ptr) ||
-                    sizeof(T) % sizeof(nuint) is not 0 && FindRest(ptr))
-                    return true;
+            if (Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>() is not 0 && FindNativelySized() ||
+                Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() is not 0 && FindRest())
+                return true;
 
-            Index = sizeof(T) / sizeof(nuint);
+            Index = Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>();
             Mask = FalsyMask();
             return false;
         }
@@ -461,56 +421,58 @@ readonly
         /// <summary>Enumerates over the remaining elements to give a <see cref="string"/> result.</summary>
         /// <returns>The <see cref="string"/> result of this instance.</returns>
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue]
-        public unsafe string ToRemainingString()
+        public string ToRemainingString()
         {
-            var ptr = stackalloc char[s_typeSize];
-            new Span<char>(ptr, s_typeSize).Fill('0');
-            var last = ptr + s_typeSize - 1;
+            Span<char> span = stackalloc char[Unsafe.SizeOf<T>() * BitsInByte];
+            ref var last = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), Unsafe.SizeOf<T>() * BitsInByte - 1);
+            span.Fill('0');
 
             while (MoveNext())
-                *(last - (int)(Index * s_nativeSize) - TrailingZeroCount(Mask)) ^= '\x01';
+                Unsafe.Add(ref last, (int)(Index * (Unsafe.SizeOf<nint>() * BitsInByte) - TrailingZeroCount(Mask))) ^=
+                    '\x01';
 
-            return new(ptr, 0, s_typeSize);
+            return span.ToString();
         }
 
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static nuint FalsyMask() => (nuint)1 << s_nativeSize - 2;
+        static nuint FalsyMask() => (nuint)1 << Unsafe.SizeOf<nint>() * BitsInByte - 2;
 
         [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static unsafe nuint LastRest() => ((nuint)1 << sizeof(T) % sizeof(nuint) * BitsInByte) - 1;
+        static nuint LastRest() => ((nuint)1 << Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() * BitsInByte) - 1;
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindNativelySized(T* ptr)
+        bool FindNativelySized()
         {
             // This check is normally unreachable, however it protects against out-of-bounds
             // reads if this enumerator instance was created through unsafe means.
             if (Index < 0)
                 return false;
 
-            for (; Index < sizeof(T) / sizeof(nuint); Index++, Mask = 1)
+            for (; Index < Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>(); Index++, Mask = 1)
                 for (; Mask is not 0; Mask <<= 1)
-                    if (IsNonZero(ptr))
+                    if (IsNonZero())
                         return true;
 
             return false;
         }
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool FindRest(T* ptr)
+        bool FindRest()
         {
             // This check is normally unreachable, however it protects against out-of-bounds
             // reads if this enumerator instance was created through unsafe means.
-            if (Index != sizeof(T) / sizeof(nuint))
+            if (Index != Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>())
                 return false;
 
             for (; (Mask & LastRest()) is not 0; Mask <<= 1)
-                if (IsNonZero(ptr))
+                if (IsNonZero())
                     return true;
 
             return false;
         }
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        unsafe bool IsNonZero(T* ptr) => (((nuint*)ptr)[Index] & Mask) is not 0;
+        bool IsNonZero() => (Unsafe.Add(ref Unsafe.As<T, nuint>(ref AsRef(value)), Index) & Mask) is not 0;
     }
 }
+#endif

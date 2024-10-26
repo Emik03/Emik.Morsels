@@ -3,6 +3,8 @@
 // ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 namespace Emik.Morsels;
 
+using static Span;
+
 /// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
 static partial class TryTake
 {
@@ -42,7 +44,7 @@ static partial class TryTake
         switch (iterable)
         {
             case string str:
-                return str.Length is 0 ? fallback : Reinterpret<T>(str[0]);
+                return str.Length is 0 ? fallback : Ret<T>.From(str[0]);
 #if NETCOREAPP || ROSLYN
             case ImmutableArray<T> array:
                 return array.IsDefaultOrEmpty ? fallback : array[0];
@@ -70,7 +72,7 @@ static partial class TryTake
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
         iterable switch
         {
-            string str => str is [.., var last] ? Reinterpret<T>(last) : fallback,
+            string str => str is [.., var last] ? Ret<T>.From(last) : fallback,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => array is [.., var last] ? last : fallback,
 #endif
@@ -163,7 +165,7 @@ static partial class TryTake
 
         return iterable switch
         {
-            string str => index < str.Length ? Reinterpret<T>(str[index]) : default,
+            string str => index < str.Length ? Ret<T>.From(str[index]) : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
 #endif
@@ -195,7 +197,7 @@ static partial class TryTake
 
         return iterable switch
         {
-            string str => index < str.Length ? Reinterpret<T>(str[str.Length - index - 1]) : default,
+            string str => index < str.Length ? Ret<T>.From(str[str.Length - index - 1]) : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array =>
                 !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
@@ -208,18 +210,4 @@ static partial class TryTake
         };
     }
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    // ReSharper disable once RedundantUnsafeContext UnusedMember.Local
-    static unsafe T Reinterpret<T>(char c)
-    {
-        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
-        System.Diagnostics.Debug.Assert(typeof(T) == typeof(char), "T must be char");
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 8500
-        return *(T*)&c;
-#pragma warning restore 8500
-#else
-        return Unsafe.As<char, T>(ref c);
-#endif
-    }
 }

@@ -24,12 +24,11 @@ static partial class DeconstructionCollectionExtensions
         if (predicate?.Invoke(it) is false)
             return it;
 
-        File.AppendAllText(
-            Path.Combine(Path.GetTempPath(), "morsels.log"),
-            $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
-                (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n"
-        );
+        var text = $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
+            (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
 
+        Console.WriteLine(text);
+        File.AppendAllText(Path.Combine(Path.GetTempPath(), "morsels.log"), text);
         return it;
     }
 

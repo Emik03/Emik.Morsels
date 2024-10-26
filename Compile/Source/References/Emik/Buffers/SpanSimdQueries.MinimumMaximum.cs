@@ -3,6 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
+using static Span;
+
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
 static partial class SpanSimdQueries
@@ -307,7 +310,7 @@ static partial class SpanSimdQueries
 #elif NET8_0_OR_GREATER
             System.Numerics.Vector.LoadUnsafe(source);
 #else
-            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref Unsafe.AsRef(source)));
+            Unsafe.ReadUnaligned<System.Numerics.Vector<T>>(ref Unsafe.As<T, byte>(ref AsRef(source)));
 #endif
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once CognitiveComplexity
     static T MinMax<T, TS>(this scoped ReadOnlySpan<T> span)
