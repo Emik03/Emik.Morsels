@@ -214,8 +214,8 @@ static unsafe class Unsafe
 #else
         // Roundtrip via a local to avoid type mismatch on return that the JIT inliner chokes on.
         DeclareLocals(
-            false,
-            new LocalVar("local", typeof(int).MakeByRefType())
+            false, // ReSharper disable once RedundantNameQualifier
+            new InlineIL.LocalVar("local", typeof(int).MakeByRefType())
         );
 
         Push(source);

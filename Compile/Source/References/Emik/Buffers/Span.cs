@@ -73,9 +73,9 @@ static partial class Span
             // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
             // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
             // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+            InlineIL.IL.Emit.Ldarg_0();
+            InlineIL.IL.Emit.Ret();
+            throw InlineIL.IL.Unreachable();
 #else
             return *(ReadOnlySpan<TTo>*)&source;
 #endif
@@ -102,9 +102,9 @@ static partial class Span
             // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
             // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
             // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+            InlineIL.IL.Emit.Ldarg_0();
+            InlineIL.IL.Emit.Ret();
+            throw InlineIL.IL.Unreachable();
 #else
             return *(Span<TTo>*)&source;
 #endif
@@ -135,9 +135,9 @@ static partial class Span
             // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
             // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
             // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+            InlineIL.IL.Emit.Ldarg_0();
+            InlineIL.IL.Emit.Ret();
+            throw InlineIL.IL.Unreachable();
 #else
             return *(TTo*)&source;
 #endif
