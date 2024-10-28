@@ -227,7 +227,7 @@ unsafe
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
-        typeof(T) == typeof(char) ? CharsToString() : $"System.Span<{typeof(T).Name}>[{Length}]";
+        typeof(T) == typeof(char) ? new((char*)Pointer, 0, Length) : $"System.Span<{typeof(T).Name}>[{Length}]";
 
     /// <summary>Returns an enumerator of this <see cref="Span{T}"/>.</summary>
     /// <returns>An enumerator for this span.</returns>
@@ -299,18 +299,6 @@ unsafe
     {
         if ((uint)index >= (uint)Length)
             throw new ArgumentOutOfRangeException(nameof(index), index, $"must be non-zero and below length {Length}");
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    string CharsToString()
-    {
-        var ptr = (char*)Pointer;
-        StringBuilder sb = new(Length);
-
-        for (var i = 0; i < Length; i++)
-            sb[i] = ptr[i];
-
-        return $"{sb}";
     }
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
@@ -564,7 +552,7 @@ unsafe
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
-        typeof(T) == typeof(char) ? CharsToString() : $"System.ReadOnlySpan<{typeof(T).Name}>[{Length}]";
+        typeof(T) == typeof(char) ? new((char*)Pointer, 0, Length) : $"System.ReadOnlySpan<{typeof(T).Name}>[{Length}]";
 
     /// <summary>Returns an enumerator of this <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <returns>An enumerator for this span.</returns>
@@ -637,18 +625,6 @@ unsafe
     {
         if ((uint)index >= (uint)Length)
             throw new ArgumentOutOfRangeException(nameof(index), index, $"must be non-zero and below length {Length}");
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    string CharsToString()
-    {
-        var ptr = (char*)Pointer;
-        StringBuilder sb = new(Length);
-
-        for (var i = 0; i < Length; i++)
-            sb[i] = ptr[i];
-
-        return $"{sb}";
     }
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
