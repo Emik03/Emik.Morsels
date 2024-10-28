@@ -14,7 +14,7 @@ static partial class RuntimeHelpers
     /// Compilers should pin the string against movement by the garbage collector before use. Note that common language
     /// runtime strings are immutable; that is, their contents can be read but not changed.
     /// </para></remarks>
-    public static unsafe int OffsetToStringData
+    public static int OffsetToStringData
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => Unsafe.SizeOf<nint>() + 4;
     }
