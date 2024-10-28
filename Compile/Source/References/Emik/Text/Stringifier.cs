@@ -64,7 +64,7 @@ static partial class Stringifier
         return expression
           ?.Collapse() // ReSharper disable once RedundantCast
            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            // ReSharper disable once RedundantSuppressNullableWarningExpression
+            // ReSharper disable once NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
            .Select(x => x.Trim())!
            .Prepend(prefix)
            .Conjoin("");
@@ -280,7 +280,7 @@ static partial class Stringifier
         p[0] = '0';
         p[1] = 'x';
 
-        fixed (char* rh = HexCharactersTable)
+        fixed (char* rh = "0123456789ABCDEF")
             for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
             {
                 var b = ((byte*)&value)[i];

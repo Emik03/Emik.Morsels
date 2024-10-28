@@ -7919,7 +7919,7 @@ readonly
         var p = stackalloc char[Unsafe.SizeOf<T>() * 2];
         p[0] = '0';
         p[1] = 'x';
-        fixed (char* rh = HexCharactersTable)
+        fixed (char* rh = "0123456789ABCDEF")
             for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
             {
                 var b = ((byte*)&value)[i];
