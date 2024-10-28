@@ -47,7 +47,8 @@ The following block contains officially maintained projects that implement [Emik
 [![Emik.SourceGenerators.Tattoo](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.Tattoo?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.Tattoo&color=ffb86c)](https://github.com/Emik03/Emik.SourceGenerators.Tattoo)
 [![Emik.SourceGenerators.TheSquareHole](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.TheSquareHole?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.TheSquareHole&color=f1fa8c)](https://github.com/Emik03/Emik.SourceGenerators.TheSquareHole)
 [![Emik.Unions](https://img.shields.io/github/last-commit/Emik03/Emik.Unions?style=for-the-badge&logo=GitHub&label=Emik.Unions&color=ffb86c)](https://github.com/Emik03/Emik.Unions)
-[![wawa](https://img.shields.io/github/last-commit/Emik03/wawa?style=for-the-badge&logo=GitHub&label=wawa&color=f1fa8c)](https://github.com/Emik03/wawa)
+[![ScreenShakeService](https://img.shields.io/github/last-commit/Emik03/ScreenShakeService?style=for-the-badge&logo=GitHub&label=ScreenShakeService&color=f1fa8c)](https://github.com/Emik03/ScreenShakeService)
+[![wawa](https://img.shields.io/github/last-commit/Emik03/wawa?style=for-the-badge&logo=GitHub&label=wawa&color=ffb86c)](https://github.com/Emik03/wawa)
 
 ## Tree Shaking
 
