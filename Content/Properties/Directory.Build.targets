@@ -119,6 +119,14 @@
         <Reference Condition="Exists('$(Celeste)/Celeste.exe') and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netframework'))" Include="Celeste" HintPath="$(Celeste)/Celeste.exe" Private="false"/>
         <Reference Condition="Exists('$(Celeste)/Celeste.Mod.mm.dll') and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netframework'))" Include="Celeste.Mod" HintPath="$(Celeste)/Celeste.Mod.mm.dll" Private="false"/>
     </ItemGroup>
+    <!-- Hollow Knight references. -->
+    <ItemGroup Condition="'$(IsHollowKnight)' == 'true'">
+        <Reference Include="PlayMaker" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/PlayMaker.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/UnityEngine.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/Assembly-CSharp.dll" Private="false"/>
+        <Reference Include="UnityEngine.CoreModule" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/UnityEngine.CoreModule.dll" Private="false"/>
+        <Reference Include="Assembly-CSharp-firstpass" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/Assembly-CSharp-firstpass.dll" Private="false"/>
+    </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="'$(IsKtane)' == 'true'">
         <PackageReference Include="UnityEngineAnalyzer" Version="1.0" PrivateAssets="all"/>
@@ -171,6 +179,16 @@
         <ItemGroup>
             <Compile Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(FileName)%(Extension)', '^.*\.g\..*$'))" Visible="false"/>
         </ItemGroup>
+    </Target>
+    <!-- Pack the release into a zip. -->
+    <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(IsCeleste)' != 'true' and '$(Configuration)' == 'Release'">
+        <MakeDir Directories="$(ProjectDir)Output" />
+        <Delete Files="$(ProjectDir)/$(MSBuildProjectName).zip" />
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" />
+        <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)/Output/" />
+        <ZipDirectory DestinationFile="$(ProjectDir)/$(MSBuildProjectName).zip" SourceDirectory="$(ProjectDir)/Output" />
+        <RemoveDir Directories="$(ProjectDir)Output" />
     </Target>
     <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
