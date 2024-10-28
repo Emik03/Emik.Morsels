@@ -182,13 +182,13 @@
     </Target>
     <!-- Pack the release into a zip. -->
     <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(IsHollowKnight)' == 'true' and '$(Configuration)' == 'Release'">
-        <MakeDir Directories="$(ProjectDir)Output" />
-        <Delete Files="$(ProjectDir)/$(MSBuildProjectName).zip" />
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
-        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" />
-        <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)/Output/" />
-        <ZipDirectory SourceDirectory="$(ProjectDir)/Output" DestinationFile="$(ProjectDir)/artifacts/$(MSBuildProjectName).zip" />
-        <RemoveDir Directories="$(ProjectDir)Output" />
+        <MakeDir Directories="$(ProjectDir)/artifacts;$(ProjectDir)/Temp"/>
+        <Delete Files="$(ProjectDir)/artifacts/$(MSBuildProjectName).zip"/>
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Temp/"/>
+        <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Temp/"/>
+        <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)/Temp/"/>
+        <ZipDirectory SourceDirectory="$(ProjectDir)/Temp" DestinationFile="$(ProjectDir)/artifacts/$(MSBuildProjectName).zip"/>
+        <RemoveDir Directories="$(ProjectDir)/Temp"/>
     </Target>
     <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
     <Target Name="AddPackageAliases" BeforeTargets="ResolveReferences" Outputs="%(PackageReference.Identity)">
