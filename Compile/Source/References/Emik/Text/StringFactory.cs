@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MPL-2.0
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-// ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract CheckNamespace RedundantNameQualifier RedundantNullableFlowAttribute RedundantUsingDirective UseSymbolAlias
+// ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
+#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+using Substring = System.ReadOnlyMemory<char>;
+#else
+using Substring = string;
+#endif
 
-/// <summary>Provides stringification methods.</summary>
-// ReSharper disable once BadPreprocessorIndent
-static partial class Stringifier
+/// <summary>Provides methods to convert instances to a <see cref="string"/>.</summary>
+static partial class StringFactory
 {
     const RegexOptions Options = RegexOptions.Multiline | RegexOptions.Compiled;
-
-    static readonly Dictionary<Type, bool> s_fullyUnmanaged = [];
 #if NET8_0_OR_GREATER
     static readonly OnceMemoryManager<SearchValues<char>> s_slashes = new(SearchValues.Create(@"/\"));
 #endif
@@ -104,15 +106,10 @@ static partial class Stringifier
     /// <returns>The file name.</returns>
     [Pure]
 #if !ROSLYN && !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+    // ReSharper disable once RedundantNullableFlowAttribute
     [return: NotNullIfNotNull(nameof(path))]
 #endif
-    public static
-#if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        ReadOnlyMemory<char>
-#else
-        string
-#endif
-        FileName(this string? path) =>
+    public static Substring FileName(this string? path) =>
         path is null
 #if NET8_0_OR_GREATER
             ? default
@@ -235,27 +232,6 @@ static partial class Stringifier
             >= TimeSpan.TicksPerMillisecond => $"{sign}{Math.Round(ticks / (double)TimeSpan.TicksPerMillisecond, 1)}ms",
             _ => $"{sign}{ticks / 10.0}µs",
         };
-    }
-
-    /// <summary>Gets the short display form of the version.</summary>
-    /// <param name="version">The <see cref="Version"/> to convert.</param>
-    /// <returns>The full name of the parameter <paramref name="version"/>.</returns>
-    [Pure]
-    public static string ToShortString(this Version? version)
-    {
-        if (version is not var (major, minor, build, revision) ||
-            major <= 0 && minor <= 0 && build <= 0 && revision <= 0)
-            return "v0";
-
-        var length = (major.DigitCount() + 1 is var l && revision > 0 ?
-                minor.DigitCount() + build.DigitCount() + revision.DigitCount() + 3 :
-                build > 0 ? minor.DigitCount() + build.DigitCount() + 2 :
-                    minor > 0 ? minor.DigitCount() + 1 : 0) +
-            l;
-
-        Span<char> span = stackalloc char[length];
-        Format(span, version);
-        return span.ToString();
     }
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
@@ -421,76 +397,6 @@ static partial class Stringifier
             builder.Append(separator).Append(enumerator.Current);
 
         return builder;
-    }
-
-    /// <summary>Gets the type name, with its generics extended.</summary>
-    /// <param name="type">The <see cref="Type"/> to get the name of.</param>
-    /// <returns>The name of the parameter <paramref name="type"/>.</returns>
-    [Pure]
-    public static bool IsUnmanaged([NotNullWhen(true)] this Type? type) =>
-        type is not null &&
-        (s_fullyUnmanaged.TryGetValue(type, out var answer) ? answer :
-            !type.IsValueType ? s_fullyUnmanaged[type] = false :
-            type.IsEnum || type.IsPointer || type.IsPrimitive ? s_fullyUnmanaged[type] = true :
-            s_fullyUnmanaged[type] = type.IsGenericTypeDefinition
-                ? type
-                   .GetCustomAttributes()
-                   .Any(x => x?.GetType().FullName is "System.Runtime.CompilerServices.IsUnmanagedAttribute")
-                : Array.TrueForAll(
-                    type.GetFields(
-                        BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-                    ),
-                    x => IsUnmanaged(x.FieldType)
-                ));
-
-    static void Push(char c, scoped ref Span<char> span)
-    {
-        span[0] = c;
-        span = span.UnsafelySkip(1);
-    }
-
-    static void Push([NonNegativeValue] int next, scoped ref Span<char> span)
-    {
-        if (!next.TryFormat(span, out var slice))
-            System.Diagnostics.Debug.Fail("TryFormat");
-
-        span = span.UnsafelySkip(slice);
-    }
-
-    // ReSharper disable RedundantAssignment
-    static void Push([NonNegativeValue] int next, char c, scoped ref Span<char> span)
-    {
-        Push(next, ref span);
-        Push(c, ref span);
-    }
-
-    static void Format(scoped Span<char> span, Version version)
-    {
-        Push('v', ref span);
-
-        switch (version)
-        {
-            case (var major, var minor, var build, > 0 and var revision):
-                Push(major, '.', ref span);
-                Push(minor, '.', ref span);
-                Push(build, '.', ref span);
-                Push(revision, ref span);
-                break;
-            case (var major, var minor, > 0 and var build):
-                Push(major, '.', ref span);
-                Push(minor, '.', ref span);
-                Push(build, ref span);
-                break;
-            case (var major, > 0 and var minor):
-                Push(major, '.', ref span);
-                Push(minor, ref span);
-                break;
-            default:
-                Push(version.Major, ref span);
-                break;
-        }
-
-        System.Diagnostics.Debug.Assert(span.IsEmpty, "span is drained");
     }
 
     [MustUseReturnValue]

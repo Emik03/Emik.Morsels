@@ -239,6 +239,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static YesFactory;" => "",
         "using static SpanQueries;" => "",
         "using static SpecialType;" => "",
+        "using Substring = string;" => "",
         "using static SplitFactory;" => "",
         "using Range = System.Range;" => "",
         "global using GamePadStates" => "",
