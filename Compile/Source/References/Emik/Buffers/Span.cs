@@ -358,7 +358,7 @@ static partial class Span
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
     /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Stackalloc<T>([NonNegativeValue] in int length)
+    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");

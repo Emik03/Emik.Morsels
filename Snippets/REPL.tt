@@ -236,6 +236,7 @@ global using PureAttribute = System.Diagnostics.Contracts.PureAttribute;
         "using static Peeks;" => "",
         "using static EnumMath;" => "",
         "using static SmallList;" => "",
+        "using static PlatformID;" => "",
         "using static YesFactory;" => "",
         "using static SpanQueries;" => "",
         "using static SpecialType;" => "",

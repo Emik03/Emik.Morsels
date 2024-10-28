@@ -1684,7 +1684,7 @@ public
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
     /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> Stackalloc<T>([NonNegativeValue] in int length)
+    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
         System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
         if (IsReferenceOrContainsReferences<T>())
@@ -6556,11 +6556,10 @@ public enum ControlFlow : byte
                 OperatingSystem.IsMacOS() ? OSX(ref data, out buttonId) :
                 OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD() ? Linux(ref data, out buttonId) :
 #else
-#pragma warning disable MA0144
-            return (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows(ref data, out var buttonId) :
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? OSX(ref data, out buttonId) :
-                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? Linux(ref data, out buttonId) :
-#pragma warning restore MA0144
+            var platform = Environment.OSVersion.Platform;
+            return (platform is WinCE or Win32NT or Win32S or Win32Windows ? Windows(ref data, out var buttonId) :
+                platform is MacOSX ? OSX(ref data, out buttonId) :
+                platform is Unix ? Linux(ref data, out buttonId) :
 #endif
                 Else(ref data, out buttonId)) is 0
                 ? buttonId
