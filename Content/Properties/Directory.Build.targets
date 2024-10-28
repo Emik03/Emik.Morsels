@@ -181,13 +181,13 @@
         </ItemGroup>
     </Target>
     <!-- Pack the release into a zip. -->
-    <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(IsCeleste)' != 'true' and '$(Configuration)' == 'Release'">
+    <Target Name="CreateReleaseZip" AfterTargets="PostBuildEvent" Condition="'$(IsHollowKnight)' == 'true' and '$(Configuration)' == 'Release'">
         <MakeDir Directories="$(ProjectDir)Output" />
         <Delete Files="$(ProjectDir)/$(MSBuildProjectName).zip" />
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)/Output/" />
         <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(ProjectDir)/Output/" />
         <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(ProjectDir)/Output/" />
-        <ZipDirectory DestinationFile="$(ProjectDir)/$(MSBuildProjectName).zip" SourceDirectory="$(ProjectDir)/Output" />
+        <ZipDirectory SourceDirectory="$(ProjectDir)/Output" DestinationFile="$(ProjectDir)/artifacts/$(MSBuildProjectName).zip" />
         <RemoveDir Directories="$(ProjectDir)Output" />
     </Target>
     <!-- Allows PackageReferences to be tagged with 'Aliases'. -->
