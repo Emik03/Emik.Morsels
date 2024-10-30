@@ -3,7 +3,6 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-
 using static Span;
 
 /// <inheritdoc cref="SpanSimdQueries"/>
