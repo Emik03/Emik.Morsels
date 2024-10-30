@@ -207,12 +207,10 @@ static unsafe class Unsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ref T AsRef<T>(void* source)
     {
-        // For .NET Core the roundtrip via a local is no longer needed
 #if NETCOREAPP
         Push(source);
         return ref ReturnRef<T>();
 #else
-        // Roundtrip via a local to avoid type mismatch on return that the JIT inliner chokes on.
         DeclareLocals(
             false, // ReSharper disable once RedundantNameQualifier
             new InlineIL.LocalVar("local", typeof(int).MakeByRefType())

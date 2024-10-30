@@ -1359,7 +1359,7 @@ public
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
 #pragma warning disable 8500
-// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
     /// <summary>Provides reinterpret span methods.</summary>
@@ -1381,14 +1381,12 @@ public
             /// </summary>
             public static bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-                typeof(TTo) == typeof(TFrom);
+                typeof(TFrom) == typeof(TTo);
 #else
                 typeof(TFrom) == typeof(TTo) ||
                 Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>() &&
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
                     !IsReferenceOrContainsReferences<TFrom>() && !IsReferenceOrContainsReferences<TTo>());
-#endif
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             [Pure]
             static bool IsReinterpretable(Type first, Type second)
             {
@@ -5396,7 +5394,7 @@ public enum ControlFlow : byte
         var i = 0;
 #if NET9_0_OR_GREATER
         if (Vector<T>.IsSupported && Vector.IsHardwareAccelerated)
-            for (; i + Vector<T>.Count <= length; i += Vector<T>.Count)
+            for (; i <= length - Vector<T>.Count; i += Vector<T>.Count)
             {
                 var step = Vector.CreateSequence(T.CreateChecked(i), T.One);
                 var (sin, cos) = (scale * step * step).SinCos();
@@ -5884,42 +5882,6 @@ public enum ControlFlow : byte
     public static int WriteSignificandLittleEndian<TSelf>(this TSelf x, Span<byte> destination)
         where TSelf : IFloatingPoint<TSelf> =>
         x.WriteSignificandLittleEndian(destination);
-#if NET9_0_OR_GREATER
-    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Vector<TSelf> Hypot<TSelf>(this Vector<TSelf> x, Vector<TSelf> y)
-    {
-        if (typeof(TSelf) == typeof(float))
-        {
-            var f = Vector.Hypot(
-                Unsafe.As<Vector<TSelf>, Vector<float>>(ref x),
-                Unsafe.As<Vector<TSelf>, Vector<float>>(ref y)
-            );
-            return Unsafe.As<Vector<float>, Vector<TSelf>>(ref f);
-        }
-        if (typeof(TSelf) != typeof(double))
-            return default;
-        var d = Vector.Hypot(
-            Unsafe.As<Vector<TSelf>, Vector<double>>(ref x),
-            Unsafe.As<Vector<TSelf>, Vector<double>>(ref y)
-        );
-        return Unsafe.As<Vector<double>, Vector<TSelf>>(ref d);
-    }
-    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static (Vector<TSelf> Sin, Vector<TSelf> Cos) SinCos<TSelf>(this Vector<TSelf> x)
-    {
-        if (typeof(TSelf) == typeof(float))
-        {
-            var f = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<float>>(ref x));
-            return Unsafe.As<(Vector<float>, Vector<float>), (Vector<TSelf>, Vector<TSelf>)>(ref f);
-        }
-        if (typeof(TSelf) != typeof(double))
-            return default;
-        var d = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<double>>(ref x));
-        return Unsafe.As<(Vector<double>, Vector<double>), (Vector<TSelf>, Vector<TSelf>)>(ref d);
-    }
-#endif
     /// <inheritdoc cref="IBinaryInteger{TSelf}.LeadingZeroCount"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TSelf LeadingZeroCount<TSelf>(this TSelf x)
@@ -10554,6 +10516,47 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
             yield return e.Current;
         while (--count > 0 && e.MoveNext());
     }
+#endif
+// SPDX-License-Identifier: MPL-2.0
+#if NETSTANDARD2_0_OR_GREATER || NETCOREAPP
+// ReSharper disable once CheckNamespace
+/// <summary>Extension methods for <see cref="INumber{TSelf}"/>.</summary>
+#if NET9_0_OR_GREATER
+    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Vector<TSelf> Hypot<TSelf>(this Vector<TSelf> x, Vector<TSelf> y)
+    {
+        if (typeof(TSelf) == typeof(float))
+        {
+            var f = Vector.Hypot(
+                Unsafe.As<Vector<TSelf>, Vector<float>>(ref x),
+                Unsafe.As<Vector<TSelf>, Vector<float>>(ref y)
+            );
+            return Unsafe.As<Vector<float>, Vector<TSelf>>(ref f);
+        }
+        if (typeof(TSelf) != typeof(double))
+            return default;
+        var d = Vector.Hypot(
+            Unsafe.As<Vector<TSelf>, Vector<double>>(ref x),
+            Unsafe.As<Vector<TSelf>, Vector<double>>(ref y)
+        );
+        return Unsafe.As<Vector<double>, Vector<TSelf>>(ref d);
+    }
+    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.SinCos"/>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static (Vector<TSelf> Sin, Vector<TSelf> Cos) SinCos<TSelf>(this Vector<TSelf> x)
+    {
+        if (typeof(TSelf) == typeof(float))
+        {
+            var f = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<float>>(ref x));
+            return Unsafe.As<(Vector<float>, Vector<float>), (Vector<TSelf>, Vector<TSelf>)>(ref f);
+        }
+        if (typeof(TSelf) != typeof(double))
+            return default;
+        var d = Vector.SinCos(Unsafe.As<Vector<TSelf>, Vector<double>>(ref x));
+        return Unsafe.As<(Vector<double>, Vector<double>), (Vector<TSelf>, Vector<TSelf>)>(ref d);
+    }
+#endif
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if !NET20 && !NET30

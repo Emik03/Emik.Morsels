@@ -4,7 +4,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 #pragma warning disable 8500
-// ReSharper disable once RedundantNameQualifier RedundantUsingDirective
+// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 /// <summary>Defines methods for spans.</summary>
@@ -30,14 +30,13 @@ static partial class Span
             /// </summary>
             public static bool Supported { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
 #if NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
-                typeof(TTo) == typeof(TFrom);
+                typeof(TFrom) == typeof(TTo);
 #else
                 typeof(TFrom) == typeof(TTo) ||
                 Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>() &&
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
                     !IsReferenceOrContainsReferences<TFrom>() && !IsReferenceOrContainsReferences<TTo>());
-#endif
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+
             [Pure]
             static bool IsReinterpretable(Type first, Type second)
             {

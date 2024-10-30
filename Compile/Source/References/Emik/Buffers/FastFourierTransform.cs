@@ -100,7 +100,7 @@ static partial class FastFourierTransform
         var i = 0;
 #if NET9_0_OR_GREATER
         if (Vector<T>.IsSupported && Vector.IsHardwareAccelerated)
-            for (; i + Vector<T>.Count <= length; i += Vector<T>.Count)
+            for (; i <= length - Vector<T>.Count; i += Vector<T>.Count)
             {
                 var step = Vector.CreateSequence(T.CreateChecked(i), T.One);
                 var (sin, cos) = (scale * step * step).SinCos();
