@@ -3534,8 +3534,8 @@ readonly
             ref var last = ref Unsafe.Add(ref MemoryMarshal.GetReference(span), Unsafe.SizeOf<T>() * BitsInByte - 1);
             span.Fill('0');
             while (MoveNext())
-                Unsafe.Add(ref last, (int)(Index * (Unsafe.SizeOf<nint>() * BitsInByte) - TrailingZeroCount(Mask))) ^=
-                    '\x01';
+                Unsafe.Subtract(ref last, (int)(Index * (Unsafe.SizeOf<nint>() * BitsInByte) + TrailingZeroCount(Mask)))
+                    ^= '\x01';
             return span.ToString();
         }
         [CollectionAccess(JetBrains.Annotations.CollectionAccessType.None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

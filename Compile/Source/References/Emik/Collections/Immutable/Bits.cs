@@ -428,8 +428,8 @@ readonly
             span.Fill('0');
 
             while (MoveNext())
-                Unsafe.Add(ref last, (int)(Index * (Unsafe.SizeOf<nint>() * BitsInByte) - TrailingZeroCount(Mask))) ^=
-                    '\x01';
+                Unsafe.Subtract(ref last, (int)(Index * (Unsafe.SizeOf<nint>() * BitsInByte) + TrailingZeroCount(Mask)))
+                    ^= '\x01';
 
             return span.ToString();
         }
