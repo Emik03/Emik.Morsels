@@ -164,6 +164,7 @@
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
+        <Compile Remove="$(Morsels)/Compile/Source/References/*/**/*.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/ValidationFlags.cs" Link="Source/References/Fody/ValidationFlags.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/AllowNullAttribute.cs" Link="Source/References/Fody/AllowNullAttribute.cs"/>
         <Compile Include="$(Morsels)/Compile/Source/References/Fody/NullGuardAttribute.cs" Link="Source/References/Fody/NullGuardAttribute.cs"/>
