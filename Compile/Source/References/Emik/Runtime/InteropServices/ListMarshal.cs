@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace RedundantNameQualifier
 namespace Emik.Morsels;
-
-// ReSharper disable once RedundantNameQualifier
-using Expression = System.Linq.Expressions.Expression;
 
 /// <summary>Class for obtaining the underlying data for lists.</summary>
 static partial class ListMarshal
@@ -34,9 +31,10 @@ static partial class ListMarshal
             if (field.DeclaringType is not { } declaringType)
                 throw new InvalidOperationException("Field has no declaring type.");
 
-            var param = Expression.Parameter(declaringType, field.Name);
-            var access = Expression.Field(param, field);
-            return Expression.Lambda<Converter<List<T>, T[]>>(access, param).Compile();
+            // ReSharper disable once RedundantNameQualifier
+            var param = System.Linq.Expressions.Expression.Parameter(declaringType, field.Name);
+            var access = System.Linq.Expressions.Expression.Field(param, field);
+            return System.Linq.Expressions.Expression.Lambda<Converter<List<T>, T[]>>(access, param).Compile();
 #endif
         }
     }

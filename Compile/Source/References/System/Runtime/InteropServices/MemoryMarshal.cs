@@ -4,11 +4,7 @@
 // ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
 #pragma warning disable 8500, SA1137
-#if !(NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER)
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-using static System.Linq.Expressions.Expression;
-#endif
-
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
 #pragma warning disable 1574 // Reference to System.Memory may not exist.
 /// <summary>
 /// Provides a collection of methods for interoperating with <see cref="Memory{T}"/>, <see cref="ReadOnlyMemory{T}"/>,
@@ -171,7 +167,12 @@ static partial class MemoryMarshal
             const BindingFlags FactoryFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             Type[] args = [typeof(T).MakeByRefType(), typeof(int)];
-            ParameterExpression[] parameters = [Parameter(args[0], nameof(T)), Parameter(args[1], nameof(Int32))];
+
+            ParameterExpression[] parameters =
+            [
+                System.Linq.Expressions.Expression.Parameter(args[0], nameof(T)),
+                System.Linq.Expressions.Expression.Parameter(args[1], nameof(Int32)),
+            ];
 
             ReadOnlySpan = Make<ReadOnlySpanFactory<T>>() ?? InefficientReadOnlySpanFallback;
             Span = Make<SpanFactory<T>>() ?? InefficientSpanFallback;
@@ -188,9 +189,17 @@ static partial class MemoryMarshal
             TTarget? Make<TTarget>() =>
                 typeof(TTarget).GetMethod(nameof(Invoke))?.ReturnType is var type &&
                 Constructor(type) is { } constructor ?
-                    Lambda<TTarget>(New(constructor, parameters.AsEnumerable()), parameters).Compile() :
+                    System.Linq.Expressions.Expression.Lambda<TTarget>(
+                            System.Linq.Expressions.Expression.New(constructor, parameters.AsEnumerable()),
+                            parameters
+                        )
+                       .Compile() :
                     Factory(type) is { } factory ?
-                        Lambda<TTarget>(Call(factory, parameters.AsEnumerable()), parameters).Compile() : default;
+                        System.Linq.Expressions.Expression.Lambda<TTarget>(
+                                System.Linq.Expressions.Expression.Call(factory, parameters.AsEnumerable()),
+                                parameters
+                            )
+                           .Compile() : default;
         }
 
         /// <summary>Gets the invocation for creating a <see cref="ReadOnlySpan{T}"/>.</summary>
