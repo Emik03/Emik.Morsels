@@ -6,7 +6,6 @@ namespace Emik.Morsels;
 #pragma warning disable 9107
 static partial class DeconstructionCollectionExtensions
 {
-    [Pure]
     [return: NotNullIfNotNull(nameof(it))]
     public static T Debug<T>(
         this T it,
