@@ -98,7 +98,12 @@ readonly
         get
         {
             ValidateIndex(index);
-            return _pinnable is null ? ((T*)_byteOffset)[index] : (&_pinnable.Data)[index];
+
+            if (_pinnable is null)
+                return ((T*)_byteOffset)[index];
+
+            fixed (T* ptr = &_pinnable.Data)
+                return ptr[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
@@ -108,7 +113,8 @@ readonly
             if (_pinnable is null)
                 ((T*)_byteOffset)[index] = value;
             else
-                (&_pinnable.Data)[index] = value;
+                fixed (T* ptr = &_pinnable.Data)
+                    ptr[index] = value;
         }
     }
 
