@@ -130,7 +130,7 @@ static partial class Int32TryFormatPolyfill
             var remainder = value - quotient * 10;
             value = quotient;
             *--bufferEnd = (char)(remainder + '0');
-        } while (value != 0);
+        } while (value is not 0);
 
         return bufferEnd;
     }
@@ -138,7 +138,7 @@ static partial class Int32TryFormatPolyfill
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static unsafe char* UInt32ToDecChars(char* bufferEnd, uint value, int digits)
     {
-        while (--digits >= 0 || value != 0)
+        while (--digits >= 0 || value is not 0)
         {
             var quotient = value / 10;
             var remainder = value - quotient * 10;
