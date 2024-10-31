@@ -8,6 +8,25 @@ namespace System;
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
+    public static partial class PerTypeValues<T>
+    {
+        public static readonly bool IsReferenceOrContainsReferences = IsReferenceOrContainsReferencesCore(typeof(T));
+
+        public static readonly T[] EmptyArray = [];
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        public static readonly nint ArrayAdjustment = MeasureArrayAdjustment();
+
+        static unsafe nint MeasureArrayAdjustment()
+        {
+            var array = new T[1];
+            var data = (nint)(&Span.Ret<Pinnable<T>>.From(array).Data);
+
+            fixed (T* ptr = array)
+                return data - (nint)ptr;
+        }
+#endif
+    }
+
     /// <summary>Determines whether both pointers to buffers contain the same content.</summary>
     /// <typeparam name="T">The type of buffer.</typeparam>
     /// <param name="first">The first pointer to compare.</param>
@@ -346,5 +365,20 @@ static partial class SpanHelpers
             }
 
         return -1;
+    }
+
+    static bool IsReferenceOrContainsReferencesCore(Type type)
+    {
+        if (type.GetTypeInfo().IsPrimitive)
+            return false;
+
+        if (!type.GetTypeInfo().IsValueType)
+            return true;
+
+        if (Nullable.GetUnderlyingType(type) is { } underlyingType)
+            type = underlyingType;
+
+        return !type.GetTypeInfo().IsEnum &&
+            type.GetTypeInfo().DeclaredFields.Any(x => !x.IsStatic && IsReferenceOrContainsReferencesCore(x.FieldType));
     }
 }

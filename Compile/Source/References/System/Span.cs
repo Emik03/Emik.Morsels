@@ -11,7 +11,6 @@ namespace System;
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-unsafe
 #if !NO_REF_STRUCTS
     ref
 #endif
@@ -20,6 +19,10 @@ unsafe
     where T : unmanaged
 #endif
 {
+    readonly Pinnable<T>? _pinnable;
+
+    readonly nint _byteOffset;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Span{T}"/> struct from a specified number of
     /// <typeparamref name="T"/> elements starting at a specified memory address.
@@ -28,12 +31,60 @@ unsafe
     /// <param name="length">The length of the buffer.</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="length"/> is negative.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span(void* pointer, [NonNegativeValue] int length)
+    public unsafe Span(void* pointer, [NonNegativeValue] int length)
     {
-        ValidateLength(length);
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            throw new ArgumentException("Invalid type with pointers not supported.", nameof(pointer));
 
-        Pointer = (T*)pointer;
+        ValidateLength(length);
         Length = length;
+        _pinnable = null;
+        _byteOffset = new IntPtr(pointer);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Span(T[]? array)
+    {
+        if (array is null)
+        {
+            this = default;
+            return;
+        }
+
+        if (default(T) is null && array.GetType() != typeof(T[]))
+            throw new ArrayTypeMismatchException();
+
+        Length = array.Length;
+        _pinnable = Span.Ret<Pinnable<T>>.From(array);
+        _byteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public unsafe Span(T[]? array, int start, int length)
+    {
+        if (array is null)
+        {
+            if (start != 0 || length != 0)
+                throw new ArgumentOutOfRangeException(nameof(start), start, "start is out of range");
+
+            this = default;
+            return;
+        }
+
+        if ((uint)start > (uint)array.Length || (uint)length > (uint)(array.Length - start))
+            throw new ArgumentOutOfRangeException(nameof(length), length, "length is out of range");
+
+        Length = length;
+        _pinnable = Span.Ret<Pinnable<T>>.From(array);
+        _byteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal Span(Pinnable<T> pinnable, nint byteOffset, int length)
+    {
+        Length = length;
+        _pinnable = pinnable;
+        _byteOffset = byteOffset;
     }
 
     /// <summary>Gets the element at the specified zero-based index.</summary>
@@ -41,19 +92,23 @@ unsafe
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="index"/> is less than zero or is greater than or equal to <see cref="Length"/>.
     /// </exception>
-    public T this[[NonNegativeValue] int index]
+    public unsafe T this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
             ValidateIndex(index);
-            return ((T*)Pointer)[index];
+            return _pinnable is null ? ((T*)_byteOffset)[index] : (&_pinnable.Data)[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ValidateIndex(index);
-            ((T*)Pointer)[index] = value;
+
+            if (_pinnable is null)
+                ((T*)_byteOffset)[index] = value;
+            else
+                (&_pinnable.Data)[index] = value;
         }
     }
 
@@ -71,22 +126,6 @@ unsafe
 
     /// <summary>Gets the length of the current span.</summary>
     public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
-
-    /// <summary>Gets the pointer representing the first element in the buffer.</summary>
-    /// <remarks><para>
-    /// This property does not normally exist, and is used as a workaround polyfill for <c>GetPinnableReference</c>.
-    /// When using this property, ensure you have the appropriate preprocessors for using a fixed expression instead.
-    /// </para><para>
-    /// Due to a specific runtime issue, this property cannot be generic, as this causes some JITs
-    /// (notably .NET Framework) to be upset from its metadata and refuse to load. It is therefore expected of the
-    /// caller to cast the returned pointer every time if needed.
-    /// </para></remarks>
-    public void* Pointer
-    {
-        [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining),
-         NonNegativeValue, Pure]
-        get;
-    }
 
     /// <summary>Returns a value that indicates whether two <see cref="Span{T}"/> objects are equal.</summary>
     /// <remarks><para>
@@ -117,6 +156,11 @@ unsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool operator !=(Span<T> left, Span<T> right) => !(left == right);
 
+    public static implicit operator Span<T>(T[] array) => new(array);
+
+    public static implicit operator Span<T>(ArraySegment<T> segment) =>
+        new(segment.Array, segment.Offset, segment.Count);
+
     /// <summary>Defines an implicit conversion of a <see cref="Span{T}"/> to a <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <param name="span">The object to convert to a <see cref="ReadOnlySpan{T}"/>.</param>
     /// <returns>A read-only span that corresponds to the current instance.</returns>
@@ -131,7 +175,6 @@ unsafe
 #pragma warning disable 8604, CA1855
     public void Clear() => Fill(default);
 #pragma warning restore 8604, CA1855
-
     /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="Span{T}"/>.</summary>
     /// <param name="destination">The destination <see cref="Span{T}"/> object.</param>
     /// <exception cref="ArgumentException">
@@ -146,29 +189,14 @@ unsafe
             destination[i] = this[i];
     }
 
-    /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="IList{T}"/>.</summary>
-    /// <param name="destination">The destination <see cref="IList{T}"/> object.</param>
-    /// <exception cref="ArgumentException">
-    /// <paramref name="destination"/> is shorter than the source <see cref="Span{T}"/>.
-    /// </exception>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CopyTo(IList<T> destination)
-    {
-        ValidateDestination(destination.Count);
-
-        for (var i = 0; i < Length; i++)
-            destination[i] = this[i];
-    }
-
     /// <summary>Fills the elements of this span with a specified value.</summary>
     /// <param name="value">The value to assign to each element of the span.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Fill(T value)
     {
         for (var i = 0; i < Length; i++)
-            ((T*)Pointer)[i] = value;
+            this[i] = value;
     }
-
 #if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
@@ -201,20 +229,6 @@ unsafe
 
         return true;
     }
-
-    /// <inheritdoc cref="TryCopyTo(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryCopyTo(IList<T> destination)
-    {
-        if ((uint)Length > (uint)destination.Count)
-            return false;
-
-        for (var i = 0; i < Length; i++)
-            destination[i] = this[i];
-
-        return true;
-    }
-
 #if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
@@ -698,5 +712,12 @@ sealed class SpanDebugView<T>
     /// <summary>Gets the items of this span.</summary>
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public T[] Items { [Pure] get; }
+}
+
+[StructLayout(LayoutKind.Sequential)]
+sealed class Pinnable<T>
+{
+    // ReSharper disable once NullableWarningSuppressionIsUsed
+    public T Data = default!;
 }
 #endif
