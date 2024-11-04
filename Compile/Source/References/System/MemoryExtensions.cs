@@ -4,9 +4,22 @@
 namespace System;
 #pragma warning disable 8500
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+using Emik.Morsels;
+
 /// <summary>Extension methods for <see cref="Span{T}"/>, <c>Memory&lt;T&gt;</c>, and friends.</summary>
 static partial class MemoryExtensions
 {
+    public static nint StringAdjustment = MeasureStringAdjustment();
+#pragma warning disable RCS1118 // ReSharper disable once ConvertToConstant.Local
+    static unsafe nint MeasureStringAdjustment()
+    {
+        var text = "a";
+#pragma warning restore RCS1118
+        fixed (char* c = text)
+        fixed (char* pinnable = &Span.Ret<Pinnable<char>>.From(text).Data)
+            return (nint)(c - pinnable);
+    }
+
     /// <summary>Determines whether this span ends with the specified value.</summary>
     /// <typeparam name="T">The type of span and value.</typeparam>
     /// <param name="span">The span to search.</param>

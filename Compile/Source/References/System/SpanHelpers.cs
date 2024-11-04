@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 namespace System;
+
+using Emik.Morsels;
 
 // ReSharper disable CognitiveComplexity NullableWarningSuppressionIsUsed RedundantCallerArgumentExpressionDefaultValue RedundantSuppressNullableWarningExpression
 #pragma warning disable 8500, MA0051
@@ -24,7 +25,6 @@ static partial class SpanHelpers
             fixed (T* ptr = array)
                 return data - (nint)ptr;
         }
-#endif
     }
 
     /// <summary>Determines whether both pointers to buffers contain the same content.</summary>
@@ -369,16 +369,16 @@ static partial class SpanHelpers
 
     static bool IsReferenceOrContainsReferencesCore(Type type)
     {
-        if (type.GetTypeInfo().IsPrimitive)
+        if (type.IsPrimitive)
             return false;
 
-        if (!type.GetTypeInfo().IsValueType)
+        if (!type.IsValueType)
             return true;
 
         if (Nullable.GetUnderlyingType(type) is { } underlyingType)
             type = underlyingType;
 
-        return !type.GetTypeInfo().IsEnum &&
-            type.GetTypeInfo().DeclaredFields.Any(x => !x.IsStatic && IsReferenceOrContainsReferencesCore(x.FieldType));
+        const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        return !type.IsEnum && type.GetFields(Flags).Any(x => IsReferenceOrContainsReferencesCore(x.FieldType));
     }
 }
