@@ -8,13 +8,13 @@ open System
 [<AttributeUsage(AttributeTargets.Assembly); Sealed>]
 type private TargetFrameworkAttribute (frameworkName : string) =
     inherit Attribute ()
-    let mutable _frameworkDisplayName = null
+    let mutable _frameworkDisplayName = ""
     let _frameworkName = frameworkName
 
     /// Gets the display name of the .NET version against which an assembly was built.
     member this.FrameworkDisplayName
-        with get () = _frameworkName
-        and set (value : string) = _frameworkDisplayName <- value
+        with get () = _frameworkDisplayName
+        and set value = _frameworkDisplayName <- value
 
     /// Gets the name of the .NET version against which a particular assembly was compiled.
     member this.FrameworkName = _frameworkName
