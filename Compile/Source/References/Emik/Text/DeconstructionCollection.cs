@@ -795,12 +795,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Returns the <see cref="string"/> representation of this instance without newlines.</summary>
     /// <returns>The <see cref="string"/> representation of this instance.</returns>
     [Pure]
-    public string ToStringWithoutNewLines() =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        ToString().SplitSpanLines().ToString();
-#else
-        $"{Whitespaces.Breaking.Aggregate(ToString().ToBuilder(), (acc, next) => acc.Replace($"{next}", ""))}";
-#endif
+    public string ToStringWithoutNewLines() => ToString().SplitSpanLines().ToString();
+
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();

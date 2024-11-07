@@ -128,36 +128,36 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T>(this Span<T> span, T value)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         IndexOf(span.ReadOnly(), value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOf<T>(this Span<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         IndexOf(span.ReadOnly(), value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOf<T>(this Span<T> span, T value)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         LastIndexOf(span.ReadOnly(), value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOf<T>(this Span<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         LastIndexOf(span.ReadOnly(), value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool SequenceEqual<T>(this Span<T> span, ReadOnlySpan<T> other)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         SequenceEqual(span.ReadOnly(), other);
 
     public static int SequenceCompareTo<T>(this Span<T> span, ReadOnlySpan<T> other)
-        where T : IComparable<T> =>
+        where T : IComparable<T>? =>
         SequenceCompareTo(span.ReadOnly(), other);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, T value)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* ptr = span)
             return typeof(T) == typeof(byte) ?
@@ -169,7 +169,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* s = span)
         fixed (T* v = value)
@@ -180,7 +180,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int LastIndexOf<T>(this ReadOnlySpan<T> span, T value)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* ptr = span)
             return typeof(T) == typeof(byte) ?
@@ -192,7 +192,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int LastIndexOf<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* s = span)
         fixed (T* v = value)
@@ -203,22 +203,22 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOfAny<T>(this Span<T> span, T value0, T value1)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         IndexOfAny(span.ReadOnly(), value0, value1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOfAny<T>(this Span<T> span, T value0, T value1, T value2)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         IndexOfAny(span.ReadOnly(), value0, value1, value2);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int IndexOfAny<T>(this Span<T> span, ReadOnlySpan<T> values)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         IndexOfAny(span.ReadOnly(), values);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* ptr = span)
             return typeof(T) == typeof(byte)
@@ -233,7 +233,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1, T value2)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* ptr = span)
             return typeof(T) == typeof(byte)
@@ -249,7 +249,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* s = span)
         fixed (T* v = values)
@@ -260,22 +260,22 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOfAny<T>(this Span<T> span, T value0, T value1)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         LastIndexOfAny(span.ReadOnly(), value0, value1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOfAny<T>(this Span<T> span, T value0, T value1, T value2)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         LastIndexOfAny(span.ReadOnly(), value0, value1, value2);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int LastIndexOfAny<T>(this Span<T> span, ReadOnlySpan<T> values)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         LastIndexOfAny(span.ReadOnly(), values);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int LastIndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* ptr = span)
             return typeof(T) == typeof(byte)
@@ -290,7 +290,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int LastIndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1, T value2)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* ptr = span)
             return typeof(T) == typeof(byte)
@@ -306,7 +306,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int LastIndexOfAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         fixed (T* s = span)
         fixed (T* v = values)
@@ -317,7 +317,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool SequenceEqual<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> other)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         var length = span.Length;
 
@@ -331,7 +331,7 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int SequenceCompareTo<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> other)
-        where T : IComparable<T>
+        where T : IComparable<T>?
     {
         fixed (T* s = span)
         fixed (T* o = other)
@@ -344,12 +344,12 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool StartsWith<T>(this Span<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         StartsWith(span.ReadOnly(), value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool StartsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         var length = value.Length;
 
@@ -363,12 +363,12 @@ static partial class MemoryExtensions
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool EndsWith<T>(this Span<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T> =>
+        where T : IEquatable<T>? =>
         EndsWith(span.ReadOnly(), value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool EndsWith<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         var length = span.Length;
         var length2 = value.Length;

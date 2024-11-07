@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable once CheckNamespace EmptyNamespace
+
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 using static Span;
@@ -54,4 +54,3 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override Span<T> GetSpan() => Ref(ref _value);
 }
-#endif

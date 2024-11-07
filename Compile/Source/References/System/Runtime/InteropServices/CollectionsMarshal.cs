@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !NET5_0_OR_GREATER
+
 // ReSharper disable once CheckNamespace
 namespace System.Runtime.InteropServices;
 
@@ -20,4 +20,3 @@ static partial class CollectionsMarshal
 #pragma warning restore MA0016
         list is null ? default : new Span<T>(list.UnsafelyToArray(), 0, list.Count);
 }
-#endif

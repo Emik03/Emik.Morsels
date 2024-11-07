@@ -168,21 +168,8 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             }
 
         Retry:
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
             switch (body.LastIndexOf(sep))
-#else
-            int lower = 0, upper = body.Length - sep.Length;
-
-            for (; lower < upper; lower++)
-                if (body.UnsafelySkip(lower).UnsafelyTake(sep.Length).SequenceEqual(sep))
-                    break;
-
-            if (lower == upper)
-                lower = -1;
-
-            // The worst way to suppress warnings about inlining variables.
-            switch (+lower)
-#endif
             {
                 case -1:
                     current = body;

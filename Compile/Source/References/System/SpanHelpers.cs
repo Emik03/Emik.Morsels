@@ -5,7 +5,7 @@ namespace System;
 using Emik.Morsels;
 
 // ReSharper disable CognitiveComplexity
-#pragma warning disable 8500, MA0051
+#pragma warning disable 8500, 8602, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
@@ -948,7 +948,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int IndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         if (valueLength == 0)
             return 0;
@@ -976,7 +976,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int IndexOf<T>(T* searchSpace, T value, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         nint num = 0;
 
@@ -1064,7 +1064,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int IndexOfAny<T>(T* searchSpace, T value0, T value1, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         var num = 0;
 
@@ -1173,7 +1173,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int IndexOfAny<T>(T* searchSpace, T value0, T value1, T value2, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         var num = 0;
 
@@ -1282,7 +1282,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int IndexOfAny<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         if (valueLength == 0)
             return 0;
@@ -1306,7 +1306,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int LastIndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         if (valueLength == 0)
             return 0;
@@ -1326,7 +1326,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int LastIndexOf<T>(T* searchSpace, T value, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         while (true)
         {
@@ -1403,7 +1403,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int LastIndexOfAny<T>(T* searchSpace, T value0, T value1, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         while (true)
         {
@@ -1505,7 +1505,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int LastIndexOfAny<T>(T* searchSpace, T value0, T value1, T value2, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         while (true)
         {
@@ -1607,7 +1607,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe int LastIndexOfAny<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         if (valueLength == 0)
             return 0;
@@ -1622,7 +1622,7 @@ static partial class SpanHelpers
     }
 
     public static unsafe bool SequenceEqual<T>(T* first, T* second, int length)
-        where T : IEquatable<T>
+        where T : IEquatable<T>?
     {
         if (first == second)
             return true;
@@ -1686,14 +1686,9 @@ static partial class SpanHelpers
     }
 
     public static unsafe int SequenceCompareTo<T>(T* first, int firstLength, T* second, int secondLength)
-        where T : IComparable<T>
+        where T : IComparable<T>?
     {
-        var num = firstLength;
-
-        if (num > secondLength)
-            num = secondLength;
-
-        for (var i = 0; i < num; i++)
+        for (int i = 0, num = firstLength > secondLength ? secondLength : firstLength; i < num; i++)
             if (first[i].CompareTo(second[i]) is not 0 and var ret)
                 return ret;
 
