@@ -232,7 +232,31 @@ readonly
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #pragma warning disable 8604, CA1855
-    public void Clear() => Fill(default);
+    public unsafe void Clear()
+    {
+        if (Length == 0)
+            return;
+
+        var byteLength = (nuint)(ulong)((uint)Length * Unsafe.SizeOf<T>());
+
+        if ((Unsafe.SizeOf<T>() & sizeof(nint) - 1) != 0)
+        {
+            if (_pinnable is null)
+                SpanHelpers.ClearLessThanPointerSized((byte*)_byteOffset, byteLength);
+            else
+                fixed (T* ptr = &_pinnable.Data)
+                    SpanHelpers.ClearLessThanPointerSized((byte*)ptr + _byteOffset, byteLength);
+        }
+        else
+            fixed (T* ptr = this)
+                if (SpanHelpers.IsReferenceOrContainsReferences<T>())
+                    SpanHelpers.ClearPointerSizedWithReferences(
+                        (nint*)ptr,
+                        (nuint)(ulong)(Length * Unsafe.SizeOf<T>() / sizeof(nint))
+                    );
+                else
+                    SpanHelpers.ClearPointerSizedWithoutReferences((byte*)ptr, byteLength);
+    }
 #pragma warning restore 8604, CA1855
     /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="Span{T}"/>.</summary>
     /// <param name="destination">The destination <see cref="Span{T}"/> object.</param>
@@ -240,21 +264,44 @@ readonly
     /// <paramref name="destination"/> is shorter than the source <see cref="Span{T}"/>.
     /// </exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void CopyTo(Span<T> destination)
-    {
-        ValidateDestination(destination.Length);
-
-        for (var i = 0; i < Length; i++)
-            destination[i] = this[i];
-    }
+    public void CopyTo(Span<T> destination) => this.ReadOnly().CopyTo(destination);
 
     /// <summary>Fills the elements of this span with a specified value.</summary>
     /// <param name="value">The value to assign to each element of the span.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Fill(T value)
+    public unsafe void Fill(T value)
     {
-        for (var i = 0; i < Length; i++)
-            this[i] = value;
+        if (Length == 0)
+            return;
+
+        fixed (T* source = this)
+        {
+            int i;
+
+            for (i = 0; i < (Length & -8); i += 8)
+            {
+                source[i] = value;
+                source[i + 1] = value;
+                source[i + 2] = value;
+                source[i + 3] = value;
+                source[i + 4] = value;
+                source[i + 5] = value;
+                source[i + 6] = value;
+                source[i + 7] = value;
+            }
+
+            if (i < (Length & -4))
+            {
+                source[i] = value;
+                source[i + 1] = value;
+                source[i + 2] = value;
+                source[i + 3] = value;
+                i += 4;
+            }
+
+            for (; i < Length; i++)
+                source[i] = value;
+        }
     }
 #if !NO_REF_STRUCTS
     /// <inheritdoc />
@@ -278,16 +325,7 @@ readonly
     /// <param name="destination">The target of the copy operation.</param>
     /// <returns><see langword="true"/> if the copy operation succeeded; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryCopyTo(Span<T> destination)
-    {
-        if ((uint)Length > (uint)destination.Length)
-            return false;
-
-        for (var i = 0; i < Length; i++)
-            destination[i] = this[i];
-
-        return true;
-    }
+    public bool TryCopyTo(Span<T> destination) => this.ReadOnly().TryCopyTo(destination);
 #if !NO_REF_STRUCTS
     /// <inheritdoc />
     [ContractAnnotation("=> halt"),
@@ -306,7 +344,7 @@ readonly
 
         if (_byteOffset == MemoryExtensions.StringAdjustment)
         {
-            var obj = Span.Ret<object>.From(_pinnable);
+            var obj = Unsafe.As<object?>(_pinnable);
 
             if (obj is string text && Length == text.Length)
                 return text;
@@ -418,16 +456,6 @@ readonly
     {
         if (length < 0)
             throw new ArgumentOutOfRangeException(nameof(length), length, "Non-negative");
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ValidateDestination(int destination)
-    {
-        if ((uint)Length > (uint)destination)
-            throw new ArgumentException(
-                $"Destination length \"{destination}\" shorter than source \"{Length}\".",
-                nameof(destination)
-            );
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -701,10 +729,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void CopyTo(Span<T> destination)
     {
-        ValidateDestination(destination.Length);
-
-        for (var i = 0; i < Length; i++)
-            destination[i] = this[i];
+        if (!TryCopyTo(destination))
+            throw new ArgumentException("Destination too short", nameof(destination));
     }
 #if !NO_REF_STRUCTS
     /// <inheritdoc />
@@ -728,13 +754,17 @@ readonly
     /// <param name="destination">The target of the copy operation.</param>
     /// <returns><see langword="true"/> if the copy operation succeeded; otherwise, <see langword="false"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryCopyTo(Span<T> destination)
+    public unsafe bool TryCopyTo(Span<T> destination)
     {
+        if (Length is 0)
+            return true;
+
         if ((uint)Length > (uint)destination.Length)
             return false;
 
-        for (var i = 0; i < Length; i++)
-            destination[i] = this[i];
+        fixed (T* s = this)
+        fixed (T* d = destination)
+            SpanHelpers.CopyTo(d, destination.Length, s, Length);
 
         return true;
     }
@@ -858,16 +888,6 @@ readonly
     {
         if (length < 0)
             throw new ArgumentOutOfRangeException(nameof(length), length, "Non-negative");
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ValidateDestination(int destination)
-    {
-        if ((uint)Length > (uint)destination)
-            throw new ArgumentException(
-                $"Destination length \"{destination}\" shorter than source \"{Length}\".",
-                nameof(destination)
-            );
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

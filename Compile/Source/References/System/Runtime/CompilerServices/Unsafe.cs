@@ -6,7 +6,7 @@ namespace System.Runtime.CompilerServices;
 static class Unsafe
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T As<T>(object o) => Span.Ret<T>.From(o);
+    public static T As<T>(object? o) => Span.Ret<T>.From(o);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TTo As<TFrom, TTo>(ref readonly TFrom o) => Span.Ret<TTo>.From(o);

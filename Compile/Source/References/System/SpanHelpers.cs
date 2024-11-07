@@ -1874,30 +1874,30 @@ static partial class SpanHelpers
     }
 
     public static bool IsReferenceOrContainsReferences<T>() => PerTypeValues<T>.IsReferenceOrContainsReferences;
-
+#pragma warning disable CA1855
     public static unsafe void ClearLessThanPointerSized(byte* ptr, nuint byteLength)
     {
         if (sizeof(nuint) is 4)
         {
-            new Span<byte>(ptr, (int)byteLength).Clear();
+            new Span<byte>(ptr, (int)byteLength).Fill(0); // Do not use `Clear`: It relies on this method.
             return;
         }
 
         var num = (ulong)byteLength;
         var num2 = (uint)(num & 0xFFFFFFFFu);
-        new Span<byte>(ptr, (int)num2).Clear();
+        new Span<byte>(ptr, (int)num2).Fill(0); // Do not use `Clear`: It relies on this method.
         num -= num2;
         ptr += num2;
 
         while (num != 0)
         {
             num2 = (uint)(num >= uint.MaxValue ? uint.MaxValue : num);
-            new Span<byte>(ptr, (int)num2).Clear();
+            new Span<byte>(ptr, (int)num2).Fill(0); // Do not use `Clear`: It relies on this method.
             ptr += num2;
             num -= num2;
         }
     }
-
+#pragma warning restore CA1855
     public static unsafe void ClearPointerSizedWithoutReferences(byte* b, nuint byteLength)
     {
         nint zero;
