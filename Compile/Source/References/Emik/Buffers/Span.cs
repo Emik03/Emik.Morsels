@@ -369,7 +369,8 @@ static partial class Span
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
 #else
-        return new(span.Pointer, length);
+        fixed (byte* ptr = span)
+            return new(ptr, length);
 #endif
     }
 #endif
@@ -508,7 +509,8 @@ static partial class Span
 #else
     {
         fixed (T* ptr = &value)
-            return (nint)((T*)span.Pointer - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
+        fixed (T* s = span)
+            return (nint)(s - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
                 ? (int)elementOffset
                 : -1;
     }
@@ -545,23 +547,22 @@ static partial class Span
         where T : IEquatable<T>?
 #endif
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         fixed (T* searchSpace = span)
         fixed (T* value = values)
-#else
-        var searchSpace = (T*)span.Pointer;
-        var value = (T*)values.Pointer;
-#endif
             return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
     }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
+    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target)
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        origin.IndexOf(ref MemoryMarshal.GetReference(target));
+        =>
+            origin.IndexOf(ref MemoryMarshal.GetReference(target));
 #else
-        origin.IndexOf(ref *(T*)target.Pointer);
+    {
+        fixed (T* value = target)
+            return origin.IndexOf(ref *value);
+    }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

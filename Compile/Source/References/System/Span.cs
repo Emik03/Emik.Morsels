@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace EmptyNamespace StructCanBeMadeReadOnly
+
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
 using Emik.Morsels;
+using static Runtime.CompilerServices.RuntimeHelpers;
 
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="Span{T}"/>.</typeparam>
-[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Auto)]
+[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Sequential)]
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
@@ -35,7 +37,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe Span(void* pointer, [NonNegativeValue] int length)
     {
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        if (IsReferenceOrContainsReferences<T>())
             throw new ArgumentException("Invalid type with pointers not supported.", nameof(pointer));
 
         ValidateLength(length);
@@ -402,6 +404,16 @@ readonly
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static unsafe Span<T> Create(T[]? array, int start) =>
+        array is null ? start is 0 ? default : throw new ArgumentOutOfRangeException(nameof(start)) :
+        default(T) is null && array.GetType() != typeof(T[]) ? throw new ArrayTypeMismatchException() :
+        (uint)start > (uint)array.Length ? throw new ArgumentOutOfRangeException(nameof(start)) : new(
+            Unsafe.As<Pinnable<T>>(array),
+            (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start),
+            array.Length - start
+        );
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void ValidateLength(int length)
     {
         if (length < 0)
@@ -481,7 +493,7 @@ readonly
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
 /// <typeparam name="T">The type of items in the <see cref="ReadOnlySpan{T}"/>.</typeparam>
-[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Auto)]
+[DebuggerTypeProxy(typeof(SpanDebugView<>)), DebuggerDisplay("{ToString(),raw}"), StructLayout(LayoutKind.Sequential)]
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
@@ -507,7 +519,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe ReadOnlySpan(void* pointer, [NonNegativeValue] int length)
     {
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        if (IsReferenceOrContainsReferences<T>())
             throw new ArgumentException("Invalid type with pointers not supported.", nameof(pointer));
 
         ValidateLength(length);

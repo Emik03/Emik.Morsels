@@ -13,6 +13,12 @@ namespace System.Runtime.InteropServices;
 #pragma warning restore 1574
 static partial class MemoryMarshal
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T GetReference<T>(Span<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T GetReference<T>(ReadOnlySpan<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
+
     /// <summary>
     /// Casts a Span of one primitive type <typeparamref name="TFrom"/>
     /// to another primitive type <typeparamref name="TTo"/>.
@@ -41,11 +47,8 @@ static partial class MemoryMarshal
             fromSize is not 1 &&
             (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
             (int)(fromLength / toSize);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
         fixed (TFrom* ptr = span)
-#else
-        var ptr = span.Pointer;
-#endif
             return new(ptr, toLength);
     }
 
@@ -76,11 +79,8 @@ static partial class MemoryMarshal
             fromSize is not 1 &&
             (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
             (int)(fromLength / toSize);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
         fixed (TFrom* ptr = span)
-#else
-        var ptr = span.Pointer;
-#endif
             return new(ptr, toLength);
     }
 

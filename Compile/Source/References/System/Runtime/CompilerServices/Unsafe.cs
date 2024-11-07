@@ -5,6 +5,12 @@ namespace System.Runtime.CompilerServices;
 
 static class Unsafe
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T As<T>(object o) => Span.Ret<T>.From(o);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static TTo As<TFrom, TTo>(ref readonly TFrom o) => Span.Ret<TTo>.From(o);
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
     public static void SkipInit<T>(out T value) => value = default!;
 
