@@ -239,7 +239,7 @@ readonly
 
         var byteLength = (nuint)(ulong)((uint)Length * Unsafe.SizeOf<T>());
 
-        if ((Unsafe.SizeOf<T>() & sizeof(nint) - 1) != 0)
+        if ((Unsafe.SizeOf<T>() & Unsafe.SizeOf<nint>() - 1) != 0)
         {
             if (_pinnable is null)
                 SpanHelpers.ClearLessThanPointerSized((byte*)_byteOffset, byteLength);
@@ -252,7 +252,7 @@ readonly
                 if (SpanHelpers.IsReferenceOrContainsReferences<T>())
                     SpanHelpers.ClearPointerSizedWithReferences(
                         (nint*)ptr,
-                        (nuint)(ulong)(Length * Unsafe.SizeOf<T>() / sizeof(nint))
+                        (nuint)(ulong)(Length * Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>())
                     );
                 else
                     SpanHelpers.ClearPointerSizedWithoutReferences((byte*)ptr, byteLength);

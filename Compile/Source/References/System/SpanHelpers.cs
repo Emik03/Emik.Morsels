@@ -803,7 +803,7 @@ static partial class SpanHelpers
 
         nint intPtr = 0, intPtr2 = (nint)(void*)length;
 
-        if ((nuint)(void*)intPtr2 < (nuint)sizeof(nuint))
+        if ((nuint)(void*)intPtr2 < (nuint)Unsafe.SizeOf<nuint>())
         {
             while ((void*)intPtr2 > (void*)intPtr)
             {
@@ -819,7 +819,7 @@ static partial class SpanHelpers
             goto True;
         }
 
-        intPtr2 -= sizeof(nuint);
+        intPtr2 -= Unsafe.SizeOf<nuint>();
 
         while (true)
         {
@@ -829,7 +829,7 @@ static partial class SpanHelpers
             if (*(nuint*)(first + intPtr) == *(nuint*)(second + intPtr))
                 break;
 
-            intPtr += sizeof(nuint);
+            intPtr += Unsafe.SizeOf<nuint>();
         }
 
     False:
@@ -848,13 +848,13 @@ static partial class SpanHelpers
         var intPtr2 = (nint)0;
         var intPtr3 = (nint)(void*)intPtr;
 
-        if ((nuint)(void*)intPtr3 > (nuint)sizeof(nuint))
+        if ((nuint)(void*)intPtr3 > (nuint)Unsafe.SizeOf<nuint>())
         {
-            intPtr3 -= sizeof(nuint);
+            intPtr3 -= Unsafe.SizeOf<nuint>();
 
             for (;
                 (void*)intPtr3 > (void*)intPtr2 && *(nuint*)(first + intPtr2) == *(nuint*)(second + intPtr2);
-                intPtr2 += sizeof(nuint)) { }
+                intPtr2 += Unsafe.SizeOf<nuint>()) { }
         }
 
         for (; (void*)intPtr > (void*)intPtr2; intPtr2 += 1)
@@ -878,13 +878,13 @@ static partial class SpanHelpers
         var intPtr = firstLength < secondLength ? firstLength : secondLength;
         var intPtr2 = 0;
 
-        if ((nuint)(void*)intPtr >= (nuint)(sizeof(nuint) / 2))
+        if ((nuint)(void*)intPtr >= (nuint)(Unsafe.SizeOf<nuint>() / 2))
             for (;
-                (void*)intPtr >= (void*)(intPtr2 + sizeof(nuint) / 2) &&
+                (void*)intPtr >= (void*)(intPtr2 + Unsafe.SizeOf<nuint>() / 2) &&
                 *(nuint*)(first + intPtr2) == *(nuint*)(second + intPtr2);
-                intPtr2 += sizeof(nuint) / 2) { }
+                intPtr2 += Unsafe.SizeOf<nuint>() / 2) { }
 
-        if (sizeof(nuint) > 4 &&
+        if (Unsafe.SizeOf<nuint>() > 4 &&
             (void*)intPtr >= (void*)(intPtr2 + 2) &&
             *(int*)(first + intPtr2) == *(int*)(second + intPtr2))
             intPtr2 += 2;
@@ -1787,7 +1787,7 @@ static partial class SpanHelpers
 
         bool num;
 
-        if (sizeof(nint) is not 4)
+        if (Unsafe.SizeOf<nint>() is not 4)
         {
             if ((ulong)intPtr3 >= (ulong)intPtr)
             {
@@ -1822,7 +1822,7 @@ static partial class SpanHelpers
 
     ElementWise:
 
-        var flag = sizeof(nint) == 4
+        var flag = Unsafe.SizeOf<nint>() == 4
             ? (uint)(int)intPtr3 > (uint)-(int)intPtr2
             : (ulong)intPtr3 > (ulong)-(long)intPtr2;
 
@@ -1863,7 +1863,7 @@ static partial class SpanHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe nint Add<T>(this nint start, int index)
     {
-        if (sizeof(nint) == 4)
+        if (Unsafe.SizeOf<nint>() == 4)
         {
             var num = (uint)(index * Unsafe.SizeOf<T>());
             return (nint)((byte*)(void*)start + num);
@@ -1877,7 +1877,7 @@ static partial class SpanHelpers
 #pragma warning disable CA1855
     public static unsafe void ClearLessThanPointerSized(byte* ptr, nuint byteLength)
     {
-        if (sizeof(nuint) is 4)
+        if (Unsafe.SizeOf<nuint>() is 4)
         {
             new Span<byte>(ptr, (int)byteLength).Fill(0); // Do not use `Clear`: It relies on this method.
             return;
@@ -1902,19 +1902,19 @@ static partial class SpanHelpers
     {
         nint zero;
 
-        for (zero = 0; zero.LessThanEqual(byteLength - (nuint)sizeof(Reg64)); zero += sizeof(Reg64))
+        for (zero = 0; zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg64>()); zero += Unsafe.SizeOf<Reg64>())
             *(Reg64*)((nint)b + zero) = default;
 
-        if (zero.LessThanEqual(byteLength - (nuint)sizeof(Reg32)))
+        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg32>()))
         {
             *(Reg32*)((nint)b + zero) = default;
-            zero += sizeof(Reg32);
+            zero += Unsafe.SizeOf<Reg32>();
         }
 
-        if (zero.LessThanEqual(byteLength - (nuint)sizeof(Reg16)))
+        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg16>()))
         {
             *(Reg16*)((nint)b + zero) = default;
-            zero += sizeof(Reg16);
+            zero += Unsafe.SizeOf<Reg16>();
         }
 
         if (zero.LessThanEqual(byteLength - 8))
@@ -1923,7 +1923,7 @@ static partial class SpanHelpers
             zero += 8;
         }
 
-        if (sizeof(nint) is 4 && zero.LessThanEqual(byteLength - 4))
+        if (Unsafe.SizeOf<nint>() is 4 && zero.LessThanEqual(byteLength - 4))
             *(int*)((nint)b + zero) = 0;
     }
 
@@ -1972,6 +1972,6 @@ static partial class SpanHelpers
                .Any(x => IsReferenceOrContainsReferencesCore(x.FieldType)));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static unsafe bool LessThanEqual(this nint index, nuint length) =>
-        sizeof(nuint) is 4 ? (int)index <= (int)(uint)length : index <= (long)length;
+    static bool LessThanEqual(this nint index, nuint length) =>
+        Unsafe.SizeOf<nuint>() is 4 ? (int)index <= (int)(uint)length : index <= (long)length;
 }
