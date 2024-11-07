@@ -38,7 +38,7 @@ readonly struct Memory<T>
         get => // ReSharper disable once NullableWarningSuppressionIsUsed
             _index < 0 ? ((MemoryManager<T>)_object!).GetSpan().Slice(_index & RemoveFlagsBitMask, _length) :
                 typeof(T) == typeof(char) && _object is string text ?
-                    new Span<T>(Ret<Pinnable<T>>.From(text), MemoryExtensions.StringAdjustment, text.Length)
+                    new Span<T>(Unsafe.As<Pinnable<T>>(text), MemoryExtensions.StringAdjustment, text.Length)
                        .Slice(_index, _length) :
                     _object is null ? default : new((T[])_object, _index, _length & RemoveFlagsBitMask);
     }
@@ -137,7 +137,8 @@ readonly struct Memory<T>
         new(segment.Array, segment.Offset, segment.Count);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator ReadOnlyMemory<T>(Memory<T> memory) => Ret<ReadOnlyMemory<T>>.From(memory);
+    public static implicit operator ReadOnlyMemory<T>(Memory<T> memory) =>
+        Unsafe.As<Memory<T>, ReadOnlyMemory<T>>(memory);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
@@ -191,7 +192,7 @@ readonly struct Memory<T>
             return default;
 
         if (_length < 0)
-            return new((void*)Ret<nint>.From(array));
+            return new((void*)Unsafe.As<T[], nint>(array));
 
         var arrayHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
         return new((T*)arrayHandle.AddrOfPinnedObject() + _index, arrayHandle);
@@ -265,7 +266,7 @@ readonly struct ReadOnlyMemory<T>
                 return ((MemoryManager<T>)_object!).GetSpan().Slice(_index & RemoveFlagsBitMask, _length);
 
             if (typeof(T) == typeof(char) && _object is string text)
-                return new ReadOnlySpan<T>(Ret<Pinnable<T>>.From(text), MemoryExtensions.StringAdjustment, text.Length)
+                return new ReadOnlySpan<T>(Unsafe.As<Pinnable<T>>(text), MemoryExtensions.StringAdjustment, text.Length)
                    .Slice(_index, _length);
 
             if (_object != null)
@@ -367,7 +368,7 @@ readonly struct ReadOnlyMemory<T>
             return default;
 
         if (_length < 0)
-            return new((void*)Ret<nint>.From(array));
+            return new((void*)Unsafe.As<T[], nint>(array));
 
         var handle2 = GCHandle.Alloc(array, GCHandleType.Pinned);
         void* pointer3 = (T*)handle2.AddrOfPinnedObject() + _index;

@@ -67,7 +67,7 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = array.Length;
-        _pinnable = Span.Ret<Pinnable<T>>.From(array);
+        _pinnable = Unsafe.As<Pinnable<T>>(array);
         _byteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
     }
 
@@ -102,7 +102,7 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = length;
-        _pinnable = Span.Ret<Pinnable<T>>.From(array);
+        _pinnable = Unsafe.As<Pinnable<T>>(array);
         _byteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
     }
 
@@ -577,7 +577,7 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = array.Length;
-        _pinnable = Span.Ret<Pinnable<T>>.From(array);
+        _pinnable = Unsafe.As<Pinnable<T>>(array);
         _byteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
     }
 
@@ -612,7 +612,7 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = length;
-        _pinnable = Span.Ret<Pinnable<T>>.From(array);
+        _pinnable = Unsafe.As<Pinnable<T>>(array);
         _byteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
     }
 
@@ -786,7 +786,7 @@ readonly
 
         if (_byteOffset == MemoryExtensions.StringAdjustment)
         {
-            var obj = Span.Ret<object>.From(_pinnable);
+            var obj = Unsafe.As<object>(_pinnable);
 
             if (obj is string text && Length == text.Length)
                 return text;

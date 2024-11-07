@@ -4,7 +4,7 @@ namespace System;
 
 using Emik.Morsels;
 
-// ReSharper disable CognitiveComplexity NullableWarningSuppressionIsUsed RedundantCallerArgumentExpressionDefaultValue RedundantSuppressNullableWarningExpression
+// ReSharper disable CognitiveComplexity
 #pragma warning disable 8500, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
@@ -20,10 +20,9 @@ static partial class SpanHelpers
         static nint MeasureArrayAdjustment()
         {
             var array = new T[1];
-            var data = (nint)(&Span.Ret<Pinnable<T>>.From(array).Data);
 
             fixed (T* ptr = array)
-                return data - (nint)ptr;
+                return (nint)(&Unsafe.As<Pinnable<T>>(array).Data) - (nint)ptr;
         }
 #endif
     }
@@ -56,27 +55,25 @@ static partial class SpanHelpers
     public static unsafe int BinarySearch<T, TComparable>(T* spanStart, int length, TComparable comparable)
         where TComparable : IComparable<T>
     {
-        var num = 0;
-        var num2 = length - 1;
+        int low = 0, high = length - 1;
 
-        while (num <= num2)
+        while (low <= high)
         {
-            var num3 = num2 + num >>> 1;
-            var num4 = comparable.CompareTo(spanStart[num3]);
+            var mid = high + low >>> 1;
 
-            switch (num4)
+            switch (comparable.CompareTo(spanStart[mid]))
             {
-                case 0: return num3;
+                case 0: return mid;
                 case > 0:
-                    num = num3 + 1;
+                    low = mid + 1;
                     break;
                 default:
-                    num2 = num3 - 1;
+                    high = mid - 1;
                     break;
             }
         }
 
-        return ~num;
+        return ~low;
     }
 
     public static unsafe int IndexOf(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
@@ -85,27 +82,16 @@ static partial class SpanHelpers
             return 0;
 
         var second = value + 1;
-        var num = valueLength - 1;
-        var num2 = 0;
 
-        while (true)
+        for (int length = valueLength - 1, ret = 0;
+            searchSpaceLength - ret - length is > 0 and var next &&
+            IndexOf(searchSpace + ret, *value, next) is not -1 and var index;
+            ret++)
         {
-            var num3 = searchSpaceLength - num2 - num;
+            ret += index;
 
-            if (num3 <= 0)
-                break;
-
-            var num4 = IndexOf(searchSpace + num2, *value, num3);
-
-            if (num4 is -1)
-                break;
-
-            num2 += num4;
-
-            if (SequenceEqual(searchSpace + (num2 + 1), second, num))
-                return num2;
-
-            num2++;
+            if (SequenceEqual(searchSpace + (ret + 1), second, length))
+                return ret;
         }
 
         return -1;
@@ -116,24 +102,22 @@ static partial class SpanHelpers
         if (valueLength == 0)
             return 0;
 
-        var num = -1;
+        var ret = -1;
 
         for (var i = 0; i < valueLength; i++)
         {
-            var num2 = IndexOf(searchSpace, value[i], searchSpaceLength);
-
             // ReSharper disable once IntVariableOverflowInUncheckedContext
-            if ((uint)num2 >= (uint)num)
+            if (IndexOf(searchSpace, value[i], searchSpaceLength) is var index && (uint)index >= (uint)ret)
                 continue;
 
-            num = num2;
-            searchSpaceLength = num2;
+            ret = index;
+            searchSpaceLength = index;
 
-            if (num is 0)
+            if (ret is 0)
                 break;
         }
 
-        return num;
+        return ret;
     }
 
     public static unsafe int LastIndexOfAny(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
@@ -152,69 +136,68 @@ static partial class SpanHelpers
 
     public static unsafe int IndexOf(byte* searchSpace, byte value, int length)
     {
-        nint intPtr = 0;
-        nint intPtr2 = length;
+        nint low = 0, high = length;
 
         while (true)
         {
-            if ((nuint)(void*)intPtr2 >= 8)
+            if ((nuint)(void*)high >= 8)
             {
-                intPtr2 -= 8;
+                high -= 8;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr))
+                if (value == *(byte*)((nint)searchSpace + low))
                     goto Found;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 1))
+                if (value == *(byte*)((nint)searchSpace + low + 1))
                     goto Found1;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 2))
+                if (value == *(byte*)((nint)searchSpace + low + 2))
                     goto Found2;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr) + 3)
+                if (value == *(byte*)((nint)searchSpace + low) + 3)
                     goto Found3;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr) + 4)
-                    return (int)(void*)(intPtr + 4);
+                if (value == *(byte*)((nint)searchSpace + low) + 4)
+                    return (int)(void*)(low + 4);
 
-                if (value == *(byte*)((nint)searchSpace + intPtr) + 5)
-                    return (int)(void*)(intPtr + 5);
+                if (value == *(byte*)((nint)searchSpace + low) + 5)
+                    return (int)(void*)(low + 5);
 
-                if (value == *(byte*)((nint)searchSpace + intPtr) + 6)
-                    return (int)(void*)(intPtr + 6);
+                if (value == *(byte*)((nint)searchSpace + low) + 6)
+                    return (int)(void*)(low + 6);
 
-                if (value == *(byte*)((nint)searchSpace + intPtr) + 7)
+                if (value == *(byte*)((nint)searchSpace + low) + 7)
                     break;
 
-                intPtr += 8;
+                low += 8;
                 continue;
             }
 
-            if ((nuint)(void*)intPtr2 >= 4u)
+            if ((nuint)(void*)high >= 4u)
             {
-                intPtr2 -= 4;
+                high -= 4;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr))
+                if (value == *(byte*)((nint)searchSpace + low))
                     goto Found;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 1))
+                if (value == *(byte*)((nint)searchSpace + low + 1))
                     goto Found1;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 2))
+                if (value == *(byte*)((nint)searchSpace + low + 2))
                     goto Found2;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 3))
+                if (value == *(byte*)((nint)searchSpace + low + 3))
                     goto Found3;
 
-                intPtr += 4;
+                low += 4;
             }
 
-            while ((void*)intPtr2 != null)
+            while ((void*)high != null)
             {
-                intPtr2 -= 1;
+                high -= 1;
 
-                if (value != *(byte*)((nint)searchSpace + intPtr))
+                if (value != *(byte*)((nint)searchSpace + low))
                 {
-                    intPtr += 1;
+                    low += 1;
                     continue;
                 }
 
@@ -224,115 +207,103 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)low;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(low + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(low + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(low + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(low + 7);
     }
 
     public static unsafe int LastIndexOf(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
-        var value2 = *value;
+        var first = *value;
         var second = value + 1;
         var num = valueLength - 1;
-        var num2 = 0;
+        var nextIndex = 0;
 
-        while (true)
-        {
-            var num3 = searchSpaceLength - num2 - num;
-
-            if (num3 <= 0)
-                break;
-
-            var num4 = LastIndexOf(searchSpace, value2, num3);
-
-            if (num4 == -1)
-                break;
-
-            if (SequenceEqual(searchSpace + num4 + 1, second, num))
-                return num4;
-
-            num2 += num3 - num4;
-        }
+        while (searchSpaceLength - nextIndex - num is > 0 and var next &&
+            LastIndexOf(searchSpace, first, next) is not -1 and var index)
+            if (SequenceEqual(searchSpace + index + 1, second, num))
+                return index;
+            else
+                nextIndex += next - index;
 
         return -1;
     }
 
     public static unsafe int LastIndexOf(byte* searchSpace, byte value, int length)
     {
-        var intPtr = (nint)length;
-        var intPtr2 = (nint)length;
+        nint low = length, high = length;
 
         while (true)
         {
-            if ((nuint)(void*)intPtr2 >= 8u)
+            if ((nuint)(void*)high >= 8u)
             {
-                intPtr2 -= 8;
-                intPtr -= 8;
+                low -= 8;
+                high -= 8;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 7))
+                if (value == *(byte*)((nint)searchSpace + low + 7))
                     break;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 6))
-                    return (int)(void*)(intPtr + 6);
+                if (value == *(byte*)((nint)searchSpace + low + 6))
+                    return (int)(void*)(low + 6);
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 5))
-                    return (int)(void*)(intPtr + 5);
+                if (value == *(byte*)((nint)searchSpace + low + 5))
+                    return (int)(void*)(low + 5);
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 4))
-                    return (int)(void*)(intPtr + 4);
+                if (value == *(byte*)((nint)searchSpace + low + 4))
+                    return (int)(void*)(low + 4);
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 3))
+                if (value == *(byte*)((nint)searchSpace + low + 3))
                     goto Found3;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 2))
+                if (value == *(byte*)((nint)searchSpace + low + 2))
                     goto Found2;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 1))
+                if (value == *(byte*)((nint)searchSpace + low + 1))
                     goto Found1;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr))
+                if (value == *(byte*)((nint)searchSpace + low))
                     goto Found;
 
                 continue;
             }
 
-            if ((nuint)(void*)intPtr2 >= 4u)
+            if ((nuint)(void*)high >= 4)
             {
-                intPtr2 -= 4;
-                intPtr -= 4;
+                low -= 4;
+                high -= 4;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 3))
+                if (value == *(byte*)((nint)searchSpace + low + 3))
                     goto Found3;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 2))
+                if (value == *(byte*)((nint)searchSpace + low + 2))
                     goto Found2;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr + 1))
+                if (value == *(byte*)((nint)searchSpace + low + 1))
                     goto Found1;
 
-                if (value == *(byte*)((nint)searchSpace + intPtr))
+                if (value == *(byte*)((nint)searchSpace + low))
                     goto Found;
             }
 
-            while ((void*)intPtr2 != null)
+            while ((void*)high != null)
             {
-                intPtr2 -= 1;
-                intPtr -= 1;
+                low--;
+                high--;
 
-                if (value != *(byte*)((nint)searchSpace + intPtr))
+                if (value != *(byte*)((nint)searchSpace + low))
                     continue;
 
                 goto Found;
@@ -341,109 +312,108 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)low;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(low + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(low + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(low + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(low + 7);
     }
 
     public static unsafe int IndexOfAny(byte* searchSpace, byte value0, byte value1, int length)
     {
-        nint intPtr = 0;
-        var intPtr2 = (nint)length;
+        nint low = 0, high = length;
 
         while (true)
         {
-            if ((nuint)(void*)intPtr2 >= 8u)
+            if ((nuint)(void*)high >= 8)
             {
-                intPtr2 -= 8;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found3;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 4);
+                it = *(byte*)((nint)searchSpace + low + 4);
 
-                if (value0 == num2 || value1 == num2)
-                    return (int)(void*)(intPtr + 4);
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 4);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 5);
+                it = *(byte*)((nint)searchSpace + low + 5);
 
-                if (value0 == num2 || value1 == num2)
-                    return (int)(void*)(intPtr + 5);
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 5);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 6);
+                it = *(byte*)((nint)searchSpace + low + 6);
 
-                if (value0 == num2 || value1 == num2)
-                    return (int)(void*)(intPtr + 6);
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 6);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 7);
+                it = *(byte*)((nint)searchSpace + low + 7);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     break;
 
-                intPtr += 8;
+                low += 8;
                 continue;
             }
 
-            if ((nuint)(void*)intPtr2 >= 4u)
+            if ((nuint)(void*)high >= 4u)
             {
-                intPtr2 -= 4;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found3;
 
-                intPtr += 4;
+                low += 4;
             }
 
-            while ((void*)intPtr2 != null)
+            while ((void*)high != null)
             {
-                intPtr2 -= 1;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                high -= 1;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 != num2 && value1 != num2)
+                if (value0 != it && value1 != it)
                 {
-                    intPtr += 1;
+                    low += 1;
                     continue;
                 }
 
@@ -453,109 +423,108 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)low;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(low + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(low + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(low + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(low + 7);
     }
 
     public static unsafe int IndexOfAny(byte* searchSpace, byte value0, byte value1, byte value2, int length)
     {
-        nint intPtr = 0;
-        var intPtr2 = (nint)length;
+        nint low = 0, high = length;
 
         while (true)
         {
-            if ((nuint)(void*)intPtr2 >= 8u)
+            if ((nuint)(void*)high >= 8u)
             {
-                intPtr2 -= 8;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found3;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 4);
+                it = *(byte*)((nint)searchSpace + low + 4);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
-                    return (int)(void*)(intPtr + 4);
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 4);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 5);
+                it = *(byte*)((nint)searchSpace + low + 5);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
-                    return (int)(void*)(intPtr + 5);
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 5);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 6);
+                it = *(byte*)((nint)searchSpace + low + 6);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
-                    return (int)(void*)(intPtr + 6);
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 6);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 7);
+                it = *(byte*)((nint)searchSpace + low + 7);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     break;
 
-                intPtr += 8;
+                low += 8;
                 continue;
             }
 
-            if ((nuint)(void*)intPtr2 >= 4u)
+            if ((nuint)(void*)high >= 4u)
             {
-                intPtr2 -= 4;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found3;
 
-                intPtr += 4;
+                low += 4;
             }
 
-            while ((void*)intPtr2 != null)
+            while ((void*)high != null)
             {
-                intPtr2 -= 1;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                high -= 1;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 != num2 && value1 != num2 && value2 != num2)
+                if (value0 != it && value1 != it && value2 != it)
                 {
-                    intPtr += 1;
+                    low += 1;
                     continue;
                 }
 
@@ -565,106 +534,106 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)low;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(low + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(low + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(low + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(low + 7);
     }
 
     public static unsafe int LastIndexOfAny(byte* searchSpace, byte value0, byte value1, int length)
     {
-        nint intPtr = length, intPtr2 = length;
+        nint low = length, high = length;
 
         while (true)
         {
-            if ((nuint)(void*)intPtr2 >= 8u)
+            if ((nuint)(void*)high >= 8u)
             {
-                intPtr2 -= 8;
-                intPtr -= 8;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr + 7);
+                low -= 8;
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low + 7);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     break;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 6);
+                it = *(byte*)((nint)searchSpace + low + 6);
 
-                if (value0 == num2 || value1 == num2)
-                    return (int)(void*)(intPtr + 6);
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 6);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 5);
+                it = *(byte*)((nint)searchSpace + low + 5);
 
-                if (value0 == num2 || value1 == num2)
-                    return (int)(void*)(intPtr + 5);
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 5);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 4);
+                it = *(byte*)((nint)searchSpace + low + 4);
 
-                if (value0 == num2 || value1 == num2)
-                    return (int)(void*)(intPtr + 4);
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 4);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found3;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr);
+                it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found;
 
                 continue;
             }
 
-            if ((nuint)(void*)intPtr2 >= 4u)
+            if ((nuint)(void*)high >= 4u)
             {
-                intPtr2 -= 4;
-                intPtr -= 4;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                low -= 4;
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found3;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr);
+                it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2)
+                if (value0 == it || value1 == it)
                     goto Found;
             }
 
-            while ((void*)intPtr2 != null)
+            while ((void*)high != null)
             {
-                intPtr2 -= 1;
-                intPtr -= 1;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                low--;
+                high--;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 != num2 && value1 != num2)
+                if (value0 != it && value1 != it)
                     continue;
 
                 goto Found;
@@ -673,106 +642,106 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)low;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(low + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(low + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(low + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(low + 7);
     }
 
     public static unsafe int LastIndexOfAny(byte* searchSpace, byte value0, byte value1, byte value2, int length)
     {
-        nint intPtr = length, intPtr2 = length;
+        nint low = length, high = length;
 
         while (true)
         {
-            if ((nuint)(void*)intPtr2 >= 8u)
+            if ((nuint)(void*)high >= 8u)
             {
-                intPtr2 -= 8;
-                intPtr -= 8;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr + 7);
+                low -= 8;
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low + 7);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     break;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 6);
+                it = *(byte*)((nint)searchSpace + low + 6);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
-                    return (int)(void*)(intPtr + 6);
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 6);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 5);
+                it = *(byte*)((nint)searchSpace + low + 5);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
-                    return (int)(void*)(intPtr + 5);
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 5);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 4);
+                it = *(byte*)((nint)searchSpace + low + 4);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
-                    return (int)(void*)(intPtr + 4);
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 4);
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found3;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr);
+                it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found;
 
                 continue;
             }
 
-            if ((nuint)(void*)intPtr2 >= 4u)
+            if ((nuint)(void*)high >= 4u)
             {
-                intPtr2 -= 4;
-                intPtr -= 4;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr + 3);
+                low -= 4;
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low + 3);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found3;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 2);
+                it = *(byte*)((nint)searchSpace + low + 2);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found2;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr + 1);
+                it = *(byte*)((nint)searchSpace + low + 1);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found1;
 
-                num2 = *(byte*)((nint)searchSpace + intPtr);
+                it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 == num2 || value1 == num2 || value2 == num2)
+                if (value0 == it || value1 == it || value2 == it)
                     goto Found;
             }
 
-            while ((void*)intPtr2 != null)
+            while ((void*)high != null)
             {
-                intPtr2 -= 1;
-                intPtr -= 1;
-                uint num2 = *(byte*)((nint)searchSpace + intPtr);
+                low--;
+                high--;
+                uint it = *(byte*)((nint)searchSpace + low);
 
-                if (value0 != num2 && value1 != num2 && value2 != num2)
+                if (value0 != it && value1 != it && value2 != it)
                     continue;
 
                 goto Found;
@@ -781,19 +750,19 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)low;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(low + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(low + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(low + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(low + 7);
     }
 
     public static unsafe bool SequenceEqual(byte* first, byte* second, nuint length)
@@ -801,35 +770,30 @@ static partial class SpanHelpers
         if (first == second)
             goto True;
 
-        nint intPtr = 0, intPtr2 = (nint)(void*)length;
+        nint low = 0, high = (nint)(void*)length;
 
-        if ((nuint)(void*)intPtr2 < (nuint)Unsafe.SizeOf<nuint>())
+        if ((nuint)(void*)high < (nuint)Unsafe.SizeOf<nuint>())
         {
-            while ((void*)intPtr2 > (void*)intPtr)
-            {
-                if (first[intPtr] == second[intPtr])
-                {
-                    intPtr += 1;
-                    continue;
-                }
-
-                goto False;
-            }
+            while ((void*)high > (void*)low)
+                if (first[low] == second[low])
+                    low++;
+                else
+                    goto False;
 
             goto True;
         }
 
-        intPtr2 -= Unsafe.SizeOf<nuint>();
+        high -= Unsafe.SizeOf<nuint>();
 
         while (true)
         {
-            if ((void*)intPtr2 <= (void*)intPtr)
-                return *(nuint*)(first + intPtr2) == *(nuint*)(second + intPtr2);
+            if ((void*)high <= (void*)low)
+                return *(nuint*)(first + high) == *(nuint*)(second + high);
 
-            if (*(nuint*)(first + intPtr) == *(nuint*)(second + intPtr))
+            if (*(nuint*)(first + low) == *(nuint*)(second + low))
                 break;
 
-            intPtr += Unsafe.SizeOf<nuint>();
+            low += Unsafe.SizeOf<nuint>();
         }
 
     False:
@@ -844,26 +808,16 @@ static partial class SpanHelpers
         if (first == second)
             return firstLength - secondLength;
 
-        var intPtr = (nint)(firstLength < secondLength ? firstLength : secondLength);
-        var intPtr2 = (nint)0;
-        var intPtr3 = (nint)(void*)intPtr;
+        nint zero = 0, min = firstLength < secondLength ? firstLength : secondLength;
 
-        if ((nuint)(void*)intPtr3 > (nuint)Unsafe.SizeOf<nuint>())
-        {
-            intPtr3 -= Unsafe.SizeOf<nuint>();
+        if ((nuint)min > (nuint)Unsafe.SizeOf<nuint>())
+            for (var upper = min - Unsafe.SizeOf<nuint>();
+                upper > zero && *(nuint*)(first + zero) == *(nuint*)(second + zero);
+                zero += Unsafe.SizeOf<nuint>()) { }
 
-            for (;
-                (void*)intPtr3 > (void*)intPtr2 && *(nuint*)(first + intPtr2) == *(nuint*)(second + intPtr2);
-                intPtr2 += Unsafe.SizeOf<nuint>()) { }
-        }
-
-        for (; (void*)intPtr > (void*)intPtr2; intPtr2 += 1)
-        {
-            var num = (*(byte*)((nint)first + intPtr2)).CompareTo(*(byte*)((nint)second + intPtr2));
-
-            if (num != 0)
-                return num;
-        }
+        for (; min > zero; zero++)
+            if ((*(byte*)((nint)first + zero)).CompareTo(*(byte*)((nint)second + zero)) is not 0 and var ret)
+                return ret;
 
         return firstLength - secondLength;
     }
@@ -875,34 +829,29 @@ static partial class SpanHelpers
         if (first == second)
             return result;
 
-        var intPtr = firstLength < secondLength ? firstLength : secondLength;
-        var intPtr2 = 0;
+        var min = firstLength < secondLength ? firstLength : secondLength;
+        var zero = 0;
 
-        if ((nuint)(void*)intPtr >= (nuint)(Unsafe.SizeOf<nuint>() / 2))
+        if ((nuint)min >= (nuint)(Unsafe.SizeOf<nuint>() / 2))
             for (;
-                (void*)intPtr >= (void*)(intPtr2 + Unsafe.SizeOf<nuint>() / 2) &&
-                *(nuint*)(first + intPtr2) == *(nuint*)(second + intPtr2);
-                intPtr2 += Unsafe.SizeOf<nuint>() / 2) { }
+                min >= zero + Unsafe.SizeOf<nuint>() / 2 && *(nuint*)(first + zero) == *(nuint*)(second + zero);
+                zero += Unsafe.SizeOf<nuint>() / 2) { }
 
         if (Unsafe.SizeOf<nuint>() > 4 &&
-            (void*)intPtr >= (void*)(intPtr2 + 2) &&
-            *(int*)(first + intPtr2) == *(int*)(second + intPtr2))
-            intPtr2 += 2;
+            (void*)min >= (void*)(zero + 2) &&
+            *(int*)(first + zero) == *(int*)(second + zero))
+            zero += 2;
 
-        for (; (void*)intPtr2 < (void*)intPtr; intPtr2++)
-        {
-            var num = first[intPtr2].CompareTo(second[intPtr2]);
-
-            if (num != 0)
-                return num;
-        }
+        for (; (void*)zero < (void*)min; zero++)
+            if (first[zero].CompareTo(second[zero]) is not 0 and var ret)
+                return ret;
 
         return result;
     }
 
     public static unsafe int IndexOf(char* searchSpace, char value, int length)
     {
-        var ptr2 = searchSpace;
+        var drain = searchSpace;
 
         while (true)
         {
@@ -910,26 +859,26 @@ static partial class SpanHelpers
             {
                 length -= 4;
 
-                if (*ptr2 == value)
+                if (*drain == value)
                     break;
 
-                if (ptr2[1] != value)
+                if (drain[1] != value)
                 {
-                    if (ptr2[2] != value)
+                    if (drain[2] != value)
                     {
-                        if (ptr2[3] != value)
+                        if (drain[3] != value)
                         {
-                            ptr2 += 4;
+                            drain += 4;
                             continue;
                         }
 
-                        ptr2++;
+                        drain++;
                     }
 
-                    ptr2++;
+                    drain++;
                 }
 
-                ptr2++;
+                drain++;
                 break;
             }
 
@@ -937,10 +886,10 @@ static partial class SpanHelpers
             {
                 length--;
 
-                if (*ptr2 == value)
+                if (*drain == value)
                     goto Break;
 
-                ptr2++;
+                drain++;
             }
 
             return -1;
@@ -949,30 +898,30 @@ static partial class SpanHelpers
             break;
         }
 
-        return (int)(ptr2 - searchSpace);
+        return (int)(drain - searchSpace);
     }
 
     public static unsafe int LastIndexOf(char* searchSpace, char value, int length)
     {
-        var ptr2 = searchSpace + length;
+        var upper = searchSpace + length;
 
         while (true)
         {
             if (length >= 4)
             {
                 length -= 4;
-                ptr2 -= 4;
+                upper -= 4;
 
-                if (ptr2[3] == value)
+                if (upper[3] == value)
                     break;
 
-                if (ptr2[2] == value)
-                    return (int)(ptr2 - searchSpace) + 2;
+                if (upper[2] == value)
+                    return (int)(upper - searchSpace) + 2;
 
-                if (ptr2[1] == value)
-                    return (int)(ptr2 - searchSpace) + 1;
+                if (upper[1] == value)
+                    return (int)(upper - searchSpace) + 1;
 
-                if (*ptr2 != value)
+                if (*upper != value)
                     continue;
 
                 goto Found;
@@ -981,9 +930,9 @@ static partial class SpanHelpers
             while (length > 0)
             {
                 length--;
-                ptr2--;
+                upper--;
 
-                if (*ptr2 != value)
+                if (*upper != value)
                     continue;
 
                 goto Found;
@@ -992,10 +941,10 @@ static partial class SpanHelpers
             return -1;
 
         Found:
-            return (int)(ptr2 - searchSpace);
+            return (int)(upper - searchSpace);
         }
 
-        return (int)(ptr2 - searchSpace) + 3;
+        return (int)(upper - searchSpace) + 3;
     }
 
     public static unsafe int IndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
@@ -1004,29 +953,23 @@ static partial class SpanHelpers
         if (valueLength == 0)
             return 0;
 
-        var value2 = *value;
+        var first = *value;
         T* second = value + 1;
-        var num = valueLength - 1;
-        var num2 = 0;
+        int low = 0, high = valueLength - 1;
 
-        while (true)
+        while (searchSpaceLength - low - high is > 0 and var next)
         {
-            var num3 = searchSpaceLength - num2 - num;
+            var num4 = IndexOf(searchSpace + low, first, next);
 
-            if (num3 <= 0)
+            if (num4 is -1)
                 break;
 
-            var num4 = IndexOf(searchSpace + num2, value2, num3);
+            low += num4;
 
-            if (num4 == -1)
-                break;
+            if (SequenceEqual(searchSpace + (low + 1), second, high))
+                return low;
 
-            num2 += num4;
-
-            if (SequenceEqual(searchSpace + (num2 + 1), second, num))
-                return num2;
-
-            num2++;
+            low++;
         }
 
         return -1;
@@ -1035,7 +978,7 @@ static partial class SpanHelpers
     public static unsafe int IndexOf<T>(T* searchSpace, T value, int length)
         where T : IEquatable<T>
     {
-        var intPtr = (nint)0;
+        nint num = 0;
 
         while (true)
         {
@@ -1043,30 +986,30 @@ static partial class SpanHelpers
             {
                 length -= 8;
 
-                if (!value.Equals(searchSpace[intPtr]))
+                if (!value.Equals(searchSpace[num]))
                 {
-                    if (value.Equals(searchSpace[intPtr + 1]))
+                    if (value.Equals(searchSpace[num + 1]))
                         goto Found1;
 
-                    if (value.Equals(searchSpace[intPtr + 2]))
+                    if (value.Equals(searchSpace[num + 2]))
                         goto Found2;
 
-                    if (value.Equals(searchSpace[intPtr + 3]))
+                    if (value.Equals(searchSpace[num + 3]))
                         goto Found3;
 
-                    if (value.Equals(searchSpace[intPtr + 4]))
-                        return (int)(void*)(intPtr + 4);
+                    if (value.Equals(searchSpace[num + 4]))
+                        return (int)(void*)(num + 4);
 
-                    if (value.Equals(searchSpace[intPtr + 5]))
-                        return (int)(void*)(intPtr + 5);
+                    if (value.Equals(searchSpace[num + 5]))
+                        return (int)(void*)(num + 5);
 
-                    if (value.Equals(searchSpace[intPtr + 6]))
-                        return (int)(void*)(intPtr + 6);
+                    if (value.Equals(searchSpace[num + 6]))
+                        return (int)(void*)(num + 6);
 
-                    if (value.Equals(searchSpace[intPtr + 7]))
+                    if (value.Equals(searchSpace[num + 7]))
                         break;
 
-                    intPtr += 8;
+                    num += 8;
                     continue;
                 }
             }
@@ -1076,19 +1019,19 @@ static partial class SpanHelpers
                 {
                     length -= 4;
 
-                    if (value.Equals(searchSpace[intPtr]))
+                    if (value.Equals(searchSpace[num]))
                         goto Found;
 
-                    if (value.Equals(searchSpace[intPtr + 1]))
+                    if (value.Equals(searchSpace[num + 1]))
                         goto Found1;
 
-                    if (value.Equals(searchSpace[intPtr + 2]))
+                    if (value.Equals(searchSpace[num + 2]))
                         goto Found2;
 
-                    if (value.Equals(searchSpace[intPtr + 3]))
+                    if (value.Equals(searchSpace[num + 3]))
                         goto Found3;
 
-                    intPtr += 4;
+                    num += 4;
                 }
 
                 while (true)
@@ -1096,28 +1039,28 @@ static partial class SpanHelpers
                     if (length <= 0)
                         return -1;
 
-                    if (value.Equals(searchSpace[intPtr]))
+                    if (value.Equals(searchSpace[num]))
                         break;
 
-                    intPtr += 1;
+                    num += 1;
                     length--;
                 }
             }
 
         Found:
-            return (int)(void*)intPtr;
+            return (int)(void*)num;
 
         Found1:
-            return (int)(void*)(intPtr + 1);
+            return (int)(void*)(num + 1);
 
         Found2:
-            return (int)(void*)(intPtr + 2);
+            return (int)(void*)(num + 2);
 
         Found3:
-            return (int)(void*)(intPtr + 3);
+            return (int)(void*)(num + 3);
         }
 
-        return (int)(void*)(intPtr + 7);
+        return (int)(void*)(num + 7);
     }
 
     public static unsafe int IndexOfAny<T>(T* searchSpace, T value0, T value1, int length)
@@ -1348,14 +1291,12 @@ static partial class SpanHelpers
 
         for (var i = 0; i < valueLength; i++)
         {
-            var num2 = IndexOf(searchSpace, value[i], searchSpaceLength);
-
             // ReSharper disable once IntVariableOverflowInUncheckedContext
-            if ((uint)num2 >= (uint)num)
+            if (IndexOf(searchSpace, value[i], searchSpaceLength) is var index && (uint)index >= (uint)num)
                 continue;
 
-            num = num2;
-            searchSpaceLength = num2;
+            num = index;
+            searchSpaceLength = index;
 
             if (num is 0)
                 break;
@@ -1370,28 +1311,16 @@ static partial class SpanHelpers
         if (valueLength == 0)
             return 0;
 
-        var value2 = *value;
+        var first = *value;
         T* second = value + 1;
-        var num = valueLength - 1;
-        var num2 = 0;
+        int zero = 0, upper = valueLength - 1;
 
-        while (true)
-        {
-            var num3 = searchSpaceLength - num2 - num;
-
-            if (num3 <= 0)
-                break;
-
-            var num4 = LastIndexOf(searchSpace, value2, num3);
-
-            if (num4 == -1)
-                break;
-
-            if (SequenceEqual(searchSpace + (num4 + 1), second, num))
-                return num4;
-
-            num2 += num3 - num4;
-        }
+        while (searchSpaceLength - zero - upper is > 0 and var length &&
+            LastIndexOf(searchSpace, first, length) is not -1 and var offset)
+            if (SequenceEqual(searchSpace + (offset + 1), second, upper))
+                return offset;
+            else
+                zero += length - offset;
 
         return -1;
     }
@@ -1683,17 +1612,13 @@ static partial class SpanHelpers
         if (valueLength == 0)
             return 0;
 
-        var num = -1;
+        var max = -1;
 
         for (var i = 0; i < valueLength; i++)
-        {
-            var num2 = LastIndexOf(searchSpace, value[i], searchSpaceLength);
+            if (LastIndexOf(searchSpace, value[i], searchSpaceLength) is var index && index > max)
+                max = index;
 
-            if (num2 > num)
-                num = num2;
-        }
-
-        return num;
+        return max;
     }
 
     public static unsafe bool SequenceEqual<T>(T* first, T* second, int length)
@@ -1702,7 +1627,7 @@ static partial class SpanHelpers
         if (first == second)
             return true;
 
-        var intPtr = (nint)0;
+        nint drain = 0;
 
         while (true)
         {
@@ -1710,16 +1635,16 @@ static partial class SpanHelpers
             {
                 length -= 8;
 
-                if (first[intPtr].Equals(second[intPtr]) &&
-                    first[intPtr + 1].Equals(second[intPtr + 1]) &&
-                    first[intPtr + 2].Equals(second[intPtr + 2]) &&
-                    first[intPtr + 3].Equals(second[intPtr + 3]) &&
-                    first[intPtr + 4].Equals(second[intPtr + 4]) &&
-                    first[intPtr + 5].Equals(second[intPtr + 5]) &&
-                    first[intPtr + 6].Equals(second[intPtr + 6]) &&
-                    first[intPtr + 7].Equals(second[intPtr + 7]))
+                if (first[drain].Equals(second[drain]) &&
+                    first[drain + 1].Equals(second[drain + 1]) &&
+                    first[drain + 2].Equals(second[drain + 2]) &&
+                    first[drain + 3].Equals(second[drain + 3]) &&
+                    first[drain + 4].Equals(second[drain + 4]) &&
+                    first[drain + 5].Equals(second[drain + 5]) &&
+                    first[drain + 6].Equals(second[drain + 6]) &&
+                    first[drain + 7].Equals(second[drain + 7]))
                 {
-                    intPtr += 8;
+                    drain += 8;
                     continue;
                 }
 
@@ -1730,20 +1655,20 @@ static partial class SpanHelpers
             {
                 length -= 4;
 
-                if (!first[intPtr].Equals(second[intPtr]) ||
-                    !first[intPtr + 1].Equals(second[intPtr + 1]) ||
-                    !first[intPtr + 2].Equals(second[intPtr + 2]) ||
-                    !first[intPtr + 3].Equals(second[intPtr + 3]))
+                if (!first[drain].Equals(second[drain]) ||
+                    !first[drain + 1].Equals(second[drain + 1]) ||
+                    !first[drain + 2].Equals(second[drain + 2]) ||
+                    !first[drain + 3].Equals(second[drain + 3]))
                     goto False;
 
-                intPtr += 4;
+                drain += 4;
             }
 
             while (length > 0)
             {
-                if (first[intPtr].Equals(second[intPtr]))
+                if (first[drain].Equals(second[drain]))
                 {
-                    intPtr += 1;
+                    drain += 1;
                     length--;
                     continue;
                 }
@@ -1769,35 +1694,31 @@ static partial class SpanHelpers
             num = secondLength;
 
         for (var i = 0; i < num; i++)
-        {
-            var num2 = first[i].CompareTo(second[i]);
-
-            if (num2 != 0)
-                return num2;
-        }
+            if (first[i].CompareTo(second[i]) is not 0 and var ret)
+                return ret;
 
         return firstLength.CompareTo(secondLength);
     }
 
     public static unsafe void CopyTo<T>(T* dst, int dstLength, T* src, int srcLength)
     {
-        nint intPtr = srcLength * Unsafe.SizeOf<T>(),
-            intPtr2 = dstLength * Unsafe.SizeOf<T>(),
-            intPtr3 = (nint)dst - (nint)src;
+        nint srcByteLength = srcLength * Unsafe.SizeOf<T>(),
+            dstByteLength = dstLength * Unsafe.SizeOf<T>(),
+            distance = (nint)dst - (nint)src;
 
         bool num;
 
         if (Unsafe.SizeOf<nint>() is not 4)
         {
-            if ((ulong)intPtr3 >= (ulong)intPtr)
+            if ((ulong)distance >= (ulong)srcByteLength)
             {
-                num = (ulong)intPtr3 > (ulong)-(long)intPtr2;
+                num = (ulong)distance > (ulong)-(long)dstByteLength;
                 goto BlockCopy;
             }
         }
-        else if ((uint)(int)intPtr3 >= (uint)(int)intPtr)
+        else if ((uint)(int)distance >= (uint)(int)srcByteLength)
         {
-            num = (uint)(int)intPtr3 > (uint)-(int)intPtr2;
+            num = (uint)(int)distance > (uint)-(int)dstByteLength;
             goto BlockCopy;
         }
 
@@ -1807,14 +1728,16 @@ static partial class SpanHelpers
 
         if (!num && !IsReferenceOrContainsReferences<T>())
         {
-            byte* source = (byte*)dst, source2 = (byte*)src;
-            var num2 = (ulong)intPtr;
-            uint num4;
+            byte* dstByte = (byte*)dst, srcByte = (byte*)src;
+            var byteLength = (ulong)srcByteLength;
+            uint next;
 
-            for (var num3 = 0uL; num3 < num2; num3 += num4)
+            for (ulong block = 0; block < byteLength; block += next)
             {
-                num4 = (uint)(num2 - num3 > uint.MaxValue ? uint.MaxValue : num2 - num3);
-                new Span<byte>(source, (int)num3).CopyTo(new(source2, (int)num3));
+                next = (uint)(byteLength - block > uint.MaxValue ? uint.MaxValue : byteLength - block);
+
+                for (ulong b = 0; b < block; b++)
+                    srcByte[b] = dstByte[b]; // Consider implementing a better BlockCopy.
             }
 
             return;
@@ -1822,56 +1745,49 @@ static partial class SpanHelpers
 
     ElementWise:
 
-        var flag = Unsafe.SizeOf<nint>() == 4
-            ? (uint)(int)intPtr3 > (uint)-(int)intPtr2
-            : (ulong)intPtr3 > (ulong)-(long)intPtr2;
+        var flag = Unsafe.SizeOf<nint>() is 4
+            ? (uint)(int)distance > (uint)-(int)dstByteLength
+            : (ulong)distance > (ulong)-(long)dstByteLength;
 
-        var num5 = flag ? 1 : -1;
-        var num6 = !flag ? srcLength - 1 : 0;
+        var sign = flag ? 1 : -1;
+        var end = !flag ? srcLength - 1 : 0;
         int i;
 
         for (i = 0; i < (srcLength & -8); i += 8)
         {
-            dst[num6] = src[num6];
-            dst[num6 + num5] = src[num6 + num5];
-            dst[num6 + num5 * 2] = src[num6 + num5 * 2];
-            dst[num6 + num5 * 3] = src[num6 + num5 * 3];
-            dst[num6 + num5 * 4] = src[num6 + num5 * 4];
-            dst[num6 + num5 * 5] = src[num6 + num5 * 5];
-            dst[num6 + num5 * 6] = src[num6 + num5 * 6];
-            dst[num6 + num5 * 7] = src[num6 + num5 * 7];
-            num6 += num5 * 8;
+            dst[end] = src[end];
+            dst[end + sign] = src[end + sign];
+            dst[end + sign * 2] = src[end + sign * 2];
+            dst[end + sign * 3] = src[end + sign * 3];
+            dst[end + sign * 4] = src[end + sign * 4];
+            dst[end + sign * 5] = src[end + sign * 5];
+            dst[end + sign * 6] = src[end + sign * 6];
+            dst[end + sign * 7] = src[end + sign * 7];
+            end += sign * 8;
         }
 
         if (i < (srcLength & -4))
         {
-            dst[num6] = src[num6];
-            dst[num6 + num5] = src[num6 + num5];
-            dst[num6 + num5 * 2] = src[num6 + num5 * 2];
-            dst[num6 + num5 * 3] = src[num6 + num5 * 3];
-            num6 += num5 * 4;
+            dst[end] = src[end];
+            dst[end + sign] = src[end + sign];
+            dst[end + sign * 2] = src[end + sign * 2];
+            dst[end + sign * 3] = src[end + sign * 3];
+            end += sign * 4;
             i += 4;
         }
 
         for (; i < srcLength; i++)
         {
-            dst[num6] = src[num6];
-            num6 += num5;
+            dst[end] = src[end];
+            end += sign;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe nint Add<T>(this nint start, int index)
-    {
-        if (Unsafe.SizeOf<nint>() == 4)
-        {
-            var num = (uint)(index * Unsafe.SizeOf<T>());
-            return (nint)((byte*)(void*)start + num);
-        }
-
-        var num2 = (ulong)index * (ulong)Unsafe.SizeOf<T>();
-        return (nint)((byte*)(void*)start + num2);
-    }
+    public static unsafe nint Add<T>(this nint start, int index) =>
+        Unsafe.SizeOf<nint>() is 4
+            ? (nint)((byte*)(void*)start + (uint)(index * Unsafe.SizeOf<T>()))
+            : (nint)((byte*)(void*)start + (ulong)index * (ulong)Unsafe.SizeOf<T>());
 
     public static bool IsReferenceOrContainsReferences<T>() => PerTypeValues<T>.IsReferenceOrContainsReferences;
 #pragma warning disable CA1855
@@ -1933,7 +1849,7 @@ static partial class SpanHelpers
 
         while ((zero = intPtr + 8).LessThanEqual(pointerSizeLength))
         {
-            ip[0] = default;
+            *ip = default;
             ip[1] = default;
             ip[2] = default;
             ip[3] = default;
@@ -1946,7 +1862,7 @@ static partial class SpanHelpers
 
         if ((zero = intPtr + 4).LessThanEqual(pointerSizeLength))
         {
-            ip[0] = default;
+            *ip = default;
             ip[1] = default;
             ip[2] = default;
             ip[3] = default;
@@ -1955,7 +1871,7 @@ static partial class SpanHelpers
 
         if ((zero = intPtr + 2).LessThanEqual(pointerSizeLength))
         {
-            ip[0] = default;
+            *ip = default;
             ip[1] = default;
             intPtr = zero;
         }
