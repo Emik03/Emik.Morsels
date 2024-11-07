@@ -325,7 +325,7 @@ static partial class MemoryExtensions
         fixed (T* o = other)
             return length == other.Length &&
                 (default(T) is not null && IsTypeComparableAsBytes<T>(out var size)
-                    ? SpanHelpers.SequenceEqual((byte*)s, (byte*)o, length * size)
+                    ? SpanHelpers.SequenceEqual((byte*)s, (byte*)o, (nuint)length * size)
                     : SpanHelpers.SequenceEqual(s, o, length));
     }
 
