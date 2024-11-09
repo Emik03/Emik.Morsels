@@ -85,16 +85,17 @@ static partial class SpanHelpers
         if (valueLength is 0)
             return 0;
 
-        var second = value + 1;
+        var first = *value;
+        var rest = value + 1;
 
         for (int length = valueLength - 1, ret = 0;
             searchSpaceLength - ret - length is > 0 and var next &&
-            IndexOf(searchSpace + ret, *value, next) is not -1 and var index;
+            IndexOf(searchSpace + ret, first, next) is not -1 and var index;
             ret++)
         {
             ret += index;
 
-            if (SequenceEqual(searchSpace + (ret + 1), second, length))
+            if (SequenceEqual(searchSpace + (ret + 1), rest, length))
                 return ret;
         }
 
@@ -232,13 +233,13 @@ static partial class SpanHelpers
             return 0;
 
         var first = *value;
-        var second = value + 1;
+        var rest = value + 1;
         var num = valueLength - 1;
         var nextIndex = 0;
 
         while (searchSpaceLength - nextIndex - num is > 0 and var next &&
             LastIndexOf(searchSpace, first, next) is not -1 and var index)
-            if (SequenceEqual(searchSpace + index + 1, second, num))
+            if (SequenceEqual(searchSpace + index + 1, rest, num))
                 return index;
             else
                 nextIndex += next - index;
@@ -958,7 +959,7 @@ static partial class SpanHelpers
             return 0;
 
         var first = *value;
-        T* second = value + 1;
+        var rest = value + 1;
         int low = 0, high = valueLength - 1;
 
         while (searchSpaceLength - low - high is > 0 and var next)
@@ -970,7 +971,7 @@ static partial class SpanHelpers
 
             low += num4;
 
-            if (SequenceEqual(searchSpace + (low + 1), second, high))
+            if (SequenceEqual(searchSpace + (low + 1), rest, high))
                 return low;
 
             low++;
@@ -1316,12 +1317,12 @@ static partial class SpanHelpers
             return 0;
 
         var first = *value;
-        T* second = value + 1;
+        var rest = value + 1;
         int zero = 0, upper = valueLength - 1;
 
         while (searchSpaceLength - zero - upper is > 0 and var length &&
             LastIndexOf(searchSpace, first, length) is not -1 and var offset)
-            if (SequenceEqual(searchSpace + (offset + 1), second, upper))
+            if (SequenceEqual(searchSpace + (offset + 1), rest, upper))
                 return offset;
             else
                 zero += length - offset;

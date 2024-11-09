@@ -62,17 +62,8 @@ static partial class StringFactory
 #endif
             return accumulator;
         }
-
-        return expression?.Collapse().SplitSpanLines().Aggregate(prefix.ToBuilder(), Accumulator).Trim().ToString();
-#else
-        return expression
-          ?.Collapse() // ReSharper disable once RedundantCast
-           .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            // ReSharper disable once NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-           .Select(x => x.Trim())!
-           .Prepend(prefix)
-           .Conjoin("");
 #endif
+        return expression?.Collapse().SplitSpanLines().Aggregate(prefix.ToBuilder(), Accumulator).Trim().ToString();
     }
 
     /// <summary>Converts a number to an ordinal.</summary>
