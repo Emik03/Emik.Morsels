@@ -10,6 +10,14 @@ namespace System.Numerics;
 /// </summary>
 static partial class BitOperations
 {
+    static ReadOnlySpan<byte> Log2DeBruijn => // 32
+    [
+        00, 09, 01, 10, 13, 21, 02, 29,
+        11, 14, 16, 18, 22, 25, 03, 30,
+        08, 12, 20, 28, 15, 17, 24, 07,
+        19, 27, 23, 06, 26, 05, 04, 31,
+    ];
+
     /// <summary>Evaluate whether a given integral value is a power of 2.</summary>
     /// <param name="value">The value.</param>
     /// <returns>
@@ -37,6 +45,36 @@ static partial class BitOperations
     /// <inheritdoc cref="IsPow2(int)"/>
     [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsPow2(nuint value) => (value & value - 1) is 0 && value is not 0;
+
+    /// <summary>
+    /// Returns the integer (floor) log of the specified value, base 2.
+    /// Note that by convention, input value 0 returns 0 since log(0) is undefined.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>The log of the parameter <paramref name="value"/> in base 2.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Log2(uint value)
+    {
+        value |= 1;
+        value |= value >> 1;
+        value |= value >> 2;
+        value |= value >> 4;
+        value |= value >> 8;
+        value |= value >> 16;
+        return Log2DeBruijn[(int)(value * 0x07C4ACDDu >> 27)];
+    }
+
+    /// <inheritdoc cref="Log2(uint)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Log2(ulong value)
+    {
+        value |= 1;
+        return (uint)(value >> 32) is not 0 and var hi ? Log2(hi) + 32 : Log2((uint)value);
+    }
+
+    /// <inheritdoc cref="Log2(uint)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static int Log2(nuint value) => Unsafe.SizeOf<nuint>() is 4 ? Log2((uint)value) : Log2((ulong)value);
 
     /// <summary>Returns the population count (number of bits set) of a mask.</summary>
     /// <remarks><para>Similar in behavior to the x86 instruction POPCNT.</para></remarks>
