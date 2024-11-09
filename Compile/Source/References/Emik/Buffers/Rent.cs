@@ -78,16 +78,12 @@ partial struct Rented<T> : IDisposable
         /// <param name="ptr">The pointer to the allocated memory.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe Pinned(Rented<T> rented, out T* ptr)
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         {
             _rented = rented;
             _handle = GCHandle.Alloc(rented._array, GCHandleType.Pinned);
             ptr = (T*)_handle.AddrOfPinnedObject();
         }
-#else
-            =>
-                ptr = (T*)(_rented = rented)._ptr;
-#endif
+
         /// <summary>Initializes a new instance of the <see cref="Pinned"/> struct.</summary>
         /// <param name="length">The length of the array to retrieve.</param>
         /// <param name="ptr">The pointer to the allocated memory.</param>
@@ -107,53 +103,28 @@ partial struct Rented<T> : IDisposable
             _rented.Dispose();
         }
     }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    T[]? _array;
-#else
-    nint _ptr;
 
-    static Rented()
-    {
-        if (IsReferenceOrContainsReferences<T>())
-            throw new NotSupportedException($"Type {typeof(T)} cannot be rented in this framework.");
-    }
-#endif
+    T[]? _array;
+
     /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
     /// <param name="length">The length of the array to retrieve.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
-    public unsafe Rented(int length) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        _array = ArrayPool<T>.Shared.Rent(length);
-#else
-        _ptr = Marshal.AllocHGlobal(length * Unsafe.SizeOf<T>());
-#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Rented(int length) => _array = ArrayPool<T>.Shared.Rent(length);
+
     /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
     /// <param name="length">The length of the array to retrieve.</param>
     /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
-    // ReSharper disable once RedundantUnsafeContext
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once RedundantUnsafeContext
-    public unsafe Rented(int length, out Span<T> span) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
-#else
-        span = new((void*)(_ptr = Marshal.AllocHGlobal(length * Unsafe.SizeOf<T>())), length);
-#endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Rented(int length, out Span<T> span) => span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan(length);
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         if (_array is null)
             return;
 
         ArrayPool<T>.Shared.Return(_array);
         _array = null;
-#else
-        if (_ptr is 0)
-            return;
-
-        Marshal.FreeHGlobal(_ptr);
-        _ptr = 0;
-#endif
     }
 }
