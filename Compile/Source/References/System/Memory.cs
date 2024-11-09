@@ -7,7 +7,10 @@ namespace System;
 using static Span;
 
 [DebuggerDisplay("{ToString(),raw}"), DebuggerTypeProxy(typeof(MemoryDebugView<>)), StructLayout(LayoutKind.Sequential)]
-readonly struct Memory<T>
+#if !NO_READONLY_STRUCTS
+readonly
+#endif // ReSharper disable once BadPreprocessorIndent
+    struct Memory<T>
 {
     const int RemoveFlagsBitMask = int.MaxValue;
 
@@ -231,7 +234,10 @@ readonly struct Memory<T>
 }
 
 [DebuggerDisplay("{ToString(),raw}"), DebuggerTypeProxy(typeof(MemoryDebugView<>)), StructLayout(LayoutKind.Sequential)]
-readonly struct ReadOnlyMemory<T>
+#if !NO_READONLY_STRUCTS
+readonly
+#endif // ReSharper disable once BadPreprocessorIndent
+    struct ReadOnlyMemory<T>
 {
 #pragma warning disable RCS1158
     internal const int RemoveFlagsBitMask = int.MaxValue;

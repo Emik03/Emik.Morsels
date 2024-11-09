@@ -28,7 +28,11 @@ static partial class SpanHelpers
     }
 
     [StructLayout(LayoutKind.Auto)]
-    internal readonly struct ComparerComparable<T, TComparer>(T value, TComparer comparer) : IComparable<T>
+    internal
+#if !NO_READONLY_STRUCTS
+        readonly
+#endif
+        struct ComparerComparable<T, TComparer>(T value, TComparer comparer) : IComparable<T>
         where TComparer : IComparer<T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
