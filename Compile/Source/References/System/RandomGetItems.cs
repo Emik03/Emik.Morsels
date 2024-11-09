@@ -69,7 +69,7 @@ static partial class RandomGetItems
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (length < 0)
-            throw new ArgumentOutOfRangeException(nameof(length), length, "Cannot be negative");
+            throw new ArgumentOutOfRangeException(nameof(length), length, "Must not be negative.");
 
         var items = new T[length];
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY

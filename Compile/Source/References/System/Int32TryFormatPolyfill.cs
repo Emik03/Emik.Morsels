@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
-// ReSharper disable CheckNamespace RedundantAssignment
+// ReSharper disable CheckNamespace RedundantAssignment RedundantNameQualifier UseSymbolAlias
 namespace System;
 #pragma warning disable RCS1163
 /// <summary>Provides the polyfill to <c>int.TryFormat</c>.</summary>
@@ -66,15 +66,12 @@ static partial class Int32TryFormatPolyfill
         }
 
         charsWritten = bufferLength;
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var buffer = (char*)destination.Pointer;
-#else
+
         fixed (char* buffer = destination)
-#endif
         {
             var p = buffer + bufferLength;
             p = digits <= 1 ? UInt32ToDecChars(p, value) : UInt32ToDecChars(p, value, digits);
-            Debug.Assert(p == buffer, "p == buffer");
+            System.Diagnostics.Debug.Assert(p == buffer, "p == buffer");
         }
 
         return true;
@@ -88,7 +85,7 @@ static partial class Int32TryFormatPolyfill
         out int charsWritten
     )
     {
-        Debug.Assert(value < 0, "value < 0");
+        System.Diagnostics.Debug.Assert(value < 0, "value < 0");
 
         if (digits < 1)
             digits = 1;
@@ -103,19 +100,15 @@ static partial class Int32TryFormatPolyfill
 
         charsWritten = bufferLength;
 
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var buffer = (char*)destination.Pointer;
-#else
         fixed (char* buffer = destination)
-#endif
         {
             var p = UInt32ToDecChars(buffer + bufferLength, (uint)-value, digits);
-            Debug.Assert(p == buffer + sNegative.Length, "p == buffer + sNegative.Length");
+            System.Diagnostics.Debug.Assert(p == buffer + sNegative.Length, "p == buffer + sNegative.Length");
 
             for (var i = sNegative.Length - 1; i >= 0; i--)
                 *--p = sNegative[i];
 
-            Debug.Assert(p == buffer, "p == buffer");
+            System.Diagnostics.Debug.Assert(p == buffer, "p == buffer");
         }
 
         return true;

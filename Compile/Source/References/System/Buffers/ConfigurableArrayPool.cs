@@ -160,8 +160,8 @@ sealed partial class ConfigurableArrayPool<T> : ArrayPool<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static int GetMaxSizeForBucket(int binIndex)
     {
-        var maxSize = 16 << binIndex;
-        Debug.Assert(maxSize >= 0);
+        var maxSize = 16 << binIndex; // ReSharper disable once RedundantNameQualifier UseSymbolAlias
+        System.Diagnostics.Debug.Assert(maxSize >= 0);
         return maxSize;
     }
 }

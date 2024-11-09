@@ -109,7 +109,7 @@ static partial class MemoryMarshal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length) =>
         Cache<T>.ReadOnlySpan(ref reference, length);
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Returns a reference to the element of the read-only span at index 0.</summary>
     /// <remarks><para>
     /// If the read-only span is empty, this method returns a reference to the location where the
@@ -121,11 +121,8 @@ static partial class MemoryMarshal
     /// <returns>A reference to the element at index 0.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref T GetReference<T>(ReadOnlySpan<T> span) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         ref Unsafe.AsRef(span.GetPinnableReference());
-#else
-        ref Unsafe.AsRef<T>(span.Pointer);
-#endif
+
     /// <summary>Returns a reference to the element of the span at index 0.</summary>
     /// <remarks><para>
     /// If the span is empty, this method returns a reference to the location where the
@@ -137,11 +134,7 @@ static partial class MemoryMarshal
     /// <returns>A reference to the element at index 0.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref T GetReference<T>(Span<T> span) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         ref Unsafe.AsRef(span.GetPinnableReference());
-#else
-        ref Unsafe.AsRef<T>(span.Pointer);
-#endif
 #endif
     static class Cache<T>
     {

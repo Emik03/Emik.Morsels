@@ -281,14 +281,8 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var l = left.Pointer;
-        var r = right.Pointer;
-#else
         fixed (T* l = left)
         fixed (T* r = right)
-#endif
             return Jaro(
                 new Fat<T>(l, left.Length),
                 new(r, right.Length),
@@ -380,14 +374,8 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var l = left.Pointer;
-        var r = right.Pointer;
-#else
         fixed (T* l = left)
         fixed (T* r = right)
-#endif
             return JaroEmik(
                 new Fat<T>(l, left.Length),
                 new(r, right.Length),
@@ -483,14 +471,8 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var l = left.Pointer;
-        var r = right.Pointer;
-#else
         fixed (T* l = left)
         fixed (T* r = right)
-#endif
             return JaroWinkler(
                 new Fat<T>(l, left.Length),
                 new(r, right.Length),

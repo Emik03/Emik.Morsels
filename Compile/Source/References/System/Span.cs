@@ -455,14 +455,14 @@ readonly
     static void ValidateLength(int length)
     {
         if (length < 0)
-            throw new ArgumentOutOfRangeException(nameof(length), length, "Non-negative");
+            throw new ArgumentOutOfRangeException(nameof(length), length, "Must be non-negative.");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ValidateIndex(int index)
     {
         if ((uint)index >= (uint)Length)
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"must be non-zero and below length {Length}");
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be non-zero and below length {Length}.");
     }
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
@@ -887,14 +887,14 @@ readonly
     static void ValidateLength(int length)
     {
         if (length < 0)
-            throw new ArgumentOutOfRangeException(nameof(length), length, "Non-negative");
+            throw new ArgumentOutOfRangeException(nameof(length), length, "Must be non-negative.");
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void ValidateIndex(int index)
     {
         if ((uint)index >= (uint)Length)
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"must be non-zero and below length {Length}");
+            throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be non-zero and below length {Length}.");
     }
 
     /// <summary>Enumerates the elements of a <see cref="ReadOnlySpan{T}"/>.</summary>

@@ -567,9 +567,9 @@ ref struct DefaultInterpolatedStringHandler
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // only used in a few hot path call sites
     internal static bool HasCustomFormatter(IFormatProvider provider)
     {
-        Debug.Assert(provider is not null, "provider is not null");
+        System.Diagnostics.Debug.Assert(provider is not null, "provider is not null");
 
-        Debug.Assert(
+        System.Diagnostics.Debug.Assert(
             provider is not CultureInfo || provider.GetFormat(typeof(ICustomFormatter)) is null,
             "Expected CultureInfo to not provide a custom formatter"
         );
@@ -590,13 +590,13 @@ ref struct DefaultInterpolatedStringHandler
         // a provider was used that supplied an ICustomFormatter which wanted to intercept the particular value.
         // We do the cast here rather than in the ctor, even though this could be executed multiple times per
         // formatting, to make the cast pay for play.
-        Debug.Assert(_hasCustomFormatter, "_hasCustomFormatter");
-        Debug.Assert(_provider is not null, "_provider is not null");
+        System.Diagnostics.Debug.Assert(_hasCustomFormatter, "_hasCustomFormatter");
+        System.Diagnostics.Debug.Assert(_provider is not null, "_provider is not null");
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
         var formatter = (ICustomFormatter?)_provider!.GetFormat(typeof(ICustomFormatter));
 
-        Debug.Assert(
+        System.Diagnostics.Debug.Assert(
             formatter is not null,
             "An incorrectly written provider said it implemented ICustomFormatter, and then didn't"
         );
@@ -615,8 +615,8 @@ ref struct DefaultInterpolatedStringHandler
     /// </param>
     private void AppendOrInsertAlignmentIfNeeded(int startingPos, int alignment)
     {
-        Debug.Assert(startingPos >= 0 && startingPos <= _pos, "startingPos >= 0 && startingPos <= _pos");
-        Debug.Assert(alignment is not 0, "alignment is not 0");
+        System.Diagnostics.Debug.Assert(startingPos >= 0 && startingPos <= _pos, "startingPos >= 0 && startingPos <= _pos");
+        System.Diagnostics.Debug.Assert(alignment is not 0, "alignment is not 0");
 
         var charsWritten = _pos - startingPos;
 
@@ -694,7 +694,7 @@ ref struct DefaultInterpolatedStringHandler
         // insufficient to store a specific number of additional characters.  Thus, we
         // need to grow to at least that new total. GrowCore will handle growing by more
         // than that if possible.
-        Debug.Assert(additionalChars > _chars.Length - _pos, "additionalChars > _chars.Length - _pos");
+        System.Diagnostics.Debug.Assert(additionalChars > _chars.Length - _pos, "additionalChars > _chars.Length - _pos");
         GrowCore((uint)_pos + (uint)additionalChars);
     }
 
