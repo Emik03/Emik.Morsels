@@ -9355,6 +9355,14 @@ public enum KeyMods : ushort
         [InstantHandle] Converter<TInput, TOutput> converter
     ) =>
         Array.ConvertAll(array, converter);
+#if NETCOREAPP || ROSLYN
+    /// <inheritdoc cref="System.Array.ConvertAll{TInput, TOutput}(TInput[], Converter{TInput, TOutput})"/>
+    public static ImmutableArray<TOutput> ConvertAll<TInput, TOutput>(
+        this ImmutableArray<TInput> array,
+        [InstantHandle] Converter<TInput, TOutput> converter
+    ) =>
+        ImmutableCollectionsMarshal.AsImmutableArray(ImmutableCollectionsMarshal.AsArray(array)!.ConvertAll(converter));
+#endif
     /// <inheritdoc cref="System.Array.AsReadOnly{T}(T[])"/>
     public static System.Collections.ObjectModel.ReadOnlyCollection<T> AsReadOnly<T>(this T[]? array) =>
         Array.AsReadOnly(array ?? []);
