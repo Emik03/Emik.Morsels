@@ -36,7 +36,7 @@ static partial class SpanHelpers
         where TComparer : IComparer<T>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int CompareTo(T other) => comparer.Compare(value, other);
+        public int CompareTo(T? other) => comparer.Compare(value, other);
     }
 
     [StructLayout(LayoutKind.Sequential, Size = 64)]
