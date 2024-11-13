@@ -10,6 +10,7 @@ Usage:
 Copyright © 2024 Emik"
 }
 
+: "${DOTNET_ROOT:?DOTNET_ROOT must be defined}"
 trash=0
 help=0
 
@@ -50,7 +51,7 @@ if [ "$help" = 1 ]; then
 fi
 
 go() {
-    dirs="$(find "${DOTNET_ROOT:?DOTNET_ROOT must be defined}/$1" -maxdepth 1 -type d -name "[0-9]*" -exec basename {} \; | sort)"
+    dirs="$(find "$DOTNET_ROOT/$1" -maxdepth 1 -type d -name "[0-9]*" -exec basename {} \; | sort)"
     upper="$(echo "$dirs" | wc -l)"
 
     i=1
@@ -59,7 +60,8 @@ go() {
         next="$(echo "$dirs" | sed "$(("$i" + 1))q;d")"
 
         if [ "$(echo "$prev" | cut -d "." -f 1)" = "$(echo "$next" | cut -d "." -f 1)" ]; then
-            path="${DOTNET_ROOT:?DOTNET_ROOT must be defined}/$1/$prev"
+            # Gives priority to stable releases over previews and release candidates.
+            path="$DOTNET_ROOT/$1/$([ "${prev##*-*}" ] && ! [ "${next##*-*}" ] && echo "$next" || echo "$prev")"
 
             if [ "$trash" = 1 ]; then
                 echo "Moving $path to the recycling bin..."
