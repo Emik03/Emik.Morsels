@@ -10594,7 +10594,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         typeof(T) == typeof(float) ? Ret<Vector<T>>.From(Vector.Log2(Ret<Vector<float>>.From(x))) :
         typeof(T) == typeof(double) ? Ret<Vector<T>>.From(Vector.Log2(Ret<Vector<double>>.From(x))) :
         default;
-    /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.MultiplyAddEstimate"/>
+    /// <inheritdoc cref="INumberBase{TSelf}.MultiplyAddEstimate"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> MultiplyAddEstimate<T>(this Vector<T> x, Vector<T> y, Vector<T> z) =>
         typeof(T) == typeof(float) ? Ret<Vector<T>>.From(
