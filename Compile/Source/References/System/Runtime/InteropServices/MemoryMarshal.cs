@@ -13,12 +13,6 @@ namespace System.Runtime.InteropServices;
 #pragma warning restore 1574
 static partial class MemoryMarshal
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static T GetReference<T>(Span<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static T GetReference<T>(ReadOnlySpan<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
-
     /// <summary>
     /// Casts a Span of one primitive type <typeparamref name="TFrom"/>
     /// to another primitive type <typeparamref name="TTo"/>.
@@ -135,6 +129,12 @@ static partial class MemoryMarshal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref T GetReference<T>(Span<T> span) =>
         ref Unsafe.AsRef(span.GetPinnableReference());
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T GetReference<T>(Span<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T GetReference<T>(ReadOnlySpan<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
 #endif
     static class Cache<T>
     {

@@ -17,12 +17,12 @@ static partial class SpanHelpers
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         public static readonly nint ArrayAdjustment = MeasureArrayAdjustment();
 
+        static readonly T[] s_single = new T[1];
+
         static nint MeasureArrayAdjustment()
         {
-            var array = new T[1];
-
-            fixed (T* ptr = array)
-                return (nint)(&Unsafe.As<Pinnable<T>>(array).Data) - (nint)ptr;
+            fixed (T* ptr = s_single)
+                return (nint)(&Unsafe.As<Pinnable<T>>(s_single).Data) - (nint)ptr;
         }
 #endif
     }
@@ -980,6 +980,7 @@ static partial class SpanHelpers
         return -1;
     }
 
+    // ReSharper disable PossibleNullReferenceException
     public static unsafe int IndexOf<T>(T* searchSpace, T value, int length)
         where T : IEquatable<T>?
     {
