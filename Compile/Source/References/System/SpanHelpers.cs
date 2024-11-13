@@ -21,8 +21,9 @@ static partial class SpanHelpers
 
         static nint MeasureArrayAdjustment()
         {
-            fixed (T* ptr = s_single)
-                return (nint)(&Unsafe.As<Pinnable<T>>(s_single).Data) - (nint)ptr;
+            fixed (T* element = s_single)
+            fixed (T* data = &Unsafe.As<Pinnable<T>>(s_single).Data)
+                return (nint)data - (nint)element;
         }
 #endif
     }

@@ -205,7 +205,8 @@ static partial class MemoryMarshal
                 unchecked((uint)(length * Unsafe.SizeOf<T>()))
             );
 #else
-            new ReadOnlySpan<T>(&reference, length).CopyTo(span);
+            fixed (T* ptr = &reference)
+                new ReadOnlySpan<T>(ptr, length).CopyTo(span);
 #endif
             return span;
         }
