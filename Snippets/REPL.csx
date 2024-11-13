@@ -6620,11 +6620,14 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) &= Unsafe.As<byte, nuint>(ref l);
-            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
-            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+            l = ref Unsafe.Add(ref l, (nint)Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, (nint)Unsafe.SizeOf<nuint>());
         }
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
         {
@@ -6708,11 +6711,14 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) &= ~Unsafe.As<byte, nuint>(ref l);
-            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
-            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+            l = ref Unsafe.Add(ref l, (nint)Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, (nint)Unsafe.SizeOf<nuint>());
         }
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
         {
@@ -6789,7 +6795,10 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref x,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref x) = ~Unsafe.As<byte, nuint>(ref x);
             x = ref Unsafe.Add(ref x, Unsafe.SizeOf<nuint>());
@@ -6872,7 +6881,10 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) |= Unsafe.As<byte, nuint>(ref l);
             l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
@@ -6960,7 +6972,10 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) ^= Unsafe.As<byte, nuint>(ref l);
             l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
@@ -7056,7 +7071,10 @@ readonly
                 return true;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             if (Unsafe.As<byte, nuint>(ref l) != Unsafe.As<byte, nuint>(ref r))
                 return false;
@@ -7151,7 +7169,10 @@ readonly
                 return true;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref x,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             if (Unsafe.As<byte, nuint>(ref x) is not 0)
                 return false;
@@ -7206,7 +7227,7 @@ readonly
     public static ref readonly T Max(in T left, in T right)
     {
         ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
             if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
                 return ref Unsafe.As<T, nuint>(ref l) > Unsafe.As<T, nuint>(ref r) ? ref left : ref right;
@@ -7249,7 +7270,7 @@ readonly
     public static ref readonly T Min(in T left, in T right)
     {
         ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
             if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
                 return ref Unsafe.As<T, nuint>(ref l) < Unsafe.As<T, nuint>(ref r) ? ref left : ref right;
@@ -14536,37 +14557,35 @@ readonly
             {
                 while (Unsafe.IsAddressLessThan(
                     ref f,
-                    ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() + 1)
+                    ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() - 1)
                 ))
                 {
-                    sum += BitOperations.PopCount(Unsafe.As<T, nuint>(ref l));
-                    f = ref Unsafe.Add(ref f, 1);
+                    sum += BitOperations.PopCount(Unsafe.As<T, nuint>(ref f));
+                    f = ref Unsafe.As<nint, T>(ref Unsafe.Add(ref Unsafe.As<T, nint>(ref f), 1));
                 }
                 if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() is 0)
                     return sum;
             }
             while (Unsafe.IsAddressLessThan(
                 ref f,
-                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<ulong>() + 1)
+                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<ulong>() - 1)
             ))
             {
-                sum += BitOperations.PopCount(Unsafe.As<T, ulong>(ref l));
-                f = ref Unsafe.Add(ref f, 1);
+                sum += BitOperations.PopCount(Unsafe.As<T, ulong>(ref f));
+                f = ref Unsafe.As<ulong, T>(ref Unsafe.Add(ref Unsafe.As<T, ulong>(ref f), 1));
             }
             if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<ulong>() is 0)
                 return sum;
             while (Unsafe.IsAddressLessThan(
                 ref f,
-                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<uint>() + 1)
+                ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<uint>() - 1)
             ))
             {
-                sum += BitOperations.PopCount(Unsafe.As<T, uint>(ref l));
-                f = ref Unsafe.Add(ref f, 1);
+                sum += BitOperations.PopCount(Unsafe.As<T, uint>(ref f));
+                f = ref Unsafe.As<uint, T>(ref Unsafe.Add(ref Unsafe.As<T, uint>(ref f), 1));
             }
-            return Unsafe.SizeOf<T>() % sizeof(uint) is 0
-                ? sum
-                : sum +
-                BitOperations.PopCount(
+            if (Unsafe.SizeOf<T>() % sizeof(uint) is not 0)
+                sum += BitOperations.PopCount(
                     (Unsafe.SizeOf<T>() % sizeof(uint)) switch
                     {
                         1 => Unsafe.As<T, byte>(ref f),
@@ -14575,21 +14594,25 @@ readonly
                         _ => throw new InvalidOperationException("Unsafe.SizeOf<T>() is assumed to be within [1, 3]."),
                     }
                 );
+            return sum;
         }
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void MovePopCount(ref T f, ref T l, ref int x)
     {
         if (Unsafe.SizeOf<T>() >= Unsafe.SizeOf<nint>())
-            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() + 1)) &&
+            while (Unsafe.IsAddressLessThan(
+                    ref f,
+                    ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() - 1)
+                ) &&
                 BitOperations.PopCount(Unsafe.As<T, nuint>(ref f)) is var i &&
                 i <= x)
             {
                 x -= i;
-                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<nuint>());
+                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<nint>());
             }
         if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() >= sizeof(ulong))
-            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)sizeof(ulong) + 1)) &&
+            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, sizeof(ulong) - 1)) &&
                 BitOperations.PopCount(Unsafe.As<T, ulong>(ref f)) is var i &&
                 i <= x)
             {
@@ -14598,7 +14621,7 @@ readonly
             }
         if (Unsafe.SizeOf<T>() % sizeof(ulong) < sizeof(uint))
             return;
-        while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, (nint)sizeof(uint) + 1)) &&
+        while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, sizeof(uint) - 1)) &&
             BitOperations.PopCount(Unsafe.As<T, uint>(ref f)) is var i &&
             i <= x)
         {
