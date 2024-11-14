@@ -141,7 +141,7 @@ readonly
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static implicit operator ReadOnlyMemory<T>(Memory<T> memory) =>
-        Unsafe.As<Memory<T>, ReadOnlyMemory<T>>(memory);
+        Unsafe.As<Memory<T>, ReadOnlyMemory<T>>(ref memory);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override string ToString() =>
@@ -195,7 +195,7 @@ readonly
             return default;
 
         if (_length < 0)
-            return new((void*)Unsafe.As<T[], nint>(array));
+            return new((void*)Unsafe.As<T[], nint>(ref array));
 
         var arrayHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
         return new((T*)arrayHandle.AddrOfPinnedObject() + _index, arrayHandle);
@@ -374,7 +374,7 @@ readonly
             return default;
 
         if (_length < 0)
-            return new((void*)Unsafe.As<T[], nint>(array));
+            return new((void*)Unsafe.As<T[], nint>(ref array));
 
         var handle2 = GCHandle.Alloc(array, GCHandleType.Pinned);
         void* pointer3 = (T*)handle2.AddrOfPinnedObject() + _index;
