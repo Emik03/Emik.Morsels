@@ -960,4 +960,29 @@ static partial class Span
         System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
         return UnsafelySlice(body, 0, end);
     }
+
+    /// <summary>Aligns the pointer, since earlier .NET Frameworks require a misaligned pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/> and pointer.</typeparam>
+    /// <param name="span">The span to use as reference.</param>
+    /// <param name="fix">The pointer to align.</param>
+    /// <returns>The aligned pointer to the first element of the <see cref="Span{T}"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    internal static unsafe T* Align<T>([UsedImplicitly] this scoped ReadOnlySpan<T> span, T* fix) =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        span.Length is 0 ? null : (T*)((byte*)(Pinnable<T>.IsEmpty(span.Pinnable) ? fix : null) + span.ByteOffset);
+#else
+        ptr;
+#endif
+    /// <summary>Aligns the pointer, since earlier .NET Frameworks require a misaligned pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/> and pointer.</typeparam>
+    /// <param name="span">The span to use as reference.</param>
+    /// <param name="fix">The pointer to align.</param>
+    /// <returns>The aligned pointer to the first element of the <see cref="Span{T}"/>.</returns>
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    internal static unsafe T* Align<T>([UsedImplicitly] this scoped Span<T> span, T* fix) =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        span.Length is 0 ? null : (T*)((byte*)(Pinnable<T>.IsEmpty(span.Pinnable) ? fix : null) + span.ByteOffset);
+#else
+        ptr;
+#endif
 }
