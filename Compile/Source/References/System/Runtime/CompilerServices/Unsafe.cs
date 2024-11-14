@@ -6,6 +6,13 @@ namespace System.Runtime.CompilerServices;
 static class Unsafe
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe void* AsPointer<T>(ref T value)
+    {
+        var tr = __makeref(value);
+        return (void*)*(nint*)&tr;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T As<T>(object? o) => Span.Ret<T>.From(o);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
