@@ -12,14 +12,7 @@ sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
 {
     GCHandle _handle;
 
-    // ReSharper disable once ReplaceWithPrimaryConstructorParameter
     T _value = value;
-
-    /// <summary>Gets the value.</summary>
-    public ref T Value
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref _value;
-    }
 
     /// <summary>Wraps the <typeparamref name="T"/> instance into the <see cref="OnceMemoryManager{T}"/>.</summary>
     /// <param name="value">The value to wrap.</param>
