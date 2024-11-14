@@ -393,36 +393,6 @@ readonly
         return new(_pinnable, byteOffset, length);
     }
 
-    /// <summary>
-    /// Returns a reference to an object of type T that can be used for pinning.
-    /// This method is intended to support .NET compilers and is not intended to be called by user code.
-    /// </summary>
-    /// <remarks><para>
-    /// Applications should not directly call <see cref="GetPinnableReference"/>. Instead, callers should
-    /// use their language's normal pinning syntax, such as C#'s <see langword="fixed"/> statement.
-    /// If pinning a span of <see cref="char"/>, the resulting <c>char*</c> <b>is not</b> assumed to
-    /// be null-terminated. This behavior is different from pinning a <see cref="string"/>,
-    /// where the resulting <c>char*</c> is guaranteed to be null-terminated.
-    /// </para></remarks>
-    /// <returns>
-    /// A reference to the element of the span at index 0, or <see langword="null"/> if the span is empty.
-    /// </returns>
-    [Inline]
-    public unsafe ref T GetPinnableReference()
-    {
-        if (Length is 0)
-            return ref *(T*)null;
-
-        if (_pinnable is null)
-        {
-            var byteOffset = _byteOffset;
-            return ref *(T*)byteOffset;
-        }
-
-        fixed (T* pinnable = &_pinnable.Data)
-            return ref *(T*)((byte*)pinnable + _byteOffset);
-    }
-
     /// <summary>Copies the contents of this span into a new array.</summary>
     /// <remarks><para>
     /// This method performs a heap allocation and therefore should be avoided if possible.
@@ -441,6 +411,15 @@ readonly
         return destination;
     }
 
+    /// <summary>Creates the span over the provided array.</summary>
+    /// <param name="array">The array to create the <see cref="Span{T}"/> over.</param>
+    /// <param name="start">The starting index.</param>
+    /// <returns>The <see cref="Span{T}"/> over the parameter <paramref name="array"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The parameter <paramref name="start"/> is negative or exceeds
+    /// the length of the parameter <paramref name="array"/>.
+    /// </exception>
+    /// <exception cref="ArrayTypeMismatchException">The parameter <paramref name="array"/> is downcast.</exception>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static unsafe Span<T> Create(T[]? array, int start) =>
         array is null ? start is 0 ? default : throw new ArgumentOutOfRangeException(nameof(start)) :
@@ -450,6 +429,36 @@ readonly
             (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start),
             array.Length - start
         );
+
+    /// <summary>
+    /// Returns a reference to an object of type T that can be used for pinning.
+    /// This method is intended to support .NET compilers and is not intended to be called by user code.
+    /// </summary>
+    /// <remarks><para>
+    /// Applications should not directly call <see cref="GetPinnableReference"/>. Instead, callers should
+    /// use their language's normal pinning syntax, such as C#'s <see langword="fixed"/> statement.
+    /// If pinning a span of <see cref="char"/>, the resulting <c>char*</c> <b>is not</b> assumed to
+    /// be null-terminated. This behavior is different from pinning a <see cref="string"/>,
+    /// where the resulting <c>char*</c> is guaranteed to be null-terminated.
+    /// </para></remarks>
+    /// <returns>
+    /// A reference to the element of the span at index 0, or <see langword="null"/> if the span is empty.
+    /// </returns>
+    [Inline]
+    internal unsafe ref T GetPinnableReference()
+    {
+        if (Length is 0)
+            return ref *(T*)null;
+
+        if (_pinnable is null)
+        {
+            var byteOffset = _byteOffset;
+            return ref *(T*)byteOffset;
+        }
+
+        fixed (T* pinnable = &_pinnable.Data)
+            return ref *(T*)((byte*)pinnable + _byteOffset);
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void ValidateLength(int length)
@@ -835,36 +844,6 @@ readonly
         return new(_pinnable, byteOffset, length);
     }
 
-    /// <summary>
-    /// Returns a reference to an object of type T that can be used for pinning.
-    /// This method is intended to support .NET compilers and is not intended to be called by user code.
-    /// </summary>
-    /// <remarks><para>
-    /// Applications should not directly call <see cref="GetPinnableReference"/>. Instead, callers should
-    /// use their language's normal pinning syntax, such as C#'s <see langword="fixed"/> statement.
-    /// If pinning a span of <see cref="char"/>, the resulting <c>char*</c> <b>is not</b> assumed to
-    /// be null-terminated. This behavior is different from pinning a <see cref="string"/>,
-    /// where the resulting <c>char*</c> is guaranteed to be null-terminated.
-    /// </para></remarks>
-    /// <returns>
-    /// A reference to the element of the span at index 0, or <see langword="null"/> if the span is empty.
-    /// </returns>
-    [Inline]
-    public unsafe ref readonly T GetPinnableReference()
-    {
-        if (Length is 0)
-            return ref *(T*)null;
-
-        if (_pinnable is null)
-        {
-            var byteOffset = _byteOffset;
-            return ref *(T*)byteOffset;
-        }
-
-        fixed (T* pinnable = &_pinnable.Data)
-            return ref *(T*)((byte*)pinnable + _byteOffset);
-    }
-
     /// <summary>Copies the contents of this span into a new array.</summary>
     /// <remarks><para>
     /// This method performs a heap allocation and therefore should be avoided if possible.
@@ -881,6 +860,36 @@ readonly
         var destination = new T[Length];
         CopyTo(destination);
         return destination;
+    }
+
+    /// <summary>
+    /// Returns a reference to an object of type T that can be used for pinning.
+    /// This method is intended to support .NET compilers and is not intended to be called by user code.
+    /// </summary>
+    /// <remarks><para>
+    /// Applications should not directly call <see cref="GetPinnableReference"/>. Instead, callers should
+    /// use their language's normal pinning syntax, such as C#'s <see langword="fixed"/> statement.
+    /// If pinning a span of <see cref="char"/>, the resulting <c>char*</c> <b>is not</b> assumed to
+    /// be null-terminated. This behavior is different from pinning a <see cref="string"/>,
+    /// where the resulting <c>char*</c> is guaranteed to be null-terminated.
+    /// </para></remarks>
+    /// <returns>
+    /// A reference to the element of the span at index 0, or <see langword="null"/> if the span is empty.
+    /// </returns>
+    [Inline]
+    internal unsafe ref readonly T GetPinnableReference()
+    {
+        if (Length is 0)
+            return ref *(T*)null;
+
+        if (_pinnable is null)
+        {
+            var byteOffset = _byteOffset;
+            return ref *(T*)byteOffset;
+        }
+
+        fixed (T* pinnable = &_pinnable.Data)
+            return ref *(T*)((byte*)pinnable + _byteOffset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
