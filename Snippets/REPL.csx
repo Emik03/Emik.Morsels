@@ -1626,8 +1626,10 @@ public
         new(ref AsRef(reference));
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));
-#else
+#elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
+#else
+        new([reference]);
 #endif
     /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
@@ -1690,6 +1692,7 @@ public
 #endif
     }
 #endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
     /// <param name="source">The read-only reference to reinterpret.</param>
@@ -1699,12 +1702,6 @@ public
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (T* ptr = &source)
-            return ref *ptr;
-    }
-#else
         =>
             ref Unsafe.AsRef(source);
 #endif
