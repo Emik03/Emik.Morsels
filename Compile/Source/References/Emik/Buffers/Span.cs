@@ -362,17 +362,14 @@ static partial class Span
     public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-
-        if (IsReferenceOrContainsReferences<T>())
-            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-
-        Span<byte> span = stackalloc byte[InBytes<T>(length)];
+        System.Diagnostics.Debug.Assert(length is >= 0 and <= MaxStackalloc, "Length is within bounds");
+        System.Diagnostics.Debug.Assert(IsReferenceOrContainsReferences<T>(), "Contains references");
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        Span<byte> span = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
 #else
-        fixed (byte* ptr = span)
-            return new(ptr, length);
+        var ptr = stackalloc byte[InBytes<T>(length)];
+        return new(ptr, length);
 #endif
     }
 #endif
