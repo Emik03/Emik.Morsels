@@ -1460,7 +1460,11 @@ public
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The value to convert.</param>
         /// <returns>The result of the reinterpret cast.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
         public static unsafe TTo From<TFrom>(TFrom source)
 #if !NO_ALLOWS_REF_STRUCT
             where TFrom : allows ref struct
@@ -1500,7 +1504,11 @@ public
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
@@ -1573,7 +1581,11 @@ public
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
     public static bool IsStack<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -1601,7 +1613,11 @@ public
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+#endif
     public static int InBytes<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -1612,7 +1628,11 @@ public
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
     public static nuint ToAddress<T>(this T? _)
         where T : class =>
         Ret<nuint>.From(_);
@@ -1627,9 +1647,9 @@ public
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));
 #elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
-#else
         new([reference]);
+#else
+        MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
 #endif
     /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
@@ -1672,7 +1692,7 @@ public
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-#if !CSHARPREPL
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
     /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
@@ -1680,15 +1700,14 @@ public
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
-        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-        if (IsReferenceOrContainsReferences<T>())
-            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-        Span<byte> span = stackalloc byte[InBytes<T>(length)];
+        System.Diagnostics.Debug.Assert(length is >= 0 and <= MaxStackalloc, "Length is within bounds");
+        System.Diagnostics.Debug.Assert(IsReferenceOrContainsReferences<T>(), "Contains references");
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        Span<byte> span = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
 #else
-        fixed (byte* ptr = span)
-            return new(ptr, length);
+        var ptr = stackalloc byte[InBytes<T>(length)];
+        return new(ptr, length);
 #endif
     }
 #endif
@@ -1815,7 +1834,7 @@ public
     {
         fixed (T* ptr = &value)
         fixed (T* s = span)
-            return (nint)(s - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
+            return (nint)(span.Align(s) - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
                 ? (int)elementOffset
                 : -1;
     }
@@ -1853,7 +1872,7 @@ public
     {
         fixed (T* searchSpace = span)
         fixed (T* value = values)
-            return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
+            return SpanHelpers.IndexOfAny(span.Align(searchSpace), span.Length, values.Align(value), values.Length);
     }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
@@ -1865,7 +1884,7 @@ public
 #else
     {
         fixed (T* value = target)
-            return origin.IndexOf(ref *value);
+            return origin.IndexOf(ref *target.Align(value));
     }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
@@ -1885,11 +1904,13 @@ public
             ? memory.Slice(i, span.Length)
             : default;
 #else
-        fixed (T* ptr = memory.Span)
+        var other = memory.Span;
         fixed (T* s = span)
-            return ((nint)(s - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
-                ? (int)elementOffset
-                : -1) is not -1 and var i
+        fixed (T* o = other)
+            return ((nint)(span.Align(s) - other.Align(o)) is var elementOffset &&
+                (nuint)elementOffset < (uint)span.Length
+                    ? (int)elementOffset
+                    : -1) is not -1 and var i
                 ? memory.Slice(i, span.Length)
                 : default;
 #endif
@@ -2239,6 +2260,48 @@ public
         System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
         return UnsafelySlice(body, 0, end);
     }
+    /// <summary>Aligns the pointer obtained from a fixed expression to the first element of the pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to obtain the pointer of.</param>
+    /// <param name="pinned">The pointed obtained from pinning the parameter <paramref name="span"/>.</param>
+    /// <returns>
+    /// The pointer to the first element of the buffer, or <see langword="null"/>
+    /// if the parameter <paramref name="span"/> is empty.
+    /// </returns>
+    [Inline]
+    internal static unsafe T* Align<T>([UsedImplicitly] this ReadOnlySpan<T> span, T* pinned)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            span.Length is 0 ? null :
+            span.Pinnable is null ? (T*)span.ByteOffset :
+            (T*)((byte*)Unsafe.AsPointer(ref span.Pinnable.Data) + span.ByteOffset);
+#else
+            pinned;
+#endif
+    /// <summary>Aligns the pointer obtained from a fixed expression to the first element of the pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to obtain the pointer of.</param>
+    /// <param name="pinned">The pointed obtained from pinning the parameter <paramref name="span"/>.</param>
+    /// <returns>
+    /// The pointer to the first element of the buffer, or <see langword="null"/>
+    /// if the parameter <paramref name="span"/> is empty.
+    /// </returns>
+    [Inline]
+    internal static unsafe T* Align<T>([UsedImplicitly] this Span<T> span, T* pinned)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            span.Length is 0 ? null :
+            span.Pinnable is null ? (T*)span.ByteOffset :
+            (T*)((byte*)Unsafe.AsPointer(ref span.Pinnable.Data) + span.ByteOffset);
+#else
+            pinned;
+#endif
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 // ReSharper disable once CheckNamespace
@@ -5268,7 +5331,11 @@ public enum ControlFlow : byte
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public override string? ToString() => list.ToString();
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
+#else
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
+#endif
         int Find(T item)
         {
             var count = list.Count - 1;
@@ -10024,13 +10091,16 @@ readonly
         {
 #pragma warning disable 8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            fixed (TBody* ptr = span)
+            fixed (TBody* pin = span)
+            {
+                var ptr = span.Align(pin);
                 for (var i = 0; i < span.Length; i++)
                     builder.Append(((char*)ptr)[i]);
+            }
             return builder;
 #else
             fixed (TBody* ptr = span)
-                return builder.Append((char*)ptr, span.Length);
+                return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
 #pragma warning restore 8500
         }
@@ -14969,8 +15039,8 @@ readonly
         fixed (T* l = left)
         fixed (T* r = right)
             return Jaro(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -15058,8 +15128,8 @@ readonly
         fixed (T* l = left)
         fixed (T* r = right)
             return JaroEmik(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -15151,8 +15221,8 @@ readonly
         fixed (T* l = left)
         fixed (T* r = right)
             return JaroWinkler(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -15590,7 +15660,11 @@ readonly
             return it;
         var text = $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
             (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
+#if KTANE
+        UnityEngine.Debug.Log(text);
+#else
         Console.WriteLine(text);
+#endif
         File.AppendAllText(Path.Combine(Path.GetTempPath(), "morsels.log"), text);
         return it;
     }
@@ -16652,7 +16726,7 @@ static class GamePadStateExtensions
             it switch
             {
                 <= 0 when (span = default) is var _ => default,
-#if !CSHARPREPL
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
                 _ when !IsReferenceOrContainsReferences<T>() &&
                     IsStack<T>(it) &&
                     (span = Stackalloc<T>(it)) is var _ => default,
@@ -16665,24 +16739,30 @@ static class GamePadStateExtensions
     /// <param name="it">The length of the buffer.</param>
     /// <param name="ptr">The temporary allocation.</param>
     /// <returns>The allocated buffer.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+#endif
     public static unsafe Rented<T>.Pinned Alloc<T>(this in int it, out T* ptr) =>
         it switch
         {
             <= 0 when (ptr = default) is var _ => default,
-#if !CSHARPREPL
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
             _ when !IsReferenceOrContainsReferences<T>() &&
                 IsStack<T>(it) &&
                 (ptr = StackallocPtr<T>(it)) is var _ => default,
 #endif
             _ => new(it, out ptr),
         };
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T* StackallocPtr<T>(int it)
     {
         var ptr = stackalloc byte[InBytes<T>(it)];
         return (T*)ptr;
     }
+#endif
 /// <summary>Represents the rented array.</summary>
 /// <typeparam name="T">The type of array to rent.</typeparam>
 [StructLayout(LayoutKind.Auto)]
@@ -16730,7 +16810,8 @@ public partial struct Rented<T> : IDisposable
     /// <param name="length">The length of the array to retrieve.</param>
     /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Rented(int length, out Span<T> span) => span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan(length);
+    public Rented(int length, out Span<T> span) =>
+        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
@@ -17524,7 +17605,7 @@ namespace System.Linq;
             var trimmed = next.Trim();
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             fixed (char* ptr = trimmed)
-                accumulator.Append(ptr, trimmed.Length);
+                accumulator.Append(trimmed.Align(ptr), trimmed.Length);
 #else
             foreach (var t in trimmed)
                 accumulator.Append(t);
