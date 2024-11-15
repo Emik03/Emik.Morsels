@@ -121,7 +121,11 @@ static partial class Span
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The value to convert.</param>
         /// <returns>The result of the reinterpret cast.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
         public static unsafe TTo From<TFrom>(TFrom source)
 #if !NO_ALLOWS_REF_STRUCT
             where TFrom : allows ref struct
@@ -166,7 +170,11 @@ static partial class Span
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
@@ -248,7 +256,11 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
     public static bool IsStack<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -277,7 +289,11 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+#endif
     public static int InBytes<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -289,7 +305,11 @@ static partial class Span
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
     public static nuint ToAddress<T>(this T? _)
         where T : class =>
         Ret<nuint>.From(_);
@@ -353,7 +373,7 @@ static partial class Span
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
     /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>

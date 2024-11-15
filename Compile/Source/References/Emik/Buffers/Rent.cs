@@ -25,7 +25,7 @@ static partial class Rent
             it switch
             {
                 <= 0 when (span = default) is var _ => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
                 _ when !IsReferenceOrContainsReferences<T>() &&
                     IsStack<T>(it) &&
                     (span = Stackalloc<T>(it)) is var _ => default, // Stack allocation
@@ -39,25 +39,30 @@ static partial class Rent
     /// <param name="it">The length of the buffer.</param>
     /// <param name="ptr">The temporary allocation.</param>
     /// <returns>The allocated buffer.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
+#endif
     public static unsafe Rented<T>.Pinned Alloc<T>(this in int it, out T* ptr) =>
         it switch
         {
             <= 0 when (ptr = default) is var _ => default, // No allocation
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
             _ when !IsReferenceOrContainsReferences<T>() &&
                 IsStack<T>(it) &&
                 (ptr = StackallocPtr<T>(it)) is var _ => default, // Stack allocation
 #endif
             _ => new(it, out ptr), // Heap allocation
         };
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe T* StackallocPtr<T>(int it)
     {
         var ptr = stackalloc byte[InBytes<T>(it)];
         return (T*)ptr;
     }
+#endif
 }
 
 /// <summary>Represents the rented array.</summary>
@@ -115,7 +120,8 @@ partial struct Rented<T> : IDisposable
     /// <param name="length">The length of the array to retrieve.</param>
     /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Rented(int length, out Span<T> span) => span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan(length);
+    public Rented(int length, out Span<T> span) =>
+        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
 
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

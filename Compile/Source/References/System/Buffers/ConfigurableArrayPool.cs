@@ -21,33 +21,28 @@ sealed partial class ConfigurableArrayPool<T> : ArrayPool<T>
         /// <summary>Attempts to return the buffer to the bucket.</summary>
         internal void Return(T[] array)
         {
-            // Check to see if the buffer is the correct size for this bucket
-            if (array.Length != _bufferLength)
+            if (array.Length != _bufferLength) // Check to see if the buffer is the correct size for this bucket
                 throw new ArgumentException("Buffer is not from pool.", nameof(array));
 
+            // These two lines single-handedly cause so many problems in Unity 2017 that I'd rather be memory wasteful
+            // than to spend another minute trying to figure out why it complains about a single stelem.ref instruction.
+#if !KTANE
             if (_index is not 0)
                 _buffers[--_index] = array;
+#endif
         }
 
         /// <summary>Takes an array from the bucket. If the bucket is empty, returns <see langword="null"/>.</summary>
         [MustUseReturnValue("The returned value must later be given in this instance's Return.")]
         internal T[]? Rent()
         {
-            T[]? buffer = null;
-            var allocateBuffer = false;
+            if (_index >= _buffers.Length)
+                return null;
 
-            // ReSharper disable once InvertIf
-            if (_index < _buffers.Length)
-            {
-                buffer = _buffers[_index];
-                _buffers[_index++] = null;
-                allocateBuffer = buffer is null;
-            }
-
-            // While we were holding the lock, we grabbed whatever was at the next available
-            // index, if there was one. If we tried and if we got back null, that means we
-            // hadn't yet allocated for that slot, in which case we should do so now.
-            return allocateBuffer ? new T[_bufferLength] : buffer;
+            var buffer = _buffers[_index];
+            _buffers[_index++] = null;
+            var ret = buffer ?? new T[_bufferLength];
+            return ret;
         }
     }
 
@@ -99,15 +94,13 @@ sealed partial class ConfigurableArrayPool<T> : ArrayPool<T>
     /// <inheritdoc />
     public override void Return(T[] array, bool clearArray = false)
     {
-        // Ignore empty arrays. When a zero-length array is rented, we return a singleton
-        // rather than actually taking a buffer out of the lowest bucket.
-        // Then, determine with what bucket this array length is associated.
-        // If we can tell that the buffer was allocated, drop it. Otherwise, check if we have space in the pool
+        // Ignore empty arrays. When a zero-length array is rented, we return a singleton rather than actually taking
+        // a buffer out of the lowest bucket. Then, determine with what bucket this array length is associated.
+        // If we can tell that the buffer was allocated, drop it. Otherwise, check if we have space in the pool.
         if (array.Length is 0 || SelectBucketIndex(array.Length) is var bucket && bucket >= _buckets.Length)
             return;
 
-        // Clear the array if the user requests
-        if (clearArray)
+        if (clearArray) // Clear the array if the user requests it.
             Array.Clear(array, 0, array.Length);
 
         // Return the buffer to its bucket.
@@ -146,7 +139,8 @@ sealed partial class ConfigurableArrayPool<T> : ArrayPool<T>
 
         // The pool was exhausted for this buffer size. Allocate a new
         // buffer with a size corresponding to the appropriate bucket.
-        return new T[_buckets[index]._bufferLength];
+        var ret = new T[_buckets[index]._bufferLength];
+        return ret;
     }
 
     // Buffers are bucketed so that a request between 2^(n-1) + 1 and 2^n is given a buffer of 2^n
