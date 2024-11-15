@@ -23,10 +23,6 @@ readonly
     where T : unmanaged
 #endif
 {
-    readonly Pinnable<T>? _pinnable;
-
-    readonly nint _byteOffset;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Span{T}"/> struct from a specified number of
     /// <typeparamref name="T"/> elements starting at a specified memory address.
@@ -42,8 +38,8 @@ readonly
 
         ValidateLength(length);
         Length = length;
-        _pinnable = null;
-        _byteOffset = (nint)pointer;
+        Pinnable = null;
+        ByteOffset = (nint)pointer;
     }
 
     /// <summary>
@@ -67,8 +63,8 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = array.Length;
-        _pinnable = Unsafe.As<Pinnable<T>>(array);
-        _byteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
+        Pinnable = Unsafe.As<Pinnable<T>>(array);
+        ByteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
     }
 
     /// <summary>
@@ -102,8 +98,8 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = length;
-        _pinnable = Unsafe.As<Pinnable<T>>(array);
-        _byteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
+        Pinnable = Unsafe.As<Pinnable<T>>(array);
+        ByteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
     }
 
     /// <summary>Initializes a new instance of the <see cref="Span{T}"/> struct.</summary>
@@ -114,8 +110,8 @@ readonly
     internal Span(Pinnable<T>? pinnable, nint byteOffset, int length)
     {
         Length = length;
-        _pinnable = pinnable;
-        _byteOffset = byteOffset;
+        Pinnable = pinnable;
+        ByteOffset = byteOffset;
     }
 
     /// <summary>Gets the element at the specified zero-based index.</summary>
@@ -131,7 +127,7 @@ readonly
             ValidateIndex(index);
 
             fixed (T* ptr = this)
-                return ptr[index];
+                return this.Align(ptr)[index];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
@@ -139,7 +135,7 @@ readonly
             ValidateIndex(index);
 
             fixed (T* ptr = this)
-                ptr[index] = value;
+                this.Align(ptr)[index] = value;
         }
     }
 
@@ -157,6 +153,14 @@ readonly
 
     /// <summary>Gets the length of the current span.</summary>
     public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
+
+    /// <summary>Gets the byte offset.</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public nint ByteOffset { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+
+    /// <summary>Gets the object to be pinned.</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Pinnable<T>? Pinnable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
     /// <summary>Returns a value that indicates whether two <see cref="Span{T}"/> objects are equal.</summary>
     /// <remarks><para>
@@ -177,7 +181,7 @@ readonly
 
         fixed (T* l = left)
         fixed (T* r = right)
-            return l == r;
+            return left.Align(l) == right.Align(r);
     }
 
     /// <summary>Returns a value that indicates whether two <see cref="Span{T}"/> objects are not equal.</summary>
@@ -223,7 +227,7 @@ readonly
     /// <param name="span">The object to convert to a <see cref="ReadOnlySpan{T}"/>.</param>
     /// <returns>A read-only span that corresponds to the current instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator ReadOnlySpan<T>(Span<T> span) => new(span._pinnable, span._byteOffset, span.Length);
+    public static implicit operator ReadOnlySpan<T>(Span<T> span) => new(span.Pinnable, span.ByteOffset, span.Length);
 
     /// <summary>Clears the contents of this <see cref="Span{T}"/> object.</summary>
     /// <remarks><para>
@@ -241,21 +245,21 @@ readonly
 
         if ((Unsafe.SizeOf<T>() & Unsafe.SizeOf<nint>() - 1) != 0)
         {
-            if (_pinnable is null)
-                SpanHelpers.ClearLessThanPointerSized((byte*)_byteOffset, byteLength);
+            if (Pinnable is null)
+                SpanHelpers.ClearLessThanPointerSized((byte*)ByteOffset, byteLength);
             else
-                fixed (T* ptr = &_pinnable.Data)
-                    SpanHelpers.ClearLessThanPointerSized((byte*)ptr + _byteOffset, byteLength);
+                fixed (T* ptr = &Pinnable.Data)
+                    SpanHelpers.ClearLessThanPointerSized((byte*)ptr + ByteOffset, byteLength);
         }
         else
             fixed (T* ptr = this)
                 if (SpanHelpers.IsReferenceOrContainsReferences<T>())
                     SpanHelpers.ClearPointerSizedWithReferences(
-                        (nint*)ptr,
+                        (nint*)this.Align(ptr),
                         (nuint)(ulong)(Length * Unsafe.SizeOf<T>() / Unsafe.SizeOf<nint>())
                     );
                 else
-                    SpanHelpers.ClearPointerSizedWithoutReferences((byte*)ptr, byteLength);
+                    SpanHelpers.ClearPointerSizedWithoutReferences((byte*)this.Align(ptr), byteLength);
     }
 #pragma warning restore 8604, CA1855
     /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="Span{T}"/>.</summary>
@@ -274,8 +278,9 @@ readonly
         if (Length == 0)
             return;
 
-        fixed (T* source = this)
+        fixed (T* s = this)
         {
+            var source = this.Align(s);
             int i;
 
             for (i = 0; i < (Length & -8); i += 8)
@@ -342,16 +347,16 @@ readonly
         if (typeof(T) != typeof(char))
             return $"System.Span<{typeof(T).Name}>[{Length}]";
 
-        if (_byteOffset == MemoryExtensions.StringAdjustment)
+        if (ByteOffset == MemoryExtensions.StringAdjustment)
         {
-            var obj = Unsafe.As<object?>(_pinnable);
+            var obj = Unsafe.As<object?>(Pinnable);
 
             if (obj is string text && Length == text.Length)
                 return text;
         }
 
         fixed (T* ptr = this)
-            return new((char*)ptr, 0, Length);
+            return new((char*)this.Align(ptr), 0, Length);
     }
 
     /// <summary>Returns an enumerator of this <see cref="Span{T}"/>.</summary>
@@ -373,9 +378,9 @@ readonly
         if ((uint)start > (uint)Length)
             throw new ArgumentOutOfRangeException(nameof(start));
 
-        var byteOffset = (nint)((T*)_byteOffset + start);
+        var byteOffset = (nint)((T*)ByteOffset + start);
         var length = Length - start;
-        return new(_pinnable, byteOffset, length);
+        return new(Pinnable, byteOffset, length);
     }
 
     /// <summary>Creates the slice of this buffer.</summary>
@@ -389,8 +394,8 @@ readonly
         if ((uint)start > (uint)Length || (uint)length > (uint)(Length - start))
             throw new ArgumentOutOfRangeException(nameof(start));
 
-        var byteOffset = (nint)((T*)_byteOffset + start);
-        return new(_pinnable, byteOffset, length);
+        var byteOffset = (nint)((T*)ByteOffset + start);
+        return new(Pinnable, byteOffset, length);
     }
 
     /// <summary>Copies the contents of this span into a new array.</summary>
@@ -445,20 +450,7 @@ readonly
     /// A reference to the element of the span at index 0, or <see langword="null"/> if the span is empty.
     /// </returns>
     [Inline]
-    internal unsafe ref T GetPinnableReference()
-    {
-        if (Length is 0)
-            return ref *(T*)null;
-
-        if (_pinnable is null)
-        {
-            var byteOffset = _byteOffset;
-            return ref *(T*)byteOffset;
-        }
-
-        fixed (T* pinnable = &_pinnable.Data)
-            return ref *(T*)((byte*)pinnable + _byteOffset);
-    }
+    internal ref T GetPinnableReference() => ref (Pinnable ?? Pinnable<T>.Default).Data;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void ValidateLength(int length)
@@ -542,10 +534,6 @@ readonly
     where T : unmanaged
 #endif
 {
-    readonly Pinnable<T>? _pinnable;
-
-    readonly nint _byteOffset;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="ReadOnlySpan{T}"/> struct from a specified number of
     /// <typeparamref name="T"/> elements starting at a specified memory address.
@@ -561,8 +549,8 @@ readonly
 
         ValidateLength(length);
         Length = length;
-        _pinnable = null;
-        _byteOffset = (nint)pointer;
+        Pinnable = null;
+        ByteOffset = (nint)pointer;
     }
 
     /// <summary>
@@ -586,8 +574,8 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = array.Length;
-        _pinnable = Unsafe.As<Pinnable<T>>(array);
-        _byteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
+        Pinnable = Unsafe.As<Pinnable<T>>(array);
+        ByteOffset = SpanHelpers.PerTypeValues<T>.ArrayAdjustment;
     }
 
     /// <summary>
@@ -621,8 +609,8 @@ readonly
             throw new ArrayTypeMismatchException();
 
         Length = length;
-        _pinnable = Unsafe.As<Pinnable<T>>(array);
-        _byteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
+        Pinnable = Unsafe.As<Pinnable<T>>(array);
+        ByteOffset = (nint)((T*)SpanHelpers.PerTypeValues<T>.ArrayAdjustment + start);
     }
 
     /// <summary>Initializes a new instance of the <see cref="ReadOnlySpan{T}"/> struct.</summary>
@@ -633,8 +621,8 @@ readonly
     internal ReadOnlySpan(Pinnable<T>? pinnable, nint byteOffset, int length)
     {
         Length = length;
-        _pinnable = pinnable;
-        _byteOffset = byteOffset;
+        Pinnable = pinnable;
+        ByteOffset = byteOffset;
     }
 
     /// <summary>Gets the element at the specified zero-based index.</summary>
@@ -650,7 +638,7 @@ readonly
             ValidateIndex(index);
 
             fixed (T* ptr = this)
-                return ptr[index];
+                return this.Align(ptr)[index];
         }
     }
 
@@ -668,6 +656,14 @@ readonly
 
     /// <summary>Gets the length of the current span.</summary>
     public int Length { [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get; }
+
+    /// <summary>Gets the byte offset.</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public nint ByteOffset { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
+
+    /// <summary>Gets the object to be pinned.</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Pinnable<T>? Pinnable { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
 
     /// <summary>Returns a value that indicates whether two <see cref="ReadOnlySpan{T}"/> objects are equal.</summary>
     /// <remarks><para>
@@ -688,7 +684,7 @@ readonly
 
         fixed (T* l = left)
         fixed (T* r = right)
-            return l == r;
+            return left.Align(l) == right.Align(r);
     }
 
     /// <summary>Returns a value that indicates whether two <see cref="ReadOnlySpan{T}"/> objects are not equal.</summary>
@@ -773,7 +769,7 @@ readonly
 
         fixed (T* s = this)
         fixed (T* d = destination)
-            SpanHelpers.CopyTo(d, destination.Length, s, Length);
+            SpanHelpers.CopyTo(destination.Align(d), destination.Length, this.Align(s), Length);
 
         return true;
     }
@@ -793,16 +789,16 @@ readonly
         if (typeof(T) != typeof(char))
             return $"System.ReadOnlySpan<{typeof(T).Name}>[{Length}]";
 
-        if (_byteOffset == MemoryExtensions.StringAdjustment)
+        if (ByteOffset == MemoryExtensions.StringAdjustment)
         {
-            var obj = Unsafe.As<object>(_pinnable);
+            var obj = Unsafe.As<object>(Pinnable);
 
             if (obj is string text && Length == text.Length)
                 return text;
         }
 
         fixed (T* ptr = this)
-            return new((char*)ptr, 0, Length);
+            return new((char*)this.Align(ptr), 0, Length);
     }
 
     /// <summary>Returns an enumerator of this <see cref="ReadOnlySpan{T}"/>.</summary>
@@ -824,9 +820,9 @@ readonly
         if ((uint)start > (uint)Length)
             throw new ArgumentOutOfRangeException(nameof(start));
 
-        var byteOffset = (nint)((T*)_byteOffset + start);
+        var byteOffset = (nint)((T*)ByteOffset + start);
         var length = Length - start;
-        return new(_pinnable, byteOffset, length);
+        return new(Pinnable, byteOffset, length);
     }
 
     /// <summary>Creates the slice of this buffer.</summary>
@@ -840,8 +836,8 @@ readonly
         if ((uint)start > (uint)Length || (uint)length > (uint)(Length - start))
             throw new ArgumentOutOfRangeException(nameof(start));
 
-        var byteOffset = (nint)((T*)_byteOffset + start);
-        return new(_pinnable, byteOffset, length);
+        var byteOffset = (nint)((T*)ByteOffset + start);
+        return new(Pinnable, byteOffset, length);
     }
 
     /// <summary>Copies the contents of this span into a new array.</summary>
@@ -877,20 +873,7 @@ readonly
     /// A reference to the element of the span at index 0, or <see langword="null"/> if the span is empty.
     /// </returns>
     [Inline]
-    internal unsafe ref readonly T GetPinnableReference()
-    {
-        if (Length is 0)
-            return ref *(T*)null;
-
-        if (_pinnable is null)
-        {
-            var byteOffset = _byteOffset;
-            return ref *(T*)byteOffset;
-        }
-
-        fixed (T* pinnable = &_pinnable.Data)
-            return ref *(T*)((byte*)pinnable + _byteOffset);
-    }
+    internal ref readonly T GetPinnableReference() => ref (Pinnable ?? Pinnable<T>.Default).Data;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     static void ValidateLength(int length)
@@ -982,6 +965,8 @@ sealed class SpanDebugView<T>
 [StructLayout(LayoutKind.Sequential)]
 sealed class Pinnable<T>
 {
+    public static Pinnable<T> Default { get; } = new();
+
     // ReSharper disable once NullableWarningSuppressionIsUsed
     public T Data = default!;
 }

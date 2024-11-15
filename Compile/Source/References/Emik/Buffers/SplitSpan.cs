@@ -718,14 +718,18 @@ readonly
         {
 #pragma warning disable 8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            fixed (TBody* ptr = span)
+            fixed (TBody* pin = span)
+            {
+                var ptr = span.Align(pin);
+
                 for (var i = 0; i < span.Length; i++)
                     builder.Append(((char*)ptr)[i]);
+            }
 
             return builder;
 #else
             fixed (TBody* ptr = span)
-                return builder.Append((char*)ptr, span.Length);
+                return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
 #pragma warning restore 8500
         }

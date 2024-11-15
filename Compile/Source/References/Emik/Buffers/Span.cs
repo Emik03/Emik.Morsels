@@ -503,7 +503,7 @@ static partial class Span
     {
         fixed (T* ptr = &value)
         fixed (T* s = span)
-            return (nint)(s - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
+            return (nint)(span.Align(s) - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
                 ? (int)elementOffset
                 : -1;
     }
@@ -542,7 +542,7 @@ static partial class Span
     {
         fixed (T* searchSpace = span)
         fixed (T* value = values)
-            return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
+            return SpanHelpers.IndexOfAny(span.Align(searchSpace), span.Length, values.Align(value), values.Length);
     }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
@@ -554,7 +554,7 @@ static partial class Span
 #else
     {
         fixed (T* value = target)
-            return origin.IndexOf(ref *value);
+            return origin.IndexOf(ref *target.Align(value));
     }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
@@ -575,11 +575,14 @@ static partial class Span
             ? memory.Slice(i, span.Length)
             : default;
 #else
-        fixed (T* ptr = memory.Span)
+        var other = memory.Span;
+
         fixed (T* s = span)
-            return ((nint)(s - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
-                ? (int)elementOffset
-                : -1) is not -1 and var i
+        fixed (T* o = other)
+            return ((nint)(span.Align(s) - other.Align(o)) is var elementOffset &&
+                (nuint)elementOffset < (uint)span.Length
+                    ? (int)elementOffset
+                    : -1) is not -1 and var i
                 ? memory.Slice(i, span.Length)
                 : default;
 #endif
@@ -957,4 +960,47 @@ static partial class Span
         System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
         return UnsafelySlice(body, 0, end);
     }
+
+    /// <summary>Aligns the pointer obtained from a fixed expression to the first element of the pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to obtain the pointer of.</param>
+    /// <param name="pinned">The pointed obtained from pinning the parameter <paramref name="span"/>.</param>
+    /// <returns>
+    /// The pointer to the first element of the buffer, or <see langword="null"/>
+    /// if the parameter <paramref name="span"/> is empty.
+    /// </returns>
+    [Inline]
+    internal static unsafe T* Align<T>([UsedImplicitly] this ReadOnlySpan<T> span, T* pinned)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            span.Length is 0 ? null :
+            span.Pinnable is null ? (T*)span.ByteOffset :
+            (T*)((byte*)Unsafe.AsPointer(ref span.Pinnable.Data) + span.ByteOffset);
+#else
+            pinned;
+#endif
+    /// <summary>Aligns the pointer obtained from a fixed expression to the first element of the pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to obtain the pointer of.</param>
+    /// <param name="pinned">The pointed obtained from pinning the parameter <paramref name="span"/>.</param>
+    /// <returns>
+    /// The pointer to the first element of the buffer, or <see langword="null"/>
+    /// if the parameter <paramref name="span"/> is empty.
+    /// </returns>
+    [Inline]
+    internal static unsafe T* Align<T>([UsedImplicitly] this Span<T> span, T* pinned)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            span.Length is 0 ? null :
+            span.Pinnable is null ? (T*)span.ByteOffset :
+            (T*)((byte*)Unsafe.AsPointer(ref span.Pinnable.Data) + span.ByteOffset);
+#else
+            pinned;
+#endif
 }

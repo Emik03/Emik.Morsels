@@ -67,8 +67,9 @@ static partial class Int32TryFormatPolyfill
 
         charsWritten = bufferLength;
 
-        fixed (char* buffer = destination)
+        fixed (char* b = destination)
         {
+            var buffer = destination.Align(b);
             var p = buffer + bufferLength;
             p = digits <= 1 ? UInt32ToDecChars(p, value) : UInt32ToDecChars(p, value, digits);
             System.Diagnostics.Debug.Assert(p == buffer, "p == buffer");
@@ -100,8 +101,9 @@ static partial class Int32TryFormatPolyfill
 
         charsWritten = bufferLength;
 
-        fixed (char* buffer = destination)
+        fixed (char* b = destination)
         {
+            var buffer = destination.Align(b);
             var p = UInt32ToDecChars(buffer + bufferLength, (uint)-value, digits);
             System.Diagnostics.Debug.Assert(p == buffer + sNegative.Length, "p == buffer + sNegative.Length");
 

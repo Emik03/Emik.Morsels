@@ -159,8 +159,8 @@ static partial class MemoryExtensions
     public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, T value)
         where T : IEquatable<T>?
     {
-        fixed (T* ptr = span)
-            return typeof(T) == typeof(byte) ?
+        fixed (T* p = span)
+            return span.Align(p) is var ptr && typeof(T) == typeof(byte) ?
                 SpanHelpers.IndexOf((byte*)ptr, Unsafe.As<T, byte>(ref value), span.Length) :
                 typeof(T) == typeof(char) ?
                     SpanHelpers.IndexOf((char*)ptr, Unsafe.As<T, char>(ref value), span.Length) :
@@ -171,9 +171,9 @@ static partial class MemoryExtensions
     public static unsafe int IndexOf<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
         where T : IEquatable<T>?
     {
-        fixed (T* s = span)
-        fixed (T* v = value)
-            return typeof(T) == typeof(byte)
+        fixed (T* sp = span)
+        fixed (T* va = value)
+            return span.Align(sp) is var s && value.Align(va) is var v && typeof(T) == typeof(byte)
                 ? SpanHelpers.IndexOf((byte*)s, span.Length, (byte*)v, value.Length)
                 : SpanHelpers.IndexOf(s, span.Length, v, value.Length);
     }
@@ -182,8 +182,8 @@ static partial class MemoryExtensions
     public static unsafe int LastIndexOf<T>(this ReadOnlySpan<T> span, T value)
         where T : IEquatable<T>?
     {
-        fixed (T* ptr = span)
-            return typeof(T) == typeof(byte) ?
+        fixed (T* p = span)
+            return span.Align(p) is var ptr && typeof(T) == typeof(byte) ?
                 SpanHelpers.LastIndexOf((byte*)ptr, Unsafe.As<T, byte>(ref value), span.Length) :
                 typeof(T) == typeof(char) ?
                     SpanHelpers.LastIndexOf((char*)ptr, Unsafe.As<T, char>(ref value), span.Length) :
@@ -194,9 +194,9 @@ static partial class MemoryExtensions
     public static unsafe int LastIndexOf<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> value)
         where T : IEquatable<T>?
     {
-        fixed (T* s = span)
-        fixed (T* v = value)
-            return typeof(T) == typeof(byte)
+        fixed (T* sp = span)
+        fixed (T* va = value)
+            return span.Align(sp) is var s && value.Align(va) is var v && typeof(T) == typeof(byte)
                 ? SpanHelpers.LastIndexOf((byte*)s, span.Length, (byte*)v, value.Length)
                 : SpanHelpers.LastIndexOf(s, span.Length, v, value.Length);
     }
@@ -220,8 +220,8 @@ static partial class MemoryExtensions
     public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1)
         where T : IEquatable<T>?
     {
-        fixed (T* ptr = span)
-            return typeof(T) == typeof(byte)
+        fixed (T* p = span)
+            return span.Align(p) is var ptr && typeof(T) == typeof(byte)
                 ? SpanHelpers.IndexOfAny(
                     (byte*)ptr,
                     Unsafe.As<T, byte>(ref value0),
@@ -235,8 +235,8 @@ static partial class MemoryExtensions
     public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1, T value2)
         where T : IEquatable<T>?
     {
-        fixed (T* ptr = span)
-            return typeof(T) == typeof(byte)
+        fixed (T* p = span)
+            return span.Align(p) is var ptr && typeof(T) == typeof(byte)
                 ? SpanHelpers.IndexOfAny(
                     (byte*)ptr,
                     Unsafe.As<T, byte>(ref value0),
@@ -251,9 +251,9 @@ static partial class MemoryExtensions
     public static unsafe int IndexOfAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values)
         where T : IEquatable<T>?
     {
-        fixed (T* s = span)
-        fixed (T* v = values)
-            return typeof(T) == typeof(byte)
+        fixed (T* sp = span)
+        fixed (T* va = values)
+            return span.Align(sp) is var s && values.Align(va) is var v && typeof(T) == typeof(byte)
                 ? SpanHelpers.IndexOfAny((byte*)s, span.Length, (byte*)v, values.Length)
                 : SpanHelpers.IndexOfAny(s, span.Length, v, values.Length);
     }
@@ -277,8 +277,8 @@ static partial class MemoryExtensions
     public static unsafe int LastIndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1)
         where T : IEquatable<T>?
     {
-        fixed (T* ptr = span)
-            return typeof(T) == typeof(byte)
+        fixed (T* p = span)
+            return span.Align(p) is var ptr && typeof(T) == typeof(byte)
                 ? SpanHelpers.LastIndexOfAny(
                     (byte*)ptr,
                     Unsafe.As<T, byte>(ref value0),
@@ -292,8 +292,8 @@ static partial class MemoryExtensions
     public static unsafe int LastIndexOfAny<T>(this ReadOnlySpan<T> span, T value0, T value1, T value2)
         where T : IEquatable<T>?
     {
-        fixed (T* ptr = span)
-            return typeof(T) == typeof(byte)
+        fixed (T* p = span)
+            return span.Align(p) is var ptr && typeof(T) == typeof(byte)
                 ? SpanHelpers.LastIndexOfAny(
                     (byte*)ptr,
                     Unsafe.As<T, byte>(ref value0),
@@ -308,9 +308,9 @@ static partial class MemoryExtensions
     public static unsafe int LastIndexOfAny<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> values)
         where T : IEquatable<T>?
     {
-        fixed (T* s = span)
-        fixed (T* v = values)
-            return typeof(T) == typeof(byte)
+        fixed (T* sp = span)
+        fixed (T* va = values)
+            return span.Align(sp) is var s && values.Align(va) is var v && typeof(T) == typeof(byte)
                 ? SpanHelpers.LastIndexOfAny((byte*)s, span.Length, (byte*)v, values.Length)
                 : SpanHelpers.LastIndexOfAny(s, span.Length, v, values.Length);
     }
@@ -321,9 +321,11 @@ static partial class MemoryExtensions
     {
         var length = span.Length;
 
-        fixed (T* s = span)
-        fixed (T* o = other)
-            return length == other.Length &&
+        fixed (T* sp = span)
+        fixed (T* ot = other)
+            return span.Align(sp) is var s &&
+                other.Align(ot) is var o &&
+                length == other.Length &&
                 (default(T) is not null && IsTypeComparableAsBytes<T>(out var size)
                     ? SpanHelpers.SequenceEqual((byte*)s, (byte*)o, (nuint)length * size)
                     : SpanHelpers.SequenceEqual(s, o, length));
@@ -333,9 +335,9 @@ static partial class MemoryExtensions
     public static unsafe int SequenceCompareTo<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> other)
         where T : IComparable<T>?
     {
-        fixed (T* s = span)
-        fixed (T* o = other)
-            return typeof(T) == typeof(byte) ?
+        fixed (T* sp = span)
+        fixed (T* ot = other)
+            return span.Align(sp) is var s && other.Align(ot) is var o && typeof(T) == typeof(byte) ?
                 SpanHelpers.SequenceCompareTo((byte*)s, span.Length, (byte*)o, other.Length) :
                 typeof(T) == typeof(char) ?
                     SpanHelpers.SequenceCompareTo((char*)s, span.Length, (char*)o, other.Length) :
@@ -353,9 +355,11 @@ static partial class MemoryExtensions
     {
         var length = value.Length;
 
-        fixed (T* s = span)
-        fixed (T* v = value)
-            return length <= span.Length &&
+        fixed (T* sp = span)
+        fixed (T* va = value)
+            return span.Align(sp) is var s &&
+                value.Align(va) is var v &&
+                length <= span.Length &&
                 (default(T) is not null && IsTypeComparableAsBytes<T>(out var size)
                     ? SpanHelpers.SequenceEqual((byte*)s, (byte*)v, (nuint)length * size)
                     : SpanHelpers.SequenceEqual(s, v, length));
@@ -373,9 +377,11 @@ static partial class MemoryExtensions
         var length = span.Length;
         var length2 = value.Length;
 
-        fixed (T* s = span)
-        fixed (T* v = value)
-            return length2 <= length &&
+        fixed (T* sp = span)
+        fixed (T* va = value)
+            return span.Align(sp) is var s &&
+                value.Align(va) is var v &&
+                length2 <= length &&
                 (default(T) is not null && IsTypeComparableAsBytes<T>(out var size)
                     ? SpanHelpers.SequenceEqual((byte*)(s + (length - length2)), (byte*)v, (nuint)length2 * size)
                     : SpanHelpers.SequenceEqual(s + (length - length2), v, length2));
@@ -383,8 +389,9 @@ static partial class MemoryExtensions
 
     public static unsafe void Reverse<T>(this Span<T> span)
     {
-        fixed (T* s = span)
+        fixed (T* sp = span)
         {
+            var s = span.Align(sp);
             var num = 0;
             var num2 = span.Length - 1;
 
@@ -451,13 +458,16 @@ static partial class MemoryExtensions
         if (span.IsEmpty || other.IsEmpty)
             return false;
 
-        fixed (T* s = span)
-        fixed (T* o = other)
-            return (nint)o - (nint)s is var intPtr && Unsafe.SizeOf<nint>() is 4
-                ? (uint)(int)intPtr < (uint)(span.Length * Unsafe.SizeOf<T>()) ||
-                (uint)(int)intPtr > (uint)-(other.Length * Unsafe.SizeOf<T>())
-                : (ulong)intPtr < (ulong)((long)span.Length * Unsafe.SizeOf<T>()) ||
-                (ulong)intPtr > (ulong)-((long)other.Length * Unsafe.SizeOf<T>());
+        fixed (T* sp = span)
+        fixed (T* ot = other)
+            return span.Align(sp) is var s &&
+                other.Align(ot) is var o &&
+                (nint)o - (nint)s is var intPtr &&
+                Unsafe.SizeOf<nint>() is 4
+                    ? (uint)(int)intPtr < (uint)(span.Length * Unsafe.SizeOf<T>()) ||
+                    (uint)(int)intPtr > (uint)-(other.Length * Unsafe.SizeOf<T>())
+                    : (ulong)intPtr < (ulong)((long)span.Length * Unsafe.SizeOf<T>()) ||
+                    (ulong)intPtr > (ulong)-((long)other.Length * Unsafe.SizeOf<T>());
     }
 
     // ReSharper disable once CognitiveComplexity
@@ -468,19 +478,23 @@ static partial class MemoryExtensions
 
         const string Message = "Buffers must be aligned to each other.";
 
-        fixed (T* s = span)
-        fixed (T* o = other)
-            return (nint)o - (nint)s is var intPtr && Unsafe.SizeOf<nint>() is not 4 ?
-                (ulong)intPtr < (ulong)((long)span.Length * Unsafe.SizeOf<T>()) ||
-                (ulong)intPtr > (ulong)-((long)other.Length * Unsafe.SizeOf<T>())
-                    ? (long)intPtr % Unsafe.SizeOf<T>() is not 0
-                        ? throw new ArgumentException(Message, nameof(other))
-                        : (elementOffset = (int)((long)intPtr / Unsafe.SizeOf<T>())) is var _
-                    : !((elementOffset = 0) is var _) :
-                (uint)(int)intPtr >= (uint)(span.Length * Unsafe.SizeOf<T>()) &&
-                (uint)(int)intPtr <= (uint)-(other.Length * Unsafe.SizeOf<T>()) ? !((elementOffset = 0) is var _) :
-                    (int)intPtr % Unsafe.SizeOf<T>() is not 0 ? throw new ArgumentException(Message, nameof(other)) :
-                        (elementOffset = (int)intPtr / Unsafe.SizeOf<T>()) is var _;
+        fixed (T* sp = span)
+        fixed (T* ot = other)
+            return span.Align(sp) is var s &&
+                other.Align(ot) is var o &&
+                (nint)o - (nint)s is var intPtr &&
+                Unsafe.SizeOf<nint>() is not 4 ?
+                    (ulong)intPtr < (ulong)((long)span.Length * Unsafe.SizeOf<T>()) ||
+                    (ulong)intPtr > (ulong)-((long)other.Length * Unsafe.SizeOf<T>())
+                        ? (long)intPtr % Unsafe.SizeOf<T>() is not 0
+                            ? throw new ArgumentException(Message, nameof(other))
+                            : (elementOffset = (int)((long)intPtr / Unsafe.SizeOf<T>())) is var _
+                        : !((elementOffset = 0) is var _) :
+                    (uint)(int)intPtr >= (uint)(span.Length * Unsafe.SizeOf<T>()) &&
+                    (uint)(int)intPtr <= (uint)-(other.Length * Unsafe.SizeOf<T>()) ? !((elementOffset = 0) is var _) :
+                        (int)intPtr % Unsafe.SizeOf<T>() is not 0 ?
+                            throw new ArgumentException(Message, nameof(other)) :
+                            (elementOffset = (int)intPtr / Unsafe.SizeOf<T>()) is var _;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -559,8 +573,8 @@ static partial class MemoryExtensions
         fixed (char* fixedA = strA)
         fixed (char* fixedB = strB)
         {
-            var a = fixedA;
-            var b = fixedB;
+            var a = strA.Align(fixedA);
+            var b = strB.Align(fixedB);
 
             while (num != 0 && *a <= '\u007f' && *b <= '\u007f')
             {

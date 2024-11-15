@@ -43,7 +43,7 @@ static partial class MemoryMarshal
             (int)(fromLength / toSize);
 
         fixed (TFrom* ptr = span)
-            return new(ptr, toLength);
+            return new(span.Align(ptr), toLength);
     }
 
     /// <summary>
@@ -75,7 +75,7 @@ static partial class MemoryMarshal
             (int)(fromLength / toSize);
 
         fixed (TFrom* ptr = span)
-            return new(ptr, toLength);
+            return new(span.Align(ptr), toLength);
     }
 
     /// <summary>

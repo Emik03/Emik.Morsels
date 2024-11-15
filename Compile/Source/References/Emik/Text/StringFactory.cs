@@ -55,7 +55,7 @@ static partial class StringFactory
             var trimmed = next.Trim();
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             fixed (char* ptr = trimmed)
-                accumulator.Append(ptr, trimmed.Length);
+                accumulator.Append(trimmed.Align(ptr), trimmed.Length);
 #else
             foreach (var t in trimmed)
                 accumulator.Append(t);

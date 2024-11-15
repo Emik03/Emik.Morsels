@@ -24,6 +24,13 @@ static class Unsafe
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
 #pragma warning disable 8500
     public static unsafe int SizeOf<T>() => sizeof(T);
+
+    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    internal static unsafe ref T AddByteOffset<T>(ref T source, nint offset)
+    {
+        var tr = __makeref(source);
+        return ref *(T*)((byte*)*(nint*)&tr + offset);
+    }
 #pragma warning restore 8500
 }
 #else

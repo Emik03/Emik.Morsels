@@ -54,7 +54,7 @@ static partial class SpanHelpers
         where TComparable : IComparable<T>
     {
         fixed (T* ptr = span)
-            return BinarySearch(ptr, span.Length, comparable);
+            return BinarySearch(span.Align(ptr), span.Length, comparable);
     }
 
     public static unsafe int BinarySearch<T, TComparable>(T* spanStart, int length, TComparable comparable)
@@ -1739,7 +1739,7 @@ static partial class SpanHelpers
                 next = (uint)(byteLength - block > uint.MaxValue ? uint.MaxValue : byteLength - block);
 
                 for (ulong b = 0; b < block; b++)
-                    srcByte[b] = dstByte[b]; // Consider implementing a better BlockCopy.
+                    dstByte[b] = srcByte[b]; // Consider implementing a better BlockCopy.
             }
 
             return;

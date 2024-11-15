@@ -284,8 +284,8 @@ static partial class Similarity
         fixed (T* l = left)
         fixed (T* r = right)
             return Jaro(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -377,8 +377,8 @@ static partial class Similarity
         fixed (T* l = left)
         fixed (T* r = right)
             return JaroEmik(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -474,8 +474,8 @@ static partial class Similarity
         fixed (T* l = left)
         fixed (T* r = right)
             return JaroWinkler(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer

@@ -15,15 +15,7 @@ static partial class RandomShuffle
     /// <param name="that">The instance of <see cref="Random"/>.</param>
     /// <param name="values">The array to shuffle.</param>
     // ReSharper disable once RedundantUnsafeContext
-    public static unsafe void Shuffle<T>(this Random that, T[] values)
-    {
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        fixed (T* t = values)
-            Shuffle(that, new Span<T>(t, values.Length));
-#else
-        Shuffle(that, values.AsSpan());
-#endif
-    }
+    public static unsafe void Shuffle<T>(this Random that, T[] values) => Shuffle(that, values.AsSpan());
 
     /// <summary>Performs an in-place shuffle of a span.</summary>
     /// <typeparam name="T">The type of span.</typeparam>
