@@ -17,12 +17,12 @@ static partial class SpanHelpers
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         public static readonly nint ArrayAdjustment = MeasureArrayAdjustment();
 
-        static readonly T[] s_single = new T[1];
-
         static nint MeasureArrayAdjustment()
         {
-            fixed (T* element = s_single)
-            fixed (T* data = &Unsafe.As<Pinnable<T>>(s_single).Data)
+            var single = new T[1];
+
+            fixed (T* element = single)
+            fixed (T* data = &Unsafe.As<Pinnable<T>>(single).Data)
                 return (nint)data - (nint)element;
         }
 #endif
