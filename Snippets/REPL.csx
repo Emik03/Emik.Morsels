@@ -17785,7 +17785,7 @@ namespace System.Linq;
 #endif
 #pragma warning disable 8500
     {
-        var p = stackalloc char[Unsafe.SizeOf<T>() * 2];
+        var p = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
         p[0] = '0';
         p[1] = 'x';
         fixed (char* rh = "0123456789ABCDEF")
