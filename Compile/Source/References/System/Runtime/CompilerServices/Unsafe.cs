@@ -17,20 +17,12 @@ static class Unsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TTo As<TFrom, TTo>(ref readonly TFrom o) => Span.Ret<TTo>.From(o);
-
+#pragma warning disable 8500
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
-    public static void SkipInit<T>(out T value) => value = default!;
+    public static void SkipInit<T>(out T value) => value = default;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable 8500
     public static unsafe int SizeOf<T>() => sizeof(T);
-
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    internal static unsafe ref T AddByteOffset<T>(ref T source, nint offset)
-    {
-        var tr = __makeref(source);
-        return ref *(T*)((byte*)*(nint*)&tr + offset);
-    }
 #pragma warning restore 8500
 }
 #else
