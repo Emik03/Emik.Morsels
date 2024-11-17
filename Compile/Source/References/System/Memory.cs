@@ -298,7 +298,7 @@ readonly
     {
         if (array is null)
         {
-            if (start != 0 || length != 0)
+            if (start is not 0 || length is not 0)
                 throw new ArgumentOutOfRangeException(nameof(length));
 
             this = default;

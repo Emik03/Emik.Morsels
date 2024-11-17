@@ -6,7 +6,7 @@ namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
 using Emik.Morsels;
-using static Runtime.CompilerServices.RuntimeHelpers;
+using static RuntimeHelpers;
 
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
@@ -38,7 +38,6 @@ readonly
 
         ValidateLength(length);
         Length = length;
-        Pinnable = null;
         ByteOffset = (nint)pointer;
     }
 
@@ -54,10 +53,7 @@ readonly
     public Span(T[]? array)
     {
         if (array is null)
-        {
-            this = default;
             return;
-        }
 
         if (default(T) is null && array.GetType() != typeof(T[]))
             throw new ArrayTypeMismatchException();
@@ -84,11 +80,10 @@ readonly
     {
         if (array is null)
         {
-            if (start != 0 || length != 0)
-                throw new ArgumentOutOfRangeException(nameof(start), start, "start is out of range");
+            if (start is 0 && length is 0)
+                return;
 
-            this = default;
-            return;
+            throw new ArgumentOutOfRangeException(nameof(start), start, "start is out of range");
         }
 
         if ((uint)start > (uint)array.Length || (uint)length > (uint)(array.Length - start))
@@ -238,12 +233,12 @@ readonly
 #pragma warning disable 8604, CA1855
     public unsafe void Clear()
     {
-        if (Length == 0)
+        if (Length is 0)
             return;
 
         var byteLength = (nuint)(ulong)((uint)Length * Unsafe.SizeOf<T>());
 
-        if ((Unsafe.SizeOf<T>() & Unsafe.SizeOf<nint>() - 1) != 0)
+        if ((Unsafe.SizeOf<T>() & Unsafe.SizeOf<nint>() - 1) is not 0)
         {
             if (Pinnable is null)
                 SpanHelpers.ClearLessThanPointerSized((byte*)ByteOffset, byteLength);
@@ -275,7 +270,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public unsafe void Fill(T value)
     {
-        if (Length == 0)
+        if (Length is 0)
             return;
 
         fixed (T* s = this)
@@ -549,7 +544,6 @@ readonly
 
         ValidateLength(length);
         Length = length;
-        Pinnable = null;
         ByteOffset = (nint)pointer;
     }
 
@@ -565,10 +559,7 @@ readonly
     public ReadOnlySpan(T[]? array)
     {
         if (array is null)
-        {
-            this = default;
             return;
-        }
 
         if (default(T) is null && array.GetType() != typeof(T[]))
             throw new ArrayTypeMismatchException();
@@ -595,11 +586,10 @@ readonly
     {
         if (array is null)
         {
-            if (start != 0 || length != 0)
-                throw new ArgumentOutOfRangeException(nameof(start), start, "start is out of range");
+            if (start is 0 && length is 0)
+                return;
 
-            this = default;
-            return;
+            throw new ArgumentOutOfRangeException(nameof(start), start, "start is out of range");
         }
 
         if ((uint)start > (uint)array.Length || (uint)length > (uint)(array.Length - start))

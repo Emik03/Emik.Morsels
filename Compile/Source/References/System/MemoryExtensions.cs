@@ -576,7 +576,7 @@ static partial class MemoryExtensions
             var a = strA.Align(fixedA);
             var b = strB.Align(fixedB);
 
-            while (num != 0 && *a <= '\u007f' && *b <= '\u007f')
+            while (num is not 0 && *a <= '\u007f' && *b <= '\u007f')
             {
                 int num3 = *a;
                 int num4 = *b;
@@ -682,14 +682,14 @@ static partial class MemoryExtensions
     public static ReadOnlySpan<char> AsSpan(this string? text, int start) =>
         text is null ? start is 0 ? default : throw new ArgumentOutOfRangeException(nameof(start)) :
         (uint)start > (uint)text.Length ? throw new ArgumentOutOfRangeException(nameof(start)) :
-        new(Unsafe.As<Pinnable<char>>(text), StringAdjustment + start * 2, text.Length - start);
+        new(Unsafe.As<Pinnable<char>>(text), StringAdjustment + start * sizeof(char), text.Length - start);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<char> AsSpan(this string? text, int start, int length) =>
-        text is null ? start != 0 || length != 0 ? throw new ArgumentOutOfRangeException(nameof(start)) : default :
+        text is null ? start is not 0 || length is not 0 ? throw new ArgumentOutOfRangeException(nameof(start)) : default :
             (uint)start > (uint)text.Length || (uint)length > (uint)(text.Length - start) ?
                 throw new ArgumentOutOfRangeException(nameof(start)) :
-                new(Unsafe.As<Pinnable<char>>(text), StringAdjustment + start * 2, length);
+                new(Unsafe.As<Pinnable<char>>(text), StringAdjustment + start * sizeof(char), length);
 
     public static ReadOnlyMemory<char> AsMemory(this string? text) =>
         text is null ? default : new(text, 0, text.Length);
@@ -700,17 +700,16 @@ static partial class MemoryExtensions
         new(text, start, text.Length - start);
 
     public static ReadOnlyMemory<char> AsMemory(this string? text, int start, int length) =>
-        text is null ? start != 0 || length != 0 ? throw new ArgumentOutOfRangeException(nameof(start)) : default :
+        text is null ? start is not 0 || length is not 0 ? throw new ArgumentOutOfRangeException(nameof(start)) : default :
             (uint)start > (uint)text.Length || (uint)length > (uint)(text.Length - start) ?
                 throw new ArgumentOutOfRangeException(nameof(start)) : new(text, start, length);
 
     static unsafe nint MeasureStringAdjustment()
     {
-        var text = "a";
+        var single = "a";
 
-        fixed (char* c = text)
-        fixed (char* pin = &Unsafe.As<Pinnable<char>>(text).Data)
-            return (nint)(c - pin);
+        fixed (char* ptr = single)
+            return (nint)ptr - (nint)Unsafe.AsPointer(ref Unsafe.As<Pinnable<char>>(single).Data);
     }
 }
 #endif

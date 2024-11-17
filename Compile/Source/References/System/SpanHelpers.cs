@@ -21,9 +21,8 @@ static partial class SpanHelpers
         {
             var single = new T[1];
 
-            fixed (T* element = single)
-            fixed (T* data = &Unsafe.As<Pinnable<T>>(single).Data)
-                return (nint)data - (nint)element;
+            fixed (T* ptr = single)
+                return (nint)ptr - (nint)Unsafe.AsPointer(ref Unsafe.As<Pinnable<T>>(single).Data);
         }
 #endif
     }
@@ -105,7 +104,7 @@ static partial class SpanHelpers
 
     public static unsafe int IndexOfAny(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
         var ret = -1;
@@ -128,7 +127,7 @@ static partial class SpanHelpers
 
     public static unsafe int LastIndexOfAny(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
         var max = -1;
@@ -956,7 +955,7 @@ static partial class SpanHelpers
     public static unsafe int IndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
         where T : IEquatable<T>?
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
         var first = *value;
@@ -1291,7 +1290,7 @@ static partial class SpanHelpers
     public static unsafe int IndexOfAny<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
         where T : IEquatable<T>?
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
         var num = -1;
@@ -1315,7 +1314,7 @@ static partial class SpanHelpers
     public static unsafe int LastIndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
         where T : IEquatable<T>?
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
         var first = *value;
@@ -1616,7 +1615,7 @@ static partial class SpanHelpers
     public static unsafe int LastIndexOfAny<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
         where T : IEquatable<T>?
     {
-        if (valueLength == 0)
+        if (valueLength is 0)
             return 0;
 
         var max = -1;
@@ -1807,7 +1806,7 @@ static partial class SpanHelpers
         num -= num2;
         ptr += num2;
 
-        while (num != 0)
+        while (num is not 0)
         {
             num2 = (uint)(num >= uint.MaxValue ? uint.MaxValue : num);
             new Span<byte>(ptr, (int)num2).Fill(0); // Do not use `Clear`: It relies on this method.
