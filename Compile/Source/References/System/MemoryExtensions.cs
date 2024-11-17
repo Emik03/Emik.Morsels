@@ -708,8 +708,9 @@ static partial class MemoryExtensions
     {
         var single = "a";
 
-        fixed (char* ptr = single)
-            return (nint)ptr - (nint)Unsafe.AsPointer(ref Unsafe.As<Pinnable<char>>(single).Data);
+        fixed (char* element = single)
+        fixed (char* data = &Unsafe.As<Pinnable<char>>(single).Data)
+            return (nint)element - (nint)data;
     }
 }
 #endif

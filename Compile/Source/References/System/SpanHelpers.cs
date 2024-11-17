@@ -21,8 +21,9 @@ static partial class SpanHelpers
         {
             var single = new T[1];
 
-            fixed (T* ptr = single)
-                return (nint)ptr - (nint)Unsafe.AsPointer(ref Unsafe.As<Pinnable<T>>(single).Data);
+            fixed (T* element = single)
+            fixed (T* data = &Unsafe.As<Pinnable<T>>(single).Data)
+                return (nint)element - (nint)data;
         }
 #endif
     }
