@@ -4,14 +4,14 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj' and '$(WeaverConfiguration)' == ''">
         <WeaverConfiguration>
             <Weavers>
-                <InlineIL/>
                 <InfoOf/>
+                <InlineIL/>
                 <NullGuard/>
                 <JetBrainsAnnotations/>
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
-                <InlineMethod/>
                 <Divorce/>
+                <InlineMethod/>
                 <Absence Except="$(DoNotTrim)"/>
             </Weavers>
         </WeaverConfiguration>
@@ -20,12 +20,12 @@
     <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj' and '$(WeaverConfiguration)' == ''">
         <WeaverConfiguration>
             <Weavers>
-                <InlineIL/>
                 <InfoOf/>
+                <InlineIL/>
                 <LocalsInit Default="false"/>
                 <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
-                <InlineMethod/>
                 <Divorce/>
+                <InlineMethod/>
                 <Absence Except="$(DoNotTrim)"/>
             </Weavers>
         </WeaverConfiguration>
@@ -40,11 +40,15 @@
         <NoWarn>$(NoWarn);419;CI0003;IDE0032;Proj0202;Proj0204;Proj0205</NoWarn>
         <WeaverConfiguration>
             <Weavers>
-                <NullGuard Mode="Implicit"/>
+                <InlineIL/>
+                <InfoOf/>
                 <JetBrainsAnnotations/>
+                <NullGuard Mode="Implicit"/>
                 <LocalsInit Default="false"/>
+                <ILMerge CompactMode="true" IncludeAssemblies="[\w\W]*" ExcludeAssemblies="$(DoNotMerge)"/>
                 <Divorce/>
-                <Absence/>
+                <InlineMethod/>
+                <Absence Except="$(DoNotTrim)"/>
             </Weavers>
         </WeaverConfiguration>
     </PropertyGroup>
