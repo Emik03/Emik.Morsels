@@ -5,8 +5,8 @@
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 #pragma warning disable 8500
-using Emik.Morsels;
-using static RuntimeHelpers;
+using Emik.Morsels; // ReSharper disable once RedundantNameQualifier
+using static Runtime.CompilerServices.RuntimeHelpers;
 
 /// <summary>Provides a type-safe and memory-safe representation of a contiguous region of arbitrary memory.</summary>
 /// <remarks><para>This type delegates the responsibility of pinning the pointer to the consumer.</para></remarks>
