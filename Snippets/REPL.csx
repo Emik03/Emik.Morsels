@@ -2298,7 +2298,7 @@ public
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
             span.Length is 0 ? null :
             span.Pinnable is null ? (T*)span.ByteOffset :
-            (T*)((byte*)Unsafe.AsPointer(ref span.Pinnable.Data) + span.ByteOffset);
+            (T*)((byte*)pinned + span.ByteOffset);
 #else
             pinned;
 #endif
