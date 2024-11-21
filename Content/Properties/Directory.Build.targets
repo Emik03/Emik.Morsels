@@ -33,7 +33,7 @@
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
         <NoTests>true</NoTests>
-        <FileVersion>5.0</FileVersion>
+        <FileVersion>5.0.1</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
         <DefineConstants>$(DefineConstants);WAWA</DefineConstants>
