@@ -2,7 +2,7 @@
 
 // ReSharper disable ArrangeStaticMemberQualifier CheckNamespace ClassNeverInstantiated.Global EmptyNamespace RedundantUsingDirective
 #pragma warning disable GlobalUsingsAnalyzer
-#if !KTANE
+#if !KTANE && !WAWA
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 #endif
 

@@ -71,7 +71,7 @@ global using Debug = System.Diagnostics.Debug;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP_3_0_OR_GREATER || NET5_0_OR_GREATER
 global using Vector = System.Numerics.Vector;
 #endif
-#if KTANE || XNA && !ANDROID
+#if KTANE && !WAWA || XNA && !ANDROID
 global using Range = System.Range;
 #endif
 #if KTANE
