@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 namespace Emik.Morsels;
 #pragma warning disable IDE0032
 using static Span;
@@ -85,7 +84,7 @@ static partial class SplitMemoryFactory
     public static SplitMemory<T, T, MatchOne> SplitOn<T>(this Memory<T> span, OnceMemoryManager<T> separator)
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitSpanFactory.SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<byte, byte, MatchOne> SplitOn(this Memory<byte> span, byte separator) =>
@@ -140,7 +139,7 @@ static partial class SplitMemoryFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchOne> SplitOn(this string? span, char separator) =>
         new(span.AsMemory(), separator.AsMemory());
-
+#endif
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<char, char, MatchAny> SplitOnAny(this string? span, string? separator) =>
@@ -481,12 +480,18 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReadOnlyMemory<TBody>[] ToArrayMemories()
     {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
 
         foreach (var next in this)
             ret.Append(next);
 
         return ret.View.ToArray();
+#else
+        List<ReadOnlyMemory<TBody>> ret = [];
+        ret.AddRange(this);
+        return [.. ret];
+#endif
     }
 
     /// <inheritdoc cref="ToArrayMemories(ReadOnlyMemory{TBody})"/>
@@ -496,6 +501,7 @@ readonly
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
 
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
         ret.Append(e.Current);
 
@@ -506,6 +512,17 @@ readonly
         }
 
         return ret.View.ToArray();
+#else
+        List<ReadOnlyMemory<TBody>> ret = [e.Current];
+
+        while (e.MoveNext())
+        {
+            ret.Add(divider);
+            ret.Add(e.Current);
+        }
+
+        return [..ret];
+#endif
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
@@ -876,4 +893,3 @@ readonly
         void IEnumerator.Reset() => _body = _original;
     }
 }
-#endif

@@ -25,7 +25,7 @@ static partial class VersionConciseStringFactory
         return span.ToString();
     }
 
-    static unsafe void Format(scoped Span<char> span, Version? version, string? prefix)
+    static void Format(scoped Span<char> span, Version? version, string? prefix)
     {
         static void PushLast([NonNegativeValue] int next, scoped ref Span<char> span)
         {
@@ -43,12 +43,7 @@ static partial class VersionConciseStringFactory
         }
 
         var length = prefix?.Length ?? 0;
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         prefix.AsSpan().CopyTo(span);
-#else
-        fixed (char* ptr = prefix)
-            new ReadOnlySpan<char>(ptr, length).CopyTo(span);
-#endif
         span = span.UnsafelySkip(length);
 
         switch (version)

@@ -25,8 +25,11 @@ static partial class DeconstructionCollectionExtensions
 
         var text = $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
             (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
-
+#if KTANE
+        UnityEngine.Debug.Log(text);
+#else
         Console.WriteLine(text);
+#endif
         File.AppendAllText(Path.Combine(Path.GetTempPath(), "morsels.log"), text);
         return it;
     }
@@ -577,7 +580,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
-            for (var i = 0; i < Count; i++)
+            for (var i = 0; i < Count; i++) // ReSharper disable once AssignNullToNotNullAttribute
                 _list[i] = new(SimplifyObject(_list[i].Key), SimplifyObject(_list[i].Value));
 
             return this;
@@ -795,12 +798,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <summary>Returns the <see cref="string"/> representation of this instance without newlines.</summary>
     /// <returns>The <see cref="string"/> representation of this instance.</returns>
     [Pure]
-    public string ToStringWithoutNewLines() =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        ToString().SplitSpanLines().ToString();
-#else
-        $"{Whitespaces.Breaking.Aggregate(ToString().ToBuilder(), (acc, next) => acc.Replace($"{next}", ""))}";
-#endif
+    public string ToStringWithoutNewLines() => ToString().SplitSpanLines().ToString();
+
     /// <summary>Recursively simplifies every value according to <see cref="Simplify"/>.</summary>
     /// <returns>Itself. The returned value is not a copy; mutation applies to the instance.</returns>
     public abstract DeconstructionCollection Simplify();

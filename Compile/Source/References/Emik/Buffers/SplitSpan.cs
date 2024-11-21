@@ -95,7 +95,6 @@ static partial class SplitSpanFactory
         where T : IEquatable<T> =>
         span.ReadOnly().SplitOn(separator);
 #endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<T, T, MatchOne> SplitOn<T>(this ReadOnlySpan<T> span, in T separator)
@@ -117,7 +116,6 @@ static partial class SplitSpanFactory
 #endif
         =>
             span.ReadOnly().SplitOn(separator);
-#endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -173,7 +171,7 @@ static partial class SplitSpanFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchOne> SplitSpanOn(this string? span, char separator) =>
         span.AsSpan().SplitOn(separator);
-
+#endif
     /// <inheritdoc cref="SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, char, MatchAny> SplitSpanOnAny(this string? span, string? separator) =>
@@ -245,7 +243,6 @@ static partial class SplitSpanFactory
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitSpan<char, ComptimeString, MatchAny> SplitWhitespace(this Span<char> span) =>
         span.ReadOnly().SplitWhitespace();
-#endif
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="SplitOn{T}(ReadOnlySpan{T}, in SearchValues{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -719,21 +716,22 @@ readonly
             builder.Append(To<char>.From(span));
 #else
         {
+#pragma warning disable 8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            for (var i = 0; i < span.Length; i++)
-                builder.Append(((char*)span.Pointer)[i]);
+            fixed (TBody* pin = span)
+            {
+                var ptr = span.Align(pin);
+
+                for (var i = 0; i < span.Length; i++)
+                    builder.Append(((char*)ptr)[i]);
+            }
 
             return builder;
 #else
-#pragma warning disable 8500
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-            var ptr = span.Pointer;
-#else
             fixed (TBody* ptr = span)
+                return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
 #pragma warning restore 8500
-                return builder.Append((char*)ptr, span.Length);
-#endif
         }
 #endif
 }

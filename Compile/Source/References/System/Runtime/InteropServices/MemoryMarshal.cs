@@ -41,12 +41,9 @@ static partial class MemoryMarshal
             fromSize is not 1 &&
             (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
             (int)(fromLength / toSize);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
         fixed (TFrom* ptr = span)
-#else
-        var ptr = span.Pointer;
-#endif
-            return new(ptr, toLength);
+            return new(span.Align(ptr), toLength);
     }
 
     /// <summary>
@@ -76,12 +73,9 @@ static partial class MemoryMarshal
             fromSize is not 1 &&
             (ulong)fromLength * fromSize / toSize is var toLengthUInt64 ? checked((int)toLengthUInt64) :
             (int)(fromLength / toSize);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
         fixed (TFrom* ptr = span)
-#else
-        var ptr = span.Pointer;
-#endif
-            return new(ptr, toLength);
+            return new(span.Align(ptr), toLength);
     }
 
     /// <summary>
@@ -94,16 +88,9 @@ static partial class MemoryMarshal
     /// <param name="length">The number of <typeparamref name="T"/> elements the memory contains.</param>
     /// <returns>The lifetime of the returned span will not be validated for safety by span-aware languages.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe Span<T> CreateSpan<T>(scoped ref T reference, int length)
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        =>
-            Cache<T>.Span(ref reference, length);
-#else
-    {
-        fixed (T* ptr = &reference)
-            return new(ptr, length);
-    }
-#endif
+    public static unsafe Span<T> CreateSpan<T>(scoped ref T reference, int length) =>
+        Cache<T>.Span(ref reference, length);
+
     /// <summary>
     /// Create a new read-only span over a portion of a regular managed object. This can be useful
     /// if part of a managed object represents a "fixed array." This is dangerous because the
@@ -114,17 +101,9 @@ static partial class MemoryMarshal
     /// <param name="length">The number of <typeparamref name="T"/> elements the memory contains.</param>
     /// <returns>The lifetime of the returned span will not be validated for safety by span-aware languages.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length)
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (T* ptr = &reference)
-            return new(ptr, length);
-    }
-#else
-        =>
-            Cache<T>.ReadOnlySpan(ref reference, length);
-#endif
-#if !(NETFRAMEWORK && !NET45_OR_GREATER || NETSTANDARD1_0)
+    public static unsafe ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length) =>
+        Cache<T>.ReadOnlySpan(ref reference, length);
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Returns a reference to the element of the read-only span at index 0.</summary>
     /// <remarks><para>
     /// If the read-only span is empty, this method returns a reference to the location where the
@@ -136,11 +115,8 @@ static partial class MemoryMarshal
     /// <returns>A reference to the element at index 0.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref T GetReference<T>(ReadOnlySpan<T> span) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         ref Unsafe.AsRef(span.GetPinnableReference());
-#else
-        ref Unsafe.AsRef<T>(span.Pointer);
-#endif
+
     /// <summary>Returns a reference to the element of the span at index 0.</summary>
     /// <remarks><para>
     /// If the span is empty, this method returns a reference to the location where the
@@ -152,13 +128,14 @@ static partial class MemoryMarshal
     /// <returns>A reference to the element at index 0.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe ref T GetReference<T>(Span<T> span) =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         ref Unsafe.AsRef(span.GetPinnableReference());
 #else
-        ref Unsafe.AsRef<T>(span.Pointer);
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T GetReference<T>(Span<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T GetReference<T>(ReadOnlySpan<T> span) => span.IsEmpty ? default! : span.UnsafelyIndex(0);
 #endif
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     static class Cache<T>
     {
         static Cache()
@@ -190,13 +167,16 @@ static partial class MemoryMarshal
                 typeof(TTarget).GetMethod(nameof(Invoke))?.ReturnType is var type &&
                 Constructor(type) is { } constructor ?
                     System.Linq.Expressions.Expression.Lambda<TTarget>(
-                            System.Linq.Expressions.Expression.New(constructor, parameters.AsEnumerable()),
+                            System.Linq.Expressions.Expression.New(constructor, parameters.OfType<Expression>()),
                             parameters
                         )
                        .Compile() :
                     Factory(type) is { } factory ?
                         System.Linq.Expressions.Expression.Lambda<TTarget>(
-                                System.Linq.Expressions.Expression.Call(factory, parameters.AsEnumerable()),
+                                System.Linq.Expressions.Expression.Call(
+                                    factory,
+                                    parameters.OfType<Expression>().ToArray()
+                                ),
                                 parameters
                             )
                            .Compile() : default;
@@ -215,16 +195,19 @@ static partial class MemoryMarshal
             InefficientSpanFallback(ref reference, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        static Span<T> InefficientSpanFallback(scoped ref T reference, int length)
+        static unsafe Span<T> InefficientSpanFallback(scoped ref T reference, int length)
         {
             Span<T> span = new T[length];
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
             Unsafe.CopyBlock(
                 ref Unsafe.As<T, byte>(ref reference),
                 ref Unsafe.As<T, byte>(ref span.GetPinnableReference()),
                 unchecked((uint)(length * Unsafe.SizeOf<T>()))
             );
-
+#else
+            fixed (T* ptr = &reference)
+                new ReadOnlySpan<T>(ptr, length).CopyTo(span);
+#endif
             return span;
         }
     }
@@ -232,6 +215,5 @@ static partial class MemoryMarshal
     delegate ReadOnlySpan<T> ReadOnlySpanFactory<T>(scoped ref T reference, int length);
 
     delegate Span<T> SpanFactory<T>(scoped ref T reference, int length);
-#endif
 }
 #endif

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-
+#if !NETFRAMEWORK || NET40_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -49,3 +49,4 @@ static partial class AggregateExceptionFactory
     public static AggregateException? Aggregate(this ICollection<Exception> exceptions, string? message = null) =>
         exceptions.Count is 0 ? null : new(message, exceptions);
 }
+#endif

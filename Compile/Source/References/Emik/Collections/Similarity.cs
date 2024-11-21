@@ -281,17 +281,11 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var l = left.Pointer;
-        var r = right.Pointer;
-#else
         fixed (T* l = left)
         fixed (T* r = right)
-#endif
             return Jaro(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -380,17 +374,11 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var l = left.Pointer;
-        var r = right.Pointer;
-#else
         fixed (T* l = left)
         fixed (T* r = right)
-#endif
             return JaroEmik(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -483,17 +471,11 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        // ReSharper disable once WrongIndentSize
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        var l = left.Pointer;
-        var r = right.Pointer;
-#else
         fixed (T* l = left)
         fixed (T* r = right)
-#endif
             return JaroWinkler(
-                new Fat<T>(l, left.Length),
-                new(r, right.Length),
+                new Fat<T>(left.Align(l), left.Length),
+                new(right.Align(r), right.Length),
                 static x => x.Length,
                 static (x, i) => x[i],
                 comparer
@@ -916,7 +898,7 @@ static partial class Similarity
     ) =>
         1 / 3.0 * (matchCount / leftLength + matchCount / rightLength + (matchCount - transpositionCount) / matchCount);
 
-    [MustUseReturnValue, ValueRange(0, 1)]
+    [ValueRange(0, 1), Pure]
     static double Grade([NonNegativeValue] int leftLength, [NonNegativeValue] int rightLength) =>
         1 - 1.0 / Math.Min(leftLength + 1, rightLength + 1);
 
@@ -925,6 +907,9 @@ static partial class Similarity
         jaroDistance + 0.1 * prefixLength * (1.0 - jaroDistance);
 
     /// <summary>Represents a pointer with a length.</summary>
+    /// <remarks><para>The data is assumed to be already pinned.</para></remarks>
+    /// <param name="pointer">The pointer to the first element of the buffer.</param>
+    /// <param name="length">The number of elements in the buffer.</param>
     [StructLayout(LayoutKind.Auto)]
 #if !NO_READONLY_STRUCTS
     readonly
@@ -934,22 +919,25 @@ static partial class Similarity
         where T : unmanaged
 #endif
     {
-        const string E = "Value must be non-negative and less than the length.";
-
-        /// <summary>Takes the element corresponding to the passed in index. A bounds check is performed.</summary>
+        /// <summary>Takes the element corresponding to the passed in index.</summary>
+        /// <remarks><para>No bounds check is performed. Going out of bounds is undefined behavior.</para></remarks>
         /// <param name="i">The index to take.</param>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// The parameter <paramref name="i"/> is outside the range.
-        /// </exception>
-        public T this[int i]
+        public T this[[NonNegativeValue] int i]
         {
-            // ReSharper disable once NullableWarningSuppressionIsUsed
             [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-            get => (uint)i < (uint)Length ? ((T*)pointer)[i]! : throw new ArgumentOutOfRangeException(nameof(i), i, E);
+            get
+            {
+                // ReSharper disable once RedundantNameQualifier UseSymbolAlias
+                System.Diagnostics.Debug.Assert((uint)i < (uint)length, "Index must be within bounds.");
+                return ((T*)pointer)[i];
+            }
         }
 
         /// <summary>Gets the length.</summary>
-        public int Length => length;
+        public int Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] get => length;
+        }
     }
 }
 #endif

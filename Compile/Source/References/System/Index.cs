@@ -33,7 +33,7 @@ partial struct Index : IEquatable<Index>
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         _value = value >= 0
             ? fromEnd ? ~value : value
-            : throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
+            : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
 
     // The following private constructors mainly created for perf reason to avoid the checks
     Index([NonNegativeValue] int value) => _value = value;
@@ -64,7 +64,7 @@ partial struct Index : IEquatable<Index>
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         value >= 0
             ? new(~value)
-            : throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
+            : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
 
     /// <summary>Create an Index from the start at the position indicated by the value.</summary>
     /// <param name="value">The index value from the start.</param>
@@ -74,7 +74,7 @@ partial struct Index : IEquatable<Index>
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         value >= 0
             ? new(value)
-            : throw new ArgumentOutOfRangeException(nameof(value), "value must be non-negative");
+            : throw new ArgumentOutOfRangeException(nameof(value), "Must be non-negative.");
 
     /// <inheritdoc cref="object.Equals(object?)" />
     [Pure]

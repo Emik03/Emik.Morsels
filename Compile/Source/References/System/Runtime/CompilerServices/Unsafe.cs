@@ -5,16 +5,27 @@ namespace System.Runtime.CompilerServices;
 
 static class Unsafe
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static unsafe void* AsPointer<T>(ref T value)
+    {
+        var tr = __makeref(value);
+        return (void*)*(nint*)&tr;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static T As<T>(object? o) => Span.Ret<T>.From(o);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static TTo As<TFrom, TTo>(ref readonly TFrom o) => Span.Ret<TTo>.From(o);
+#pragma warning disable 8500
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
     public static void SkipInit<T>(out T value) => value = default!;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#pragma warning disable 8500
     public static unsafe int SizeOf<T>() => sizeof(T);
 #pragma warning restore 8500
 }
-#else
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+#elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 using static InlineIL.IL;
 using static InlineIL.IL.Emit;
 
@@ -428,5 +439,4 @@ static unsafe class Unsafe
         return ref ReturnRef<T>();
     }
 }
-#endif
 #endif

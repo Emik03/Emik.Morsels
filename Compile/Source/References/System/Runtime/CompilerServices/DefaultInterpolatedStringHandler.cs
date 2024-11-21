@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MPL-2.0
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !NET6_0_OR_GREATER
 // ReSharper disable InvocationIsSkipped
 // ReSharper disable once CheckNamespace
 #pragma warning disable IDE0064, IDE0251, MA0102, RCS1146, SA1214
@@ -27,23 +26,23 @@ ref struct DefaultInterpolatedStringHandler
     /// numbers of items, we bump the 8 up to 11 to account for the three extra characters in "{d}",
     /// since the compiler-provided base length won't include the equivalent character count.
     /// </para></remarks>
-    private const int GuessedLengthPerHole = 11;
+    const int GuessedLengthPerHole = 11;
 
     /// <summary>Minimum size array to rent from the pool.</summary>
     /// <remarks><para>Same as stack-allocation size used today by string.Format.</para></remarks>
-    private const int MinimumArrayPoolLength = 256;
+    const int MinimumArrayPoolLength = 256;
 
     /// <summary>Optional provider to pass to IFormattable.ToString or ISpanFormattable.TryFormat calls.</summary>
-    private readonly IFormatProvider? _provider;
+    readonly IFormatProvider? _provider;
 
     /// <summary>Array rented from the array pool and used to back <see cref="_chars"/>.</summary>
-    private char[]? _arrayToReturnToPool;
+    char[]? _arrayToReturnToPool;
 
     /// <summary>The span to write into.</summary>
-    private Span<char> _chars;
+    Span<char> _chars;
 
     /// <summary>Position at which to write the next character.</summary>
-    private int _pos;
+    int _pos;
 
     /// <summary>Whether <see cref="_provider"/> provides an ICustomFormatter.</summary>
     /// <remarks><para>
@@ -53,7 +52,7 @@ ref struct DefaultInterpolatedStringHandler
     /// provides a formatter, rather than actually storing the formatter.  This in turn means, if there is a
     /// formatter, we pay for the extra interface call on each AppendFormatted that needs it.
     /// </para></remarks>
-    private readonly bool _hasCustomFormatter;
+    readonly bool _hasCustomFormatter;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DefaultInterpolatedStringHandler"/> struct
@@ -404,7 +403,7 @@ ref struct DefaultInterpolatedStringHandler
         var startingPos = _pos;
         AppendFormatted(value);
 
-        if (alignment != 0)
+        if (alignment is not 0)
             AppendOrInsertAlignmentIfNeeded(startingPos, alignment);
     }
 
@@ -421,7 +420,7 @@ ref struct DefaultInterpolatedStringHandler
         var startingPos = _pos;
         AppendFormatted(value, format);
 
-        if (alignment != 0)
+        if (alignment is not 0)
             AppendOrInsertAlignmentIfNeeded(startingPos, alignment);
     }
 
@@ -511,7 +510,7 @@ ref struct DefaultInterpolatedStringHandler
     /// or a string that doesn't fit in the current buffer.
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AppendFormattedSlow(string? value)
+    void AppendFormattedSlow(string? value)
     {
         if (_hasCustomFormatter)
             AppendCustomFormatter(value, null);
@@ -567,9 +566,9 @@ ref struct DefaultInterpolatedStringHandler
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // only used in a few hot path call sites
     internal static bool HasCustomFormatter(IFormatProvider provider)
     {
-        Debug.Assert(provider is not null, "provider is not null");
+        System.Diagnostics.Debug.Assert(provider is not null, "provider is not null");
 
-        Debug.Assert(
+        System.Diagnostics.Debug.Assert(
             provider is not CultureInfo || provider.GetFormat(typeof(ICustomFormatter)) is null,
             "Expected CultureInfo to not provide a custom formatter"
         );
@@ -584,19 +583,19 @@ ref struct DefaultInterpolatedStringHandler
     /// <param name="format">The format string.</param>
     /// <typeparam name="T">The type of the value to write.</typeparam>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AppendCustomFormatter<T>(T value, string? format)
+    void AppendCustomFormatter<T>(T value, string? format)
     {
         // This case is very rare, but we need to handle it prior to the other checks in case
         // a provider was used that supplied an ICustomFormatter which wanted to intercept the particular value.
         // We do the cast here rather than in the ctor, even though this could be executed multiple times per
         // formatting, to make the cast pay for play.
-        Debug.Assert(_hasCustomFormatter, "_hasCustomFormatter");
-        Debug.Assert(_provider is not null, "_provider is not null");
+        System.Diagnostics.Debug.Assert(_hasCustomFormatter, "_hasCustomFormatter");
+        System.Diagnostics.Debug.Assert(_provider is not null, "_provider is not null");
 
         // ReSharper disable once NullableWarningSuppressionIsUsed
         var formatter = (ICustomFormatter?)_provider!.GetFormat(typeof(ICustomFormatter));
 
-        Debug.Assert(
+        System.Diagnostics.Debug.Assert(
             formatter is not null,
             "An incorrectly written provider said it implemented ICustomFormatter, and then didn't"
         );
@@ -613,10 +612,10 @@ ref struct DefaultInterpolatedStringHandler
     /// Non-zero minimum number of characters that should be written for this value. If the value is negative,
     /// it indicates left-aligned and the required minimum is the absolute value.
     /// </param>
-    private void AppendOrInsertAlignmentIfNeeded(int startingPos, int alignment)
+    void AppendOrInsertAlignmentIfNeeded(int startingPos, int alignment)
     {
-        Debug.Assert(startingPos >= 0 && startingPos <= _pos, "startingPos >= 0 && startingPos <= _pos");
-        Debug.Assert(alignment is not 0, "alignment is not 0");
+        System.Diagnostics.Debug.Assert(startingPos >= 0 && startingPos <= _pos, "startingPos >= 0 && startingPos <= _pos");
+        System.Diagnostics.Debug.Assert(alignment is not 0, "alignment is not 0");
 
         var charsWritten = _pos - startingPos;
 
@@ -651,7 +650,7 @@ ref struct DefaultInterpolatedStringHandler
     /// <paramref name="additionalChars"/> beyond <see cref="_pos"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void EnsureCapacityForAdditionalChars(int additionalChars)
+    void EnsureCapacityForAdditionalChars(int additionalChars)
     {
         if (_chars.Length - _pos < additionalChars)
             Grow(additionalChars);
@@ -663,7 +662,7 @@ ref struct DefaultInterpolatedStringHandler
     /// </summary>
     /// <param name="value">The string to write.</param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void GrowThenCopyString(string value)
+    void GrowThenCopyString(string value)
     {
         Grow(value.Length);
         value.AsSpan().CopyTo(_chars[_pos..]);
@@ -676,7 +675,7 @@ ref struct DefaultInterpolatedStringHandler
     /// </summary>
     /// <param name="value">The span to write.</param>
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void GrowThenCopySpan(scoped ReadOnlySpan<char> value)
+    void GrowThenCopySpan(scoped ReadOnlySpan<char> value)
     {
         Grow(value.Length);
         value.CopyTo(_chars[_pos..]);
@@ -688,13 +687,13 @@ ref struct DefaultInterpolatedStringHandler
     /// <paramref name="additionalChars"/> beyond <see cref="_pos"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.NoInlining)] // keep consumers as streamlined as possible
-    private void Grow(int additionalChars)
+    void Grow(int additionalChars)
     {
         // This method is called when the remaining space (_chars.Length - _pos) is
         // insufficient to store a specific number of additional characters.  Thus, we
         // need to grow to at least that new total. GrowCore will handle growing by more
         // than that if possible.
-        Debug.Assert(additionalChars > _chars.Length - _pos, "additionalChars > _chars.Length - _pos");
+        System.Diagnostics.Debug.Assert(additionalChars > _chars.Length - _pos, "additionalChars > _chars.Length - _pos");
         GrowCore((uint)_pos + (uint)additionalChars);
     }
 
@@ -705,14 +704,14 @@ ref struct DefaultInterpolatedStringHandler
     // the operation. Thus, we need at least one character beyond _chars.Length. GrowCore
     // will handle growing by more than that if possible.
     // ReSharper disable once UnusedMember.Local
-    private void Grow() => GrowCore((uint)_chars.Length + 1);
+    void Grow() => GrowCore((uint)_chars.Length + 1);
 
     /// <summary>
     /// Grow the size of <see cref="_chars"/> to at least the specified <paramref name="requiredMinCapacity"/>.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     // but reuse this grow logic directly in both of the above grow routines
-    private void GrowCore(uint requiredMinCapacity)
+    void GrowCore(uint requiredMinCapacity)
     {
         // Maximum length allowed for a string.
         const int MaxLength = 0x3FFFFFDF;
@@ -737,4 +736,3 @@ ref struct DefaultInterpolatedStringHandler
             ArrayPool<char>.Shared.Return(toReturn);
     }
 }
-#endif

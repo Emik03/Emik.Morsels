@@ -41,16 +41,9 @@ static partial class RandomGetItems
     /// </exception>
     /// <exception cref="InvalidOperationException"><paramref name="choices"/> is empty.</exception>
     /// <returns>An array populated with random items.</returns>
-    public static unsafe T[] GetItems<T>(this Random that, T[] choices, [NonNegativeValue] int length)
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (T* t = choices)
-            return GetItems(that, new ReadOnlySpan<T>(t, choices.Length), length);
-    }
-#else
-        =>
-            GetItems(that, new ReadOnlySpan<T>(choices), length);
-#endif
+    public static unsafe T[] GetItems<T>(this Random that, T[] choices, [NonNegativeValue] int length) =>
+        GetItems(that, new ReadOnlySpan<T>(choices), length);
+
     /// <summary>Creates an array populated with items chosen at random from the provided set of choices.</summary>
     /// <remarks><para>
     /// The method uses <see cref="Random.Next(int)"/> to select items randomly from <paramref name="choices"/>
@@ -69,15 +62,10 @@ static partial class RandomGetItems
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (length < 0)
-            throw new ArgumentOutOfRangeException(nameof(length), length, "Cannot be negative");
+            throw new ArgumentOutOfRangeException(nameof(length), length, "Must not be negative.");
 
         var items = new T[length];
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        fixed (T* t = items)
-            GetItems(that, choices, new Span<T>(t, items.Length));
-#else
         GetItems(that, choices, items.AsSpan());
-#endif
         return items;
     }
 }

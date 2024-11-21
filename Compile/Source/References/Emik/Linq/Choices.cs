@@ -121,11 +121,7 @@ readonly
     [StructLayout(LayoutKind.Auto)]
     public struct Enumerator(IList<T>? n, int k) : IEnumerator<IList<T>>
     {
-        bool
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            _hasDisposed,
-#endif
-            _hasMoved;
+        bool _hasDisposed, _hasMoved;
 
         int[] _values = Rent(n, k);
 
@@ -164,7 +160,6 @@ readonly
         }
 
         /// <inheritdoc />
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         public void Dispose()
         {
             if (_hasDisposed || _values is null or [])
@@ -174,9 +169,7 @@ readonly
             _hasDisposed = true;
             _values = [];
         }
-#else
-        public readonly void Dispose() { }
-#endif
+
         /// <inheritdoc />
         public void Reset()
         {
@@ -201,11 +194,8 @@ readonly
         static int[] Rent(IList<T>? n, int k) =>
             n is not { Count: not 0 and var count } || count <= k
                 ? []
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
                 : Reset(ArrayPool<int>.Shared.Rent(k), k);
-#else
-                : Reset(new int[k], k);
-#endif
+
         void Copy()
         {
             Current = new T[K];

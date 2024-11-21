@@ -1,350 +1,1895 @@
 // SPDX-License-Identifier: MPL-2.0
-
 // ReSharper disable once CheckNamespace
 namespace System;
 
-// ReSharper disable CognitiveComplexity NullableWarningSuppressionIsUsed RedundantCallerArgumentExpressionDefaultValue RedundantSuppressNullableWarningExpression
-#pragma warning disable 8500, MA0051
+using Emik.Morsels;
+
+// ReSharper disable CognitiveComplexity
+#pragma warning disable 8500, 8602, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
-    /// <summary>Determines whether both pointers to buffers contain the same content.</summary>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="first">The first pointer to compare.</param>
-    /// <param name="second">The second pointer to compare.</param>
-    /// <param name="length">The length of both <paramref name="first"/> and <paramref name="second"/>.</param>
-    /// <returns>
-    /// The value <see langword="true"/> when both sequences have the same content, otherwise; <see langword="false"/>.
-    /// </returns>
-    public static unsafe bool SequenceEqual<T>(T* first, T* second, int length)
-        where T : IEquatable<T>?
+    public static unsafe partial class PerTypeValues<T>
     {
-        // ReSharper disable once RedundantNameQualifier UseSymbolAlias
-        System.Diagnostics.Debug.Assert(length >= 0, "length >= 0");
+        public static readonly bool IsReferenceOrContainsReferences = IsReferenceOrContainsReferencesCore(typeof(T));
 
-        if (first == second)
-            goto Equal;
+        public static readonly T[] EmptyArray = [];
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        public static readonly nint ArrayAdjustment = MeasureArrayAdjustment();
 
-        nint index = 0; // Use nint for arithmetic to avoid unnecessary 64->32->64 truncations
-        T lookUp0;
-        T lookUp1;
-
-        while (length >= 8)
+        static nint MeasureArrayAdjustment()
         {
-            length -= 8;
+            var single = new T[1];
 
-            lookUp0 = first[index];
-            lookUp1 = second[index];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 1];
-            lookUp1 = second[index + 1];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 2];
-            lookUp1 = second[index + 2];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 3];
-            lookUp1 = second[index + 3];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 4];
-            lookUp1 = second[index + 4];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 5];
-            lookUp1 = second[index + 5];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 6];
-            lookUp1 = second[index + 6];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 7];
-            lookUp1 = second[index + 7];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            index += 8;
+            fixed (T* element = single)
+            fixed (T* data = &Unsafe.As<Pinnable<T>>(single).Data)
+                return (nint)element - (nint)data;
         }
-
-        if (length >= 4)
-        {
-            length -= 4;
-
-            lookUp0 = first[index];
-            lookUp1 = second[index];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 1];
-            lookUp1 = second[index + 1];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 2];
-            lookUp1 = second[index + 2];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            lookUp0 = first[index + 3];
-            lookUp1 = second[index + 3];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            index += 4;
-        }
-
-        while (length > 0)
-        {
-            lookUp0 = first[index];
-            lookUp1 = second[index];
-
-            if (!(lookUp0?.Equals(lookUp1) ?? lookUp1 is null))
-                goto NotEqual;
-
-            index += 1;
-            length--;
-        }
-
-    Equal:
-        return true;
-
-    NotEqual: // Workaround for https://github.com/dotnet/runtime/issues/8795
-        return false;
+#endif
     }
 
-    /// <summary>Gets the index of where the smaller buffer matches the contents of the larger buffer.</summary>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="searchSpace">The larger buffer to compare from.</param>
-    /// <param name="searchSpaceLength">The larger buffer's length.</param>
-    /// <param name="value">The smaller buffer to compare against.</param>
-    /// <param name="valueLength">The smaller buffer's length.</param>
-    /// <returns>
-    /// The index in which <paramref name="searchSpace"/> has the same content as <paramref name="value"/>.
-    /// </returns>
-    public static unsafe int IndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
-        where T : IEquatable<T>?
+    [StructLayout(LayoutKind.Auto)]
+    internal
+#if !NO_READONLY_STRUCTS
+        readonly
+#endif
+        struct ComparerComparable<T, TComparer>(T value, TComparer comparer) : IComparable<T>
+        where TComparer : IComparer<T>
     {
-        Debug.Assert(searchSpaceLength >= 0);
-        Debug.Assert(valueLength >= 0);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CompareTo(T? other) => comparer.Compare(value, other);
+    }
 
-        if (valueLength is 0)
-            return 0; // A zero-length sequence is always treated as "found" at the start of the search space.
+    [StructLayout(LayoutKind.Sequential, Size = 64)]
+    struct Reg64;
 
-        var valueTail = value + 1;
-        var valueTailLength = valueLength - 1;
+    [StructLayout(LayoutKind.Sequential, Size = 32)]
+    struct Reg32;
 
-        var index = 0;
+    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    struct Reg16;
 
-        while (true)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe int BinarySearch<T, TComparable>(this ReadOnlySpan<T> span, TComparable comparable)
+        where TComparable : IComparable<T>
+    {
+        fixed (T* ptr = span)
+            return BinarySearch(span.Align(ptr), span.Length, comparable);
+    }
+
+    public static unsafe int BinarySearch<T, TComparable>(T* spanStart, int length, TComparable comparable)
+        where TComparable : IComparable<T>
+    {
+        int low = 0, high = length - 1;
+
+        while (low <= high)
         {
-            // Ensures no deceptive underflows in the computation of "remainingSearchSpaceLength".
-            Debug.Assert(index >= 0 && index <= searchSpaceLength);
+            var mid = high + low >>> 1;
 
-            var remainingSearchSpaceLength = searchSpaceLength - index - valueTailLength;
+            switch (comparable.CompareTo(spanStart[mid]))
+            {
+                case 0: return mid;
+                case > 0:
+                    low = mid + 1;
+                    break;
+                default:
+                    high = mid - 1;
+                    break;
+            }
+        }
 
-            // The unsearched portion is now shorter than the sequence we're looking for. So it can't be there.
-            if (remainingSearchSpaceLength <= 0)
-                break;
+        return ~low;
+    }
 
-            // Do a quick search for the first element of "value".
-            var relativeIndex = IndexOf(searchSpace + index, *value, remainingSearchSpaceLength);
+    public static unsafe int IndexOf(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
+    {
+        if (valueLength is 0)
+            return 0;
 
-            if (relativeIndex < 0)
-                break;
+        var first = *value;
+        var rest = value + 1;
 
-            index += relativeIndex;
+        for (int length = valueLength - 1, ret = 0;
+            searchSpaceLength - ret - length is > 0 and var next &&
+            IndexOf(searchSpace + ret, first, next) is not -1 and var index;
+            ret++)
+        {
+            ret += index;
 
-            // Found the first element of "value". See if the tail matches.
-            if (SequenceEqual(searchSpace + index + 1, valueTail, valueTailLength))
-                return index; // The tail matched. Return a successful find.
-
-            index++;
+            if (SequenceEqual(searchSpace + (ret + 1), rest, length))
+                return ret;
         }
 
         return -1;
     }
 
-    /// <summary>Gets the index of where the item exists in the buffer.</summary>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="searchSpace">The buffer to compare from.</param>
-    /// <param name="value">The item to compare to.</param>
-    /// <param name="length">The buffer's length.</param>
-    /// <returns>The index in which <paramref name="searchSpace"/> has <paramref name="value"/>.</returns>
+    public static unsafe int IndexOfAny(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var ret = -1;
+
+        for (var i = 0; i < valueLength; i++)
+        {
+            // ReSharper disable once IntVariableOverflowInUncheckedContext
+            if (IndexOf(searchSpace, value[i], searchSpaceLength) is var index && (uint)index >= (uint)ret)
+                continue;
+
+            ret = index;
+            searchSpaceLength = index;
+
+            if (ret is 0)
+                break;
+        }
+
+        return ret;
+    }
+
+    public static unsafe int LastIndexOfAny(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var max = -1;
+
+        for (var i = 0; i < valueLength; i++)
+            if (LastIndexOf(searchSpace, value[i], searchSpaceLength) is var next && next > max)
+                max = next;
+
+        return max;
+    }
+
+    public static unsafe int IndexOf(byte* searchSpace, byte value, int length)
+    {
+        nint low = 0, high = length;
+
+        while (true)
+        {
+            if ((nuint)(void*)high >= 8)
+            {
+                high -= 8;
+
+                if (value == *(byte*)((nint)searchSpace + low))
+                    goto Found;
+
+                if (value == *(byte*)((nint)searchSpace + low + 1))
+                    goto Found1;
+
+                if (value == *(byte*)((nint)searchSpace + low + 2))
+                    goto Found2;
+
+                if (value == *(byte*)((nint)searchSpace + low) + 3)
+                    goto Found3;
+
+                if (value == *(byte*)((nint)searchSpace + low) + 4)
+                    return (int)(void*)(low + 4);
+
+                if (value == *(byte*)((nint)searchSpace + low) + 5)
+                    return (int)(void*)(low + 5);
+
+                if (value == *(byte*)((nint)searchSpace + low) + 6)
+                    return (int)(void*)(low + 6);
+
+                if (value == *(byte*)((nint)searchSpace + low) + 7)
+                    break;
+
+                low += 8;
+                continue;
+            }
+
+            if ((nuint)(void*)high >= 4u)
+            {
+                high -= 4;
+
+                if (value == *(byte*)((nint)searchSpace + low))
+                    goto Found;
+
+                if (value == *(byte*)((nint)searchSpace + low + 1))
+                    goto Found1;
+
+                if (value == *(byte*)((nint)searchSpace + low + 2))
+                    goto Found2;
+
+                if (value == *(byte*)((nint)searchSpace + low + 3))
+                    goto Found3;
+
+                low += 4;
+            }
+
+            while ((void*)high != null)
+            {
+                high -= 1;
+
+                if (value != *(byte*)((nint)searchSpace + low))
+                {
+                    low += 1;
+                    continue;
+                }
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(void*)low;
+
+        Found1:
+            return (int)(void*)(low + 1);
+
+        Found2:
+            return (int)(void*)(low + 2);
+
+        Found3:
+            return (int)(void*)(low + 3);
+        }
+
+        return (int)(void*)(low + 7);
+    }
+
+    public static unsafe int LastIndexOf(byte* searchSpace, int searchSpaceLength, byte* value, int valueLength)
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var first = *value;
+        var rest = value + 1;
+        var num = valueLength - 1;
+        var nextIndex = 0;
+
+        while (searchSpaceLength - nextIndex - num is > 0 and var next &&
+            LastIndexOf(searchSpace, first, next) is not -1 and var index)
+            if (SequenceEqual(searchSpace + index + 1, rest, num))
+                return index;
+            else
+                nextIndex += next - index;
+
+        return -1;
+    }
+
+    public static unsafe int LastIndexOf(byte* searchSpace, byte value, int length)
+    {
+        nint low = length, high = length;
+
+        while (true)
+        {
+            if ((nuint)(void*)high >= 8u)
+            {
+                low -= 8;
+                high -= 8;
+
+                if (value == *(byte*)((nint)searchSpace + low + 7))
+                    break;
+
+                if (value == *(byte*)((nint)searchSpace + low + 6))
+                    return (int)(void*)(low + 6);
+
+                if (value == *(byte*)((nint)searchSpace + low + 5))
+                    return (int)(void*)(low + 5);
+
+                if (value == *(byte*)((nint)searchSpace + low + 4))
+                    return (int)(void*)(low + 4);
+
+                if (value == *(byte*)((nint)searchSpace + low + 3))
+                    goto Found3;
+
+                if (value == *(byte*)((nint)searchSpace + low + 2))
+                    goto Found2;
+
+                if (value == *(byte*)((nint)searchSpace + low + 1))
+                    goto Found1;
+
+                if (value == *(byte*)((nint)searchSpace + low))
+                    goto Found;
+
+                continue;
+            }
+
+            if ((nuint)(void*)high >= 4)
+            {
+                low -= 4;
+                high -= 4;
+
+                if (value == *(byte*)((nint)searchSpace + low + 3))
+                    goto Found3;
+
+                if (value == *(byte*)((nint)searchSpace + low + 2))
+                    goto Found2;
+
+                if (value == *(byte*)((nint)searchSpace + low + 1))
+                    goto Found1;
+
+                if (value == *(byte*)((nint)searchSpace + low))
+                    goto Found;
+            }
+
+            while ((void*)high != null)
+            {
+                low--;
+                high--;
+
+                if (value != *(byte*)((nint)searchSpace + low))
+                    continue;
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(void*)low;
+
+        Found1:
+            return (int)(void*)(low + 1);
+
+        Found2:
+            return (int)(void*)(low + 2);
+
+        Found3:
+            return (int)(void*)(low + 3);
+        }
+
+        return (int)(void*)(low + 7);
+    }
+
+    public static unsafe int IndexOfAny(byte* searchSpace, byte value0, byte value1, int length)
+    {
+        nint low = 0, high = length;
+
+        while (true)
+        {
+            if ((nuint)(void*)high >= 8)
+            {
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it)
+                    goto Found;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it)
+                    goto Found3;
+
+                it = *(byte*)((nint)searchSpace + low + 4);
+
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 4);
+
+                it = *(byte*)((nint)searchSpace + low + 5);
+
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 5);
+
+                it = *(byte*)((nint)searchSpace + low + 6);
+
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 6);
+
+                it = *(byte*)((nint)searchSpace + low + 7);
+
+                if (value0 == it || value1 == it)
+                    break;
+
+                low += 8;
+                continue;
+            }
+
+            if ((nuint)(void*)high >= 4u)
+            {
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it)
+                    goto Found;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it)
+                    goto Found3;
+
+                low += 4;
+            }
+
+            while ((void*)high != null)
+            {
+                high -= 1;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 != it && value1 != it)
+                {
+                    low += 1;
+                    continue;
+                }
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(void*)low;
+
+        Found1:
+            return (int)(void*)(low + 1);
+
+        Found2:
+            return (int)(void*)(low + 2);
+
+        Found3:
+            return (int)(void*)(low + 3);
+        }
+
+        return (int)(void*)(low + 7);
+    }
+
+    public static unsafe int IndexOfAny(byte* searchSpace, byte value0, byte value1, byte value2, int length)
+    {
+        nint low = 0, high = length;
+
+        while (true)
+        {
+            if ((nuint)(void*)high >= 8u)
+            {
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found3;
+
+                it = *(byte*)((nint)searchSpace + low + 4);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 4);
+
+                it = *(byte*)((nint)searchSpace + low + 5);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 5);
+
+                it = *(byte*)((nint)searchSpace + low + 6);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 6);
+
+                it = *(byte*)((nint)searchSpace + low + 7);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    break;
+
+                low += 8;
+                continue;
+            }
+
+            if ((nuint)(void*)high >= 4u)
+            {
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found3;
+
+                low += 4;
+            }
+
+            while ((void*)high != null)
+            {
+                high -= 1;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 != it && value1 != it && value2 != it)
+                {
+                    low += 1;
+                    continue;
+                }
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(void*)low;
+
+        Found1:
+            return (int)(void*)(low + 1);
+
+        Found2:
+            return (int)(void*)(low + 2);
+
+        Found3:
+            return (int)(void*)(low + 3);
+        }
+
+        return (int)(void*)(low + 7);
+    }
+
+    public static unsafe int LastIndexOfAny(byte* searchSpace, byte value0, byte value1, int length)
+    {
+        nint low = length, high = length;
+
+        while (true)
+        {
+            if ((nuint)(void*)high >= 8u)
+            {
+                low -= 8;
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low + 7);
+
+                if (value0 == it || value1 == it)
+                    break;
+
+                it = *(byte*)((nint)searchSpace + low + 6);
+
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 6);
+
+                it = *(byte*)((nint)searchSpace + low + 5);
+
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 5);
+
+                it = *(byte*)((nint)searchSpace + low + 4);
+
+                if (value0 == it || value1 == it)
+                    return (int)(void*)(low + 4);
+
+                it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it)
+                    goto Found3;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it)
+                    goto Found;
+
+                continue;
+            }
+
+            if ((nuint)(void*)high >= 4u)
+            {
+                low -= 4;
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it)
+                    goto Found3;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it)
+                    goto Found;
+            }
+
+            while ((void*)high != null)
+            {
+                low--;
+                high--;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 != it && value1 != it)
+                    continue;
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(void*)low;
+
+        Found1:
+            return (int)(void*)(low + 1);
+
+        Found2:
+            return (int)(void*)(low + 2);
+
+        Found3:
+            return (int)(void*)(low + 3);
+        }
+
+        return (int)(void*)(low + 7);
+    }
+
+    public static unsafe int LastIndexOfAny(byte* searchSpace, byte value0, byte value1, byte value2, int length)
+    {
+        nint low = length, high = length;
+
+        while (true)
+        {
+            if ((nuint)(void*)high >= 8u)
+            {
+                low -= 8;
+                high -= 8;
+                uint it = *(byte*)((nint)searchSpace + low + 7);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    break;
+
+                it = *(byte*)((nint)searchSpace + low + 6);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 6);
+
+                it = *(byte*)((nint)searchSpace + low + 5);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 5);
+
+                it = *(byte*)((nint)searchSpace + low + 4);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    return (int)(void*)(low + 4);
+
+                it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found3;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found;
+
+                continue;
+            }
+
+            if ((nuint)(void*)high >= 4u)
+            {
+                low -= 4;
+                high -= 4;
+                uint it = *(byte*)((nint)searchSpace + low + 3);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found3;
+
+                it = *(byte*)((nint)searchSpace + low + 2);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found2;
+
+                it = *(byte*)((nint)searchSpace + low + 1);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found1;
+
+                it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 == it || value1 == it || value2 == it)
+                    goto Found;
+            }
+
+            while ((void*)high != null)
+            {
+                low--;
+                high--;
+                uint it = *(byte*)((nint)searchSpace + low);
+
+                if (value0 != it && value1 != it && value2 != it)
+                    continue;
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(void*)low;
+
+        Found1:
+            return (int)(void*)(low + 1);
+
+        Found2:
+            return (int)(void*)(low + 2);
+
+        Found3:
+            return (int)(void*)(low + 3);
+        }
+
+        return (int)(void*)(low + 7);
+    }
+
+    public static unsafe bool SequenceEqual(byte* first, byte* second, nuint length)
+    {
+        if (first == second)
+            goto True;
+
+        nint low = 0, high = (nint)(void*)length;
+
+        if ((nuint)(void*)high < (nuint)Unsafe.SizeOf<nuint>())
+        {
+            while ((void*)high > (void*)low)
+                if (first[low] == second[low])
+                    low++;
+                else
+                    goto False;
+
+            goto True;
+        }
+
+        high -= Unsafe.SizeOf<nuint>();
+
+        while (true)
+        {
+            if ((void*)high <= (void*)low)
+                return *(nuint*)(first + high) == *(nuint*)(second + high);
+
+            if (*(nuint*)(first + low) == *(nuint*)(second + low))
+                break;
+
+            low += Unsafe.SizeOf<nuint>();
+        }
+
+    False:
+        return false;
+
+    True:
+        return true;
+    }
+
+    public static unsafe int SequenceCompareTo(byte* first, int firstLength, byte* second, int secondLength)
+    {
+        if (first == second)
+            return firstLength - secondLength;
+
+        nint zero = 0, min = firstLength < secondLength ? firstLength : secondLength;
+
+        if ((nuint)min > (nuint)Unsafe.SizeOf<nuint>())
+            for (var upper = min - Unsafe.SizeOf<nuint>();
+                upper > zero && *(nuint*)(first + zero) == *(nuint*)(second + zero);
+                zero += Unsafe.SizeOf<nuint>()) { }
+
+        for (; min > zero; zero++)
+            if ((*(byte*)((nint)first + zero)).CompareTo(*(byte*)((nint)second + zero)) is not 0 and var ret)
+                return ret;
+
+        return firstLength - secondLength;
+    }
+
+    public static unsafe int SequenceCompareTo(char* first, int firstLength, char* second, int secondLength)
+    {
+        var result = firstLength - secondLength;
+
+        if (first == second)
+            return result;
+
+        var min = firstLength < secondLength ? firstLength : secondLength;
+        var zero = 0;
+
+        if ((nuint)min >= (nuint)(Unsafe.SizeOf<nuint>() / 2))
+            for (;
+                min >= zero + Unsafe.SizeOf<nuint>() / 2 && *(nuint*)(first + zero) == *(nuint*)(second + zero);
+                zero += Unsafe.SizeOf<nuint>() / 2) { }
+
+        if (Unsafe.SizeOf<nuint>() > 4 &&
+            (void*)min >= (void*)(zero + 2) &&
+            *(int*)(first + zero) == *(int*)(second + zero))
+            zero += 2;
+
+        for (; (void*)zero < (void*)min; zero++)
+            if (first[zero].CompareTo(second[zero]) is not 0 and var ret)
+                return ret;
+
+        return result;
+    }
+
+    public static unsafe int IndexOf(char* searchSpace, char value, int length)
+    {
+        var drain = searchSpace;
+
+        while (true)
+        {
+            if (length >= 4)
+            {
+                length -= 4;
+
+                if (*drain == value)
+                    break;
+
+                if (drain[1] != value)
+                {
+                    if (drain[2] != value)
+                    {
+                        if (drain[3] != value)
+                        {
+                            drain += 4;
+                            continue;
+                        }
+
+                        drain++;
+                    }
+
+                    drain++;
+                }
+
+                drain++;
+                break;
+            }
+
+            while (length > 0)
+            {
+                length--;
+
+                if (*drain == value)
+                    goto Break;
+
+                drain++;
+            }
+
+            return -1;
+
+        Break:
+            break;
+        }
+
+        return (int)(drain - searchSpace);
+    }
+
+    public static unsafe int LastIndexOf(char* searchSpace, char value, int length)
+    {
+        var upper = searchSpace + length;
+
+        while (true)
+        {
+            if (length >= 4)
+            {
+                length -= 4;
+                upper -= 4;
+
+                if (upper[3] == value)
+                    break;
+
+                if (upper[2] == value)
+                    return (int)(upper - searchSpace) + 2;
+
+                if (upper[1] == value)
+                    return (int)(upper - searchSpace) + 1;
+
+                if (*upper != value)
+                    continue;
+
+                goto Found;
+            }
+
+            while (length > 0)
+            {
+                length--;
+                upper--;
+
+                if (*upper != value)
+                    continue;
+
+                goto Found;
+            }
+
+            return -1;
+
+        Found:
+            return (int)(upper - searchSpace);
+        }
+
+        return (int)(upper - searchSpace) + 3;
+    }
+
+    public static unsafe int IndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
+        where T : IEquatable<T>?
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var first = *value;
+        var rest = value + 1;
+        int low = 0, high = valueLength - 1;
+
+        while (searchSpaceLength - low - high is > 0 and var next)
+        {
+            var num4 = IndexOf(searchSpace + low, first, next);
+
+            if (num4 is -1)
+                break;
+
+            low += num4;
+
+            if (SequenceEqual(searchSpace + (low + 1), rest, high))
+                return low;
+
+            low++;
+        }
+
+        return -1;
+    }
+
+    // ReSharper disable PossibleNullReferenceException
     public static unsafe int IndexOf<T>(T* searchSpace, T value, int length)
         where T : IEquatable<T>?
     {
-        Debug.Assert(length >= 0);
+        nint num = 0;
 
-        nint index = 0; // Use nint for arithmetic to avoid unnecessary 64->32->64 truncations
-
-        // ReSharper disable CompareNonConstrainedGenericWithNull
-        if (default(T) is not null || value is not null)
+        while (true)
         {
-            Debug.Assert(value is not null);
-
-            while (length >= 8)
+            if (length >= 8)
             {
                 length -= 8;
 
-                if (value!.Equals(searchSpace[index]))
-                    goto Found;
+                if (!value.Equals(searchSpace[num]))
+                {
+                    if (value.Equals(searchSpace[num + 1]))
+                        goto Found1;
 
-                if (value.Equals(searchSpace[index + 1]))
-                    goto Found1;
+                    if (value.Equals(searchSpace[num + 2]))
+                        goto Found2;
 
-                if (value.Equals(searchSpace[index + 2]))
-                    goto Found2;
+                    if (value.Equals(searchSpace[num + 3]))
+                        goto Found3;
 
-                if (value.Equals(searchSpace[index + 3]))
+                    if (value.Equals(searchSpace[num + 4]))
+                        return (int)(void*)(num + 4);
+
+                    if (value.Equals(searchSpace[num + 5]))
+                        return (int)(void*)(num + 5);
+
+                    if (value.Equals(searchSpace[num + 6]))
+                        return (int)(void*)(num + 6);
+
+                    if (value.Equals(searchSpace[num + 7]))
+                        break;
+
+                    num += 8;
+                    continue;
+                }
+            }
+            else
+            {
+                if (length >= 4)
+                {
+                    length -= 4;
+
+                    if (value.Equals(searchSpace[num]))
+                        goto Found;
+
+                    if (value.Equals(searchSpace[num + 1]))
+                        goto Found1;
+
+                    if (value.Equals(searchSpace[num + 2]))
+                        goto Found2;
+
+                    if (value.Equals(searchSpace[num + 3]))
+                        goto Found3;
+
+                    num += 4;
+                }
+
+                while (true)
+                {
+                    if (length <= 0)
+                        return -1;
+
+                    if (value.Equals(searchSpace[num]))
+                        break;
+
+                    num += 1;
+                    length--;
+                }
+            }
+
+        Found:
+            return (int)(void*)num;
+
+        Found1:
+            return (int)(void*)(num + 1);
+
+        Found2:
+            return (int)(void*)(num + 2);
+
+        Found3:
+            return (int)(void*)(num + 3);
+        }
+
+        return (int)(void*)(num + 7);
+    }
+
+    public static unsafe int IndexOfAny<T>(T* searchSpace, T value0, T value1, int length)
+        where T : IEquatable<T>?
+    {
+        var num = 0;
+
+        while (true)
+        {
+            if (length - num >= 8)
+            {
+                var other = searchSpace[num];
+
+                if (!value0.Equals(other) && !value1.Equals(other))
+                {
+                    other = searchSpace[num + 1];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found1;
+
+                    other = searchSpace[num + 2];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found2;
+
+                    other = searchSpace[num + 3];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found3;
+
+                    other = searchSpace[num + 4];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        return num + 4;
+
+                    other = searchSpace[num + 5];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        return num + 5;
+
+                    other = searchSpace[num + 6];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        return num + 6;
+
+                    other = searchSpace[num + 7];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        break;
+
+                    num += 8;
+                    continue;
+                }
+            }
+            else
+            {
+                if (length - num >= 4)
+                {
+                    var other = searchSpace[num];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found;
+
+                    other = searchSpace[num + 1];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found1;
+
+                    other = searchSpace[num + 2];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found2;
+
+                    other = searchSpace[num + 3];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found3;
+
+                    num += 4;
+                }
+
+                while (true)
+                {
+                    if (num >= length)
+                        return -1;
+
+                    var other = searchSpace[num];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        break;
+
+                    num++;
+                }
+            }
+
+        Found:
+            return num;
+
+        Found1:
+            return num + 1;
+
+        Found2:
+            return num + 2;
+
+        Found3:
+            return num + 3;
+        }
+
+        return num + 7;
+    }
+
+    public static unsafe int IndexOfAny<T>(T* searchSpace, T value0, T value1, T value2, int length)
+        where T : IEquatable<T>?
+    {
+        var num = 0;
+
+        while (true)
+        {
+            if (length - num >= 8)
+            {
+                var other = searchSpace[num];
+
+                if (!value0.Equals(other) && !value1.Equals(other) && !value2.Equals(other))
+                {
+                    other = searchSpace[num + 1];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found1;
+
+                    other = searchSpace[num + 2];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found2;
+
+                    other = searchSpace[num + 3];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found3;
+
+                    other = searchSpace[num + 4];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        return num + 4;
+
+                    other = searchSpace[num + 5];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        return num + 5;
+
+                    other = searchSpace[num + 6];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        return num + 6;
+
+                    other = searchSpace[num + 7];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        break;
+
+                    num += 8;
+                    continue;
+                }
+            }
+            else
+            {
+                if (length - num >= 4)
+                {
+                    var other = searchSpace[num];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found;
+
+                    other = searchSpace[num + 1];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found1;
+
+                    other = searchSpace[num + 2];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found2;
+
+                    other = searchSpace[num + 3];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found3;
+
+                    num += 4;
+                }
+
+                while (true)
+                {
+                    if (num >= length)
+                        return -1;
+
+                    var other = searchSpace[num];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        break;
+
+                    num++;
+                }
+            }
+
+        Found:
+            return num;
+
+        Found1:
+            return num + 1;
+
+        Found2:
+            return num + 2;
+
+        Found3:
+            return num + 3;
+        }
+
+        return num + 7;
+    }
+
+    public static unsafe int IndexOfAny<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
+        where T : IEquatable<T>?
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var num = -1;
+
+        for (var i = 0; i < valueLength; i++)
+        {
+            // ReSharper disable once IntVariableOverflowInUncheckedContext
+            if (IndexOf(searchSpace, value[i], searchSpaceLength) is var index && (uint)index >= (uint)num)
+                continue;
+
+            num = index;
+            searchSpaceLength = index;
+
+            if (num is 0)
+                break;
+        }
+
+        return num;
+    }
+
+    public static unsafe int LastIndexOf<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
+        where T : IEquatable<T>?
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var first = *value;
+        var rest = value + 1;
+        int zero = 0, upper = valueLength - 1;
+
+        while (searchSpaceLength - zero - upper is > 0 and var length &&
+            LastIndexOf(searchSpace, first, length) is not -1 and var offset)
+            if (SequenceEqual(searchSpace + (offset + 1), rest, upper))
+                return offset;
+            else
+                zero += length - offset;
+
+        return -1;
+    }
+
+    public static unsafe int LastIndexOf<T>(T* searchSpace, T value, int length)
+        where T : IEquatable<T>?
+    {
+        while (true)
+        {
+            if (length >= 8)
+            {
+                length -= 8;
+
+                if (value.Equals(searchSpace[length + 7]))
+                    break;
+
+                if (value.Equals(searchSpace[length + 6]))
+                    return length + 6;
+
+                if (value.Equals(searchSpace[length + 5]))
+                    return length + 5;
+
+                if (value.Equals(searchSpace[length + 4]))
+                    return length + 4;
+
+                if (value.Equals(searchSpace[length + 3]))
                     goto Found3;
 
-                if (value.Equals(searchSpace[index + 4]))
-                    goto Found4;
+                if (value.Equals(searchSpace[length + 2]))
+                    goto Found2;
 
-                if (value.Equals(searchSpace[index + 5]))
-                    goto Found5;
+                if (value.Equals(searchSpace[length + 1]))
+                    goto Found1;
 
-                if (value.Equals(searchSpace[index + 6]))
-                    goto Found6;
+                if (!value.Equals(searchSpace[length]))
+                    continue;
+            }
+            else
+            {
+                if (length >= 4)
+                {
+                    length -= 4;
 
-                if (value.Equals(searchSpace[index + 7]))
-                    goto Found7;
+                    if (value.Equals(searchSpace[length + 3]))
+                        goto Found3;
 
-                index += 8;
+                    if (value.Equals(searchSpace[length + 2]))
+                        goto Found2;
+
+                    if (value.Equals(searchSpace[length + 1]))
+                        goto Found1;
+
+                    if (value.Equals(searchSpace[length]))
+                        goto Found;
+                }
+
+                do
+                {
+                    if (length <= 0)
+                        return -1;
+
+                    length--;
+                } while (!value.Equals(searchSpace[length]));
+            }
+
+        Found:
+            return length;
+
+        Found1:
+            return length + 1;
+
+        Found2:
+            return length + 2;
+
+        Found3:
+            return length + 3;
+        }
+
+        return length + 7;
+    }
+
+    public static unsafe int LastIndexOfAny<T>(T* searchSpace, T value0, T value1, int length)
+        where T : IEquatable<T>?
+    {
+        while (true)
+        {
+            if (length >= 8)
+            {
+                length -= 8;
+                var other = searchSpace[length + 7];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    break;
+
+                other = searchSpace[length + 6];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    return length + 6;
+
+                other = searchSpace[length + 5];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    return length + 5;
+
+                other = searchSpace[length + 4];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    return length + 4;
+
+                other = searchSpace[length + 3];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    goto Found3;
+
+                other = searchSpace[length + 2];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    goto Found2;
+
+                other = searchSpace[length + 1];
+
+                if (value0.Equals(other) || value1.Equals(other))
+                    goto Found1;
+
+                other = searchSpace[length];
+
+                if (!value0.Equals(other) && !value1.Equals(other))
+                    continue;
+            }
+            else
+            {
+                T other;
+
+                if (length >= 4)
+                {
+                    length -= 4;
+                    other = searchSpace[length + 3];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found3;
+
+                    other = searchSpace[length + 2];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found2;
+
+                    other = searchSpace[length + 1];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found1;
+
+                    other = searchSpace[length];
+
+                    if (value0.Equals(other) || value1.Equals(other))
+                        goto Found;
+                }
+
+                do
+                {
+                    if (length <= 0)
+                        return -1;
+
+                    length--;
+                    other = searchSpace[length];
+                } while (!value0.Equals(other) && !value1.Equals(other));
+            }
+
+        Found:
+            return length;
+
+        Found1:
+            return length + 1;
+
+        Found2:
+            return length + 2;
+
+        Found3:
+            return length + 3;
+        }
+
+        return length + 7;
+    }
+
+    public static unsafe int LastIndexOfAny<T>(T* searchSpace, T value0, T value1, T value2, int length)
+        where T : IEquatable<T>?
+    {
+        while (true)
+        {
+            if (length >= 8)
+            {
+                length -= 8;
+                var other = searchSpace[length + 7];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    break;
+
+                other = searchSpace[length + 6];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    return length + 6;
+
+                other = searchSpace[length + 5];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    return length + 5;
+
+                other = searchSpace[length + 4];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    return length + 4;
+
+                other = searchSpace[length + 3];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    goto Found3;
+
+                other = searchSpace[length + 2];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    goto Found2;
+
+                other = searchSpace[length + 1];
+
+                if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                    goto Found1;
+
+                other = searchSpace[length];
+
+                if (!value0.Equals(other) && !value1.Equals(other) && !value2.Equals(other))
+                    continue;
+            }
+            else
+            {
+                T other;
+
+                if (length >= 4)
+                {
+                    length -= 4;
+                    other = searchSpace[length + 3];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found3;
+
+                    other = searchSpace[length + 2];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found2;
+
+                    other = searchSpace[length + 1];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found1;
+
+                    other = searchSpace[length];
+
+                    if (value0.Equals(other) || value1.Equals(other) || value2.Equals(other))
+                        goto Found;
+                }
+
+                do
+                {
+                    if (length <= 0)
+                        return -1;
+
+                    length--;
+                    other = searchSpace[length];
+                } while (!value0.Equals(other) && !value1.Equals(other) && !value2.Equals(other));
+            }
+
+        Found:
+            return length;
+
+        Found1:
+            return length + 1;
+
+        Found2:
+            return length + 2;
+
+        Found3:
+            return length + 3;
+        }
+
+        return length + 7;
+    }
+
+    public static unsafe int LastIndexOfAny<T>(T* searchSpace, int searchSpaceLength, T* value, int valueLength)
+        where T : IEquatable<T>?
+    {
+        if (valueLength is 0)
+            return 0;
+
+        var max = -1;
+
+        for (var i = 0; i < valueLength; i++)
+            if (LastIndexOf(searchSpace, value[i], searchSpaceLength) is var index && index > max)
+                max = index;
+
+        return max;
+    }
+
+    public static unsafe bool SequenceEqual<T>(T* first, T* second, int length)
+        where T : IEquatable<T>?
+    {
+        if (first == second)
+            return true;
+
+        nint drain = 0;
+
+        while (true)
+        {
+            if (length >= 8)
+            {
+                length -= 8;
+
+                if (first[drain].Equals(second[drain]) &&
+                    first[drain + 1].Equals(second[drain + 1]) &&
+                    first[drain + 2].Equals(second[drain + 2]) &&
+                    first[drain + 3].Equals(second[drain + 3]) &&
+                    first[drain + 4].Equals(second[drain + 4]) &&
+                    first[drain + 5].Equals(second[drain + 5]) &&
+                    first[drain + 6].Equals(second[drain + 6]) &&
+                    first[drain + 7].Equals(second[drain + 7]))
+                {
+                    drain += 8;
+                    continue;
+                }
+
+                goto False;
             }
 
             if (length >= 4)
             {
                 length -= 4;
 
-                if (value!.Equals(searchSpace[index]))
-                    goto Found;
+                if (!first[drain].Equals(second[drain]) ||
+                    !first[drain + 1].Equals(second[drain + 1]) ||
+                    !first[drain + 2].Equals(second[drain + 2]) ||
+                    !first[drain + 3].Equals(second[drain + 3]))
+                    goto False;
 
-                if (value.Equals(searchSpace[index + 1]))
-                    goto Found1;
-
-                if (value.Equals(searchSpace[index + 2]))
-                    goto Found2;
-
-                if (value.Equals(searchSpace[index + 3]))
-                    goto Found3;
-
-                index += 4;
+                drain += 4;
             }
 
             while (length > 0)
             {
-                if (value!.Equals(searchSpace[index]))
-                    goto Found;
+                if (first[drain].Equals(second[drain]))
+                {
+                    drain += 1;
+                    length--;
+                    continue;
+                }
 
-                index += 1;
-                length--;
+                goto False;
             }
-        }
-        else
-        {
-            nint len = length;
 
-            for (index = 0; index < len; index++)
-                if (searchSpace + index + 1 is null)
-                    goto Found;
+            break;
+
+        False:
+            return false;
         }
 
-        return -1;
-
-        // Workaround for https://github.com/dotnet/runtime/issues/8795
-    Found:
-        return (int)index;
-
-    Found1:
-        return (int)(index + 1);
-
-    Found2:
-        return (int)(index + 2);
-
-    Found3:
-        return (int)(index + 3);
-
-    Found4:
-        return (int)(index + 4);
-
-    Found5:
-        return (int)(index + 5);
-
-    Found6:
-        return (int)(index + 6);
-
-    Found7:
-        return (int)(index + 7);
+        return true;
     }
 
-    /// <summary>Gets the index of where any of the items exist in the buffer.</summary>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="searchSpace">The buffer to compare from.</param>
-    /// <param name="searchSpaceLength">The buffer's length.</param>
-    /// <param name="value">The items to compare to.</param>
-    /// <param name="valueLength">The items' length.</param>
-    /// <returns>The index in which <paramref name="searchSpace"/> has any of <paramref name="value"/>.</returns>
-    public static unsafe int IndexOfAny<T>(
-        T* searchSpace,
-        int searchSpaceLength,
-        T* value,
-        int valueLength
-    )
-        where T : IEquatable<T>?
+    public static unsafe int SequenceCompareTo<T>(T* first, int firstLength, T* second, int secondLength)
+        where T : IComparable<T>?
     {
-        if (valueLength is 0)
-            return -1;
-#if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
-        if (typeof(T).IsValueType)
-            for (var i = 0; i < searchSpaceLength; i++)
-            {
-                var other = searchSpace[i];
+        for (int i = 0, num = firstLength > secondLength ? secondLength : firstLength; i < num; i++)
+            if (first[i].CompareTo(second[i]) is not 0 and var ret)
+                return ret;
 
-                for (var j = 0; j < valueLength; j++)
-                    if (value[j].Equals(other))
-                        return i;
-            }
-        else
-#endif // ReSharper disable once BadPreprocessorIndent
-            for (var i = 0; i < searchSpaceLength; i++)
-            {
-                var obj = searchSpace[i];
-
-                if (obj is not null)
-                    for (var j = 0; j < valueLength; j++)
-                    {
-                        if (obj.Equals(value[j]))
-                            return i;
-                    }
-                else
-                    for (var j = 0; j < valueLength; j++)
-                        if (value[j] is null)
-                            return i;
-            }
-
-        return -1;
+        return firstLength.CompareTo(secondLength);
     }
+
+    public static unsafe void CopyTo<T>(T* dst, int dstLength, T* src, int srcLength)
+    {
+        nint srcByteLength = srcLength * Unsafe.SizeOf<T>(),
+            dstByteLength = dstLength * Unsafe.SizeOf<T>(),
+            distance = (nint)dst - (nint)src;
+
+        bool num;
+
+        if (Unsafe.SizeOf<nint>() is not 4)
+        {
+            if ((ulong)distance >= (ulong)srcByteLength)
+            {
+                num = (ulong)distance > (ulong)-(long)dstByteLength;
+                goto BlockCopy;
+            }
+        }
+        else if ((uint)(int)distance >= (uint)(int)srcByteLength)
+        {
+            num = (uint)(int)distance > (uint)-(int)dstByteLength;
+            goto BlockCopy;
+        }
+
+        goto ElementWise;
+
+    BlockCopy:
+
+        if (!num && !IsReferenceOrContainsReferences<T>())
+        {
+            byte* dstByte = (byte*)dst, srcByte = (byte*)src;
+            var byteLength = (ulong)srcByteLength;
+            uint next;
+
+            for (ulong block = 0; block < byteLength; block += next)
+            {
+                next = (uint)(byteLength - block > uint.MaxValue ? uint.MaxValue : byteLength - block);
+
+                for (ulong b = 0; b < block; b++)
+                    dstByte[b] = srcByte[b]; // Consider implementing a better BlockCopy.
+            }
+
+            return;
+        }
+
+    ElementWise:
+
+        var flag = Unsafe.SizeOf<nint>() is 4
+            ? (uint)(int)distance > (uint)-(int)dstByteLength
+            : (ulong)distance > (ulong)-(long)dstByteLength;
+
+        var sign = flag ? 1 : -1;
+        var end = !flag ? srcLength - 1 : 0;
+        int i;
+
+        for (i = 0; i < (srcLength & -8); i += 8)
+        {
+            dst[end] = src[end];
+            dst[end + sign] = src[end + sign];
+            dst[end + sign * 2] = src[end + sign * 2];
+            dst[end + sign * 3] = src[end + sign * 3];
+            dst[end + sign * 4] = src[end + sign * 4];
+            dst[end + sign * 5] = src[end + sign * 5];
+            dst[end + sign * 6] = src[end + sign * 6];
+            dst[end + sign * 7] = src[end + sign * 7];
+            end += sign * 8;
+        }
+
+        if (i < (srcLength & -4))
+        {
+            dst[end] = src[end];
+            dst[end + sign] = src[end + sign];
+            dst[end + sign * 2] = src[end + sign * 2];
+            dst[end + sign * 3] = src[end + sign * 3];
+            end += sign * 4;
+            i += 4;
+        }
+
+        for (; i < srcLength; i++)
+        {
+            dst[end] = src[end];
+            end += sign;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe nint Add<T>(this nint start, int index) =>
+        Unsafe.SizeOf<nint>() is 4
+            ? (nint)((byte*)(void*)start + (uint)(index * Unsafe.SizeOf<T>()))
+            : (nint)((byte*)(void*)start + (ulong)index * (ulong)Unsafe.SizeOf<T>());
+
+    public static bool IsReferenceOrContainsReferences<T>() => PerTypeValues<T>.IsReferenceOrContainsReferences;
+#pragma warning disable CA1855
+    public static unsafe void ClearLessThanPointerSized(byte* ptr, nuint byteLength)
+    {
+        if (Unsafe.SizeOf<nuint>() is 4)
+        {
+            new Span<byte>(ptr, (int)byteLength).Fill(0); // Do not use `Clear`: It relies on this method.
+            return;
+        }
+
+        var num = (ulong)byteLength;
+        var num2 = (uint)(num & 0xFFFFFFFFu);
+        new Span<byte>(ptr, (int)num2).Fill(0); // Do not use `Clear`: It relies on this method.
+        num -= num2;
+        ptr += num2;
+
+        while (num is not 0)
+        {
+            num2 = (uint)(num >= uint.MaxValue ? uint.MaxValue : num);
+            new Span<byte>(ptr, (int)num2).Fill(0); // Do not use `Clear`: It relies on this method.
+            ptr += num2;
+            num -= num2;
+        }
+    }
+#pragma warning restore CA1855
+    public static unsafe void ClearPointerSizedWithoutReferences(byte* b, nuint byteLength)
+    {
+        nint zero;
+
+        for (zero = 0; zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg64>()); zero += Unsafe.SizeOf<Reg64>())
+            *(Reg64*)((nint)b + zero) = default;
+
+        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg32>()))
+        {
+            *(Reg32*)((nint)b + zero) = default;
+            zero += Unsafe.SizeOf<Reg32>();
+        }
+
+        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg16>()))
+        {
+            *(Reg16*)((nint)b + zero) = default;
+            zero += Unsafe.SizeOf<Reg16>();
+        }
+
+        if (zero.LessThanEqual(byteLength - 8))
+        {
+            *(long*)((nint)b + zero) = 0;
+            zero += 8;
+        }
+
+        if (Unsafe.SizeOf<nint>() is 4 && zero.LessThanEqual(byteLength - 4))
+            *(int*)((nint)b + zero) = 0;
+    }
+
+    public static unsafe void ClearPointerSizedWithReferences(nint* ip, nuint pointerSizeLength)
+    {
+        nint intPtr = 0, zero;
+
+        while ((zero = intPtr + 8).LessThanEqual(pointerSizeLength))
+        {
+            *ip = default;
+            ip[1] = default;
+            ip[2] = default;
+            ip[3] = default;
+            ip[4] = default;
+            ip[5] = default;
+            ip[6] = default;
+            ip[7] = default;
+            intPtr = zero;
+        }
+
+        if ((zero = intPtr + 4).LessThanEqual(pointerSizeLength))
+        {
+            *ip = default;
+            ip[1] = default;
+            ip[2] = default;
+            ip[3] = default;
+            intPtr = zero;
+        }
+
+        if ((zero = intPtr + 2).LessThanEqual(pointerSizeLength))
+        {
+            *ip = default;
+            ip[1] = default;
+            intPtr = zero;
+        }
+
+        if ((intPtr + 1).LessThanEqual(pointerSizeLength))
+            ip[intPtr] = default;
+    }
+
+    static bool IsReferenceOrContainsReferencesCore(Type type) =>
+        !type.IsPrimitive &&
+        (!type.IsValueType ||
+            (Nullable.GetUnderlyingType(type) ?? type) is { IsEnum: false } t &&
+            t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+               .Any(x => IsReferenceOrContainsReferencesCore(x.FieldType)));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool LessThanEqual(this nint index, nuint length) =>
+        Unsafe.SizeOf<nuint>() is 4 ? (int)index <= (int)(uint)length : index <= (long)length;
 }

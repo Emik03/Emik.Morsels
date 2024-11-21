@@ -78,11 +78,14 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) &= Unsafe.As<byte, nuint>(ref l);
-            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
-            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+            l = ref Unsafe.Add(ref l, (nint)Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, (nint)Unsafe.SizeOf<nuint>());
         }
 
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
@@ -177,11 +180,14 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) &= ~Unsafe.As<byte, nuint>(ref l);
-            l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
-            r = ref Unsafe.Add(ref r, Unsafe.SizeOf<nuint>());
+            l = ref Unsafe.Add(ref l, (nint)Unsafe.SizeOf<nuint>());
+            r = ref Unsafe.Add(ref r, (nint)Unsafe.SizeOf<nuint>());
         }
 
         while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, sizeof(ulong) - 1)))
@@ -269,7 +275,10 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref x,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref x) = ~Unsafe.As<byte, nuint>(ref x);
             x = ref Unsafe.Add(ref x, Unsafe.SizeOf<nuint>());
@@ -363,7 +372,10 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) |= Unsafe.As<byte, nuint>(ref l);
             l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
@@ -462,7 +474,10 @@ readonly
                 return;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             Unsafe.As<byte, nuint>(ref r) ^= Unsafe.As<byte, nuint>(ref l);
             l = ref Unsafe.Add(ref l, Unsafe.SizeOf<nuint>());
@@ -573,7 +588,10 @@ readonly
                 return true;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref l,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             if (Unsafe.As<byte, nuint>(ref l) != Unsafe.As<byte, nuint>(ref r))
                 return false;
@@ -689,7 +707,10 @@ readonly
                 return true;
         }
 #endif
-        while (Unsafe.IsAddressLessThan(ref x, ref Unsafe.SubtractByteOffset(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(
+            ref x,
+            ref Unsafe.SubtractByteOffset(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)
+        ))
         {
             if (Unsafe.As<byte, nuint>(ref x) is not 0)
                 return false;
@@ -757,7 +778,7 @@ readonly
     {
         ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
 
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
             if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
                 return ref Unsafe.As<T, nuint>(ref l) > Unsafe.As<T, nuint>(ref r) ? ref left : ref right;
@@ -812,7 +833,7 @@ readonly
     {
         ref T l = ref AsRef(left), r = ref AsRef(right), upper = ref Unsafe.Add(ref l, 1);
 
-        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, Unsafe.SizeOf<nuint>() - 1)))
+        while (Unsafe.IsAddressLessThan(ref l, ref Unsafe.Subtract(ref upper, (nint)Unsafe.SizeOf<nuint>() - 1)))
         {
             if (Unsafe.As<T, nuint>(ref l) != Unsafe.As<T, nuint>(ref r))
                 return ref Unsafe.As<T, nuint>(ref l) < Unsafe.As<T, nuint>(ref r) ? ref left : ref right;

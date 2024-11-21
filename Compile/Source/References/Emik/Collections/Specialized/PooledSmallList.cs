@@ -188,7 +188,7 @@ ref
     public T[]? DangerouslyTransferOwnership
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MustUseReturnValue("Dispose array with System.Memory.ArrayPool<T>.Shared.Return")]
+         MustUseReturnValue("Dispose array with System.Memory.ArrayPool<T>.Shared.Return.")]
         get
         {
             if (!IsArrayPool)

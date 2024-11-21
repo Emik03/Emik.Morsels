@@ -121,7 +121,11 @@ static partial class Span
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The value to convert.</param>
         /// <returns>The result of the reinterpret cast.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
         [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
         public static unsafe TTo From<TFrom>(TFrom source)
 #if !NO_ALLOWS_REF_STRUCT
             where TFrom : allows ref struct
@@ -166,7 +170,11 @@ static partial class Span
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
@@ -178,7 +186,7 @@ static partial class Span
         Unsafe.As<T?, nuint>(ref reference) = address;
 #endif
     }
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <inheritdoc cref="System.MemoryExtensions.Equals(ReadOnlySpan{char}, ReadOnlySpan{char}, StringComparison)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool EqualsIgnoreCase(this string left, scoped ReadOnlySpan<char> right) =>
@@ -238,7 +246,7 @@ static partial class Span
     public static bool SequenceEqual<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> other)
         where T : IEquatable<T>? =>
         span.Span.SequenceEqual(other.Span);
-#endif
+
     /// <summary>Determines if a given length and type should be stack-allocated.</summary>
     /// <remarks><para>
     /// See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.
@@ -248,7 +256,11 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
     public static bool IsStack<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -277,7 +289,11 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
+#endif
     public static int InBytes<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -289,11 +305,15 @@ static partial class Span
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#else
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+#endif
     public static nuint ToAddress<T>(this T? _)
         where T : class =>
         Ret<nuint>.From(_);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -304,6 +324,8 @@ static partial class Span
         new(ref AsRef(reference));
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));
+#elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+        new([reference]);
 #else
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
 #endif
@@ -323,7 +345,7 @@ static partial class Span
     /// <returns>The <see cref="ReadOnlyMemory{T}"/> of the parameter <paramref name="memory"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ReadOnlyMemory<T> ReadOnly<T>(this Memory<T> memory) => memory;
-#endif
+
     /// <summary>Converts the <see cref="Span{T}"/> to the <see cref="ReadOnlySpan{T}"/>.</summary>
     /// <typeparam name="T">The type of span.</typeparam>
     /// <param name="span">The span to convert.</param>
@@ -351,7 +373,7 @@ static partial class Span
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-#if !CSHARPREPL // This only works with InlineMethod.Fody. Without it, the span points to deallocated stack memory.
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
     /// <summary>Creates the stack allocation of the type.</summary>
     /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
     /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
@@ -360,19 +382,18 @@ static partial class Span
     public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
     {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        System.Diagnostics.Debug.Assert(length >= 0, "length is non-negative");
-
-        if (IsReferenceOrContainsReferences<T>())
-            throw new InvalidOperationException($"You cannot stack-allocate {typeof(T).Name} because it is managed.");
-
-        Span<byte> span = stackalloc byte[InBytes<T>(length)];
+        System.Diagnostics.Debug.Assert(length is >= 0 and <= MaxStackalloc, "Length is within bounds");
+        System.Diagnostics.Debug.Assert(IsReferenceOrContainsReferences<T>(), "Contains references");
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        Span<byte> span = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
 #else
-        return new(span.Pointer, length);
+        var ptr = stackalloc byte[InBytes<T>(length)];
+        return new(ptr, length);
 #endif
     }
 #endif
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
     /// <param name="source">The read-only reference to reinterpret.</param>
@@ -382,16 +403,9 @@ static partial class Span
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    {
-        fixed (T* ptr = &source)
-            return ref *ptr;
-    }
-#else
         =>
             ref Unsafe.AsRef(source);
 #endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Separates the head from the tail of a <see cref="Memory{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="memory">The memory to split.</param>
@@ -435,7 +449,7 @@ static partial class Span
         head = memory.Span.UnsafelyIndex(0);
         tail = memory[1..];
     }
-#endif
+
     /// <summary>Separates the head from the tail of a <see cref="Span{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -508,7 +522,8 @@ static partial class Span
 #else
     {
         fixed (T* ptr = &value)
-            return (nint)((T*)span.Pointer - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
+        fixed (T* s = span)
+            return (nint)(span.Align(s) - ptr) is var elementOffset && (nuint)elementOffset < (uint)span.Length
                 ? (int)elementOffset
                 : -1;
     }
@@ -545,39 +560,53 @@ static partial class Span
         where T : IEquatable<T>?
 #endif
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         fixed (T* searchSpace = span)
         fixed (T* value = values)
-#else
-        var searchSpace = (T*)span.Pointer;
-        var value = (T*)values.Pointer;
-#endif
-            return SpanHelpers.IndexOfAny(searchSpace, span.Length, value, values.Length);
+            return SpanHelpers.IndexOfAny(span.Align(searchSpace), span.Length, values.Align(value), values.Length);
     }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target) =>
+    public static unsafe int OffsetOf<T>(this scoped ReadOnlySpan<T> origin, scoped ReadOnlySpan<T> target)
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        origin.IndexOf(ref MemoryMarshal.GetReference(target));
+        =>
+            origin.IndexOf(ref MemoryMarshal.GetReference(target));
 #else
-        origin.IndexOf(ref *(T*)target.Pointer);
+    {
+        fixed (T* value = target)
+            return origin.IndexOf(ref *target.Align(value));
+    }
 #endif
     /// <inheritdoc cref="IndexOf{T}(ReadOnlySpan{T}, ref T)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int OffsetOf<T>(this scoped Span<T> origin, scoped ReadOnlySpan<T> target) =>
         origin.ReadOnly().OffsetOf(target);
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+
     /// <summary>Converts the provided <see cref="Span{T}"/> to the <see cref="Memory{T}"/>.</summary>
     /// <typeparam name="T">The type if items in the input <see cref="Span{T}"/>.</typeparam>
     /// <param name="span">The <see cref="Span{T}"/> to convert.</param>
     /// <param name="memory">The bounds.</param>
     /// <returns>The parameter <paramref name="span"/> as <see cref="ReadOnlyMemory{T}"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory) =>
-        memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is var i and not -1
+    public static unsafe ReadOnlyMemory<T> AsMemory<T>(this scoped ReadOnlySpan<T> span, ReadOnlyMemory<T> memory)
+    {
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+        return memory.Span.IndexOf(ref MemoryMarshal.GetReference(span)) is not -1 and var i
             ? memory.Slice(i, span.Length)
             : default;
+#else
+        var other = memory.Span;
+
+        fixed (T* s = span)
+        fixed (T* o = other)
+            return ((nint)(span.Align(s) - other.Align(o)) is var elementOffset &&
+                (nuint)elementOffset < (uint)span.Length
+                    ? (int)elementOffset
+                    : -1) is not -1 and var i
+                ? memory.Slice(i, span.Length)
+                : default;
+#endif
+    }
 
     /// <summary>Gets the specific slice from the memory.</summary>
     /// <typeparam name="T">The type of item in the memory.</typeparam>
@@ -738,7 +767,7 @@ static partial class Span
 #endif
         =>
             (uint)(index - 1) < (uint)memory.Length ? memory.Span.UnsafelyIndex(memory.Length - index) : default;
-#endif
+
     /// <summary>Gets the specific slice from the span.</summary>
     /// <typeparam name="T">The type of item in the span.</typeparam>
     /// <param name="span">The <see cref="ReadOnlySpan{T}"/> to get an item from.</param>
@@ -951,4 +980,47 @@ static partial class Span
         System.Diagnostics.Debug.Assert((uint)end <= (uint)body.Length, "end is in range");
         return UnsafelySlice(body, 0, end);
     }
+
+    /// <summary>Aligns the pointer obtained from a fixed expression to the first element of the pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to obtain the pointer of.</param>
+    /// <param name="pinned">The pointed obtained from pinning the parameter <paramref name="span"/>.</param>
+    /// <returns>
+    /// The pointer to the first element of the buffer, or <see langword="null"/>
+    /// if the parameter <paramref name="span"/> is empty.
+    /// </returns>
+    [Inline]
+    internal static unsafe T* Align<T>([UsedImplicitly] this ReadOnlySpan<T> span, T* pinned)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            span.Length is 0 ? null :
+            span.Pinnable is null ? (T*)span.ByteOffset :
+            (T*)((byte*)Unsafe.AsPointer(ref span.Pinnable.Data) + span.ByteOffset);
+#else
+            pinned;
+#endif
+    /// <summary>Aligns the pointer obtained from a fixed expression to the first element of the pointer.</summary>
+    /// <typeparam name="T">The type of <see cref="Span{T}"/>.</typeparam>
+    /// <param name="span">The span to obtain the pointer of.</param>
+    /// <param name="pinned">The pointed obtained from pinning the parameter <paramref name="span"/>.</param>
+    /// <returns>
+    /// The pointer to the first element of the buffer, or <see langword="null"/>
+    /// if the parameter <paramref name="span"/> is empty.
+    /// </returns>
+    [Inline]
+    internal static unsafe T* Align<T>([UsedImplicitly] this Span<T> span, T* pinned)
+#if UNMANAGED_SPAN
+        where T : unmanaged
+#endif
+        =>
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+            span.Length is 0 ? null :
+            span.Pinnable is null ? (T*)span.ByteOffset :
+            (T*)((byte*)pinned + span.ByteOffset);
+#else
+            pinned;
+#endif
 }

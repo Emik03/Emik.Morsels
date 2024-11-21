@@ -45,7 +45,6 @@ static partial class StringFactory
     [return: NotNullIfNotNull(nameof(expression))]
     public static string? CollapseToSingleLine(this string? expression, string? prefix = null)
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         // ReSharper disable once RedundantUnsafeContext
         static unsafe StringBuilder Accumulator(StringBuilder accumulator, scoped ReadOnlySpan<char> next)
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
@@ -54,23 +53,17 @@ static partial class StringFactory
 #else
         {
             var trimmed = next.Trim();
-
-            fixed (char* ptr = &trimmed[0])
-                accumulator.Append(ptr, trimmed.Length);
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            fixed (char* ptr = trimmed)
+                accumulator.Append(trimmed.Align(ptr), trimmed.Length);
+#else
+            foreach (var t in trimmed)
+                accumulator.Append(t);
+#endif
             return accumulator;
         }
 #endif
         return expression?.Collapse().SplitSpanLines().Aggregate(prefix.ToBuilder(), Accumulator).Trim().ToString();
-#else
-        return expression
-          ?.Collapse() // ReSharper disable once RedundantCast
-           .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
-            // ReSharper disable once NullableWarningSuppressionIsUsed RedundantSuppressNullableWarningExpression
-           .Select(x => x.Trim())!
-           .Prepend(prefix)
-           .Conjoin("");
-#endif
     }
 
     /// <summary>Converts a number to an ordinal.</summary>
@@ -252,7 +245,7 @@ static partial class StringFactory
 #endif
 #pragma warning disable 8500
     {
-        var p = stackalloc char[Unsafe.SizeOf<T>() * 2];
+        var p = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
         p[0] = '0';
         p[1] = 'x';
 

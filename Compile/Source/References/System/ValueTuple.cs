@@ -680,7 +680,7 @@ namespace System
         public int CompareTo(ValueTuple<T1, T2> other)
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
-            return c != 0 ? c : Comparer<T2>.Default.Compare(Item2, other.Item2);
+            return c is not 0 ? c : Comparer<T2>.Default.Compare(Item2, other.Item2);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -710,7 +710,7 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            return c != 0 ? c : comparer.Compare(Item2, objTuple.Item2);
+            return c is not 0 ? c : comparer.Compare(Item2, objTuple.Item2);
         }
 
         [Pure]
@@ -881,11 +881,11 @@ namespace System
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
-            return c != 0 ? c : Comparer<T3>.Default.Compare(Item3, other.Item3);
+            return c is not 0 ? c : Comparer<T3>.Default.Compare(Item3, other.Item3);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -916,11 +916,11 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item2, objTuple.Item2);
-            return c != 0 ? c : comparer.Compare(Item3, objTuple.Item3);
+            return c is not 0 ? c : comparer.Compare(Item3, objTuple.Item3);
         }
 
         [Pure]
@@ -1101,16 +1101,16 @@ namespace System
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T3>.Default.Compare(Item3, other.Item3);
-            return c != 0 ? c : Comparer<T4>.Default.Compare(Item4, other.Item4);
+            return c is not 0 ? c : Comparer<T4>.Default.Compare(Item4, other.Item4);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -1142,16 +1142,16 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item2, objTuple.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item3, objTuple.Item3);
-            return c != 0 ? c : comparer.Compare(Item4, objTuple.Item4);
+            return c is not 0 ? c : comparer.Compare(Item4, objTuple.Item4);
         }
 
         [Pure]
@@ -1344,21 +1344,21 @@ namespace System
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T3>.Default.Compare(Item3, other.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T4>.Default.Compare(Item4, other.Item4);
-            return c != 0 ? c : Comparer<T5>.Default.Compare(Item5, other.Item5);
+            return c is not 0 ? c : Comparer<T5>.Default.Compare(Item5, other.Item5);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -1391,21 +1391,21 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item2, objTuple.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item3, objTuple.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item4, objTuple.Item4);
-            return c != 0 ? c : comparer.Compare(Item5, objTuple.Item5);
+            return c is not 0 ? c : comparer.Compare(Item5, objTuple.Item5);
         }
 
         [Pure]
@@ -1609,26 +1609,26 @@ namespace System
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T3>.Default.Compare(Item3, other.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T4>.Default.Compare(Item4, other.Item4);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T5>.Default.Compare(Item5, other.Item5);
-            return c != 0 ? c : Comparer<T6>.Default.Compare(Item6, other.Item6);
+            return c is not 0 ? c : Comparer<T6>.Default.Compare(Item6, other.Item6);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -1662,26 +1662,26 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item2, objTuple.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item3, objTuple.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item4, objTuple.Item4);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item5, objTuple.Item5);
-            return c != 0 ? c : comparer.Compare(Item6, objTuple.Item6);
+            return c is not 0 ? c : comparer.Compare(Item6, objTuple.Item6);
         }
 
         [Pure]
@@ -1906,31 +1906,31 @@ namespace System
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T3>.Default.Compare(Item3, other.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T4>.Default.Compare(Item4, other.Item4);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T5>.Default.Compare(Item5, other.Item5);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T6>.Default.Compare(Item6, other.Item6);
-            return c != 0 ? c : Comparer<T7>.Default.Compare(Item7, other.Item7);
+            return c is not 0 ? c : Comparer<T7>.Default.Compare(Item7, other.Item7);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -1965,31 +1965,31 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item2, objTuple.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item3, objTuple.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item4, objTuple.Item4);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item5, objTuple.Item5);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item6, objTuple.Item6);
-            return c != 0 ? c : comparer.Compare(Item7, objTuple.Item7);
+            return c is not 0 ? c : comparer.Compare(Item7, objTuple.Item7);
         }
 
         int IStructuralEquatable.GetHashCode(IEqualityComparer comparer) => GetHashCodeCore(comparer);
@@ -2231,36 +2231,36 @@ namespace System
         {
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T3>.Default.Compare(Item3, other.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T4>.Default.Compare(Item4, other.Item4);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T5>.Default.Compare(Item5, other.Item5);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T6>.Default.Compare(Item6, other.Item6);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = Comparer<T7>.Default.Compare(Item7, other.Item7);
-            return c != 0 ? c : Comparer<TRest>.Default.Compare(Rest, other.Rest);
+            return c is not 0 ? c : Comparer<TRest>.Default.Compare(Rest, other.Rest);
         }
 
 #if !NET20 && !NET30 && !NET35
@@ -2287,36 +2287,36 @@ namespace System
 
             var c = comparer.Compare(Item1, objTuple.Item1);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item2, objTuple.Item2);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item3, objTuple.Item3);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item4, objTuple.Item4);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item5, objTuple.Item5);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item6, objTuple.Item6);
 
-            if (c != 0)
+            if (c is not 0)
                 return c;
 
             c = comparer.Compare(Item7, objTuple.Item7);
-            return c != 0 ? c : comparer.Compare(Rest, objTuple.Rest);
+            return c is not 0 ? c : comparer.Compare(Rest, objTuple.Rest);
         }
 
         [Pure]
