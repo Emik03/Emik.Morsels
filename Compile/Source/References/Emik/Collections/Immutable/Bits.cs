@@ -307,6 +307,28 @@ readonly
             Unsafe.SizeOf<T>() > Unsafe.SizeOf<TResult>() ? Read(bits) : Copy(bits);
     }
 
+    /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
+    /// <returns>The hex <see cref="string"/>.</returns>
+    [Pure]
+    public string ToHexString()
+    {
+        Span<char> span = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
+        ref var first = ref MemoryMarshal.GetReference(span);
+        const string Hex = "0123456789abcdef";
+
+        first = '0';
+        Unsafe.Add(ref first, 1) = 'x';
+
+        for (int i = 0, j = Unsafe.SizeOf<T>() * 2; i < Unsafe.SizeOf<T>(); i++, j -= 2)
+        {
+            var b = Unsafe.Add(ref Unsafe.As<T, byte>(ref AsRef(bits)), i);
+            Unsafe.Add(ref first, j) = Unsafe.Add(ref AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), (b & 0xf0) >> 4);
+            Unsafe.Add(ref first, j + 1) = Unsafe.Add(ref AsRef(MemoryMarshal.GetReference(Hex.AsSpan())), b & 0x0f);
+        }
+
+        return span.ToString();
+    }
+
     /// <summary>An enumerator over <see cref="Bits{T}"/>.</summary>
     /// <param name="value">The item to use.</param>
     [StructLayout(LayoutKind.Auto)]
