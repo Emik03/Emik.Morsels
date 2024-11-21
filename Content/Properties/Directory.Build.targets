@@ -40,8 +40,8 @@
         <NoWarn>$(NoWarn);419;CI0003;IDE0032;Proj0202;Proj0204;Proj0205</NoWarn>
         <WeaverConfiguration>
             <Weavers>
-                <InlineIL/>
                 <InfoOf/>
+                <InlineIL/>
                 <JetBrainsAnnotations/>
                 <NullGuard Mode="Implicit"/>
                 <LocalsInit Default="false"/>
