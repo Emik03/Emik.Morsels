@@ -290,7 +290,7 @@ namespace System.Diagnostics.CodeAnalysis
     sealed partial class UnscopedRefAttribute : Attribute;
 #endif
 #if !NET8_0_OR_GREATER
-    /// <summary>Indicates that an API is experimental and it may change in the future.</summary>
+    /// <summary>Indicates that an API is experimental, and it may change in the future.</summary>
     /// <remarks><para>
     /// This attribute allows call sites to be flagged with a diagnostic that indicates that an experimental
     /// feature is used. Authors can use this attribute to ship preview features in their assemblies.
@@ -474,7 +474,7 @@ namespace System.Runtime.CompilerServices
     /// The method must be an ordinary member method, as opposed to a property accessor,
     /// constructor, local function, and so on.
     /// </description></item>
-    /// <item><description>The method must be parameterless..</description></item>
+    /// <item><description>The method must be parameterless.</description></item>
     /// <item><description>The method must return <see langword="void"/>.</description></item>
     /// <item><description>The method must not be generic or be contained in a generic type.</description></item>
     /// <item><description>
@@ -720,7 +720,7 @@ namespace System.Text.RegularExpressions
         /// A bitwise combination of the enumeration values that modify the regular expression.
         /// </param>
         /// <param name="cultureName">
-        /// The name of a culture to be used for case sensitive comparisons.
+        /// The name of a culture to be used for case-sensitive comparisons.
         /// <paramref name="cultureName"/> is not case-sensitive.
         /// </param>
         /// <remarks><para>
@@ -772,7 +772,7 @@ namespace System.Text.RegularExpressions
         /// A time-out interval (milliseconds), or <see cref="Timeout.Infinite"/>
         /// to indicate that the method should not time out.</param>
         /// <param name="cultureName">
-        /// The name of a culture to be used for case sensitive comparisons.
+        /// The name of a culture to be used for case-sensitive comparisons.
         /// <paramref name="cultureName"/> is not case-sensitive.
         /// </param>
         /// <remarks><para>
@@ -805,7 +805,7 @@ namespace System.Text.RegularExpressions
         /// </summary>
         public int MatchTimeoutMilliseconds { [Pure] get; }
 
-        /// <summary>Gets the name of the culture to be used for case sensitive comparisons.</summary>
+        /// <summary>Gets the name of the culture to be used for case-sensitive comparisons.</summary>
         public string CultureName { [Pure] get; }
 
         /// <summary>Gets the regular expression pattern to match.</summary>
