@@ -21,9 +21,9 @@
 
         These are the default locations of the application depending on your operating system.
 
-        Windows : C:\Program Files\Unity\Hub\Editor\<VERSION>\Editor\Data\Managed\
-        Mac     : /Applications/Unity/Hub/Editor/<VERSION>/Editor/Data/Managed/
-        Linux   : ~/Unity/Hub/Editor/<VERSION>/Editor/Data/Managed/
+        Windows : C:\Program Files\Unity\Hub\Editor\<VERSION>\
+        Mac     : /Applications/Unity/Hub/Editor/<VERSION>/
+        Linux   : ~/Unity/Hub/Editor/<VERSION>/
 
         If your application is elsewhere, specify the path below in the property, otherwise leave it blank.
         -->
