@@ -124,8 +124,8 @@
         <Reference Include="PlayMaker" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/PlayMaker.dll" Private="false"/>
         <Reference Include="UnityEngine" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/UnityEngine.dll" Private="false"/>
         <Reference Include="Assembly-CSharp" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/Assembly-CSharp.dll" Private="false"/>
-        <Reference Include="UnityEngine.CoreModule" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/UnityEngine.CoreModule.dll" Private="false"/>
         <Reference Include="Assembly-CSharp-firstpass" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/Assembly-CSharp-firstpass.dll" Private="false"/>
+        <Reference Condition="'$(UseUnityCoreModule)' == 'true'" Include="UnityEngine.CoreModule" HintPath="$(HollowKnight)/hollow_knight_Data/Managed/UnityEngine.CoreModule.dll" Private="false"/>
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="'$(IsKtane)' == 'true'">
