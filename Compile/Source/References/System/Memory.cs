@@ -205,7 +205,7 @@ readonly
     public T[] ToArray() => Span.ToArray();
 
     [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object obj) =>
+    public override bool Equals(object? obj) =>
         obj switch
         {
             ReadOnlyMemory<T> readOnlyMemory => readOnlyMemory.Equals(this),
@@ -332,7 +332,7 @@ readonly
     public void CopyTo(Memory<T> destination) => Span.CopyTo(destination.Span);
 
     [EditorBrowsable(EditorBrowsableState.Never), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public override bool Equals(object obj) =>
+    public override bool Equals(object? obj) =>
         obj switch
         {
             ReadOnlyMemory<T> other => Equals(other),
