@@ -1354,7 +1354,7 @@ public
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
-#pragma warning disable 8500
+#pragma warning disable 8500, RCS1175
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -1598,7 +1598,7 @@ public
         where T : allows ref struct
 #endif
         =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
 #else
             new Span<byte>(&value, Unsafe.SizeOf<T>()).ToArray();
@@ -1642,10 +1642,10 @@ public
         new(ref AsRef(reference));
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));
-#elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        new([reference]);
-#else
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
+#else
+        new([reference]);
 #endif
     /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
@@ -1676,8 +1676,10 @@ public
     public static Span<T> Ref<T>(ref T reference) =>
 #if NET7_0_OR_GREATER
         new(ref reference);
-#else
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         MemoryMarshal.CreateSpan(ref reference, 1);
+#else
+        new([reference]);
 #endif
     /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
@@ -1698,7 +1700,7 @@ public
     {
         System.Diagnostics.Debug.Assert(length is >= 0 and <= MaxStackalloc, "Length is within bounds");
         System.Diagnostics.Debug.Assert(IsReferenceOrContainsReferences<T>(), "Contains references");
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         Span<byte> span = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
 #else
@@ -2188,7 +2190,7 @@ public
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
         return body.Slice(start, length);
@@ -2240,7 +2242,7 @@ public
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
         return body.Slice(start, length);
@@ -6446,6 +6448,16 @@ public enum ControlFlow : byte
     static byte V(int color, byte saturation) => (byte)((byte)color + (M - saturation) * (M - (byte)color) / M);
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
+[StructLayout(LayoutKind.Sequential)]
+public sealed class Pinnable<T>
+{
+#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+    public static Pinnable<T> Default { get; } = new();
+#endif
+    public T Data = default!;
+}
+// SPDX-License-Identifier: MPL-2.0
+// ReSharper disable once CheckNamespace
     [StructLayout(LayoutKind.Sequential)]
     public readonly unsafe partial struct MessageBoxData(
         uint flags,
@@ -8526,8 +8538,12 @@ public ref
         /// <param name="reference">The reference.</param>
         /// <returns>The span.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static Span<T> AsSpan(ref TRef reference) =>
+        public static unsafe Span<T> AsSpan(ref TRef reference) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             MemoryMarshal.CreateSpan(ref Unsafe.As<TRef, T>(ref reference), InlinedLength);
+#else
+            new(Unsafe.AsPointer(ref Unsafe.As<TRef, T>(ref reference)), InlinedLength);
+#endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool Go(Type type) =>
             type

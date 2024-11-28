@@ -15,7 +15,7 @@ static partial class SpanHelpers
         public static readonly bool IsReferenceOrContainsReferences = IsReferenceOrContainsReferencesCore(typeof(T));
 
         public static readonly T[] EmptyArray = [];
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+
         public static readonly nint ArrayAdjustment = MeasureArrayAdjustment();
 
         static nint MeasureArrayAdjustment()
@@ -26,7 +26,6 @@ static partial class SpanHelpers
             fixed (T* data = &Unsafe.As<Pinnable<T>>(single).Data)
                 return (nint)element - (nint)data;
         }
-#endif
     }
 
     [StructLayout(LayoutKind.Auto)]

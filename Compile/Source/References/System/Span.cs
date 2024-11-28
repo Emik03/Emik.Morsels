@@ -959,13 +959,4 @@ sealed class SpanDebugView<T>
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     public T[] Items { [Pure] get; }
 }
-
-[StructLayout(LayoutKind.Sequential)]
-sealed class Pinnable<T>
-{
-    public static Pinnable<T> Default { get; } = new();
-
-    // ReSharper disable once NullableWarningSuppressionIsUsed
-    public T Data = default!;
-}
 #endif
