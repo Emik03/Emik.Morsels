@@ -339,8 +339,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override unsafe string ToString()
     {
-        if (typeof(T) != typeof(char))
-            return $"System.Span<{typeof(T).Name}>[{Length}]";
+        if (typeof(T) != typeof(char)) // ReSharper disable once UseStringInterpolation
+            return string.Format("System.Span<{0}>[{1}]", typeof(T).Name, Length);
 
         if (ByteOffset == MemoryExtensions.StringAdjustment)
         {
@@ -458,7 +458,11 @@ readonly
     void ValidateIndex(int index)
     {
         if ((uint)index >= (uint)Length)
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be non-zero and below length {Length}.");
+            throw new ArgumentOutOfRangeException(
+                nameof(index),
+                index, // ReSharper disable once UseStringInterpolation
+                string.Format("Must be non-zero and below length {0}.", Length)
+            );
     }
 
     /// <summary>Enumerates the elements of a <see cref="Span{T}"/>.</summary>
@@ -776,8 +780,8 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public override unsafe string ToString()
     {
-        if (typeof(T) != typeof(char))
-            return $"System.ReadOnlySpan<{typeof(T).Name}>[{Length}]";
+        if (typeof(T) != typeof(char)) // ReSharper disable once UseStringInterpolation
+            return string.Format("System.ReadOnlySpan<{0}>[{1}]", typeof(T).Name, Length);
 
         if (ByteOffset == MemoryExtensions.StringAdjustment)
         {
@@ -876,7 +880,11 @@ readonly
     void ValidateIndex(int index)
     {
         if ((uint)index >= (uint)Length)
-            throw new ArgumentOutOfRangeException(nameof(index), index, $"Must be non-zero and below length {Length}.");
+            throw new ArgumentOutOfRangeException(
+                nameof(index),
+                index, // ReSharper disable once UseStringInterpolation
+                string.Format("Must be non-zero and below length {0}.", Length)
+            );
     }
 
     /// <summary>Enumerates the elements of a <see cref="ReadOnlySpan{T}"/>.</summary>

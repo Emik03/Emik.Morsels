@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable InvocationIsSkipped
-// ReSharper disable once CheckNamespace
+// ReSharper disable InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
 #pragma warning disable IDE0064, IDE0251, MA0102, RCS1146, SA1214
+// ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 
 /// <summary>
