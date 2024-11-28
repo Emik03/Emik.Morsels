@@ -70,6 +70,11 @@
         <DefineConstants Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))">$(DefineConstants);NO_ALLOWS_REF_STRUCT</DefineConstants>
         <DefineConstants Condition="'$(IsCeleste)' == 'true' and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard1.3'))">$(DefineConstants);NO_READONLY_STRUCTS;NO_SYSTEM_MEMORY</DefineConstants>
     </PropertyGroup>
+    <!-- Indicate that the project are for tests based on its name. -->
+    <PropertyGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
+        <IsTestProject>true</IsTestProject>
+        <IsPublishable>false</IsPublishable>
+    </PropertyGroup>
     <!-- Reference weaved reference dll's from Emik.Morsels. -->
     <PropertyGroup Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))">
         <AssemblySearchPaths>$(Morsels)/References/;$(AssemblySearchPaths)</AssemblySearchPaths>
