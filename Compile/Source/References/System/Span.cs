@@ -344,7 +344,7 @@ readonly
 
         if (ByteOffset == MemoryExtensions.StringAdjustment)
         {
-            var obj = Unsafe.As<object?>(Pinnable);
+            var obj = Unsafe.As<object>(Pinnable);
 
             if (obj is string text && Length == text.Length)
                 return text;

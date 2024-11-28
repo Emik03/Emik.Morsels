@@ -208,7 +208,7 @@ static unsafe class Unsafe
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T As<T>(object o)
+    public static T As<T>(object? o)
         where T : class
     {
         Ldarg(nameof(o));

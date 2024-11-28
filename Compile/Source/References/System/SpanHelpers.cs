@@ -36,8 +36,8 @@ static partial class SpanHelpers
         struct ComparerComparable<T, TComparer>(T value, TComparer comparer) : IComparable<T>
         where TComparer : IComparer<T>
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int CompareTo(T? other) => comparer.Compare(value, other);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
+        public int CompareTo(T? other) => comparer.Compare(value, other!);
     }
 
     [StructLayout(LayoutKind.Sequential, Size = 64)]
