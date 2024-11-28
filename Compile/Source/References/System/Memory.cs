@@ -481,18 +481,6 @@ abstract class MemoryManager<T> : IMemoryOwner<T>, IDisposable, IPinnable
     protected Memory<T> CreateMemory(int start, int length) => new(this, start, length);
 }
 
-interface IMemoryOwner<T> : IDisposable
-{
-    Memory<T> Memory { get; }
-}
-
-interface IPinnable
-{
-    void Unpin();
-
-    MemoryHandle Pin(int elementIndex);
-}
-
 sealed class MemoryDebugView<T>
 {
     readonly ReadOnlyMemory<T> _memory;
