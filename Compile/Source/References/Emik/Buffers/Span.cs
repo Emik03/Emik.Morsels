@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 8500
+#pragma warning disable 8500, RCS1175
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 
@@ -278,7 +278,7 @@ static partial class Span
         where T : allows ref struct
 #endif
         =>
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             [.. MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, byte>(ref AsRef(value)), Unsafe.SizeOf<T>())];
 #else
             new Span<byte>(&value, Unsafe.SizeOf<T>()).ToArray();
@@ -324,10 +324,10 @@ static partial class Span
         new(ref AsRef(reference));
 #elif NET7_0_OR_GREATER
         new(AsRef(reference));
-#elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-        new([reference]);
-#else
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         MemoryMarshal.CreateReadOnlySpan(ref AsRef(reference), 1);
+#else
+        new([reference]);
 #endif
     /// <summary>Creates a new reinterpreted <see cref="ReadOnlySpan{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
@@ -361,8 +361,10 @@ static partial class Span
     public static Span<T> Ref<T>(ref T reference) =>
 #if NET7_0_OR_GREATER
         new(ref reference);
-#else
+#elif NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         MemoryMarshal.CreateSpan(ref reference, 1);
+#else
+        new([reference]);
 #endif
     /// <summary>Creates a new reinterpreted <see cref="Span{T}"/> over the specified reference.</summary>
     /// <typeparam name="TFrom">The source type.</typeparam>
@@ -384,7 +386,7 @@ static partial class Span
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         System.Diagnostics.Debug.Assert(length is >= 0 and <= MaxStackalloc, "Length is within bounds");
         System.Diagnostics.Debug.Assert(IsReferenceOrContainsReferences<T>(), "Contains references");
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         Span<byte> span = stackalloc byte[InBytes<T>(length)];
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
 #else
@@ -907,7 +909,7 @@ static partial class Span
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
         return body.Slice(start, length);
@@ -963,7 +965,7 @@ static partial class Span
 #endif
     {
         System.Diagnostics.Debug.Assert((uint)(start + length) <= (uint)body.Length, "start and length is in range");
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
         return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(body), start), length);
 #else
         return body.Slice(start, length);

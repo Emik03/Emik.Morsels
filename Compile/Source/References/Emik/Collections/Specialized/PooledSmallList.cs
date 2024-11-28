@@ -695,8 +695,12 @@ ref
         /// <param name="reference">The reference.</param>
         /// <returns>The span.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static Span<T> AsSpan(ref TRef reference) =>
+        public static unsafe Span<T> AsSpan(ref TRef reference) =>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
             MemoryMarshal.CreateSpan(ref Unsafe.As<TRef, T>(ref reference), InlinedLength);
+#else
+            new(Unsafe.AsPointer(ref Unsafe.As<TRef, T>(ref reference)), InlinedLength);
+#endif
 
         // ReSharper disable once SuggestBaseTypeForParameter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

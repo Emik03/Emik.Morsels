@@ -9,6 +9,7 @@ using Emik.Morsels;
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
+    // ReSharper disable once RedundantUnsafeContext
     public static unsafe partial class PerTypeValues<T>
     {
         public static readonly bool IsReferenceOrContainsReferences = IsReferenceOrContainsReferencesCore(typeof(T));
@@ -41,13 +42,13 @@ static partial class SpanHelpers
     }
 
     [StructLayout(LayoutKind.Sequential, Size = 64)]
-    struct Reg64;
+    struct _Reg64;
 
     [StructLayout(LayoutKind.Sequential, Size = 32)]
-    struct Reg32;
+    struct _Reg32;
 
     [StructLayout(LayoutKind.Sequential, Size = 16)]
-    struct Reg16;
+    struct _Reg16;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe int BinarySearch<T, TComparable>(this ReadOnlySpan<T> span, TComparable comparable)
@@ -1820,19 +1821,19 @@ static partial class SpanHelpers
     {
         nint zero;
 
-        for (zero = 0; zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg64>()); zero += Unsafe.SizeOf<Reg64>())
-            *(Reg64*)((nint)b + zero) = default;
+        for (zero = 0; zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<_Reg64>()); zero += Unsafe.SizeOf<_Reg64>())
+            *(_Reg64*)((nint)b + zero) = default;
 
-        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg32>()))
+        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<_Reg32>()))
         {
-            *(Reg32*)((nint)b + zero) = default;
-            zero += Unsafe.SizeOf<Reg32>();
+            *(_Reg32*)((nint)b + zero) = default;
+            zero += Unsafe.SizeOf<_Reg32>();
         }
 
-        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<Reg16>()))
+        if (zero.LessThanEqual(byteLength - (nuint)Unsafe.SizeOf<_Reg16>()))
         {
-            *(Reg16*)((nint)b + zero) = default;
-            zero += Unsafe.SizeOf<Reg16>();
+            *(_Reg16*)((nint)b + zero) = default;
+            zero += Unsafe.SizeOf<_Reg16>();
         }
 
         if (zero.LessThanEqual(byteLength - 8))

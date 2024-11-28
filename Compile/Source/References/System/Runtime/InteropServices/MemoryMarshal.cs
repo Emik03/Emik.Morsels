@@ -4,7 +4,7 @@
 // ReSharper disable BadPreprocessorIndent RedundantNameQualifier RedundantUnsafeContext RedundantUsingDirective
 namespace System.Runtime.InteropServices;
 #pragma warning disable 8500, SA1137
-#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER
+#if !NETSTANDARD2_1_OR_GREATER && !NETCOREAPP2_1_OR_GREATER && !NO_SYSTEM_RUNTIME_INTEROPSERVICES_MEMORYMARSHAL
 #pragma warning disable 1574 // Reference to System.Memory may not exist.
 /// <summary>
 /// Provides a collection of methods for interoperating with <see cref="Memory{T}"/>, <see cref="ReadOnlyMemory{T}"/>,
