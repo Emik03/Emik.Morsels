@@ -179,13 +179,9 @@ global using CommunityToolkit.HighPerformance.Helpers;
 global using CommunityToolkit.HighPerformance.Memory;
 global using CommunityToolkit.HighPerformance.Memory.Views;
 global using CommunityToolkit.HighPerformance.Streams;
-global using Emik.Results;
-global using Emik.Results.Extensions;
 global using FastGenericNew;
 global using JetBrains.Annotations;
 global using TextCopy;
-global using static Emik.Results.Please;
-global using static Emik.Results.Result;
 global using static FastGenericNew.FastNew;
 global using static TextCopy.ClipboardService;
 global using ComptimeString = System.Buffers.SearchValues<char>;
@@ -18827,6 +18823,3 @@ partial class ResolveDelegateAttribute : Attribute
     /// <summary>Inline after resolve.</summary>
     public bool Inline { get; }
 }
-/// <summary>Polyfill for <c>nameof()</c>.</summary>
-static class Morsels;
-CatchFatalExceptions = true;
