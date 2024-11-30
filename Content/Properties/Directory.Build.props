@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props') and !Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.local.props', '$(MSBuildProjectFullPath)../')))" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
+    <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props')" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
         <Authors>Emik</Authors>
