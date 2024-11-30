@@ -1,6 +1,5 @@
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <Project>
-    <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props')" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
     <!-- Common and/or default values. -->
     <PropertyGroup>
         <Authors>Emik</Authors>
@@ -200,4 +199,5 @@
         <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.5.2" PrivateAssets="all"/>
         <PackageReference Condition="($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp')))" Include="FastGenericNew.SourceGenerator" Version="3.3.1" PrivateAssets="all"/>
     </ItemGroup>
+    <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props')" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
 </Project>
