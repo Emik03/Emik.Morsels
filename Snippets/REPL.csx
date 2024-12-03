@@ -6575,8 +6575,8 @@ public sealed class Pinnable<T>
         static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
         const int Flags = 3;
         var nonZeroLength = Math.Max(buttons.Length, 1);
-        using var _ = nonZeroLength.Alloc(out Span<Rented<byte>.Pinned> pins);
-        using var __ = nonZeroLength.Alloc(out MessageBoxData.Button* buttonDatas);
+        using var _ = new Rented<Rented<byte>.Pinned>(nonZeroLength, out var pins);
+        using var __ = new Rented<MessageBoxData.Button>.Pinned(nonZeroLength, out var buttonDatas);
         if (buttons.IsEmpty)
         {
             pins[0] = new(3, out var bytes);
