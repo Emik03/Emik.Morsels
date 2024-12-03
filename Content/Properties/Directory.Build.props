@@ -154,10 +154,10 @@
         <PackageReference Include="AsyncFixer" Version="1.6" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.2" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all"/>
-        <PackageReference Include="Absence.Fody" Version="2.0.7" PrivateAssets="all"/>
         <PackageReference Include="Divorce.Fody" Version="1.1.1" PrivateAssets="all"/>
-        <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
         <PackageReference Include="InlineIL.Fody" Version="1.10" PrivateAssets="all"/>
+        <PackageReference Include="Absence.Fody" Version="2.0.10" PrivateAssets="all"/>
+        <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
         <PackageReference Include="InlineMethod.Fody" Version="0.8.2" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all"/>
