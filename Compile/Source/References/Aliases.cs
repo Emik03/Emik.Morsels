@@ -88,6 +88,7 @@ global using Timer = System.Threading.Timer;
 global using Color = Microsoft.Xna.Framework.Color;
 global using DisplayMode = Microsoft.Xna.Framework.Graphics.DisplayMode;
 global using Keyboard = Microsoft.Xna.Framework.Input.Keyboard;
+global using Point = Microsoft.Xna.Framework.Point;
 global using Rectangle = Microsoft.Xna.Framework.Rectangle;
 global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
 global using Vector2 = Microsoft.Xna.Framework.Vector2;
