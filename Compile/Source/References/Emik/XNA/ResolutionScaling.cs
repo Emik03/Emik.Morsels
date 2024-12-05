@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA
-// ReSharper disable once CheckNamespace
+#if XNA // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Contains scaling methods for resolutions.</summary>

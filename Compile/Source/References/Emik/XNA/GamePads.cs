@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA
-#pragma warning disable GlobalUsingsAnalyzer
-// ReSharper disable once CheckNamespace
+#if XNA // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 using static Span;
