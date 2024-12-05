@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA
-// ReSharper disable once CheckNamespace
+#if XNA // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
+
+using static Span;
 
 /// <summary>Provides thread-safe access to keyboard input.</summary>
 static partial class ButtonExtensions
@@ -9,18 +10,21 @@ static partial class ButtonExtensions
     /// <summary>Converts <see cref="GamePadButtons"/> to <see cref="Buttons"/>.</summary>
     /// <param name="state">The <see cref="GamePadButtons"/> to convert.</param>
     /// <returns>The <see cref="Buttons"/> equivalent.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // Not `in` because `GamePadButtons` is 4 bytes large.
-    public static Buttons AsButtons(this GamePadButtons state) => (Buttons)state.GetHashCode();
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure,
+     UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_buttons")]
+    public static extern ref readonly Buttons AsButtons(this in GamePadButtons state);
 
     /// <summary>Converts <see cref="MouseState"/> to <see cref="MouseButtons"/>.</summary>
     /// <param name="state">The <see cref="MouseState"/> to convert.</param>
     /// <returns>The <see cref="MouseButtons"/> equivalent.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static MouseButtons ToMouseButtons(this in MouseState state) =>
-        (state.LeftButton is ButtonState.Pressed ? MouseButtons.Left : MouseButtons.None) |
-        (state.MiddleButton is ButtonState.Pressed ? MouseButtons.Middle : MouseButtons.None) |
-        (state.RightButton is ButtonState.Pressed ? MouseButtons.Right : MouseButtons.None) |
-        (state.XButton1 is ButtonState.Pressed ? MouseButtons.X1 : MouseButtons.None) |
-        (state.XButton2 is ButtonState.Pressed ? MouseButtons.X2 : MouseButtons.None);
+    public static ref readonly MouseButtons ToMouseButtons(this in MouseState state)
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure,
+         UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_buttons")]
+        static extern ref readonly byte Buttons(in MouseState state);
+
+        return ref Unsafe.As<byte, MouseButtons>(ref AsRef(Buttons(in state)));
+    }
 }
 #endif
