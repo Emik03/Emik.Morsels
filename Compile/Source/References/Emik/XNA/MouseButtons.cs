@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if XNA
-// ReSharper disable once CheckNamespace
+#if XNA // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Contains mouse buttons.</summary>
@@ -13,11 +12,11 @@ enum MouseButtons : byte
     /// <summary>Left mouse button.</summary>
     Left,
 
-    /// <summary>Middle mouse button.</summary>
-    Middle,
-
     /// <summary>Right mouse button.</summary>
-    Right = 1 << 2,
+    Right,
+
+    /// <summary>Middle mouse button.</summary>
+    Middle = 1 << 2,
 
     /// <summary>X1 mouse button.</summary>
     X1 = 1 << 3,
