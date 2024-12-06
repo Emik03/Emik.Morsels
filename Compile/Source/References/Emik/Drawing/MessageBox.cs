@@ -158,9 +158,9 @@ static partial class MessageBox
             for (var i = 0; i < buttons.Length; i++)
                 fixed (char* chars = buttons[i])
                 {
-                    var length = buttons[i].Length * 4 + 1;
-                    pins[i] = new(length, out var bytes);
-                    bytes[Encoding.UTF8.GetBytes(chars, buttons[i].Length, bytes, length)] = 0;
+                    int charLength = buttons[i].Length, byteLength = charLength * 4 + 1;
+                    pins[i] = new(byteLength, out var bytes);
+                    bytes[Encoding.UTF8.GetBytes(chars, charLength, bytes, byteLength)] = 0;
                     buttonDatas[i] = new(Flags, i, bytes);
                 }
 
