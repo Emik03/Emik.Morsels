@@ -4,12 +4,10 @@ namespace Emik.Morsels;
 
 /// <summary>The basic wrapper around <see cref="Game"/> that handles letterboxing for a 2D game.</summary>
 // ReSharper disable NullableWarningSuppressionIsUsed
-abstract partial class Letterboxed2DGame : Game
+[CLSCompliant(false)]
+public abstract partial class Letterboxed2DGame : Game
 {
-    /// <summary>Gets the native resolutions.</summary>
-    [NonNegativeValue]
-    readonly float _width, _height;
-
+    /// <summary>The device manager that contains this instance.</summary>
     readonly GraphicsDeviceManager _manager;
 
     /// <summary>Gets the target to draw to.</summary>
@@ -23,41 +21,60 @@ abstract partial class Letterboxed2DGame : Game
     /// </param>
     protected Letterboxed2DGame(int width, int height, Action<GraphicsDeviceManager>? setup = null)
     {
-        _width = width;
-        _height = height;
+        Width = width;
+        Height = height;
         IsMouseVisible = true;
-        const float ScaledDown = 5 / 6f;
         Window.AllowUserResizing = true;
+        const float ScaledDown = 5 / 6f;
 
-        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / _width)
-           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / _height);
+        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / Width)
+           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / Height);
 
 #pragma warning disable IDISP001
         _manager = new(this)
 #pragma warning restore IDISP001
         {
-            PreferredBackBufferWidth = (int)(_width * ratio * ScaledDown),
-            PreferredBackBufferHeight = (int)(_height * ratio * ScaledDown),
             SynchronizeWithVerticalRetrace = true,
+            PreferredBackBufferWidth = (int)(Width * ratio * ScaledDown),
+            PreferredBackBufferHeight = (int)(Height * ratio * ScaledDown),
         };
 
         setup?.Invoke(_manager);
         _manager.ApplyChanges();
-        Window.KeyDown += FullScreenBind;
+        Window.KeyDown += CheckForBorderlessOrFullScreenBind;
+        GraphicsDevice.BlendState = BlendState.NonPremultiplied;
     }
+
+    /// <summary>Determines whether the game is being played in a desktop environment.</summary>
+    [Pure, SupportedOSPlatformGuard("freebsd"), SupportedOSPlatformGuard("linux"), SupportedOSPlatformGuard("macos"),
+     SupportedOSPlatformGuard("windows")]
+    public static bool IsDesktop =>
+        OperatingSystem.IsWindows() ||
+        OperatingSystem.IsMacOS() ||
+        OperatingSystem.IsLinux() ||
+        OperatingSystem.IsFreeBSD();
+
+    /// <summary>Gets the height of the native (world) resolution.</summary>
+    [NonNegativeValue, Pure]
+    public int Height { get; }
+
+    /// <summary>Gets the width of the native (world) resolution.</summary>
+    [NonNegativeValue, Pure]
+    public int Width { get; }
 
     /// <summary>Gets the background, shown in letterboxing.</summary>
     [Pure]
-    protected Color Background { get; set; }
+    public Color Background { get; set; }
 
     /// <summary>Gets the batch to draw with.</summary>
     [Pure]
-    protected SpriteBatch Batch { get; private set; } = null!;
+    public SpriteBatch Batch { get; private set; } = null!;
 
     /// <summary>Gets the texture containing a single white pixel.</summary>
     [Pure]
-    protected Texture2D WhitePixel { get; private set; } = null!;
+    public Texture2D WhitePixel { get; private set; } = null!;
 
+    /// <inheritdoc />
     protected override bool BeginDraw()
     {
         Debug.Assert(Batch is not null);
@@ -75,7 +92,7 @@ abstract partial class Letterboxed2DGame : Game
         GraphicsDevice.SetRenderTarget(null);
         GraphicsDevice.Clear(Background);
         Batch.Begin();
-        var resolution = GraphicsDevice.Resolution(_width, _height);
+        var resolution = GraphicsDevice.Resolution(Width, Height);
         Batch.Draw(_target, resolution, Color.White);
         Batch.End();
         base.EndDraw();
@@ -86,7 +103,7 @@ abstract partial class Letterboxed2DGame : Game
     protected override void Initialize()
     {
         base.Initialize();
-        _target = new(GraphicsDevice, (int)_width, (int)_height);
+        _target = new(GraphicsDevice, Width, Height);
         Services.AddService(Batch = new(GraphicsDevice));
         WhitePixel = new(GraphicsDevice, 1, 1);
         WhitePixel.SetData([Color.White]);
@@ -101,13 +118,13 @@ abstract partial class Letterboxed2DGame : Game
     {
         var bounds = Window.ClientBounds;
         float width = bounds.Width, height = bounds.Height;
-        var world = _width / _height;
+        var world = Width / Height;
         var window = width / height;
-        var ratio = window < world ? width / _width : height / _height;
+        var ratio = window < world ? width / Width : height / Height;
 
         return window < world
-            ? new(x / ratio, (y - (height - ratio * _height) / 2) / ratio)
-            : new((x - (width - ratio * _width) / 2) / ratio, y / ratio);
+            ? new(x / ratio, (y - (height - ratio * Height) / 2) / ratio)
+            : new((x - (width - ratio * Width) / 2) / ratio, y / ratio);
     }
 
     /// <inheritdoc cref="World(Vector2)"/>
@@ -131,13 +148,19 @@ abstract partial class Letterboxed2DGame : Game
     /// <summary>Invoked when a keyboard button is pressed.</summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The event arguments containing the key that was pressed.</param>
-    void FullScreenBind(object? sender, InputKeyEventArgs e)
+    void CheckForBorderlessOrFullScreenBind(object? sender, InputKeyEventArgs e)
     {
-        if (e.Key is not Keys.F11)
-            return;
-
-        _manager.IsFullScreen = !_manager.IsFullScreen;
-        _manager.ApplyChanges();
+        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+        switch (e.Key)
+        {
+            case Keys.F9 when IsDesktop:
+                Window.IsBorderless = !Window.IsBorderless;
+                break;
+            case Keys.F11:
+                _manager.IsFullScreen = !_manager.IsFullScreen;
+                _manager.ApplyChanges();
+                break;
+        }
     }
 }
 #endif

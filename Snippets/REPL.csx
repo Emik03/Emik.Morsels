@@ -3762,7 +3762,6 @@ readonly
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
-// ReSharper disable once CheckNamespace
 /// <summary>Contains mouse buttons.</summary>
 [Flags]
 public enum MouseButtons : byte
@@ -3771,10 +3770,10 @@ public enum MouseButtons : byte
     None,
     /// <summary>Left mouse button.</summary>
     Left,
-    /// <summary>Middle mouse button.</summary>
-    Middle,
     /// <summary>Right mouse button.</summary>
-    Right = 1 << 2,
+    Right,
+    /// <summary>Middle mouse button.</summary>
+    Middle = 1 << 2,
     /// <summary>X1 mouse button.</summary>
     X1 = 1 << 3,
     /// <summary>X2 mouse button.</summary>
@@ -6589,9 +6588,9 @@ public sealed class Pinnable<T>
             for (var i = 0; i < buttons.Length; i++)
                 fixed (char* chars = buttons[i])
                 {
-                    var length = buttons[i].Length * 4 + 1;
-                    pins[i] = new(length, out var bytes);
-                    bytes[Encoding.UTF8.GetBytes(chars, buttons[i].Length, bytes, length)] = 0;
+                    int charLength = buttons[i].Length, byteLength = charLength * 4 + 1;
+                    pins[i] = new(byteLength, out var bytes);
+                    bytes[Encoding.UTF8.GetBytes(chars, charLength, bytes, byteLength)] = 0;
                     buttonDatas[i] = new(Flags, i, bytes);
                 }
         try
@@ -8559,7 +8558,6 @@ public ref
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
-// ReSharper disable once CheckNamespace
 #pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [CLSCompliant(false), Flags]
@@ -10138,7 +10136,6 @@ readonly
 }
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
-// ReSharper disable once CheckNamespace
 /// <summary>Contains scaling methods for resolutions.</summary>
     /// <summary>Gets the height of the screen.</summary>
     /// <param name="device">The current width.</param>
@@ -12068,23 +12065,24 @@ readonly
 }
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
-// ReSharper disable once CheckNamespace
 /// <summary>Provides thread-safe access to keyboard input.</summary>
     /// <summary>Converts <see cref="GamePadButtons"/> to <see cref="Buttons"/>.</summary>
     /// <param name="state">The <see cref="GamePadButtons"/> to convert.</param>
     /// <returns>The <see cref="Buttons"/> equivalent.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Buttons AsButtons(this GamePadButtons state) => (Buttons)state.GetHashCode();
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure,
+     UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_buttons")]
+    public static extern ref readonly Buttons AsButtons(this in GamePadButtons state);
     /// <summary>Converts <see cref="MouseState"/> to <see cref="MouseButtons"/>.</summary>
     /// <param name="state">The <see cref="MouseState"/> to convert.</param>
     /// <returns>The <see cref="MouseButtons"/> equivalent.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static MouseButtons ToMouseButtons(this in MouseState state) =>
-        (state.LeftButton is ButtonState.Pressed ? MouseButtons.Left : MouseButtons.None) |
-        (state.MiddleButton is ButtonState.Pressed ? MouseButtons.Middle : MouseButtons.None) |
-        (state.RightButton is ButtonState.Pressed ? MouseButtons.Right : MouseButtons.None) |
-        (state.XButton1 is ButtonState.Pressed ? MouseButtons.X1 : MouseButtons.None) |
-        (state.XButton2 is ButtonState.Pressed ? MouseButtons.X2 : MouseButtons.None);
+    public static ref readonly MouseButtons ToMouseButtons(this in MouseState state)
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure,
+         UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_buttons")]
+        static extern ref readonly byte Buttons(in MouseState state);
+        return ref Unsafe.As<byte, MouseButtons>(ref AsRef(Buttons(in state)));
+    }
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
@@ -12820,6 +12818,148 @@ readonly
         Environment.Exit(exitCode);
         throw Unreachable;
     }
+#endif
+// SPDX-License-Identifier: MPL-2.0
+#if XNA
+/// <summary>The basic wrapper around <see cref="Game"/> that handles letterboxing for a 2D game.</summary>
+// ReSharper disable NullableWarningSuppressionIsUsed
+[CLSCompliant(false)]
+public abstract partial class Letterboxed2DGame : Game
+{
+    /// <summary>The device manager that contains this instance.</summary>
+    readonly GraphicsDeviceManager _manager;
+    /// <summary>Gets the target to draw to.</summary>
+    RenderTarget2D? _target;
+    /// <summary>Initializes a new instances of the <see cref="Letterboxed2DGame"/> class.</summary>
+    /// <param name="width">The width of the world.</param>
+    /// <param name="height">The height of the world.</param>
+    /// <param name="setup">
+    /// The callback invoked before <see cref="GraphicsDeviceManager.ApplyChanges"/> is invoked.
+    /// </param>
+    protected Letterboxed2DGame(int width, int height, Action<GraphicsDeviceManager>? setup = null)
+    {
+        Width = width;
+        Height = height;
+        IsMouseVisible = true;
+        Window.AllowUserResizing = true;
+        const float ScaledDown = 5 / 6f;
+        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / Width)
+           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / Height);
+#pragma warning disable IDISP001
+        _manager = new(this)
+#pragma warning restore IDISP001
+        {
+            SynchronizeWithVerticalRetrace = true,
+            PreferredBackBufferWidth = (int)(Width * ratio * ScaledDown),
+            PreferredBackBufferHeight = (int)(Height * ratio * ScaledDown),
+        };
+        setup?.Invoke(_manager);
+        _manager.ApplyChanges();
+        Window.KeyDown += CheckForBorderlessOrFullScreenBind;
+        GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+    }
+    /// <summary>Determines whether the game is being played in a desktop environment.</summary>
+    [Pure, SupportedOSPlatformGuard("freebsd"), SupportedOSPlatformGuard("linux"), SupportedOSPlatformGuard("macos"),
+     SupportedOSPlatformGuard("windows")]
+    public static bool IsDesktop =>
+        OperatingSystem.IsWindows() ||
+        OperatingSystem.IsMacOS() ||
+        OperatingSystem.IsLinux() ||
+        OperatingSystem.IsFreeBSD();
+    /// <summary>Gets the height of the native (world) resolution.</summary>
+    [NonNegativeValue, Pure]
+    public int Height { get; }
+    /// <summary>Gets the width of the native (world) resolution.</summary>
+    [NonNegativeValue, Pure]
+    public int Width { get; }
+    /// <summary>Gets the background, shown in letterboxing.</summary>
+    [Pure]
+    public Color Background { get; set; }
+    /// <summary>Gets the batch to draw with.</summary>
+    [Pure]
+    public SpriteBatch Batch { get; private set; } = null!;
+    /// <summary>Gets the texture containing a single white pixel.</summary>
+    [Pure]
+    public Texture2D WhitePixel { get; private set; } = null!;
+    /// <inheritdoc />
+    protected override bool BeginDraw()
+    {
+        Debug.Assert(Batch is not null);
+        GraphicsDevice.SetRenderTarget(_target);
+        GraphicsDevice.Clear(Background);
+        Batch.Begin();
+        return base.BeginDraw();
+    }
+    /// <inheritdoc />
+    protected override void EndDraw()
+    {
+        Debug.Assert(Batch is not null);
+        Batch.End();
+        GraphicsDevice.SetRenderTarget(null);
+        GraphicsDevice.Clear(Background);
+        Batch.Begin();
+        var resolution = GraphicsDevice.Resolution(Width, Height);
+        Batch.Draw(_target, resolution, Color.White);
+        Batch.End();
+        base.EndDraw();
+    }
+    /// <inheritdoc />
+    [CLSCompliant(false), MemberNotNull(nameof(Batch), nameof(_target), nameof(WhitePixel))]
+    protected override void Initialize()
+    {
+        base.Initialize();
+        _target = new(GraphicsDevice, Width, Height);
+        Services.AddService(Batch = new(GraphicsDevice));
+        WhitePixel = new(GraphicsDevice, 1, 1);
+        WhitePixel.SetData([Color.White]);
+    }
+    /// <summary>Converts the window coordinate to the world coordinate.</summary>
+    /// <param name="x">The x coordinate.</param>
+    /// <param name="y">The y coordinate.</param>
+    /// <returns>The world coordinate of the parameters given.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    protected Vector2 World(float x, float y)
+    {
+        var bounds = Window.ClientBounds;
+        float width = bounds.Width, height = bounds.Height;
+        var world = Width / Height;
+        var window = width / height;
+        var ratio = window < world ? width / Width : height / Height;
+        return window < world
+            ? new(x / ratio, (y - (height - ratio * Height) / 2) / ratio)
+            : new((x - (width - ratio * Width) / 2) / ratio, y / ratio);
+    }
+    /// <inheritdoc cref="World(Vector2)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    protected Vector2 World(in MouseState v) => World(v.Position);
+    /// <inheritdoc cref="World(Vector2)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    protected Vector2 World(Point v) => World(v.X, v.Y);
+    /// <inheritdoc cref="World(Vector2)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    protected Vector2 World(in TouchLocation v) => World(v.Position);
+    /// <summary>Converts the window coordinate to the world coordinate.</summary>
+    /// <param name="v">The vector to convert.</param>
+    /// <returns>The world coordinate of the vector.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    protected Vector2 World(Vector2 v) => World(v.X, v.Y);
+    /// <summary>Invoked when a keyboard button is pressed.</summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The event arguments containing the key that was pressed.</param>
+    void CheckForBorderlessOrFullScreenBind(object? sender, InputKeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Keys.F9 when IsDesktop:
+                Window.IsBorderless = !Window.IsBorderless;
+                break;
+            case Keys.F11:
+                _manager.IsFullScreen = !_manager.IsFullScreen;
+                _manager.ApplyChanges();
+                break;
+        }
+    }
+}
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
@@ -16672,8 +16812,6 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
-#pragma warning disable GlobalUsingsAnalyzer
-// ReSharper disable once CheckNamespace
 /// <summary>Provides the enumeration over <see cref="GamePad"/> instances.</summary>
 [StructLayout(LayoutKind.Auto)]
 public struct GamePads(PlayerIndex last = PlayerIndex.Four) : IEnumerable<GamePadState>, IEnumerator<GamePadState>
@@ -16912,6 +17050,33 @@ public partial struct Rented<T> : IDisposable
         }
         System.Diagnostics.Debug.Assert(span.IsEmpty, $"span is drained and not {span.Length} characters long");
     }
+// SPDX-License-Identifier: MPL-2.0
+#if XNA
+/// <summary>Provides methods to create <see cref="Texture2D"/> at runtime.</summary>
+    /// <summary>The delegate responsible for painting the graphic.</summary>
+    /// <param name="canvas">The eventual <see cref="Texture2D"/>.</param>
+    public delegate void Painter(Span2D<Color> canvas);
+    /// <summary>Creates the <see cref="Texture2D"/> at runtime.</summary>
+    /// <param name="device">The device to associate the texture with.</param>
+    /// <param name="width">The width of the texture.</param>
+    /// <param name="height">The height of the texture.</param>
+    /// <param name="painter">The callback for coloring the graphic.</param>
+    /// <returns>The <see cref="Texture2D"/> containing the image painted by the <paramref name="painter"/>.</returns>
+    [MustDisposeResource, MustUseReturnValue]
+    public static Texture2D CreateTexture2D(
+        this GraphicsDevice device,
+        [NonNegativeValue] int width,
+        [NonNegativeValue] int height,
+        [InstantHandle] Painter painter
+    )
+    {
+        Texture2D texture = new(device, width, height);
+        var data = new Color[width * height];
+        painter(new(data, height, width));
+        texture.SetData(data);
+        return texture;
+    }
+#endif
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 #pragma warning disable GlobalUsingsAnalyzer
