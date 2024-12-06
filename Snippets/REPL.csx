@@ -12831,21 +12831,21 @@ public abstract partial class Letterboxed2DGame : Game
     /// <summary>Initializes a new instances of the <see cref="Letterboxed2DGame"/> class.</summary>
     /// <param name="width">The width of the world.</param>
     /// <param name="height">The height of the world.</param>
-    protected Letterboxed2DGame(int width, int height)
+    /// <param name="scale">The scale relative to the native resolution to open the window to.</param>
+    protected Letterboxed2DGame(int width, int height, float scale = 5 / 6f)
     {
-        IsMouseVisible = true;
-        const float ScaledDown = 5 / 6f;
-        Window.AllowUserResizing = true;
-        Window.KeyDown += CheckForBorderlessOrFullScreenBind;
-        GraphicsDevice.BlendState = BlendState.NonPremultiplied;
         var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / (Width = width))
            .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / (Height = height));
         (GraphicsDeviceManager = new(this)
         {
             SynchronizeWithVerticalRetrace = true,
-            PreferredBackBufferWidth = (int)(Width * ratio * ScaledDown),
-            PreferredBackBufferHeight = (int)(Height * ratio * ScaledDown),
+            PreferredBackBufferWidth = (int)(Width * ratio * scale),
+            PreferredBackBufferHeight = (int)(Height * ratio * scale),
         }).ApplyChanges();
+        IsMouseVisible = true;
+        Window.AllowUserResizing = true;
+        Window.KeyDown += CheckForBorderlessOrFullScreenBind;
+        GraphicsDevice.BlendState = BlendState.NonPremultiplied;
     }
     /// <summary>Determines whether the game is being played in a desktop environment.</summary>
     [Pure, SupportedOSPlatformGuard("freebsd"), SupportedOSPlatformGuard("linux"), SupportedOSPlatformGuard("macos"),
