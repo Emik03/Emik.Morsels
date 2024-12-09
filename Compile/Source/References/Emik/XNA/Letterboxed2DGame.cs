@@ -137,9 +137,9 @@ public abstract partial class Letterboxed2DGame : Game
     }
 
     /// <summary>Invoked when a keyboard button is pressed.</summary>
-    /// <param name="sender">The sender.</param>
+    /// <param name="_">The sender, ignored.</param>
     /// <param name="e">The event arguments containing the key that was pressed.</param>
-    void CheckForBorderlessOrFullScreenBind(object? sender, InputKeyEventArgs e)
+    void CheckForBorderlessOrFullScreenBind([UsedImplicitly] object? _, InputKeyEventArgs e)
     {
         // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
         switch (e.Key)

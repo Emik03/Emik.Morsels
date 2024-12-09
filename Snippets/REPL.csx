@@ -11049,6 +11049,38 @@ readonly
         tuple.Length.For(i => tuple[i]);
 #endif
 // SPDX-License-Identifier: MPL-2.0
+#if XNA
+/// <summary>Provides the component that draws the frame rate.</summary>
+/// <remarks><para>
+/// Adapted from <a href="https://blogs.msdn.microsoft.com/shawnhar/2007/06/08/displaying-the-framerate/">Shawn Hargreaves's implementation</a>.
+/// </para></remarks>
+public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : DrawableGameComponent(game)
+{
+    const string Format = "FPS: ";
+    static readonly TimeSpan s_frequency = TimeSpan.FromSeconds(1);
+    readonly StringBuilder _builder = new(Format, Format.Length + 10);
+    int _counter, _rate;
+    TimeSpan _elapsed = TimeSpan.Zero;
+    public override void Update(GameTime gameTime)
+    {
+        if ((_elapsed += gameTime.ElapsedGameTime) <= s_frequency)
+            return;
+        _elapsed -= s_frequency;
+        (_counter, _rate) = (0, _counter);
+    }
+    public override void Draw(GameTime gameTime)
+    {
+        _counter++;
+        _builder.Remove(Format.Length, _builder.Length - Format.Length).Append(_rate);
+        const float Factor = 24;
+        Vector2 position = new(game.Width / Factor, game.Height / Factor);
+        var batch = game.Batch;
+        batch.DrawString(font, _builder, position + Vector2.One, Color.Black);
+        batch.DrawString(font, _builder, position, Color.White);
+    }
+}
+#endif
+// SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable once RedundantUsingDirective.Global
 // ReSharper disable once CheckNamespace
@@ -12936,9 +12968,9 @@ public abstract partial class Letterboxed2DGame : Game
         WhitePixel.SetData([Color.White]);
     }
     /// <summary>Invoked when a keyboard button is pressed.</summary>
-    /// <param name="sender">The sender.</param>
+    /// <param name="_">The sender, ignored.</param>
     /// <param name="e">The event arguments containing the key that was pressed.</param>
-    void CheckForBorderlessOrFullScreenBind(object? sender, InputKeyEventArgs e)
+    void CheckForBorderlessOrFullScreenBind([UsedImplicitly] object? _, InputKeyEventArgs e)
     {
         switch (e.Key)
         {
