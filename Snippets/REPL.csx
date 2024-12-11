@@ -9834,19 +9834,19 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index.Value is var value && !index.IsFromEnd)
+            if (index.Value is var value && index.IsFromEnd)
             {
-                var forwards = GetEnumerator();
-                for (var i = 0; i <= value; i++)
-                    if (!forwards.MoveNext())
+                var backwards = GetReversedEnumerator();
+                for (var i = 0; i < value; i++)
+                    if (!backwards.MoveNext())
                         return default;
-                return forwards.Current;
+                return backwards.Current;
             }
-            var backwards = GetReversedEnumerator();
-            for (var i = 0; i < value; i++)
-                if (!backwards.MoveNext())
+            var forwards = GetEnumerator();
+            for (var i = 0; i <= value; i++)
+                if (!forwards.MoveNext())
                     return default;
-            return backwards.Current;
+            return forwards.Current;
         }
     }
     /// <summary>Determines whether both splits are equal.</summary>
@@ -11611,19 +11611,19 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index.Value is var value && !index.IsFromEnd)
+            if (index.Value is var value && index.IsFromEnd)
             {
-                var forwards = GetEnumerator();
-                for (var i = 0; i <= value; i++)
-                    if (!forwards.MoveNext())
+                var backwards = GetReversedEnumerator();
+                for (var i = 0; i < value; i++)
+                    if (!backwards.MoveNext())
                         return default;
-                return forwards.Current;
+                return backwards.Current;
             }
-            var backwards = GetReversedEnumerator();
-            for (var i = 0; i < value; i++)
-                if (!backwards.MoveNext())
+            var forwards = GetEnumerator();
+            for (var i = 0; i <= value; i++)
+                if (!forwards.MoveNext())
                     return default;
-            return backwards.Current;
+            return forwards.Current;
         }
     }
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Equality"/>

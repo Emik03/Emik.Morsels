@@ -371,24 +371,24 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index.Value is var value && !index.IsFromEnd)
+            if (index.Value is var value && index.IsFromEnd)
             {
-                var forwards = GetEnumerator();
+                var backwards = GetReversedEnumerator();
 
-                for (var i = 0; i <= value; i++)
-                    if (!forwards.MoveNext())
+                for (var i = 0; i < value; i++)
+                    if (!backwards.MoveNext())
                         return default;
 
-                return forwards.Current;
+                return backwards.Current;
             }
 
-            var backwards = GetReversedEnumerator();
+            var forwards = GetEnumerator();
 
-            for (var i = 0; i < value; i++)
-                if (!backwards.MoveNext())
+            for (var i = 0; i <= value; i++)
+                if (!forwards.MoveNext())
                     return default;
 
-            return backwards.Current;
+            return forwards.Current;
         }
     }
 
