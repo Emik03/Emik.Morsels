@@ -301,7 +301,6 @@ readonly
             if (start is not 0 || length is not 0)
                 throw new ArgumentOutOfRangeException(nameof(length));
 
-            this = default;
             return;
         }
 
