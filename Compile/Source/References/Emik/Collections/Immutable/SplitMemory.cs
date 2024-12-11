@@ -336,7 +336,7 @@ readonly
 
             var backwards = GetReversedEnumerator();
 
-            for (var i = 0; i <= value; i++)
+            for (var i = 0; i < value; i++)
                 if (!backwards.MoveNext())
                     return default;
 
