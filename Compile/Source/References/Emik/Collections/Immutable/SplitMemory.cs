@@ -303,10 +303,6 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
-
             var e = GetEnumerator();
 
             for (var i = 0; i <= index; i++)

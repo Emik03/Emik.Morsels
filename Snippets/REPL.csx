@@ -9812,14 +9812,11 @@ readonly
     }
     /// <summary>Gets the specified index.</summary>
     /// <param name="index">The index to get.</param>
-    /// <exception cref="ArgumentOutOfRangeException">The parameter <paramref name="index"/> is negative.</exception>
     public readonly ReadOnlySpan<TBody> this[[NonNegativeValue] int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
             var e = GetEnumerator();
             for (var i = 0; i <= index; i++)
                 if (!e.MoveNext())
@@ -11596,8 +11593,6 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index), index, "must be positive");
             var e = GetEnumerator();
             for (var i = 0; i <= index; i++)
                 if (!e.MoveNext())
