@@ -267,15 +267,13 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.First"/>
     public readonly ReadOnlyMemory<TBody> First
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan.First.AsMemory(_body);
     }
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Last"/>
     public readonly ReadOnlyMemory<TBody> Last
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan.Last.AsMemory(_body);
     }
 
     /// <inheritdoc />
@@ -287,8 +285,7 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Single"/>
     public readonly ReadOnlyMemory<TBody> Single
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan.Single.AsMemory(_body);
     }
 
     /// <summary>Gets itself as <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/>.</summary>
@@ -300,44 +297,21 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            var e = GetEnumerator();
-
-            for (var i = 0; i <= index; i++)
-                if (!e.MoveNext())
-                    return default;
-
-            return e.Current;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan[index].AsMemory(_body);
     }
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan[index].AsMemory(_body);
+    }
+
+    /// <summary>Gets the specified range.</summary>
+    /// <param name="range">The range to get.</param>
+    public readonly SplitMemory<TBody, TSeparator, TStrategy> this[Range range]
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            if (index.Value is var value && index.IsFromEnd)
-            {
-                var backwards = GetReversedEnumerator();
-
-                for (var i = 0; i < value; i++)
-                    if (!backwards.MoveNext())
-                        return default;
-
-                return backwards.Current;
-            }
-
-            var forwards = GetEnumerator();
-
-            for (var i = 0; i <= value; i++)
-                if (!forwards.MoveNext())
-                    return default;
-
-            return forwards.Current;
-        }
+        get => new(SplitSpan[range].Body.AsMemory(_body), Separator);
     }
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Equality"/>
@@ -496,7 +470,6 @@ readonly
     {
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
         ret.Append(e.Current);

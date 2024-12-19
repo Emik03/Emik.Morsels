@@ -351,7 +351,7 @@ readonly
         {
             var e = GetEnumerator();
 
-            for (var i = 0; i <= index; i++)
+            for (; index >= 0; index--)
                 if (!e.MoveNext())
                     return default;
 
@@ -366,25 +366,34 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index.Value is var value && index.IsFromEnd)
-            {
-                var backwards = GetReversedEnumerator();
+            if (index.Value is var value && !index.IsFromEnd)
+                return this[value];
 
-                for (var i = 0; i < value; i++)
-                    if (!backwards.MoveNext())
-                        return default;
+            var backwards = GetReversedEnumerator();
 
-                return backwards.Current;
-            }
-
-            var forwards = GetEnumerator();
-
-            for (var i = 0; i <= value; i++)
-                if (!forwards.MoveNext())
+            for (; value > 0; value--)
+                if (!backwards.MoveNext())
                     return default;
 
-            return forwards.Current;
+            return backwards.Current;
         }
+    }
+
+    /// <summary>Gets the specified range.</summary>
+    /// <param name="range">The range to get.</param>
+    public readonly SplitSpan<TBody, TSeparator, TStrategy> this[Range range]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+            new(
+                _body.OffsetOf(this[range.Start]) is not -1 and var start &&
+                this[Decrement(range.End)] is var slice &&
+                _body.OffsetOf(slice) is not -1 and var end &&
+                end + slice.Length - start is > 0 and var length
+                    ? _body.UnsafelySlice(start, length)
+                    : default,
+                _separator
+            );
     }
 
     /// <summary>Determines whether both splits are equal.</summary>
@@ -729,4 +738,13 @@ readonly
 #pragma warning restore 8500
         }
 #endif
+    /// <summary>Decrements the index. If already <c>0</c>, flips the <see cref="Index.IsFromEnd"/> boolean.</summary>
+    /// <param name="index">The <see cref="Index"/> to decrement.</param>
+    /// <returns>The decremented index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static Index Decrement(Index index) =>
+        Unsafe.SizeOf<Index>() is sizeof(int) ?
+            Ret<Index>.From(Ret<int>.From(index) - 1) : // Branchless (assumes bit layout)
+            index is { Value: 0, IsFromEnd: var end } ? new Index(0, !end) :
+                new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }

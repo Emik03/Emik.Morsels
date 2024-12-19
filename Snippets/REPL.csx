@@ -9818,7 +9818,7 @@ readonly
         get
         {
             var e = GetEnumerator();
-            for (var i = 0; i <= index; i++)
+            for (; index >= 0; index--)
                 if (!e.MoveNext())
                     return default;
             return e.Current;
@@ -9831,20 +9831,30 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            if (index.Value is var value && index.IsFromEnd)
-            {
-                var backwards = GetReversedEnumerator();
-                for (var i = 0; i < value; i++)
-                    if (!backwards.MoveNext())
-                        return default;
-                return backwards.Current;
-            }
-            var forwards = GetEnumerator();
-            for (var i = 0; i <= value; i++)
-                if (!forwards.MoveNext())
+            if (index.Value is var value && !index.IsFromEnd)
+                return this[value];
+            var backwards = GetReversedEnumerator();
+            for (; value > 0; value--)
+                if (!backwards.MoveNext())
                     return default;
-            return forwards.Current;
+            return backwards.Current;
         }
+    }
+    /// <summary>Gets the specified range.</summary>
+    /// <param name="range">The range to get.</param>
+    public readonly SplitSpan<TBody, TSeparator, TStrategy> this[Range range]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+        get =>
+            new(
+                _body.OffsetOf(this[range.Start]) is not -1 and var start &&
+                this[Decrement(range.End)] is var slice &&
+                _body.OffsetOf(slice) is not -1 and var end &&
+                end + slice.Length - start is > 0 and var length
+                    ? _body.UnsafelySlice(start, length)
+                    : default,
+                _separator
+            );
     }
     /// <summary>Determines whether both splits are equal.</summary>
     /// <param name="left">The left-hand side.</param>
@@ -10130,6 +10140,15 @@ readonly
 #pragma warning restore 8500
         }
 #endif
+    /// <summary>Decrements the index. If already <c>0</c>, flips the <see cref="Index.IsFromEnd"/> boolean.</summary>
+    /// <param name="index">The <see cref="Index"/> to decrement.</param>
+    /// <returns>The decremented index.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    static Index Decrement(Index index) =>
+        Unsafe.SizeOf<Index>() is sizeof(int) ?
+            Ret<Index>.From(Ret<int>.From(index) - 1) :
+            index is { Value: 0, IsFromEnd: var end } ? new Index(0, !end) :
+                new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
@@ -11562,14 +11581,12 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.First"/>
     public readonly ReadOnlyMemory<TBody> First
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetEnumerator() is var e && e.MoveNext() ? e.Current : default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan.First.AsMemory(_body);
     }
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Last"/>
     public readonly ReadOnlyMemory<TBody> Last
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetReversedEnumerator() is var e && e.MoveNext() ? e.Current : default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan.Last.AsMemory(_body);
     }
     /// <inheritdoc />
     public readonly ReadOnlyMemory<TSeparator> Separator
@@ -11579,8 +11596,7 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Single"/>
     public readonly ReadOnlyMemory<TBody> Single
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => GetEnumerator() is var e && e.MoveNext() && e.Current is var ret && !e.MoveNext() ? ret : default;
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan.Single.AsMemory(_body);
     }
     /// <summary>Gets itself as <see cref="SplitSpan{TBody, TSeparator, TStrategy}"/>.</summary>
     public readonly SplitSpan<TBody, TSeparator, TStrategy> SplitSpan
@@ -11590,36 +11606,19 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[[NonNegativeValue] int index]
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            var e = GetEnumerator();
-            for (var i = 0; i <= index; i++)
-                if (!e.MoveNext())
-                    return default;
-            return e.Current;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan[index].AsMemory(_body);
     }
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.this[int]"/>
     public readonly ReadOnlyMemory<TBody> this[Index index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => SplitSpan[index].AsMemory(_body);
+    }
+    /// <summary>Gets the specified range.</summary>
+    /// <param name="range">The range to get.</param>
+    public readonly SplitMemory<TBody, TSeparator, TStrategy> this[Range range]
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-            if (index.Value is var value && index.IsFromEnd)
-            {
-                var backwards = GetReversedEnumerator();
-                for (var i = 0; i < value; i++)
-                    if (!backwards.MoveNext())
-                        return default;
-                return backwards.Current;
-            }
-            var forwards = GetEnumerator();
-            for (var i = 0; i <= value; i++)
-                if (!forwards.MoveNext())
-                    return default;
-            return forwards.Current;
-        }
+        get => new(SplitSpan[range].Body.AsMemory(_body), Separator);
     }
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.op_Equality"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
