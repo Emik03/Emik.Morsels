@@ -279,16 +279,19 @@ readonly
     /// <returns>
     /// The value <see langword="true"/> if this instance is all zeros; otherwise, <see langword="false"/>.
     /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Eq0() => Eq0(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)));
 
     /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals(object? other) => other is Bits<T> bit && this == bit;
 
     /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool Equals(Bits<T> other) => this == other;
 
     /// <inheritdoc />
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override int GetHashCode() => Coerce<int>();
 
     /// <inheritdoc />
@@ -317,12 +320,30 @@ readonly
     /// <summary>Computes the Bitwise-AND-NOT computation.</summary>
     /// <param name="other">The other set of bits.</param>
     /// <returns>The result of the computation.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly Bits<T> AndNot(Bits<T> other)
     {
         AndNot(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), ref Unsafe.As<Bits<T>, T>(ref other));
         return other;
     }
+
+    /// <summary>Returns the greater bits.</summary>
+    /// <returns>
+    /// This instance if its bits are greater or equal to the parameter
+    /// <paramref name="other"/>; otherwise, <paramref name="other"/>.
+    /// </returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly Bits<T> Max(Bits<T> other) =>
+        Max(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), Unsafe.As<Bits<T>, T>(ref other));
+
+    /// <summary>Returns the lesser bits.</summary>
+    /// <returns>
+    /// This instance if its bits are lesser or equal to the parameter
+    /// <paramref name="other"/>; otherwise, <paramref name="other"/>.
+    /// </returns>
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly Bits<T> Min(Bits<T> other) =>
+        Min(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), Unsafe.As<Bits<T>, T>(ref other));
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
@@ -409,7 +430,7 @@ readonly
 
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <returns>The hex <see cref="string"/>.</returns>
-    [Pure]
+    [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string ToHexString()
     {
         Span<char> span = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
