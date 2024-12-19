@@ -2,7 +2,6 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Linq;
-
 #if !NET6_0_OR_GREATER
 /// <summary>The backport of the Chunk method for <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumerableChunk

@@ -2,13 +2,12 @@
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantNameQualifier RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace Emik.Morsels;
-
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
 using FieldInfo = System.Reflection.FieldInfo;
 
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 /// <summary>Provides the method needed for collection expressions in <see cref="PooledSmallList{T}"/>.</summary>
 static class PooledSmallListBuilder
 {

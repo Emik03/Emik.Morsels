@@ -106,7 +106,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, SMin>(enumerable);
-
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else
@@ -137,7 +136,6 @@ static partial class SpanSimdQueries
 #endif
         =>
             MinMax<T, TResult, SMax>(enumerable.Span, keySelector);
-
 #if NET6_0_OR_GREATER
     /// <inheritdoc cref="Enumerable.MaxBy{TSource, TKey}(IEnumerable{TSource}, Func{TSource, TKey})"/>
 #else

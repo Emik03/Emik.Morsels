@@ -2,7 +2,6 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Linq;
-
 #if !NET7_0_OR_GREATER
 /// <summary>The backport of the Order and OrderDescending methods for <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumerableOrder

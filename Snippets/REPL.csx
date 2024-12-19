@@ -7943,8 +7943,8 @@ readonly struct LightweightOverloadResolution(
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantNameQualifier RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace EmptyNamespace
-// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+// ReSharper disable RedundantNameQualifier RedundantUsingDirective
 /// <summary>Provides the method needed for collection expressions in <see cref="PooledSmallList{T}"/>.</summary>
 static class PooledSmallListBuilder
 {

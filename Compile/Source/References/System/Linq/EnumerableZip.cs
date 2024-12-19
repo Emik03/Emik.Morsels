@@ -2,7 +2,6 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Linq;
-
 #if !NETCOREAPP3_0_OR_GREATER
 /// <summary>The backport of Zip methods for <see cref="IEnumerable{T}"/>.</summary>
 static partial class EnumerableZip

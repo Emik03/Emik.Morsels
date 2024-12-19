@@ -171,7 +171,6 @@ namespace System
         /// <returns>A 32-bit signed integer hash code.</returns>
         [Pure, ValueRange(0)]
         public override int GetHashCode() => 0;
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) => other is ValueTuple;
@@ -520,7 +519,6 @@ namespace System
         /// </summary>
         /// <returns>A 32-bit signed integer hash code.</returns>
         public override int GetHashCode() => Item1?.GetHashCode() ?? 0;
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -682,7 +680,6 @@ namespace System
             var c = Comparer<T1>.Default.Compare(Item1, other.Item1);
             return c is not 0 ? c : Comparer<T2>.Default.Compare(Item2, other.Item2);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -887,7 +884,6 @@ namespace System
             c = Comparer<T2>.Default.Compare(Item2, other.Item2);
             return c is not 0 ? c : Comparer<T3>.Default.Compare(Item3, other.Item3);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -1112,7 +1108,6 @@ namespace System
             c = Comparer<T3>.Default.Compare(Item3, other.Item3);
             return c is not 0 ? c : Comparer<T4>.Default.Compare(Item4, other.Item4);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -1360,7 +1355,6 @@ namespace System
             c = Comparer<T4>.Default.Compare(Item4, other.Item4);
             return c is not 0 ? c : Comparer<T5>.Default.Compare(Item5, other.Item5);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -1630,7 +1624,6 @@ namespace System
             c = Comparer<T5>.Default.Compare(Item5, other.Item5);
             return c is not 0 ? c : Comparer<T6>.Default.Compare(Item6, other.Item6);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -1932,7 +1925,6 @@ namespace System
             c = Comparer<T6>.Default.Compare(Item6, other.Item6);
             return c is not 0 ? c : Comparer<T7>.Default.Compare(Item7, other.Item7);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer)
@@ -2262,7 +2254,6 @@ namespace System
             c = Comparer<T7>.Default.Compare(Item7, other.Item7);
             return c is not 0 ? c : Comparer<TRest>.Default.Compare(Rest, other.Rest);
         }
-
 #if !NET20 && !NET30 && !NET35
         [Pure]
         bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) =>

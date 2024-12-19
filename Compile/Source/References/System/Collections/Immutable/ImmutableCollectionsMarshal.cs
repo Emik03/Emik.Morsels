@@ -2,7 +2,6 @@
 
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Runtime.InteropServices;
-
 #if !NET8_0_OR_GREATER && (NETCOREAPP || ROSLYN)
 /// <summary>
 /// An unsafe class that provides a set of methods to access the

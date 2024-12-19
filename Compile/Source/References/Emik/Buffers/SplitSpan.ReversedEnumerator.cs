@@ -256,7 +256,6 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
             return true;
         }
-
 #if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAny(

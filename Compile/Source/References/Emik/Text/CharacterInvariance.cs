@@ -37,7 +37,6 @@ static partial class CharacterInvariance
     /// <inheritdoc cref="string.IsNullOrEmpty(string)"/>
     [Pure]
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) => string.IsNullOrEmpty(value);
-
 #if NET35
     /// <summary>
     /// Indicates whether a specified string is <see langword="null"/>,
@@ -151,7 +150,6 @@ static partial class CharacterInvariance
 
         return "";
     }
-
 #if NETFRAMEWORK || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
     /// <inheritdoc cref="char.GetUnicodeCategory(char)"/>
     [Pure]

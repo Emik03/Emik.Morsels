@@ -663,7 +663,6 @@ namespace System.Runtime.CompilerServices
     }
 #endif
 }
-
 #if !NET7_0_OR_GREATER
 namespace System.Text.RegularExpressions
 {

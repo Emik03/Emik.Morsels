@@ -94,7 +94,6 @@ global using SoundEffect = Microsoft.Xna.Framework.Audio.SoundEffect;
 global using Vector2 = Microsoft.Xna.Framework.Vector2;
 #endif // ReSharper disable once RedundantUsingDirective
 using static System.AttributeTargets;
-
 #if NETFRAMEWORK && !NET40_OR_GREATER || NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System.Diagnostics.Contracts

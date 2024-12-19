@@ -2,10 +2,9 @@
 
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#if !NET20 && !NET30
 using static CollectionAccessType;
 
-#if !NET20 && !NET30
 /// <summary>Extension methods that act as factories for read-only lists.</summary>
 static partial class ReadOnlyFactory
 {

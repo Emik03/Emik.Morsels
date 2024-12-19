@@ -32,7 +32,6 @@ sealed partial class UnreachableException : Exception
     /// <param name="innerException">The exception that is the cause of the current exception.</param>
     public UnreachableException(string? message, Exception? innerException)
         : base(message, innerException) { }
-
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
     UnreachableException(SerializationInfo info, StreamingContext context)
 #pragma warning disable SYSLIB0051
