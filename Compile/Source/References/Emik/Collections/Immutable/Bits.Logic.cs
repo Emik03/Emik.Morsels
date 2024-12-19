@@ -639,7 +639,7 @@ readonly
         return true;
     }
 
-    /// <summary>Determines whether both references of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <summary>Determines whether the reference of <typeparamref name="T"/> contains all zeros.</summary>
     /// <param name="reference">The reference to determine if it is zeroed.</param>
     /// <returns>
     /// The value <see langword="true"/> if the parameter <paramref name="reference"/>

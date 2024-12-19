@@ -112,7 +112,16 @@ public
 #if !NO_READONLY_STRUCTS
 readonly
 #endif
-    partial struct Bits<T>([ProvidesContext] T bits) : IReadOnlyList<T>, IReadOnlySet<T>, ISet<T>, IList<T>
+    partial struct Bits<T>([ProvidesContext] T bits) :
+#if NET7_0_OR_GREATER
+    IBitwiseOperators<Bits<T>, Bits<T>, Bits<T>>,
+    IEqualityOperators<Bits<T>, Bits<T>, bool>,
+#endif
+    IEquatable<Bits<T>>,
+    IReadOnlyList<T>,
+    IReadOnlySet<T>,
+    ISet<T>,
+    IList<T>
     where T : unmanaged
 {
     /// <inheritdoc cref="ICollection{T}.IsReadOnly"/>
@@ -127,6 +136,71 @@ readonly
     public readonly T Current
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => bits;
+    }
+
+    /// <summary>Determines whether both bits of <typeparamref name="T"/> do not contain the same bits.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
+    /// do not have the same bits as each other; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator !=(Bits<T> left, Bits<T> right) =>
+        !Eq(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(left)), Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(right)));
+
+    /// <summary>Determines whether both bits of <typeparamref name="T"/> contain the same bits.</summary>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <returns>
+    /// The value <see langword="true"/> if the parameters <paramref name="left"/> and <paramref name="right"/>
+    /// have the same bits as each other; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool operator ==(Bits<T> left, Bits<T> right) =>
+        Eq(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(left)), Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(right)));
+
+    /// <summary>Computes the Bitwise-NOT computation.</summary>
+    /// <param name="value">The set of bits.</param>
+    /// <returns>The result of the computation.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Bits<T> operator ~(Bits<T> value)
+    {
+        Not(ref Unsafe.As<Bits<T>, T>(ref value));
+        return value;
+    }
+
+    /// <summary>Computes the Bitwise-AND computation.</summary>
+    /// <param name="left">The first set of bits.</param>
+    /// <param name="right">The second set of bits.</param>
+    /// <returns>The result of the computation.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Bits<T> operator &(Bits<T> left, Bits<T> right)
+    {
+        And(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(left)), ref Unsafe.As<Bits<T>, T>(ref right));
+        return right;
+    }
+
+    /// <summary>Computes the Bitwise-OR computation.</summary>
+    /// <param name="left">The first set of bits.</param>
+    /// <param name="right">The second set of bits.</param>
+    /// <returns>The result of the computation.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Bits<T> operator |(Bits<T> left, Bits<T> right)
+    {
+        Or(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(left)), ref Unsafe.As<Bits<T>, T>(ref right));
+        return right;
+    }
+
+    /// <summary>Computes the Bitwise-XOR computation.</summary>
+    /// <param name="left">The first set of bits.</param>
+    /// <param name="right">The second set of bits.</param>
+    /// <returns>The result of the computation.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static Bits<T> operator ^(Bits<T> left, Bits<T> right)
+    {
+        Xor(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(left)), ref Unsafe.As<Bits<T>, T>(ref right));
+        return right;
     }
 
     /// <summary>Implicitly calls the constructor.</summary>
@@ -163,43 +237,59 @@ readonly
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Add(T item) { }
+    readonly void ICollection<T>.Add(T item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ICollection<T>.Clear() { }
+    readonly void ICollection<T>.Clear() { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IList<T>.Insert(int index, T item) { }
+    readonly void IList<T>.Insert(int index, T item) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void IList<T>.RemoveAt(int index) { }
+    readonly void IList<T>.RemoveAt(int index) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
+    readonly void ISet<T>.ExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
+    readonly void ISet<T>.IntersectWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
+    readonly void ISet<T>.SymmetricExceptWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void ISet<T>.UnionWith(IEnumerable<T>? other) { }
+    readonly void ISet<T>.UnionWith(IEnumerable<T>? other) { }
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool ICollection<T>.Remove(T item) => false;
+    readonly bool ICollection<T>.Remove(T item) => false;
 
     /// <inheritdoc />
     [CollectionAccess(None), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    bool ISet<T>.Add(T item) => false;
+    readonly bool ISet<T>.Add(T item) => false;
+
+    /// <summary>Determines whether the reference of <typeparamref name="T"/> contains all zeros.</summary>
+    /// <returns>
+    /// The value <see langword="true"/> if this instance is all zeros; otherwise, <see langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool Eq0() => Eq0(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)));
+
+    /// <inheritdoc />
+    public readonly override bool Equals(object? other) => other is Bits<T> bit && this == bit;
+
+    /// <inheritdoc />
+    public readonly bool Equals(Bits<T> other) => this == other;
+
+    /// <inheritdoc />
+    public readonly override int GetHashCode() => Coerce<int>();
 
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -223,6 +313,16 @@ readonly
     /// <inheritdoc />
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override string ToString() => ((Enumerator)this).ToRemainingString();
+
+    /// <summary>Computes the Bitwise-AND-NOT computation.</summary>
+    /// <param name="other">The other set of bits.</param>
+    /// <returns>The result of the computation.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly Bits<T> AndNot(Bits<T> other)
+    {
+        AndNot(Unsafe.As<Bits<T>, T>(ref Unsafe.AsRef(this)), ref Unsafe.As<Bits<T>, T>(ref other));
+        return other;
+    }
 
     /// <summary>
     /// Returns itself. Used to tell the compiler that it can be used in a <see langword="foreach"/> loop.
@@ -255,7 +355,7 @@ readonly
     /// <typeparam name="TResult">The type to reinterpret the bits as.</typeparam>
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public TResult Coerce<TResult>()
+    public readonly TResult Coerce<TResult>()
         where TResult : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -289,7 +389,7 @@ readonly
     /// <returns>The result of reinterpreting <see cref="Current"/> as <typeparamref name="TResult"/>.</returns>
 #pragma warning restore DOC100
     [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public TResult CoerceLeft<TResult>()
+    public readonly TResult CoerceLeft<TResult>()
         where TResult : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -310,7 +410,7 @@ readonly
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <returns>The hex <see cref="string"/>.</returns>
     [Pure]
-    public string ToHexString()
+    public readonly string ToHexString()
     {
         Span<char> span = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
         ref var first = ref MemoryMarshal.GetReference(span);
@@ -494,7 +594,7 @@ readonly
         }
 
         [CollectionAccess(Read), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        bool IsNonZero() => (Unsafe.Add(ref Unsafe.As<T, nuint>(ref AsRef(value)), Index) & Mask) is not 0;
+        readonly bool IsNonZero() => (Unsafe.Add(ref Unsafe.As<T, nuint>(ref AsRef(value)), Index) & Mask) is not 0;
     }
 }
 #endif
