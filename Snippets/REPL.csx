@@ -10147,7 +10147,7 @@ readonly
     static Index Decrement(Index index) =>
         Unsafe.SizeOf<Index>() is sizeof(int) ?
             Ret<Index>.From(Ret<int>.From(index) - 1) :
-            index is { Value: 0, IsFromEnd: var end } ? new Index(0, !end) :
+            index is { Value: 0, IsFromEnd: false } ? new Index(0, true) :
                 new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }
 // SPDX-License-Identifier: MPL-2.0
