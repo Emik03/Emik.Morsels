@@ -75,7 +75,7 @@ public abstract partial class Letterboxed2DGame : Game
     {
         var bounds = Window.ClientBounds;
         float width = bounds.Width, height = bounds.Height;
-        var world = Width / Height;
+        var world = Width / (float)Height;
         var window = width / height;
         var ratio = window < world ? width / Width : height / Height;
 
