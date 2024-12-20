@@ -16,17 +16,18 @@ public abstract partial class Letterboxed2DGame : Game
     /// <param name="scale">The scale relative to the native resolution to open the window to.</param>
     protected Letterboxed2DGame(int width, int height, float scale = 5 / 6f)
     {
-        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / (Width = width))
-           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / (Height = height));
+        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / (float)(Width = width))
+           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / (float)(Height = height));
 
         (GraphicsDeviceManager = new(this)
         {
-            SynchronizeWithVerticalRetrace = true,
+            SynchronizeWithVerticalRetrace = false,
             PreferredBackBufferWidth = (int)(Width * ratio * scale),
             PreferredBackBufferHeight = (int)(Height * ratio * scale),
         }).ApplyChanges();
 
         IsMouseVisible = true;
+        IsFixedTimeStep = false;
         Window.AllowUserResizing = true;
         Window.KeyDown += CheckForBorderlessOrFullScreenBind;
         GraphicsDevice.BlendState = BlendState.NonPremultiplied;
