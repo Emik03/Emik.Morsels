@@ -7,9 +7,7 @@ namespace Emik.Morsels;
 using static CollectionAccessType;
 using static Span;
 
-/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
-/// <typeparam name="T">The type of the item to yield.</typeparam>
-/// <param name="bits">The item to use.</param>
+/// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
 #endif

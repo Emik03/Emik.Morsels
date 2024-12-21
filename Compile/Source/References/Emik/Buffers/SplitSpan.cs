@@ -738,8 +738,8 @@ readonly
 #pragma warning restore 8500
         }
 #endif
-    /// <summary>Decrements the index. If already <c>0</c>, flips the <see cref="Index.IsFromEnd"/> boolean.</summary>
-    /// <param name="index">The <see cref="Index"/> to decrement.</param>
+    /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>
+    /// <param name="index">The index to decrement.</param>
     /// <returns>The decremented index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Index Decrement(Index index) =>
