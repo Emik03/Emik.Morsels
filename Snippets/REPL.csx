@@ -5572,9 +5572,7 @@ public enum ControlFlow : byte
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
 #pragma warning disable 8500, IDE0251, MA0102
-/// <summary>Provides the enumeration of individual bits from the given <typeparamref name="T"/>.</summary>
-/// <typeparam name="T">The type of the item to yield.</typeparam>
-/// <param name="bits">The item to use.</param>
+/// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
 #endif
@@ -10266,8 +10264,8 @@ readonly
 #pragma warning restore 8500
         }
 #endif
-    /// <summary>Decrements the index. If already <c>0</c>, flips the <see cref="Index.IsFromEnd"/> boolean.</summary>
-    /// <param name="index">The <see cref="Index"/> to decrement.</param>
+    /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>
+    /// <param name="index">The index to decrement.</param>
     /// <returns>The decremented index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Index Decrement(Index index) =>
@@ -10310,6 +10308,78 @@ readonly
     /// <param name="v">The native resolution.</param>
     /// <returns>The <see cref="Rectangle"/> for <see cref="SpriteBatch.Draw(Texture2D, Rectangle, Color)"/>.</returns>
     public static Rectangle Resolution(this GraphicsDevice device, Vector2 v) => device.Resolution(v.X, v.Y);
+    /// <inheritdoc cref="Rectangle.Inflate(int, int)"/>
+    public static Rectangle Inflated(this Rectangle rectangle, int amount)
+    {
+        rectangle.Inflate(amount, amount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Inflate(int, int)"/>
+    public static Rectangle Inflated(this Rectangle rectangle, int horizontalAmount, int verticalAmount)
+    {
+        rectangle.Inflate(horizontalAmount, verticalAmount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Inflate(float, float)"/>
+    public static Rectangle Inflated(this Rectangle rectangle, float amount)
+    {
+        rectangle.Inflate(amount, amount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Inflate(float, float)"/>
+    public static Rectangle Inflated(this Rectangle rectangle, float horizontalAmount, float verticalAmount)
+    {
+        rectangle.Inflate(horizontalAmount, verticalAmount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Offset(int, int)"/>
+    public static Rectangle Offsetted(this Rectangle rectangle, int amount)
+    {
+        rectangle.Offset(amount, amount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Offset(int, int)"/>
+    public static Rectangle Offsetted(this Rectangle rectangle, int horizontalAmount, int verticalAmount)
+    {
+        rectangle.Offset(horizontalAmount, verticalAmount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Offset(float, float)"/>
+    public static Rectangle Offsetted(this Rectangle rectangle, float amount)
+    {
+        rectangle.Offset(amount, amount);
+        return rectangle;
+    }
+    /// <inheritdoc cref="Rectangle.Offset(float, float)"/>
+    public static Rectangle Offsetted(this Rectangle rectangle, float horizontalAmount, float verticalAmount)
+    {
+        rectangle.Offset(horizontalAmount, verticalAmount);
+        return rectangle;
+    }
+    /// <summary>Multiples some quantity with the given <see cref="Rectangle"/>.</summary>
+    /// <param name="rectangle">The <see cref="Rectangle"/> to multiply.</param>
+    /// <param name="amount">The amount to multiply with.</param>
+    /// <returns>The scaled up <see cref="Rectangle"/>.</returns>
+    public static Rectangle Multiplied(this Rectangle rectangle, int amount) => Multiplied(rectangle, amount, amount);
+    /// <summary>Multiples some quantity with the given <see cref="Rectangle"/>.</summary>
+    /// <param name="rectangle">The <see cref="Rectangle"/> to multiply.</param>
+    /// <param name="x">The amount to multiply with horizontally.</param>
+    /// <param name="y">The amount to multiply with vertically.</param>
+    /// <returns>The scaled up <see cref="Rectangle"/>.</returns>
+    public static Rectangle Multiplied(this Rectangle rectangle, int x, int y) =>
+        new(rectangle.X * x, rectangle.Y * y, rectangle.Width * x, rectangle.Height * y);
+    /// <summary>Multiples some quantity with the given <see cref="Rectangle"/>.</summary>
+    /// <param name="rectangle">The <see cref="Rectangle"/> to multiply.</param>
+    /// <param name="amount">The amount to multiply with.</param>
+    /// <returns>The scaled up <see cref="Rectangle"/>.</returns>
+    public static Rectangle Multiplied(this Rectangle rectangle, float amount) => Multiplied(rectangle, amount, amount);
+    /// <summary>Multiples some quantity with the given <see cref="Rectangle"/>.</summary>
+    /// <param name="rectangle">The <see cref="Rectangle"/> to multiply.</param>
+    /// <param name="x">The amount to multiply with horizontally.</param>
+    /// <param name="y">The amount to multiply with vertically.</param>
+    /// <returns>The scaled up <see cref="Rectangle"/>.</returns>
+    public static Rectangle Multiplied(this Rectangle rectangle, float x, float y) =>
+        new((int)(rectangle.X * x), (int)(rectangle.Y * y), (int)(rectangle.Width * x), (int)(rectangle.Height * y));
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
@@ -12986,15 +13056,16 @@ public abstract partial class Letterboxed2DGame : Game
     /// <param name="scale">The scale relative to the native resolution to open the window to.</param>
     protected Letterboxed2DGame(int width, int height, float scale = 5 / 6f)
     {
-        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / (Width = width))
-           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / (Height = height));
+        var ratio = (GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / (float)(Width = width))
+           .Min(GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / (float)(Height = height));
         (GraphicsDeviceManager = new(this)
         {
-            SynchronizeWithVerticalRetrace = true,
+            SynchronizeWithVerticalRetrace = false,
             PreferredBackBufferWidth = (int)(Width * ratio * scale),
             PreferredBackBufferHeight = (int)(Height * ratio * scale),
         }).ApplyChanges();
         IsMouseVisible = true;
+        IsFixedTimeStep = false;
         Window.AllowUserResizing = true;
         Window.KeyDown += CheckForBorderlessOrFullScreenBind;
         GraphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -13034,7 +13105,7 @@ public abstract partial class Letterboxed2DGame : Game
     {
         var bounds = Window.ClientBounds;
         float width = bounds.Width, height = bounds.Height;
-        var world = Width / Height;
+        var world = Width / (float)Height;
         var window = width / height;
         var ratio = window < world ? width / Width : height / Height;
         return window < world
