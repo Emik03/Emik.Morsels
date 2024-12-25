@@ -18,17 +18,11 @@ sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : Drawabl
 
     TimeSpan _elapsed = TimeSpan.Zero;
 
-    public override void Update(GameTime gameTime)
-    {
-        if ((_elapsed += gameTime.ElapsedGameTime) <= s_frequency)
-            return;
-
-        _elapsed -= s_frequency;
-        (_counter, _rate) = (0, _counter);
-    }
-
     public override void Draw(GameTime gameTime)
     {
+        if (!Visible)
+            return;
+
         _counter++;
         _builder.Remove(Format.Length, _builder.Length - Format.Length).Append(_rate);
 
@@ -38,6 +32,20 @@ sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : Drawabl
         var batch = game.Batch;
         batch.DrawString(font, _builder, position + Vector2.One, Color.Black);
         batch.DrawString(font, _builder, position, Color.White);
+    }
+
+    public override void Update(GameTime gameTime)
+    {
+        if (!Enabled)
+            return;
+
+        _elapsed += gameTime.ElapsedGameTime;
+
+        if (_elapsed <= s_frequency)
+            return;
+
+        _elapsed -= s_frequency;
+        (_counter, _rate) = (0, _counter);
     }
 }
 #endif
