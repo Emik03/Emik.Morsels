@@ -3156,6 +3156,22 @@ public
         IEqualityComparer<T>? comparer = null
     ) =>
         iterable is null ? null : new HashSet<T>(iterable, comparer);
+    /// <summary>Turns the tuples into key-value pairs.</summary>
+    /// <typeparam name="TKey">
+    /// Corresponds to the first generic argument both in the tuple and <see cref="KeyValuePair{TKey, TValue}"/>.
+    /// </typeparam>
+    /// <typeparam name="TValue">
+    /// Corresponds to the second generic argument both in the tuple and <see cref="KeyValuePair{TKey, TValue}"/>.
+    /// </typeparam>
+    /// <param name="tuples">The <see cref="IEnumerable{T}"/> to convert.</param>
+    /// <returns>
+    /// The <see cref="KeyValuePair{TKey, TValue}"/> instances of the parameter <paramref name="tuples"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<KeyValuePair<TKey, TValue>> KeyValued<TKey, TValue>(
+        this IEnumerable<(TKey Key, TValue Value)> tuples
+    ) =>
+        tuples.Select(x => new KeyValuePair<TKey, TValue>(x.Key, x.Value));
     /// <summary>Upcasts or creates an <see cref="ISet{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
@@ -11273,15 +11289,10 @@ public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : 
     readonly StringBuilder _builder = new(Format, Format.Length + 10);
     int _counter, _rate;
     TimeSpan _elapsed = TimeSpan.Zero;
-    public override void Update(GameTime gameTime)
-    {
-        if ((_elapsed += gameTime.ElapsedGameTime) <= s_frequency)
-            return;
-        _elapsed -= s_frequency;
-        (_counter, _rate) = (0, _counter);
-    }
     public override void Draw(GameTime gameTime)
     {
+        if (!Visible)
+            return;
         _counter++;
         _builder.Remove(Format.Length, _builder.Length - Format.Length).Append(_rate);
         const float Factor = 24;
@@ -11289,6 +11300,16 @@ public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : 
         var batch = game.Batch;
         batch.DrawString(font, _builder, position + Vector2.One, Color.Black);
         batch.DrawString(font, _builder, position, Color.White);
+    }
+    public override void Update(GameTime gameTime)
+    {
+        if (!Enabled)
+            return;
+        _elapsed += gameTime.ElapsedGameTime;
+        if (_elapsed <= s_frequency)
+            return;
+        _elapsed -= s_frequency;
+        (_counter, _rate) = (0, _counter);
     }
 }
 #endif
