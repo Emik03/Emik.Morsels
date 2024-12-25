@@ -36,5 +36,25 @@ static partial class TupleExtracts
     public static IEnumerable<object?> AsEnumerable<T>(this T tuple)
         where T : ITuple =>
         tuple.Length.For(i => tuple[i]);
+
+    /// <summary>Turns the tuples into key-value pairs.</summary>
+    /// <typeparam name="TKey">
+    /// Corresponds to the first generic argument both in the tuple and <see cref="KeyValuePair{TKey, TValue}"/>.
+    /// </typeparam>
+    /// <typeparam name="TValue">
+    /// Corresponds to the second generic argument both in the tuple and <see cref="KeyValuePair{TKey, TValue}"/>.
+    /// </typeparam>
+    /// <param name="tuples">The <see cref="IEnumerable{T}"/> to convert.</param>
+    /// <returns>
+    /// The <see cref="KeyValuePair{TKey, TValue}"/> instances of the parameter <paramref name="tuples"/>.
+    /// </returns>
+    [LinqTunnel, Pure]
+    public static IEnumerable<KeyValuePair<TKey, TValue>> KeyValued<TKey, TValue>(
+#if !CSHARPREPL
+        params
+#endif
+            IEnumerable<(TKey Key, TValue Value)> tuples
+    ) =>
+        tuples.Select(x => new KeyValuePair<TKey, TValue>(x.Key, x.Value));
 #endif
 }
