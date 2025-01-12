@@ -8,6 +8,7 @@ using static Span;
 /// <summary>Extension methods for <see cref="Vector{T}"/>.</summary>
 static partial class NumberInterfaceExtensions
 {
+#if NET8_0_OR_GREATER
     /// <inheritdoc cref="IFloatingPoint{TSelf}.Ceiling"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> Ceiling<T>(this Vector<T> x) =>
@@ -21,6 +22,7 @@ static partial class NumberInterfaceExtensions
         typeof(T) == typeof(float) ? Ret<Vector<T>>.From(Vector.Floor(Ret<Vector<float>>.From(x))) :
         typeof(T) == typeof(double) ? Ret<Vector<T>>.From(Vector.Floor(Ret<Vector<double>>.From(x))) :
         default;
+#endif
 #if NET9_0_OR_GREATER
     /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.Cos"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

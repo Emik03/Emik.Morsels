@@ -253,6 +253,7 @@ using Substring = System.ReadOnlyMemory<char>;
     public static T? Into<T>(this string s, IFormatProvider? provider, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
+#if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s)
@@ -273,6 +274,7 @@ using Substring = System.ReadOnlyMemory<char>;
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
+#endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<char> s)
@@ -356,6 +358,7 @@ using Substring = System.ReadOnlyMemory<char>;
     public static T? TryInto<T>(this string s, IFormatProvider? provider)
         where T : struct, IParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
+#if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
@@ -366,6 +369,7 @@ using Substring = System.ReadOnlyMemory<char>;
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
+#endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
@@ -10847,6 +10851,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
 #if NET5_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods for <see cref="Vector{T}"/>.</summary>
+#if NET8_0_OR_GREATER
     /// <inheritdoc cref="IFloatingPoint{TSelf}.Ceiling"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static Vector<T> Ceiling<T>(this Vector<T> x) =>
@@ -10859,6 +10864,7 @@ public sealed partial class Split<T>(T truthy, T falsy) : ICollection<T>,
         typeof(T) == typeof(float) ? Ret<Vector<T>>.From(Vector.Floor(Ret<Vector<float>>.From(x))) :
         typeof(T) == typeof(double) ? Ret<Vector<T>>.From(Vector.Floor(Ret<Vector<double>>.From(x))) :
         default;
+#endif
 #if NET9_0_OR_GREATER
     /// <inheritdoc cref="ITrigonometricFunctions{TSelf}.Cos"/>
     [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

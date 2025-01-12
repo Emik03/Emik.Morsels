@@ -59,7 +59,7 @@ static partial class GenericParser
     public static T? Into<T>(this string s, IFormatProvider? provider, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
-
+#if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s)
@@ -83,7 +83,7 @@ static partial class GenericParser
     public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
-
+#endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this scoped in ReadOnlySpan<char> s)
@@ -175,7 +175,7 @@ static partial class GenericParser
     public static T? TryInto<T>(this string s, IFormatProvider? provider)
         where T : struct, IParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
-
+#if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
@@ -187,7 +187,7 @@ static partial class GenericParser
     public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
-
+#endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
