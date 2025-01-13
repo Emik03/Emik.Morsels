@@ -199,7 +199,7 @@ static partial class SpanHelpers
 
             while ((void*)high != null)
             {
-                high -= 1;
+                high--;
 
                 if (value != *(byte*)((nint)searchSpace + low))
                 {
@@ -414,7 +414,7 @@ static partial class SpanHelpers
 
             while ((void*)high != null)
             {
-                high -= 1;
+                high--;
                 uint it = *(byte*)((nint)searchSpace + low);
 
                 if (value0 != it && value1 != it)
