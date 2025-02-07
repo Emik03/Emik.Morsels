@@ -7,7 +7,7 @@ Usage:
     $0 -t/--trash     Moves all unneeded frameworks in the recycling bin.
     $0 -h/--help      Print this message.
 
-Copyright © 2024 Emik"
+Copyright © 2024-2025 Emik"
 }
 
 : "${DOTNET_ROOT:?DOTNET_ROOT must be defined}"
