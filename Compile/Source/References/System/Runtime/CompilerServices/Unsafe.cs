@@ -5,6 +5,7 @@ namespace System.Runtime.CompilerServices;
 
 static class Unsafe
 {
+#pragma warning disable 8500
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe void* AsPointer<T>(ref T value)
     {
@@ -17,7 +18,7 @@ static class Unsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static TTo As<TFrom, TTo>(ref readonly TFrom o) => Span.Ret<TTo>.From(o);
-#pragma warning disable 8500
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
     public static void SkipInit<T>(out T value) => value = default!;
 
