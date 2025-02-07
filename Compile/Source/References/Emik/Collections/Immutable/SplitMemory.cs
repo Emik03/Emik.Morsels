@@ -2,7 +2,7 @@
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
-#pragma warning disable IDE0032
+#pragma warning disable 8631, IDE0032
 using static Span;
 using static SplitMemoryFactory;
 using static SplitSpanFactory;
@@ -379,7 +379,7 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -401,7 +401,7 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
-         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?

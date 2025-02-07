@@ -1359,7 +1359,7 @@ public
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
-#pragma warning disable 8500, RCS1175
+#pragma warning disable 8500, 8631, RCS1175
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -8958,6 +8958,7 @@ public enum KeyMods : ushort
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
+#pragma warning disable 8631
 // ReSharper disable once RedundantNameQualifier
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
 #if NETCOREAPP3_1_OR_GREATER
@@ -9645,7 +9646,7 @@ public enum KeyMods : ushort
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable IDE0032, RCS1158
+#pragma warning disable 8631, IDE0032, RCS1158
 #if NET8_0_OR_GREATER
 // -
 #else
@@ -11584,7 +11585,7 @@ public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : 
     }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable IDE0032
+#pragma warning disable 8631, IDE0032
 #if NET8_0_OR_GREATER
 // -
 #else
@@ -11905,7 +11906,7 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -11924,7 +11925,7 @@ readonly
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
-         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -13621,7 +13622,7 @@ readonly
 }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable IDE0032
+#pragma warning disable 8631, IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
@@ -18364,7 +18365,7 @@ namespace System.Linq;
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable IDE0032
+#pragma warning disable 8631, IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {

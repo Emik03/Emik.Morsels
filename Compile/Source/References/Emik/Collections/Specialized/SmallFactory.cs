@@ -3,7 +3,7 @@
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-
+#pragma warning disable 8631
 // ReSharper disable once RedundantNameQualifier
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static Span;
