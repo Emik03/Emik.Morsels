@@ -14,7 +14,7 @@ static partial class Collected
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
+        iterable is null ? null : iterable as T[] ?? [..iterable];
 #endif
     /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
     /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
@@ -75,7 +75,7 @@ static partial class Collected
 #if !NET40_OR_GREATER && NETFRAMEWORK
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 #else
-        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
+        iterable is null ? null : iterable as IList<T> ?? [..iterable];
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>

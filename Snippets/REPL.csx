@@ -3087,7 +3087,7 @@ public
     [Pure]
     [return: NotNullIfNotNull(nameof(iterable))]
     public static T[]? ToArrayLazily<T>([InstantHandle] this IEnumerable<T>? iterable) =>
-        iterable is null ? null : iterable as T[] ?? iterable.ToArray();
+        iterable is null ? null : iterable as T[] ?? [..iterable];
 #endif
     /// <summary>Wraps the <see cref="IEnumerable{T}"/> in a known-size collection type.</summary>
     /// <remarks><para>The parameter <paramref name="count"/> is assumed to be correct.</para></remarks>
@@ -3145,7 +3145,7 @@ public
 #if !NET40_OR_GREATER && NETFRAMEWORK
         iterable is null ? null : iterable as IList<T> ?? new List<T>(iterable);
 #else
-        iterable is null ? null : iterable as IList<T> ?? iterable.ToList();
+        iterable is null ? null : iterable as IList<T> ?? [..iterable];
 #endif
 #if !NETFRAMEWORK || NET40_OR_GREATER
     /// <summary>Creates a <see cref="HashSet{T}"/>.</summary>
@@ -4508,7 +4508,9 @@ public partial struct SmallList<T> :
         if (count <= stackExpand)
             return;
         var rest = _rest as List<T> ?? [.. _rest!];
+#pragma warning disable IDE0305
         rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollection());
+#pragma warning restore IDE0305
         _rest = rest;
     }
     /// <inheritdoc />
@@ -13378,7 +13380,9 @@ public abstract partial class Letterboxed2DGame : Game
     /// The <see cref="ICollection{T}"/> of <see cref="IList{T}"/> containing the binomial coefficients.
     /// </returns>
     [Pure]
+#pragma warning disable IDE0305
     public static Choices<T> Choose<T>(this IEnumerable<T>? n, int k) => new(n.ToIList(), k);
+#pragma warning restore IDE0305
 /// <summary>Provides methods to calculate various binomial coefficients.</summary>
 /// <typeparam name="T">The type of element.</typeparam>
 /// <param name="n">The collection to choose from.</param>

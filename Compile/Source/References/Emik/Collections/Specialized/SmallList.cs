@@ -406,7 +406,9 @@ partial struct SmallList<T> :
             return;
 
         var rest = _rest as List<T> ?? [.. _rest!];
+#pragma warning disable IDE0305
         rest.AddRange(stackExpand is 0 ? c : c.Skip(stackExpand).ToICollection());
+#pragma warning restore IDE0305
         _rest = rest;
     }
 

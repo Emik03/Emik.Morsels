@@ -99,7 +99,9 @@ static partial class Choices
     /// The <see cref="ICollection{T}"/> of <see cref="IList{T}"/> containing the binomial coefficients.
     /// </returns>
     [Pure]
+#pragma warning disable IDE0305
     public static Choices<T> Choose<T>(this IEnumerable<T>? n, int k) => new(n.ToIList(), k);
+#pragma warning restore IDE0305
 }
 
 /// <summary>Provides methods to calculate various binomial coefficients.</summary>
