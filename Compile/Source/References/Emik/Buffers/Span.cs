@@ -139,8 +139,7 @@ static partial class Span
             // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
             // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
             InlineIL.IL.Emit.Ldarg_0();
-            InlineIL.IL.Emit.Ret();
-            throw InlineIL.IL.Unreachable();
+            return InlineIL.IL.Return<TTo>();
 #else
             return *(TTo*)&source;
 #endif
