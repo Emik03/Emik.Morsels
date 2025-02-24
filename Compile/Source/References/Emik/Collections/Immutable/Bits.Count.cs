@@ -4,8 +4,6 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 
-using static Span;
-
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -22,15 +20,13 @@ readonly
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         get
         {
-            ref var f = ref Unsafe.AsRef(bits);
-            ref var l = ref Unsafe.Add(ref f, 1);
+            foreach (var ret in this)
+                if (index is 0)
+                    return ret;
+                else
+                    index--;
 
-            if (Unsafe.SizeOf<T>() >= sizeof(uint))
-                MovePopCount(ref f, ref l, ref index);
-
-            return Find(ref f, ref l, index) is not 0 and var i
-                ? Create(ref f, ref l, i)
-                : throw new ArgumentOutOfRangeException(nameof(index), index, null);
+            throw new ArgumentOutOfRangeException(nameof(index), index, null);
         }
     }
 
@@ -104,77 +100,6 @@ readonly
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable CognitiveComplexity
-    static void MovePopCount(ref T f, ref T l, ref int x)
-    {
-        if (Unsafe.SizeOf<T>() >= Unsafe.SizeOf<nint>())
-            while (Unsafe.IsAddressLessThan(
-                    ref f,
-                    ref Unsafe.SubtractByteOffset(ref l, (nint)Unsafe.SizeOf<nint>() - 1)
-                ) &&
-                BitOperations.PopCount(Unsafe.As<T, nuint>(ref f)) is var i &&
-                i <= x)
-            {
-                x -= i;
-                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<nint>());
-            }
-
-        if (Unsafe.SizeOf<T>() % Unsafe.SizeOf<nint>() >= sizeof(ulong))
-            while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, sizeof(ulong) - 1)) &&
-                BitOperations.PopCount(Unsafe.As<T, ulong>(ref f)) is var i &&
-                i <= x)
-            {
-                x -= i;
-                f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<ulong>());
-            }
-
-        if (Unsafe.SizeOf<T>() % sizeof(ulong) < sizeof(uint))
-            return;
-
-        while (Unsafe.IsAddressLessThan(ref f, ref Unsafe.SubtractByteOffset(ref l, sizeof(uint) - 1)) &&
-            BitOperations.PopCount(Unsafe.As<T, uint>(ref f)) is var i &&
-            i <= x)
-        {
-            x -= i;
-            f = ref Unsafe.AddByteOffset(ref f, (nint)Unsafe.SizeOf<uint>());
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static byte Find(ref T f, ref T l, int x)
-    {
-        while (Unsafe.IsAddressLessThan(ref f, ref l) && Unsafe.As<T, byte>(ref f) is var b)
-        {
-            if ((b & 1) is not 0 && x-- is 0)
-                return 1;
-
-            if ((b & 1 << 1) is not 0 && x-- is 0)
-                return 1 << 1;
-
-            if ((b & 1 << 2) is not 0 && x-- is 0)
-                return 1 << 2;
-
-            if ((b & 1 << 3) is not 0 && x-- is 0)
-                return 1 << 3;
-
-            if ((b & 1 << 4) is not 0 && x-- is 0)
-                return 1 << 4;
-
-            if ((b & 1 << 5) is not 0 && x-- is 0)
-                return 1 << 5;
-
-            if ((b & 1 << 6) is not 0 && x-- is 0)
-                return 1 << 6;
-
-            if ((b & 1 << 7) is not 0 && x-- is 0)
-                return 1 << 7;
-
-            f = ref Unsafe.AddByteOffset(ref f, 1);
-        }
-
-        return 0;
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
     static int TrailingZeroCount(nuint value)
 #if NET7_0_OR_GREATER
@@ -231,12 +156,5 @@ readonly
             _ => throw new ArgumentOutOfRangeException(nameof(value), value, null),
         };
 #endif
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static T Create(ref T p, ref T ptr, byte i)
-    {
-        T t = default;
-        Unsafe.Add(ref Unsafe.As<T, byte>(ref p), Unsafe.ByteOffset(ref ptr, ref p)) = i;
-        return t;
-    }
 }
 #endif
