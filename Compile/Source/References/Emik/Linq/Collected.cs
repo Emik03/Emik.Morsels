@@ -65,6 +65,17 @@ static partial class Collected
                 yield return b;
     }
 
+    /// <summary>Appends one element and returns the list.</summary>
+    /// <typeparam name="T">The type of the list and element.</typeparam>
+    /// <param name="list">The list to append to.</param>
+    /// <param name="item">The item to append with.</param>
+    /// <returns>The parameter <paramref name="list"/>.</returns>
+    public static List<T> AndAdd<T>(this List<T> list, [CanBeNull] T item)
+    {
+        list.Add(item);
+        return list;
+    }
+
     /// <summary>Upcasts or creates an <see cref="IList{T}"/>.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to upcast or encapsulate.</param>
