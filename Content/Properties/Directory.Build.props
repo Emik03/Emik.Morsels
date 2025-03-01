@@ -163,13 +163,13 @@
         <PackageReference Include="Absence.Fody" Version="2.0.10" PrivateAssets="all"/>
         <PackageReference Include="LocalsInit.Fody" Version="1.1" PrivateAssets="all"/>
         <PackageReference Include="Asyncify" Version="0.9.5707.38527" PrivateAssets="all"/>
-        <PackageReference Include="InlineMethod.Fody" Version="0.8.2" PrivateAssets="all"/>
+        <PackageReference Include="InlineMethod.Fody" Version="0.8.7" PrivateAssets="all"/>
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.187" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.188" PrivateAssets="all"/>
         <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.13.0" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.13.1" PrivateAssets="all"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.2" PrivateAssets="all"/>
         <PackageReference Include="Jubjubnest.Style.DotNet" Version="0.1.54" PrivateAssets="all"/>
@@ -180,11 +180,11 @@
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6495" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0" PrivateAssets="all"/>
-        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.0" PrivateAssets="all"/>
+        <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.1" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
         <PackageReference Include="DotNetAnalyzers.DocumentationAnalyzers" Version="1.0.0-beta.59" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.12.0-beta1.25076.4" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25076.4" PrivateAssets="all"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System" Private="false"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="NullGuard.Fody" Version="3.1.1" PrivateAssets="all"/>
         <Reference Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20'))" Include="System.Xml" Private="false"/>
@@ -200,7 +200,7 @@
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net20')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461'))" Include="FSharp.Core" Version="4.1.18"/>
         <PackageReference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net461')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0'))" Include="FSharp.Core" Version="4.7.2"/>
         <Reference Condition="'$(MSBuildProjectExtension)' == '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net35')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net40'))" Include="System.Numerics" HintPath="$(Morsels)/References/System.Numerics.dll" Private="false"/>
-        <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.5.8" PrivateAssets="all"/>
+        <PackageReference Condition="!$(MSBuildProjectName.Contains(&quot;Tests&quot;)) and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.0')))" Include="DotNetProjectFile.Analyzers" Version="1.5.10.1" PrivateAssets="all"/>
         <PackageReference Condition="($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net46')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.1')) or $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp')))" Include="FastGenericNew.SourceGenerator" Version="3.3.1" PrivateAssets="all"/>
     </ItemGroup>
     <Import Condition="Exists('$(Morsels)/Content/Properties/Directory.Build.local.props')" Project="$(Morsels)/Content/Properties/Directory.Build.local.props"/>
