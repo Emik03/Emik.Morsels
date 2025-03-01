@@ -154,7 +154,7 @@
     </ItemGroup>
     <!-- Package references. -->
     <ItemGroup>
-        <PackageReference Include="Fody" Version="6.9.1" PrivateAssets="all"/>
+        <PackageReference Include="Fody" Version="6.9.2" PrivateAssets="all"/>
         <PackageReference Include="AsyncFixer" Version="1.6" PrivateAssets="all"/>
         <PackageReference Include="InfoOf.Fody" Version="2.2" PrivateAssets="all"/>
         <PackageReference Include="ILMerge.Fody" Version="1.24" PrivateAssets="all"/>
