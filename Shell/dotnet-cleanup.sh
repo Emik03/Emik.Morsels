@@ -51,7 +51,7 @@ if [ "$help" = 1 ]; then
 fi
 
 go() {
-    dirs="$(find "$DOTNET_ROOT/$1" -maxdepth 1 -type d -name "[0-9]*" -exec basename {} \; | sort)"
+    dirs="$(find "$DOTNET_ROOT/$1" -maxdepth 1 -type d -name "[0-9]*" -exec basename {} \; | sort -V)"
     upper="$(echo "$dirs" | wc -l)"
 
     i=1
