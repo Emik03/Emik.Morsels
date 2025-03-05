@@ -17109,7 +17109,7 @@ static class GamePadStateExtensions
     public static unsafe Rented<T>.Pinned Alloc<T>(this in int it, out T* ptr) =>
         it switch
         {
-            <= 0 when (ptr = default) is var _ => default,
+            <= 0 when (ptr = null) is var _ => default,
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
             _ when !IsReferenceOrContainsReferences<T>() &&
                 IsStack<T>(it) &&
