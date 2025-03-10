@@ -19,18 +19,18 @@ static partial class SpanSimdQueries
         where T : allows ref struct
 #endif
         =>
-        typeof(T) == typeof(byte) ||
-        typeof(T) == typeof(double) ||
-        typeof(T) == typeof(float) ||
-        typeof(T) == typeof(int) ||
-        typeof(T) == typeof(long) ||
-        typeof(T) == typeof(nint) ||
-        typeof(T) == typeof(nuint) ||
-        typeof(T) == typeof(sbyte) ||
-        typeof(T) == typeof(short) ||
-        typeof(T) == typeof(uint) ||
-        typeof(T) == typeof(ulong) ||
-        typeof(T) == typeof(ushort);
+            typeof(T) == typeof(byte) ||
+            typeof(T) == typeof(double) ||
+            typeof(T) == typeof(float) ||
+            typeof(T) == typeof(int) ||
+            typeof(T) == typeof(long) ||
+            typeof(T) == typeof(nint) ||
+            typeof(T) == typeof(nuint) ||
+            typeof(T) == typeof(sbyte) ||
+            typeof(T) == typeof(short) ||
+            typeof(T) == typeof(uint) ||
+            typeof(T) == typeof(ulong) ||
+            typeof(T) == typeof(ushort);
 
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

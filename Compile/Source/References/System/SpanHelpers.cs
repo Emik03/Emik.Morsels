@@ -4,7 +4,7 @@ namespace System;
 
 using Emik.Morsels;
 
-// ReSharper disable CognitiveComplexity
+// ReSharper disable CognitiveComplexity InconsistentNaming
 #pragma warning disable 8500, 8602, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers

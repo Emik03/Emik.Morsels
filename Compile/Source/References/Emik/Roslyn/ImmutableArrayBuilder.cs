@@ -43,6 +43,7 @@ ref partial struct ImmutableArrayBuilder<T>
     public readonly void AddRange(scoped ReadOnlySpan<T> items) => _writer!.AddRange(items);
 
     /// <inheritdoc cref="ImmutableArray{T}.Builder.ToImmutable"/>
+    // ReSharper disable once ArrangeStaticMemberQualifier
     public readonly ImmutableArray<T> ToImmutable() => ImmutableCollectionsMarshal.AsImmutableArray(ToArray());
 
     /// <inheritdoc cref="ImmutableArray{T}.Builder.ToArray"/>

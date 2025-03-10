@@ -91,9 +91,7 @@ static partial class Exit
     /// The caller does not have sufficient security permission to perform this function.
     /// </exception>
     /// <returns>This method does not return. Specified to allow <see langword="throw"/> expressions.</returns>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
+    [ContractAnnotation("=> halt"), DoesNotReturn, SecuritySafeCritical,
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif

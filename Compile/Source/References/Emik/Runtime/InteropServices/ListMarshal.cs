@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
-// ReSharper disable once CheckNamespace RedundantNameQualifier
+// ReSharper disable RedundantNameQualifier
+// ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
 /// <summary>Class for obtaining the underlying data for lists.</summary>
@@ -15,12 +16,12 @@ static partial class ListMarshal
         public static Converter<List<T>, T[]> Converter { get; } =
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             typeof(List<T>)
-           .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-           .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
-            ? CreateGetter(method)
-            :
+               .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+               .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
+                ? CreateGetter(method)
+                :
 #endif
-            x => [.. x];
+                x => [.. x];
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
         /// <summary>Creates the getter to the inner array.</summary>
         /// <param name="field">The field to the list's array.</param>
@@ -31,7 +32,6 @@ static partial class ListMarshal
             if (field.DeclaringType is not { } declaringType)
                 throw new InvalidOperationException("Field has no declaring type.");
 
-            // ReSharper disable once RedundantNameQualifier
             var param = System.Linq.Expressions.Expression.Parameter(declaringType, field.Name);
             var access = System.Linq.Expressions.Expression.Field(param, field);
             return System.Linq.Expressions.Expression.Lambda<Converter<List<T>, T[]>>(access, param).Compile();

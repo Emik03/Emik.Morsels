@@ -24,7 +24,7 @@ public
         System.Collections.ObjectModel.ReadOnlyCollection
 #endif
         <short> Int16 { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-#if NETCOREAPP || ROSLYN
+#if NETCOREAPP || ROSLYN // ReSharper disable once ArrangeStaticMemberQualifier
         ImmutableCollectionsMarshal.AsImmutableArray<short>(
 #else
         Array.AsReadOnly<short>(

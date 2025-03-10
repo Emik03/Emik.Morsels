@@ -32,14 +32,6 @@ static partial class EnumerableCount
     )
         where TKey : notnull
     {
-        using var enumerator = source.GetEnumerator();
-
-        if (!enumerator.MoveNext())
-            yield break;
-
-        foreach (var countBy in BuildCountDictionary(enumerator, keySelector, keyComparer))
-            yield return countBy;
-
         static Dictionary<TKey, int> BuildCountDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -56,6 +48,14 @@ static partial class EnumerableCount
 
             return countsBy;
         }
+
+        using var enumerator = source.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+            yield break;
+
+        foreach (var countBy in BuildCountDictionary(enumerator, keySelector, keyComparer))
+            yield return countBy;
     }
 }
 #endif

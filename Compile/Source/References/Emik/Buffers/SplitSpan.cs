@@ -719,24 +719,24 @@ readonly
         =>
             builder.Append(To<char>.From(span));
 #else
-        {
+    {
 #pragma warning disable 8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            fixed (TBody* pin = span)
-            {
-                var ptr = span.Align(pin);
+        fixed (TBody* pin = span)
+        {
+            var ptr = span.Align(pin);
 
-                for (var i = 0; i < span.Length; i++)
-                    builder.Append(((char*)ptr)[i]);
-            }
+            for (var i = 0; i < span.Length; i++)
+                builder.Append(((char*)ptr)[i]);
+        }
 
-            return builder;
+        return builder;
 #else
-            fixed (TBody* ptr = span)
-                return builder.Append((char*)span.Align(ptr), span.Length);
+        fixed (TBody* ptr = span)
+            return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
 #pragma warning restore 8500
-        }
+    }
 #endif
     /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>
     /// <param name="index">The index to decrement.</param>

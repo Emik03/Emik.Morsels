@@ -59,14 +59,6 @@ static partial class EnumerableAggregate
     )
         where TKey : notnull
     {
-        using var enumerator = source.GetEnumerator();
-
-        if (!enumerator.MoveNext())
-            yield break;
-
-        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seed, func, keyComparer))
-            yield return countBy;
-
         static Dictionary<TKey, TAccumulate> PopulateDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -86,6 +78,14 @@ static partial class EnumerableAggregate
 
             return dict;
         }
+
+        using var enumerator = source.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+            yield break;
+
+        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seed, func, keyComparer))
+            yield return countBy;
     }
 
     static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateByIterator<TSource, TKey, TAccumulate>(
@@ -97,14 +97,6 @@ static partial class EnumerableAggregate
     )
         where TKey : notnull
     {
-        using var enumerator = source.GetEnumerator();
-
-        if (!enumerator.MoveNext())
-            yield break;
-
-        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seedSelector, func, keyComparer))
-            yield return countBy;
-
         static Dictionary<TKey, TAccumulate> PopulateDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -124,6 +116,14 @@ static partial class EnumerableAggregate
 
             return dict;
         }
+
+        using var enumerator = source.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+            yield break;
+
+        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seedSelector, func, keyComparer))
+            yield return countBy;
     }
 }
 #endif

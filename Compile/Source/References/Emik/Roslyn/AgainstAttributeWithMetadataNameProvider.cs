@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if ROSLYN
+#if ROSLYN // ReSharper disable OutParameterValueIsAlwaysDiscarded.Global
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -252,9 +252,6 @@ static partial class AgainstAttributeWithMetadataNameProvider
 
                 // Other namespaces (ie. the one right before global) skip the leading '.'
                 case INamespaceSymbol { IsGlobalNamespace: false }:
-                    builder.AddRange(symbol.MetadataName.AsSpan());
-                    break;
-
                 // Types with no namespace just have their metadata name directly written
                 case ITypeSymbol { ContainingSymbol: INamespaceSymbol { IsGlobalNamespace: true } }:
                     builder.AddRange(symbol.MetadataName.AsSpan());

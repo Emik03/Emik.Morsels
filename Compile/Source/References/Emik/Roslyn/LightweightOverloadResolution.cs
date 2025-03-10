@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
-// ReSharper disable CheckNamespace InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+// ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
 
 // Licensed to the .NET Foundation under one or more agreements.

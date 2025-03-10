@@ -21,7 +21,7 @@ static partial class StringRemoval
             return str.Remove(index, 1);
         }
 
-        popped = default;
+        popped = '\0';
         return str;
     }
 
@@ -70,7 +70,7 @@ static partial class StringRemoval
             return builder.Remove(index, 1);
         }
 
-        popped = default;
+        popped = '\0';
         return builder;
     }
 

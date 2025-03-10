@@ -2,7 +2,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-[StructLayout(LayoutKind.Sequential)]
+[StructLayout(LayoutKind.Sequential)] // ReSharper disable once ClassNeverInstantiated.Global
 sealed class Pinnable<T>
 {
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY

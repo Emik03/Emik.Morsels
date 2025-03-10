@@ -1023,18 +1023,18 @@ public
         where T : allows ref struct
 #endif
         =>
-        typeof(T) == typeof(byte) ||
-        typeof(T) == typeof(double) ||
-        typeof(T) == typeof(float) ||
-        typeof(T) == typeof(int) ||
-        typeof(T) == typeof(long) ||
-        typeof(T) == typeof(nint) ||
-        typeof(T) == typeof(nuint) ||
-        typeof(T) == typeof(sbyte) ||
-        typeof(T) == typeof(short) ||
-        typeof(T) == typeof(uint) ||
-        typeof(T) == typeof(ulong) ||
-        typeof(T) == typeof(ushort);
+            typeof(T) == typeof(byte) ||
+            typeof(T) == typeof(double) ||
+            typeof(T) == typeof(float) ||
+            typeof(T) == typeof(int) ||
+            typeof(T) == typeof(long) ||
+            typeof(T) == typeof(nint) ||
+            typeof(T) == typeof(nuint) ||
+            typeof(T) == typeof(sbyte) ||
+            typeof(T) == typeof(short) ||
+            typeof(T) == typeof(uint) ||
+            typeof(T) == typeof(ulong) ||
+            typeof(T) == typeof(ushort);
     /// <inheritdoc cref="Range{T}(Span{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Span<T> Range<T>(this IMemoryOwner<T> source) => Range(source.Memory.Span);
@@ -2521,8 +2521,6 @@ public
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
                 case INamespaceSymbol { IsGlobalNamespace: false }:
-                    builder.AddRange(symbol.MetadataName.AsSpan());
-                    break;
                 case ITypeSymbol { ContainingSymbol: INamespaceSymbol { IsGlobalNamespace: true } }:
                     builder.AddRange(symbol.MetadataName.AsSpan());
                     break;
@@ -3709,9 +3707,7 @@ readonly
     /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
     [Pure]
     public static string? Nth(this string str, Range range) =>
-        range.TryGetOffsetAndLength(str.Length, out var offset, out var length)
-            ? str.Substring(offset, length)
-            : default;
+        range.TryGetOffsetAndLength(str.Length, out var offset, out var length) ? str.Substring(offset, length) : null;
     /// <summary>Gets a range of items from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to get a range of items from.</param>
@@ -5104,7 +5100,7 @@ public enum ControlFlow : byte
             popped = str[index];
             return str.Remove(index, 1);
         }
-        popped = default;
+        popped = '\0';
         return str;
     }
     /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
@@ -5148,7 +5144,7 @@ public enum ControlFlow : byte
             popped = builder[index];
             return builder.Remove(index, 1);
         }
-        popped = default;
+        popped = '\0';
         return builder;
     }
     /// <inheritdoc cref="Pop(StringBuilder, int, out char)"/>
@@ -7795,7 +7791,8 @@ readonly
     }
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace RedundantNameQualifier
+// ReSharper disable RedundantNameQualifier
+// ReSharper disable once CheckNamespace
 /// <summary>Class for obtaining the underlying data for lists.</summary>
 #if !NET9_0_OR_GREATER
     /// <summary>Contains the cached method for obtaining the underlying array.</summary>
@@ -7806,12 +7803,12 @@ readonly
         public static Converter<List<T>, T[]> Converter { get; } =
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
             typeof(List<T>)
-           .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-           .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
-            ? CreateGetter(method)
-            :
+               .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+               .FirstOrDefault(x => x.FieldType == typeof(T[])) is { } method
+                ? CreateGetter(method)
+                :
 #endif
-            x => [.. x];
+                x => [.. x];
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
         /// <summary>Creates the getter to the inner array.</summary>
         /// <param name="field">The field to the list's array.</param>
@@ -7866,7 +7863,7 @@ readonly
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
-// ReSharper disable CheckNamespace InvocationIsSkipped RedundantNameQualifier UseSymbolAlias
+// ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
@@ -9067,7 +9064,7 @@ public enum KeyMods : ushort
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SmallList<T> ToSmallList<T>(this IEnumerator<T>? iterator) => new(iterator);
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable NullableWarningSuppressionIsUsed
+// ReSharper disable ArrangeStaticMemberQualifier NullableWarningSuppressionIsUsed
 // ReSharper disable once CheckNamespace
 /// <summary>Extension methods for iterating over a set of elements, or for generating new ones.</summary>
     /// <summary>
@@ -10263,22 +10260,22 @@ readonly
         =>
             builder.Append(To<char>.From(span));
 #else
-        {
+    {
 #pragma warning disable 8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
-            fixed (TBody* pin = span)
-            {
-                var ptr = span.Align(pin);
-                for (var i = 0; i < span.Length; i++)
-                    builder.Append(((char*)ptr)[i]);
-            }
-            return builder;
+        fixed (TBody* pin = span)
+        {
+            var ptr = span.Align(pin);
+            for (var i = 0; i < span.Length; i++)
+                builder.Append(((char*)ptr)[i]);
+        }
+        return builder;
 #else
-            fixed (TBody* ptr = span)
-                return builder.Append((char*)span.Align(ptr), span.Length);
+        fixed (TBody* ptr = span)
+            return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
 #pragma warning restore 8500
-        }
+    }
 #endif
     /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>
     /// <param name="index">The index to decrement.</param>
@@ -13068,9 +13065,7 @@ readonly
     /// The caller does not have sufficient security permission to perform this function.
     /// </exception>
     /// <returns>This method does not return. Specified to allow <see langword="throw"/> expressions.</returns>
-    [ContractAnnotation("=> halt"),
-     DoesNotReturn,
-     SecuritySafeCritical,
+    [ContractAnnotation("=> halt"), DoesNotReturn, SecuritySafeCritical,
 #if NETFRAMEWORK || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_0_OR_GREATER && !NET5_0_OR_GREATER
      SecurityPermission(Demand, Flags = UnmanagedCode),
 #endif
@@ -17901,11 +17896,6 @@ namespace System.Linq;
     )
         where TKey : notnull
     {
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            yield break;
-        foreach (var countBy in BuildCountDictionary(enumerator, keySelector, keyComparer))
-            yield return countBy;
         static Dictionary<TKey, int> BuildCountDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -17920,6 +17910,11 @@ namespace System.Linq;
             } while (enumerator.MoveNext());
             return countsBy;
         }
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            yield break;
+        foreach (var countBy in BuildCountDictionary(enumerator, keySelector, keyComparer))
+            yield return countBy;
     }
 #endif
 // SPDX-License-Identifier: MPL-2.0
@@ -19094,11 +19089,6 @@ namespace System.Linq;
     )
         where TKey : notnull
     {
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            yield break;
-        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seed, func, keyComparer))
-            yield return countBy;
         static Dictionary<TKey, TAccumulate> PopulateDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -19116,6 +19106,11 @@ namespace System.Linq;
             } while (enumerator.MoveNext());
             return dict;
         }
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            yield break;
+        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seed, func, keyComparer))
+            yield return countBy;
     }
     static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateByIterator<TSource, TKey, TAccumulate>(
         IEnumerable<TSource> source,
@@ -19126,11 +19121,6 @@ namespace System.Linq;
     )
         where TKey : notnull
     {
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            yield break;
-        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seedSelector, func, keyComparer))
-            yield return countBy;
         static Dictionary<TKey, TAccumulate> PopulateDictionary(
             IEnumerator<TSource> enumerator,
             Func<TSource, TKey> keySelector,
@@ -19148,6 +19138,11 @@ namespace System.Linq;
             } while (enumerator.MoveNext());
             return dict;
         }
+        using var enumerator = source.GetEnumerator();
+        if (!enumerator.MoveNext())
+            yield break;
+        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seedSelector, func, keyComparer))
+            yield return countBy;
     }
 #endif
 /// <summary>Methods that creates enumerations from individual items.</summary>

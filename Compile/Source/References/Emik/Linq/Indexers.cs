@@ -88,9 +88,7 @@ static partial class Indexers
     /// <returns>An element from the parameter <paramref name="str"/>, or <see langword="default"/>.</returns>
     [Pure] // ReSharper disable once ReturnTypeCanBeEnumerable.Global
     public static string? Nth(this string str, Range range) =>
-        range.TryGetOffsetAndLength(str.Length, out var offset, out var length)
-            ? str.Substring(offset, length)
-            : default;
+        range.TryGetOffsetAndLength(str.Length, out var offset, out var length) ? str.Substring(offset, length) : null;
 
     /// <summary>Gets a range of items from a collection.</summary>
     /// <typeparam name="T">The item in the collection.</typeparam>

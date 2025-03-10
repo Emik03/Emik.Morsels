@@ -3,7 +3,7 @@
 // ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 namespace Emik.Morsels;
 #if ROSLYN || NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-using Substring = System.ReadOnlyMemory<char>;
+using Substring = System.ReadOnlyMemory<char>; // ReSharper disable once MissingBlankLines
 #else
 using Substring = string;
 #endif
