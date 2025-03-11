@@ -365,6 +365,40 @@ static partial class IncludedSyntaxNodeRegistrant
             _ => "",
         };
 
+    /// <summary>Gets the constraint syntax for the <see cref="ITypeParameterSymbol"/>.</summary>
+    /// <param name="symbol">The symbol containing constraints.</param>
+    /// <returns>The constraint declaration of the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static string? Constraints(this ITypeParameterSymbol symbol)
+    {
+        var reference = symbol.HasReferenceTypeConstraint;
+        var value = symbol.HasValueTypeConstraint;
+        var unmanaged = symbol.HasUnmanagedTypeConstraint;
+        var notnull = symbol.HasNotNullConstraint;
+        var types = symbol.ConstraintTypes.Any();
+        var constructor = symbol.HasConstructorConstraint;
+
+        if (!reference && !value && !unmanaged && !notnull && !types && !constructor)
+            return null;
+
+        List<string> list = 0 switch
+        {
+            _ when unmanaged => ["unmanaged"],
+            _ when value => ["struct"],
+            _ when reference => ["class"],
+            _ when notnull => ["notnull"],
+            _ => [],
+        };
+
+        if (types)
+            list.AddRange(symbol.ConstraintTypes.Select(x => x.GetFullyQualifiedName()));
+
+        if (constructor)
+            list.Add("new()");
+
+        return $"where {symbol.GetFullyQualifiedName()} : {list.Conjoin()}";
+    }
+
     /// <inheritdoc cref="MemberPath.TryGetMemberName(ExpressionSyntax, out string)"/>
     [Pure]
     public static string? MemberName(this ExpressionSyntax syntax)
