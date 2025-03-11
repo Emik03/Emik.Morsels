@@ -2312,14 +2312,28 @@ public
     /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
     /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
     public static string GetFullyQualifiedName(this ISymbol symbol) =>
-        symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        symbol.ToDisplayString(
+            SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
+                SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
+            )
+        );
     /// <summary>Gets the fully qualified name for a given symbol, including nullability annotations.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
     /// <returns>The fully qualified name for <paramref name="symbol"/>.</returns>
     public static string GetFullyQualifiedNameWithNullabilityAnnotations(this ISymbol symbol) =>
         symbol.ToDisplayString(
             SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
-                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
+                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier |
+                SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
+            )
+        );
+    /// <summary>Gets the minimally qualified name for a given symbol.</summary>
+    /// <param name="symbol">The input <see cref="ISymbol"/> instance.</param>
+    /// <returns>The minimally qualified name for <paramref name="symbol"/>.</returns>
+    public static string GetMinimallyQualifiedName(this ISymbol symbol) =>
+        symbol.ToDisplayString(
+            SymbolDisplayFormat.MinimallyQualifiedFormat.AddMiscellaneousOptions(
+                SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
             )
         );
     /// <summary>Checks whether or not a given type symbol has a specified full name.</summary>
@@ -2327,7 +2341,7 @@ public
     /// <param name="name">The full name to check.</param>
     /// <returns>Whether <paramref name="symbol"/> has a full name equals to <paramref name="name"/>.</returns>
     public static bool HasFullyQualifiedName(this ISymbol symbol, string name) =>
-        symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == name;
+        symbol.GetFullyQualifiedName() == name;
     /// <summary>
     /// Checks whether or not a given symbol has an attribute with the specified fully qualified metadata name.
     /// </summary>
