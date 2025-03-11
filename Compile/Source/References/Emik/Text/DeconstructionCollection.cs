@@ -176,14 +176,21 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var copy = visit;
             list = new(str);
 
-            while (enumerator.MoveNext())
-                if (seen?.Add(enumerator.Current) is false) { }
-                else if (--copy > 0)
-                    list.Add(enumerator.Current);
-                else if (!enumerator.MoveNext())
-                    break;
-                else
-                    return list.Fail();
+            try
+            {
+                while (enumerator.MoveNext())
+                    if (seen?.Add(enumerator.Current) is false) { }
+                    else if (--copy > 0)
+                        list.Add(enumerator.Current);
+                    else if (!enumerator.MoveNext())
+                        break;
+                    else
+                        return list.Fail();
+            }
+            catch (Exception)
+            {
+                return list.Fail();
+            }
 
             visit = copy;
             return true;
@@ -206,8 +213,22 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             ref int visit,
             out DeconstructionList list,
             HashSet<object?>? seen = null
-        ) =>
-            TryCollect(enumerable.GetEnumerator(), str, ref visit, out list, seen);
+        )
+        {
+            IEnumerator e;
+
+            try
+            {
+                e = enumerable.GetEnumerator();
+            }
+            catch (Exception)
+            {
+                list = new(str);
+                return list.Fail();
+            }
+
+            return TryCollect(e, str, ref visit, out list, seen);
+        }
 #if !NET20 && !NET30 && !NET35
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="comparable">The comparable to collect.</param>
@@ -226,8 +247,22 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             ref int visit,
             out DeconstructionList list,
             HashSet<object?>? seen = null
-        ) =>
-            TryCollect(comparable.ToList(), str, ref visit, out list, seen);
+        )
+        {
+            List<object?> e;
+
+            try
+            {
+                e = comparable.ToList();
+            }
+            catch (Exception)
+            {
+                list = new(str);
+                return list.Fail();
+            }
+
+            return TryCollect(e, str, ref visit, out list, seen);
+        }
 
         /// <summary>Attempts to deconstruct an object by enumerating it.</summary>
         /// <param name="equatable">The equatable to collect.</param>
@@ -246,8 +281,22 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             ref int visit,
             out DeconstructionList list,
             HashSet<object?>? seen = null
-        ) =>
-            TryCollect(equatable.ToList(), str, ref visit, out list, seen);
+        )
+        {
+            List<object?> e;
+
+            try
+            {
+                e = equatable.ToList();
+            }
+            catch (Exception)
+            {
+                list = new(str);
+                return list.Fail();
+            }
+
+            return TryCollect(e, str, ref visit, out list, seen);
+        }
 #endif
         public override bool Fail()
         {
@@ -425,16 +474,23 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var copy = visit;
             dictionary = new(str);
 
-            while (enumerator.MoveNext())
-                if (seen?.Contains(enumerator.Key) is true ||
-                    seen?.Add(enumerator.Value) is false ||
-                    seen?.Add(enumerator.Key) is false) { }
-                else if (--copy > 0)
-                    dictionary.Add(enumerator.Key, enumerator.Value);
-                else if (!enumerator.MoveNext())
-                    break;
-                else
-                    return dictionary.Fail();
+            try
+            {
+                while (enumerator.MoveNext())
+                    if (seen?.Contains(enumerator.Key) is true ||
+                        seen?.Add(enumerator.Value) is false ||
+                        seen?.Add(enumerator.Key) is false) { }
+                    else if (--copy > 0)
+                        dictionary.Add(enumerator.Key, enumerator.Value);
+                    else if (enumerator.MoveNext())
+                        return dictionary.Fail();
+                    else
+                        break;
+            }
+            catch (Exception)
+            {
+                return dictionary.Fail();
+            }
 
             visit = copy;
             return true;
@@ -459,8 +515,22 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             ref int visit,
             out DeconstructionDictionary dictionary,
             HashSet<object?>? seen = null
-        ) =>
-            TryCollect(dict.GetEnumerator(), str, ref visit, out dictionary, seen);
+        )
+        {
+            IDictionaryEnumerator e;
+
+            try
+            {
+                e = dict.GetEnumerator();
+            }
+            catch (Exception)
+            {
+                dictionary = new(str);
+                return dictionary.Fail();
+            }
+
+            return TryCollect(e, str, ref visit, out dictionary, seen);
+        }
 
         /// <summary>Attempts to deconstruct an object by reflectively collecting its fields and properties.</summary>
         /// <param name="value">The complex object to convert.</param>
@@ -487,8 +557,8 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var copy = visit;
             dictionary = new(str);
             var type = value.GetType();
-            var fields = type.GetFields();
-            var properties = type.GetProperties();
+            var fields = type.GetRuntimeFields().ToArray();
+            var properties = type.GetRuntimeProperties().ToArray();
 
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var next in fields)
@@ -754,18 +824,18 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
                 when DeconstructionDictionary.TryCollect(x, str, ref visit, out var dictionaryEnumerator, seen):
                 return Ok(dictionaryEnumerator, out any);
             case IDictionaryEnumerator: goto default;
-            case IEnumerable x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerable, seen):
-                return Ok(enumerable, out any);
+            case IEnumerable x when DeconstructionList.TryCollect(x, str, ref visit, out var e, seen):
+                return Ok(e, out any);
             case IEnumerable: goto default;
-            case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var enumerator, seen):
-                return Ok(enumerator, out any);
+            case IEnumerator x when DeconstructionList.TryCollect(x, str, ref visit, out var e, seen):
+                return Ok(e, out any);
             case IEnumerator: goto default;
 #if !NET20 && !NET30 && !NET35
-            case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var comparable, seen):
-                return Ok(comparable, out any);
+            case IStructuralComparable x when DeconstructionList.TryCollect(x, str, ref visit, out var cmp, seen):
+                return Ok(cmp, out any);
             case IStructuralComparable: goto default;
-            case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var equatable, seen):
-                return Ok(equatable, out any);
+            case IStructuralEquatable x when DeconstructionList.TryCollect(x, str, ref visit, out var eq, seen):
+                return Ok(eq, out any);
             case IStructuralEquatable: goto default;
 #endif
             default:
@@ -844,6 +914,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     protected object? SimplifyObject(object? value) =>
         value switch
         {
+            null => "null",
+            true => "true",
+            false => "false",
             DeconstructionCollection x => x.Simplify(),
             Version x => x.ToShortString(),
             Pointer x => ToHexString(x),
@@ -851,7 +924,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             nuint x => x.ToHexString(),
             nint x => x.ToHexString(),
             string x => ToString(x),
-            null or IConvertible => value,
+            IConvertible => value,
             _ => ToString(value),
         };
 
