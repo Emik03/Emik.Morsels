@@ -2438,30 +2438,31 @@ public
         return false;
     }
     /// <summary>Calculates the effective accessibility for a given symbol.</summary>
-    /// <param name="symbol">The <see cref="ISymbol"/> instance to check.</param>
-    /// <returns>The effective accessibility for <paramref name="symbol"/>.</returns>
+    /// <param name="s">The <see cref="ISymbol"/> instance to check.</param>
+    /// <returns>The effective accessibility for <paramref name="s"/>.</returns>
     [Pure]
-    public static Accessibility GetEffectiveAccessibility(this ISymbol symbol)
+    public static Accessibility GetEffectiveAccessibility(this ISymbol s)
     {
-        var visibility = Accessibility.Public;
-        switch (symbol.Kind)
+        for (; s.Kind is SymbolKind.Parameter; s = s.ContainingSymbol) { }
+        if (s.Kind is SymbolKind.Alias or SymbolKind.TypeParameter)
+            return Accessibility.Private;
+        var ret = Accessibility.Public;
+        for (; s is { DeclaredAccessibility: var next } and not { Kind: SymbolKind.Namespace }; s = s.ContainingSymbol)
         {
-            case SymbolKind.Alias: return Accessibility.Private;
-            case SymbolKind.Parameter: return GetEffectiveAccessibility(symbol.ContainingSymbol);
-            case SymbolKind.TypeParameter: return Accessibility.Private;
-        }
-        while (symbol is not null && symbol.Kind != SymbolKind.Namespace)
-        {
-            switch (symbol.DeclaredAccessibility)
+            if (next is Accessibility.NotApplicable or Accessibility.Private)
+                return Accessibility.Private;
+            ret = next switch
             {
-                case Accessibility.NotApplicable or Accessibility.Private: return Accessibility.Private;
-                case Accessibility.Internal or Accessibility.ProtectedAndInternal:
-                    visibility = Accessibility.Internal;
-                    break;
-            }
-            symbol = symbol.ContainingSymbol;
+                Accessibility.ProtectedAndInternal => Accessibility.ProtectedAndInternal,
+                Accessibility.Protected =>
+                    ret is Accessibility.Public ? Accessibility.Protected : Accessibility.ProtectedAndInternal,
+                Accessibility.Internal =>
+                    ret is Accessibility.Public ? Accessibility.Internal : Accessibility.ProtectedAndInternal,
+                Accessibility.ProtectedOrInternal when ret is Accessibility.Public => Accessibility.ProtectedOrInternal,
+                _ => ret,
+            };
         }
-        return visibility;
+        return ret;
     }
     /// <summary>Checks whether or not a given symbol can be accessed from a specified assembly.</summary>
     /// <param name="symbol">The input <see cref="ISymbol"/> instance to check.</param>
@@ -2470,8 +2471,8 @@ public
     [Pure]
     public static bool CanBeAccessedFrom(this ISymbol symbol, IAssemblySymbol assembly) =>
         symbol.GetEffectiveAccessibility() is var accessibility &&
-        accessibility == Accessibility.Public ||
-        accessibility == Accessibility.Internal && symbol.ContainingAssembly.GivesAccessTo(assembly);
+        accessibility is Accessibility.Public ||
+        accessibility is Accessibility.Internal && symbol.ContainingAssembly.GivesAccessTo(assembly);
     /// <summary>Negated <see cref="SyntaxValueProvider.ForAttributeWithMetadataName"/>.</summary>
     /// <inheritdoc cref="SyntaxValueProvider.ForAttributeWithMetadataName"/>
     [Pure]
