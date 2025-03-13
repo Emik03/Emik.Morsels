@@ -521,6 +521,19 @@ static partial class IncludedSyntaxNodeRegistrant
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
         symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
 
+    /// <summary>Gets the interface members explicitly implemented by this <see cref="ISymbol"/>.</summary>
+    /// <param name="symbol">The symbol to get the interface members from.</param>
+    /// <returns>The explicitly implemented interface members of the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static ImmutableArray<ISymbol> ExplicitInterfaceSymbols(this ISymbol? symbol) =>
+        symbol switch
+        {
+            IEventSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
+            IMethodSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
+            IPropertySymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
+            _ => ImmutableArray<ISymbol>.Empty,
+        };
+
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
