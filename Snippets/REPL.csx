@@ -16060,7 +16060,7 @@ readonly
     public static T Debug<T>(
         this T it,
         Predicate<T>? filter = null,
-        Converter<T, object>? map = null,
+        Converter<T, object?>? map = null,
         [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
         [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
         [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
