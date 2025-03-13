@@ -3012,6 +3012,18 @@ public
     [Pure]
     public static IEnumerable<INamespaceOrTypeSymbol> GetAllMembers(this INamespaceSymbol symbol) =>
         symbol.GetMembers().SelectMany(GetAllNamespaceOrTypeSymbolMembers).Prepend(symbol);
+    /// <summary>Gets the interface members explicitly implemented by this <see cref="ISymbol"/>.</summary>
+    /// <param name="symbol">The symbol to get the interface members from.</param>
+    /// <returns>The explicitly implemented interface members of the parameter <paramref name="symbol"/>.</returns>
+    [Pure]
+    public static ImmutableArray<ISymbol> ExplicitInterfaceSymbols(this ISymbol? symbol) =>
+        symbol switch
+        {
+            IEventSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
+            IMethodSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
+            IPropertySymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
+            _ => ImmutableArray<ISymbol>.Empty,
+        };
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
     /// <returns>The underlying type symbol from <paramref name="symbol"/>, if applicable.</returns>
@@ -16047,8 +16059,8 @@ readonly
     [return: NotNullIfNotNull(nameof(it))]
     public static T Debug<T>(
         this T it,
-        Predicate<T>? predicate = null,
-        Converter<T, object>? converter = null,
+        Predicate<T>? filter = null,
+        Converter<T, object>? map = null,
         [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
         [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
         [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
@@ -16058,10 +16070,10 @@ readonly
         [CallerLineNumber] int line = 0
     )
     {
-        if (predicate?.Invoke(it) is false)
+        if (filter?.Invoke(it) is false)
             return it;
         var text = $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
-            (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
+            (map is null ? it : map(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
 #if KTANE
         UnityEngine.Debug.Log(text);
 #else

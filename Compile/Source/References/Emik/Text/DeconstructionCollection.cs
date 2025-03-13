@@ -9,8 +9,8 @@ static partial class DeconstructionCollectionExtensions
     [return: NotNullIfNotNull(nameof(it))]
     public static T Debug<T>(
         this T it,
-        Predicate<T>? predicate = null,
-        Converter<T, object>? converter = null,
+        Predicate<T>? filter = null,
+        Converter<T, object>? map = null,
         [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
         [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
         [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
@@ -20,11 +20,11 @@ static partial class DeconstructionCollectionExtensions
         [CallerLineNumber] int line = 0
     )
     {
-        if (predicate?.Invoke(it) is false)
+        if (filter?.Invoke(it) is false)
             return it;
 
         var text = $"[{DateTime.Now:HH:mm:ss}] [{path.FileName()}.{name}:{line} ({expression.CollapseToSingleLine()})] {
-            (converter is null ? it : converter(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
+            (map is null ? it : map(it)).ToDeconstructed(visitLength, stringLength, recurseLength)}\n";
 #if KTANE
         UnityEngine.Debug.Log(text);
 #else
