@@ -137,30 +137,6 @@ static partial class StringRemoval
     /// <inheritdoc cref="string.Trim()"/>
     public static ReadOnlyMemory<char> Trim(this ReadOnlyMemory<char> memory) => memory.TrimStart().TrimEnd();
 
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    public static Memory<char> TrimStart(this Memory<char> memory)
-    {
-        var span = memory.Span;
-
-        for (var i = 0; i < span.Length; i++)
-            if (!char.IsWhiteSpace(span[i]))
-                return memory[..i];
-
-        return default;
-    }
-
-    /// <inheritdoc cref="string.TrimStart(char[])"/>
-    public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
-    {
-        var span = memory.Span;
-
-        for (var i = 0; i < span.Length; i++)
-            if (!char.IsWhiteSpace(span[i]))
-                return memory[..i];
-
-        return default;
-    }
-
     /// <inheritdoc cref="string.TrimEnd(char[])"/>
     public static Memory<char> TrimEnd(this Memory<char> memory)
     {
@@ -168,7 +144,7 @@ static partial class StringRemoval
 
         for (var i = span.Length - 1; i >= 0; i--)
             if (!char.IsWhiteSpace(span[i]))
-                return memory[i..];
+                return memory[..(i + 1)];
 
         return default;
     }
@@ -179,6 +155,30 @@ static partial class StringRemoval
         var span = memory.Span;
 
         for (var i = span.Length - 1; i >= 0; i--)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[..(i + 1)];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static Memory<char> TrimStart(this Memory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = 0; i < span.Length; i++)
+            if (!char.IsWhiteSpace(span[i]))
+                return memory[i..];
+
+        return default;
+    }
+
+    /// <inheritdoc cref="string.TrimStart(char[])"/>
+    public static ReadOnlyMemory<char> TrimStart(this ReadOnlyMemory<char> memory)
+    {
+        var span = memory.Span;
+
+        for (var i = 0; i < span.Length; i++)
             if (!char.IsWhiteSpace(span[i]))
                 return memory[i..];
 
