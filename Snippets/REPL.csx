@@ -14401,22 +14401,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     [return: NotNullIfNotNull(nameof(set))]
     public static IReadOnlySet<T?>? ItemCanBeNull<T>(this IReadOnlySet<T>? set) => set;
 // SPDX-License-Identifier: MPL-2.0
-// NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableIndex.cs when .NET 9 is released
-// and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
-#if !CSHARPREPL
-// ReSharper disable once CheckNamespace EmptyNamespace
-namespace System.Linq;
-#endif
-#if !NET9_0_OR_GREATER
-/// <summary>The backport of the Index method for <see cref="IEnumerable{T}"/>.</summary>
-    /// <summary>Returns an enumerable that incorporates the element's index into a tuple.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source" />.</typeparam>
-    /// <param name="source">The source enumerable providing the elements.</param>
-    /// <returns>The enumerable that incorporates the element's index into a tuple.</returns>
-    public static IEnumerable<(int Index, TSource Item)> Index<TSource>(this IEnumerable<TSource> source) =>
-        source is TSource[] { Length: 0 } ? [] : source.Select((x, i) => (i, x));
-#endif
-// SPDX-License-Identifier: MPL-2.0
 #if ROSLYN
 // ReSharper disable once CheckNamespace
 /// <summary>Strict value-based equality for symbol comparison.</summary>
@@ -17987,57 +17971,6 @@ readonly
     }
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableCount.cs when .NET 9 is released
-// and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
-#if !CSHARPREPL
-// ReSharper disable once CheckNamespace EmptyNamespace
-namespace System.Linq;
-#endif
-#if !NET9_0_OR_GREATER
-/// <summary>The backport of the CountBy method for <see cref="IEnumerable{T}"/>.</summary>
-    /// <summary>Performs a count by operation.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector"/>.</typeparam>
-    /// <param name="source">The sequence to count by.</param>
-    /// <param name="keySelector">The key selector function.</param>
-    /// <param name="keyComparer">The key comparer.</param>
-    /// <returns>The count by operation.</returns>
-    public static IEnumerable<KeyValuePair<TKey, int>> CountBy<TSource, TKey>(
-        this IEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        IEqualityComparer<TKey>? keyComparer = null
-    )
-        where TKey : notnull =>
-        source.TryCount() is 0 ? [] : CountByIterator(source, keySelector, keyComparer);
-    static IEnumerable<KeyValuePair<TKey, int>> CountByIterator<TSource, TKey>(
-        IEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        IEqualityComparer<TKey>? keyComparer
-    )
-        where TKey : notnull
-    {
-        static Dictionary<TKey, int> BuildCountDictionary(
-            IEnumerator<TSource> enumerator,
-            Func<TSource, TKey> keySelector,
-            IEqualityComparer<TKey>? keyComparer
-        )
-        {
-            Dictionary<TKey, int> countsBy = new(keyComparer);
-            do
-            {
-                var key = keySelector(enumerator.Current);
-                countsBy[key] = checked(countsBy.GetValueOrDefault(key) + 1);
-            } while (enumerator.MoveNext());
-            return countsBy;
-        }
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            yield break;
-        foreach (var countBy in BuildCountDictionary(enumerator, keySelector, keyComparer))
-            yield return countBy;
-    }
-#endif
-// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
 /// <summary>Methods for draining collections.</summary>
     /// <summary>
@@ -19153,118 +19086,6 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             return true;
         }
     }
-// SPDX-License-Identifier: MPL-2.0
-// NOTE: This file should be moved to ./Source/References/System/Linq/EnumerableAggregate.cs when .NET 9 is released
-// and CSharpRepl is updated to use it, as anything in ./Compile/Source/References/System/ is not included in REPL.csx.
-#if !CSHARPREPL
-// ReSharper disable once CheckNamespace EmptyNamespace
-namespace System.Linq;
-#endif
-#if !NET9_0_OR_GREATER
-/// <summary>The backport of the AggregateBy method for <see cref="IEnumerable{T}"/>.</summary>
-    /// <summary>Performs a specified accumulator function over a sequence.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector"/>.</typeparam>
-    /// <typeparam name="TAccumulate">The type of the accumulator value.</typeparam>
-    /// <param name="source">The sequence to accumulate over.</param>
-    /// <param name="keySelector">The key selector function.</param>
-    /// <param name="seed">The initial accumulator value.</param>
-    /// <param name="func">The accumulator function.</param>
-    /// <param name="keyComparer">The key comparer.</param>
-    /// <returns>The accumulated value.</returns>
-    public static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateBy<TSource, TKey, TAccumulate>(
-        this IEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        TAccumulate seed,
-        Func<TAccumulate, TSource, TAccumulate> func,
-        IEqualityComparer<TKey>? keyComparer = null
-    )
-        where TKey : notnull =>
-        source.TryCount() is 0 ? [] : AggregateByIterator(source, keySelector, seed, func, keyComparer);
-    /// <summary>Performs a specified accumulator function over a sequence.</summary>
-    /// <typeparam name="TSource">The type of the elements of <paramref name="source"/>.</typeparam>
-    /// <typeparam name="TKey">The type of the key returned by <paramref name="keySelector"/>.</typeparam>
-    /// <typeparam name="TAccumulate">The type of the accumulator value.</typeparam>
-    /// <param name="source">The sequence to accumulate over.</param>
-    /// <param name="keySelector">The key selector function.</param>
-    /// <param name="seedSelector">The seed selector function.</param>
-    /// <param name="func">The accumulator function.</param>
-    /// <param name="keyComparer">The key comparer.</param>
-    /// <returns>The accumulated value.</returns>
-    public static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateBy<TSource, TKey, TAccumulate>(
-        this IEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        Func<TKey, TAccumulate> seedSelector,
-        Func<TAccumulate, TSource, TAccumulate> func,
-        IEqualityComparer<TKey>? keyComparer = null
-    )
-        where TKey : notnull =>
-        source.TryCount() is 0 ? [] : AggregateByIterator(source, keySelector, seedSelector, func, keyComparer);
-    static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateByIterator<TSource, TKey, TAccumulate>(
-        IEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        TAccumulate seed,
-        Func<TAccumulate, TSource, TAccumulate> func,
-        IEqualityComparer<TKey>? keyComparer
-    )
-        where TKey : notnull
-    {
-        static Dictionary<TKey, TAccumulate> PopulateDictionary(
-            IEnumerator<TSource> enumerator,
-            Func<TSource, TKey> keySelector,
-            TAccumulate seed,
-            Func<TAccumulate, TSource, TAccumulate> func,
-            IEqualityComparer<TKey>? keyComparer
-        )
-        {
-            Dictionary<TKey, TAccumulate> dict = new(keyComparer);
-            do
-            {
-                var value = enumerator.Current;
-                var key = keySelector(value);
-                dict[key] = func(dict.GetValueOrDefault(key, seed), value);
-            } while (enumerator.MoveNext());
-            return dict;
-        }
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            yield break;
-        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seed, func, keyComparer))
-            yield return countBy;
-    }
-    static IEnumerable<KeyValuePair<TKey, TAccumulate>> AggregateByIterator<TSource, TKey, TAccumulate>(
-        IEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        Func<TKey, TAccumulate> seedSelector,
-        Func<TAccumulate, TSource, TAccumulate> func,
-        IEqualityComparer<TKey>? keyComparer
-    )
-        where TKey : notnull
-    {
-        static Dictionary<TKey, TAccumulate> PopulateDictionary(
-            IEnumerator<TSource> enumerator,
-            Func<TSource, TKey> keySelector,
-            Func<TKey, TAccumulate> seedSelector,
-            Func<TAccumulate, TSource, TAccumulate> func,
-            IEqualityComparer<TKey>? keyComparer
-        )
-        {
-            Dictionary<TKey, TAccumulate> dict = new(keyComparer);
-            do
-            {
-                var value = enumerator.Current;
-                var key = keySelector(value);
-                dict[key] = func(dict.GetValueOrDefault(key, seedSelector(key)), value);
-            } while (enumerator.MoveNext());
-            return dict;
-        }
-        using var enumerator = source.GetEnumerator();
-        if (!enumerator.MoveNext())
-            yield break;
-        foreach (var countBy in PopulateDictionary(enumerator, keySelector, seedSelector, func, keyComparer))
-            yield return countBy;
-    }
-#endif
 /// <summary>Methods that creates enumerations from individual items.</summary>
 static partial class ManyQueries
 {
