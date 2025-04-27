@@ -18530,7 +18530,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 ret = false;
                 return true;
             }
-            reader = reader.UnsafelyTake(otherLength);
+            reader = reader.UnsafelySkip(otherLength);
             otherReader = other.Current;
             return false;
         }
