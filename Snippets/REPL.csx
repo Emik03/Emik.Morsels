@@ -10121,6 +10121,34 @@ readonly
 #pragma warning restore 9080
                 return ret;
     }
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
+    /// <param name="other">The other side.</param>
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
+            return !otherE.MoveNext();
+        if (!otherE.MoveNext())
+            return false;
+        ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
+        while (true)
+#pragma warning disable 9080
+            if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, comparer, out var ret))
+#pragma warning restore 9080
+                return ret;
+    }
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
     public readonly override bool Equals(object? obj) => false;
@@ -10137,7 +10165,7 @@ readonly
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
-        scoped in SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -10147,6 +10175,30 @@ readonly
         var eOther = other.GetEnumerator();
         while (e.MoveNext())
             if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current))
+                return false;
+        return !eOther.MoveNext();
+    }
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
+    /// <param name="other">The side to compare to.</param>
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        Enumerator e = this;
+        var eOther = other.GetEnumerator();
+        while (e.MoveNext())
+            if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current, comparer))
                 return false;
         return !eOther.MoveNext();
     }
@@ -11966,7 +12018,7 @@ readonly
         head = e.Current;
         tail = new(e.Body, _separator);
     }
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
@@ -11976,6 +12028,17 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            SplitSpan.ConcatEqual(other.SplitSpan, comparer);
     /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals(object? obj) =>
@@ -11985,7 +12048,7 @@ readonly
     public readonly bool Equals(SplitMemory<TBody, TSeparator, TStrategy> other) =>
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
@@ -11995,6 +12058,17 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            SplitSpan.SequenceEqual(other.SplitSpan, comparer);
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int Count()
@@ -18511,9 +18585,8 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
         {
-            Unsafe.SkipInit(out ret);
             if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
-                return SameLength(ref other, ref reader, ref otherReader, ref ret);
+                return SameLength(ref other, ref reader, ref otherReader, out ret);
             if (length < otherLength)
             {
                 if (!reader.SequenceEqual(otherReader.UnsafelyTake(length)) || !MoveNext())
@@ -18523,6 +18596,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
                 }
                 reader = Current;
                 otherReader = otherReader.UnsafelySkip(length);
+                Unsafe.SkipInit(out ret);
                 return false;
             }
             if (!reader.UnsafelyTake(otherLength).SequenceEqual(otherReader) || !other.MoveNext())
@@ -18532,6 +18606,59 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             }
             reader = reader.UnsafelySkip(otherLength);
             otherReader = other.Current;
+            Unsafe.SkipInit(out ret);
+            return false;
+        }
+        /// <summary>
+        /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
+        /// </summary>
+        /// <typeparam name="TOtherSeparator">The type of separator used in the other sequence.</typeparam>
+        /// <typeparam name="TOtherStrategy">The strategy used for splitting the other sequence.</typeparam>
+        /// <param name="other">The enumerator for the other sequence.</param>
+        /// <param name="reader">The <see cref="ReadOnlySpan{T}"/> representing this sequence.</param>
+        /// <param name="otherReader">The <see cref="ReadOnlySpan{T}"/> representing the other sequence.</param>
+        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use.</param>
+        /// <param name="ret">
+        /// Output parameter indicating if the sequences are equal.
+        /// Note that this value is undefined if <see langword="false"/> is returned.
+        /// </param>
+        /// <returns>
+        /// The value <see langword="true"/> if enumeration should be stopped; otherwise, <see langword="false"/>.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool EqualityMoveNext<TOtherSeparator, TOtherStrategy>(
+            scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            scoped ref ReadOnlySpan<TBody> reader,
+            scoped ref ReadOnlySpan<TBody> otherReader,
+            IEqualityComparer<TBody> comparer,
+            out bool ret
+        )
+#if !NET7_0_OR_GREATER
+            where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        {
+            if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
+                return SameLength(ref other, ref reader, ref otherReader, comparer, out ret);
+            if (length < otherLength)
+            {
+                if (!reader.SequenceEqual(otherReader.UnsafelyTake(length), comparer) || !MoveNext())
+                {
+                    ret = false;
+                    return true;
+                }
+                reader = Current;
+                otherReader = otherReader.UnsafelySkip(length);
+                Unsafe.SkipInit(out ret);
+                return false;
+            }
+            if (!reader.UnsafelyTake(otherLength).SequenceEqual(otherReader, comparer) || !other.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+            reader = reader.UnsafelySkip(otherLength);
+            otherReader = other.Current;
+            Unsafe.SkipInit(out ret);
             return false;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -18712,7 +18839,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
             ref ReadOnlySpan<TBody> reader,
             ref ReadOnlySpan<TBody> otherReader,
-            ref bool ret
+            out bool ret
         )
 #if !NET7_0_OR_GREATER
             where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -18735,6 +18862,39 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             }
             reader = Current;
             otherReader = other.Current;
+            Unsafe.SkipInit(out ret);
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool SameLength<TOtherSeparator, TOtherStrategy>(
+            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            ref ReadOnlySpan<TBody> reader,
+            ref ReadOnlySpan<TBody> otherReader,
+            IEqualityComparer<TBody> comparer,
+            out bool ret
+        )
+#if !NET7_0_OR_GREATER
+            where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        {
+            if (!reader.SequenceEqual(otherReader, comparer))
+            {
+                ret = false;
+                return true;
+            }
+            if (!MoveNext())
+            {
+                ret = !other.MoveNext();
+                return true;
+            }
+            if (!other.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+            reader = Current;
+            otherReader = other.Current;
+            Unsafe.SkipInit(out ret);
             return false;
         }
     }

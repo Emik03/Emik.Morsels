@@ -478,6 +478,38 @@ readonly
                 return ret;
     }
 
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
+    /// <param name="other">The other side.</param>
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (GetEnumerator() is var e && other.GetEnumerator() is var otherE && !e.MoveNext())
+            return !otherE.MoveNext();
+
+        if (!otherE.MoveNext())
+            return false;
+
+        ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
+
+        while (true)
+#pragma warning disable 9080 // Dangerous!
+            if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, comparer, out var ret))
+#pragma warning restore 9080
+                return ret;
+    }
+
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
     public readonly override bool Equals(object? obj) => false;
@@ -496,7 +528,7 @@ readonly
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
-        scoped in SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -507,6 +539,33 @@ readonly
 
         while (e.MoveNext())
             if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current))
+                return false;
+
+        return !eOther.MoveNext();
+    }
+
+    /// <summary>Determines whether both splits are equal.</summary>
+    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
+    /// <param name="other">The side to compare to.</param>
+    /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to use.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        Enumerator e = this;
+        var eOther = other.GetEnumerator();
+
+        while (e.MoveNext())
+            if (!eOther.MoveNext() || !e.Current.SequenceEqual(eOther.Current, comparer))
                 return false;
 
         return !eOther.MoveNext();

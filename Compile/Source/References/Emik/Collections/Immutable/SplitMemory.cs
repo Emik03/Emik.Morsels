@@ -376,7 +376,7 @@ readonly
         tail = new(e.Body, _separator);
     }
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator, TOtherStrategy}"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
@@ -386,6 +386,18 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            SplitSpan.ConcatEqual(other.SplitSpan, comparer);
 
     /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -398,7 +410,7 @@ readonly
         _body.Span.SequenceEqual(other._body.Span) &&
         _separator.Span.SequenceEqual(To<TSeparator>.From(other._separator.Span));
 
-    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}"/>
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
         SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other
@@ -408,6 +420,18 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
+
+    /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
+        SplitMemory<TBody, TOtherSeparator, TOtherStrategy> other,
+        IEqualityComparer<TBody> comparer
+    )
+#if !NET7_0_OR_GREATER
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            SplitSpan.SequenceEqual(other.SplitSpan, comparer);
 
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
