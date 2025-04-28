@@ -11,9 +11,9 @@ static partial class DeconstructionCollectionExtensions
         this T it,
         Predicate<T>? filter = null,
         Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        int visitLength = DeconstructionCollection.DefaultVisitLength,
+        int stringLength = DeconstructionCollection.DefaultStringLength,
+        int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(it))] string? expression = null,
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -47,17 +47,17 @@ static partial class DeconstructionCollectionExtensions
     [return: NotNullIfNotNull(nameof(value))]
     public static object? ToDeconstructed(
         this object? value,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        int visitLength = DeconstructionCollection.DefaultVisitLength,
+        int stringLength = DeconstructionCollection.DefaultStringLength,
+        int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
     {
         if (value is DeconstructionCollection)
             return value;
 
-        if (stringLength <= 0)
-            return "";
-
+        visitLength = visitLength >= 0 ? visitLength : int.MaxValue;
+        stringLength = stringLength >= 0 ? stringLength : int.MaxValue;
+        recurseLength = recurseLength >= 0 ? recurseLength : int.MaxValue;
         HashSet<object?> seen = new(DeconstructionCollection.Comparer) { value };
         var assertion = false;
         var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion, seen);
