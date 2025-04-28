@@ -217,21 +217,30 @@ using Substring = System.ReadOnlyMemory<char>;
     /// <param name="success">Whether the parsing was successful.</param>
     /// <returns>The parsed value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this string s, out bool success) => FindTryParseFor<T>.WithString(s, out success);
+    public static T? Parse<T>(this string s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true) ? (T)(object)s : FindTryParseFor<T>.WithString(s, out success);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this scoped ReadOnlySpan<byte> s) => Parse<T>(s, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s, out bool success) =>
-        FindTryParseFor<T>.WithByteSpan(s, out success);
+    public static T? Parse<T>(this scoped ReadOnlySpan<byte> s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            ? (T)(object)Encoding.UTF8.GetString(s)
+#else
+            ? (T)(object)Encoding.UTF8.GetString(s.ToArray())
+#endif
+            : FindTryParseFor<T>.WithByteSpan(s, out success);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<char> s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this scoped ReadOnlySpan<char> s) => Parse<T>(s, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<char> s, out bool success) =>
-        FindTryParseFor<T>.WithCharSpan(s, out success);
+    public static T? Parse<T>(this scoped ReadOnlySpan<char> s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true)
+            ? (T)(object)s.ToString()
+            : FindTryParseFor<T>.WithCharSpan(s, out success);
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -256,43 +265,43 @@ using Substring = System.ReadOnlyMemory<char>;
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, provider, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s)
         where T : ISpanParsable<T> =>
         Into<T>(s, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : ISpanParsable<T> =>
         Into<T>(s, provider, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
@@ -320,7 +329,7 @@ using Substring = System.ReadOnlyMemory<char>;
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T IntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
+    public static T IntoEnum<T>(this scoped ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : default;
     /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
@@ -328,7 +337,7 @@ using Substring = System.ReadOnlyMemory<char>;
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T? TryIntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
+    public static T? TryIntoEnum<T>(this scoped ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : null;
 #endif
@@ -339,12 +348,12 @@ using Substring = System.ReadOnlyMemory<char>;
         Parse<T>(s, out var success) is var value && success ? value : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this scoped in ReadOnlySpan<byte> s)
+    public static T? TryParse<T>(this scoped ReadOnlySpan<byte> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this scoped in ReadOnlySpan<char> s)
+    public static T? TryParse<T>(this scoped ReadOnlySpan<char> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
 #if NET7_0_OR_GREATER
@@ -361,23 +370,23 @@ using Substring = System.ReadOnlyMemory<char>;
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #endif
@@ -400,11 +409,11 @@ using Substring = System.ReadOnlyMemory<char>;
         [Pure]
         delegate bool InEnumParser(string? s, bool ignoreCase, out T? result);
         [Pure]
-        delegate bool InNumberByteParser(ReadOnlySpan<byte> s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberByteParser(ReadOnlySpan<byte> s, NumberStyles style, CultureInfo info, out T? result);
         [Pure]
-        delegate bool InNumberCharParser(ReadOnlySpan<char> s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberCharParser(ReadOnlySpan<char> s, NumberStyles style, CultureInfo info, out T? result);
         [Pure]
-        delegate bool InNumberParser(string? s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberParser(string? s, NumberStyles style, CultureInfo info, out T? result);
         [Pure]
         delegate bool InParser(string? s, CultureInfo info, out T? result);
         const BindingFlags Flags = BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy;
@@ -450,7 +459,7 @@ using Substring = System.ReadOnlyMemory<char>;
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteParseNumberInvoker(in ReadOnlySpan<byte> s, out bool b)
         {
-            b = s_byteParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
+            b = s_byteParseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -474,7 +483,7 @@ using Substring = System.ReadOnlyMemory<char>;
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharParseNumberInvoker(in ReadOnlySpan<char> s, out bool b)
         {
-            b = s_charParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
+            b = s_charParseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -498,21 +507,19 @@ using Substring = System.ReadOnlyMemory<char>;
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ParseNumberInvoker(in string? s, out bool b)
         {
-            b = s_parseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
+            b = s_parseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
         [Pure]
         static TDelegate? Make<TDelegate>()
             where TDelegate : Delegate =>
-            typeof(TDelegate).GetMethod(nameof(Invoke))!.GetParameters() is var parameters &&
-            Array.ConvertAll(parameters, x => x.ParameterType) is var types &&
             typeof(T)
                .GetMethods(Flags)
                .Where(x => x.Name is nameof(int.TryParse))
                .Select(x => x.IsGenericMethodDefinition && x.GetGenericArguments() is { Length: 1 } ? TryCoerce(x) : x)
-               .FirstOrDefault(x => x.GetParameters().Select(x => x.ParameterType).SequenceEqual(types)) is { } method
-                ? Delegate.CreateDelegate(typeof(TDelegate), method) as TDelegate
-                : null;
+               .Select(x => Delegate.CreateDelegate(typeof(TDelegate), x, false))
+               .OfType<TDelegate>()
+               .FirstOrDefault();
         [MustUseReturnValue]
         static MethodInfo TryCoerce(MethodInfo x)
         {
@@ -5425,6 +5432,208 @@ public enum ControlFlow : byte
     [return: NotNullIfNotNull(nameof(collection))]
     public static HeadlessList<T>? Tail<T>(this IList<T>? collection) => collection is null ? null : new(collection);
 // SPDX-License-Identifier: MPL-2.0
+#if NET8_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+/// <summary>Contains fast parsing of key-value pairs.</summary>
+static class Kvp
+{
+    static class KvpCache<T>
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+    {
+        public delegate void SerializeWriter(in T reader, out DefaultInterpolatedStringHandler writer);
+        public delegate void DeserializeWriter(scoped ReadOnlySpan<char> reader, ref T writer);
+        static readonly ImmutableArray<MemberInfo> s_members = MakeMembers();
+        [Pure]
+        public static ImmutableArray<KeyValuePair<string, DeserializeWriter>> Deserializers { get; } =
+            MakeDeserializers();
+        [Pure]
+        public static SerializeWriter Serializer { get; } = MakeSerializer();
+        [MustUseReturnValue]
+        static bool IsAppendFormatted(MethodInfo x) =>
+            x.Name is nameof(DefaultInterpolatedStringHandler.AppendFormatted) &&
+            x.GetParameters() is [{ ParameterType.IsGenericMethodParameter: true }];
+        [MustUseReturnValue]
+        static ImmutableArray<KeyValuePair<string, DeserializeWriter>> MakeDeserializers()
+        {
+            var members = s_members.Where(x => x is FieldInfo { IsInitOnly: false } or PropertyInfo { CanWrite: true })
+               .ToIList();
+            var builder = ImmutableArray.CreateBuilder<KeyValuePair<string, DeserializeWriter>>(members.Count);
+            foreach (var member in members)
+            {
+                var t = UnderlyingType(member);
+                var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<char>.ToString), [])!;
+                var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
+                var exReader = Expression.Parameter(typeof(ReadOnlySpan<char>));
+                var exWriter = Expression.Parameter(typeof(T).MakeByRefType());
+                var exNumberStyles = Expression.Constant(NumberStyles.Any);
+                var exTemp = Expression.Variable(t);
+                var exCall = 0 switch
+                {
+                    _ when t == typeof(string) => Expression.Assign(exTemp, Expression.Call(exReader, spanToString)),
+                    _ when t.GetMethod(
+                        nameof(int.TryParse),
+                        [typeof(ReadOnlySpan<char>), typeof(NumberStyles), typeof(IFormatProvider), t.MakeByRefType()]
+                    ) is { } x => Expression.Call(x, exReader, exNumberStyles, exIFormatProvider, exTemp),
+                    _ when t.GetMethod(
+                        nameof(int.TryParse),
+                        [typeof(ReadOnlySpan<char>), typeof(IFormatProvider), t.MakeByRefType()]
+                    ) is { } x => Expression.Call(x, exReader, exIFormatProvider, exTemp),
+                    _ when t.GetMethod(nameof(int.TryParse), [typeof(ReadOnlySpan<char>), t.MakeByRefType()]) is
+                        { } x => Expression.Call(x, exReader, exTemp),
+                    _ => (Expression)Expression.Assign(exTemp, Expression.Default(t)),
+                };
+                var exAssign = exWriter.AssignFieldOrProperty(member, exTemp);
+                var exBlock = Expression.Block([exTemp], exCall, exAssign);
+                var lambda = Expression.Lambda<DeserializeWriter>(exBlock, exReader, exWriter).Compile();
+                var key = member.Name.Trim().Replace("-", "").Replace("_", "");
+                builder.Add(new(key, lambda));
+            }
+            return builder.MoveToImmutable();
+        }
+        [MustUseReturnValue]
+        static ImmutableArray<MemberInfo> MakeMembers()
+        {
+            const BindingFlags Flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
+            var fields = typeof(T).GetFields(Flags);
+            var properties = typeof(T).GetProperties(Flags);
+            return
+            [
+                ..fields.AsEnumerable<MemberInfo>()
+                   .Concat(properties)
+                   .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase),
+            ];
+        }
+        [MustUseReturnValue]
+        static SerializeWriter MakeSerializer()
+        {
+            const string Assignment = " = ", Separator = "\n";
+            [MustUseReturnValue]
+            static int ConstantLength(MemberInfo m) => m.Name.Length + Assignment.Length + Separator.Length;
+            var exReader = Expression.Parameter(typeof(T).MakeByRefType());
+            var exWriter = Expression.Parameter(typeof(DefaultInterpolatedStringHandler).MakeByRefType());
+            var appendFormatted = typeof(DefaultInterpolatedStringHandler).GetMethods().Single(IsAppendFormatted);
+            var appendLiteral = typeof(DefaultInterpolatedStringHandler).GetMethod(
+                nameof(DefaultInterpolatedStringHandler.AppendLiteral),
+                [typeof(string)]
+            )!;
+            var constructor = typeof(DefaultInterpolatedStringHandler).GetConstructor([typeof(int), typeof(int)])!;
+            var members = s_members.Where(x => x is FieldInfo or PropertyInfo { CanRead: true }).ToIList();
+            var literalLength = members.Sum(ConstantLength);
+            var exLiteralLength = Expression.Constant(literalLength);
+            var exFormattedLength = Expression.Constant(members.Count);
+            var exNew = Expression.New(constructor, exLiteralLength, exFormattedLength);
+            List<Expression> exBlockArgs = [Expression.Assign(exWriter, exNew)];
+            foreach (var member in members)
+            {
+                var str = Expression.Constant($"{member.Name}{Assignment}");
+                var exAssignment = Expression.Call(exWriter, appendLiteral, str);
+                exBlockArgs.Add(exAssignment);
+                var exMember = Expression.MakeMemberAccess(exReader, member);
+                var underlyingType = UnderlyingType(member);
+                var genericMethod = appendFormatted.MakeGenericMethod(underlyingType);
+                var exFormatted = Expression.Call(exWriter, genericMethod, exMember);
+                exBlockArgs.Add(exFormatted);
+                var separator = Expression.Constant(Separator);
+                var exSep = Expression.Call(exWriter, appendLiteral, separator);
+                exBlockArgs.Add(exSep);
+            }
+            var exBlock = Expression.Block(exBlockArgs);
+            return Expression.Lambda<SerializeWriter>(exBlock, exReader, exWriter).Compile();
+        }
+        [MustUseReturnValue]
+        static Type UnderlyingType(MemberInfo member) =>
+            member switch
+            {
+                FieldInfo f => f.FieldType,
+                PropertyInfo p => p.PropertyType,
+                _ => throw Unreachable,
+            };
+    }
+    /// <summary>Serialize an object into a string.</summary>
+    /// <typeparam name="T">The type of the object to serialize.</typeparam>
+    /// <param name="value">The object to serialize.</param>
+    /// <returns>The serialized object.</returns>
+    [Pure]
+    public static string Serialize<T>(in T value)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+    {
+        KvpCache<T>.Serializer(value, out var dish);
+        return dish.ToStringAndClear();
+    }
+    /// <summary>Deserialize string into an object of the given type.</summary>
+    /// <typeparam name="T">The type of the deserialized object.</typeparam>
+    /// <param name="span">The string to deserialize.</param>
+    /// <returns>The deserialized object.</returns>
+    [Pure]
+    public static T Deserialize<T>(scoped ReadOnlySpan<char> span)
+#if NO_ALLOWS_REF_STRUCT
+        where T : new()
+#else
+        where T : new(), allows ref struct
+#endif
+    {
+        var ret = new T();
+        Deserialize(span, ref ret);
+        return ret;
+    }
+    /// <summary>Deserialize string into an object of the given type.</summary>
+    /// <typeparam name="T">The type of the deserialized object.</typeparam>
+    /// <param name="span">The string to deserialize.</param>
+    /// <param name="writer">The object to write to.</param>
+    /// <returns>The deserialized object.</returns>
+    public static void Deserialize<T>(scoped ReadOnlySpan<char> span, ref T writer)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+    {
+        for (;
+            span.IndexOfAny(BreakingSearch.GetSpan()[0]) is var separator;
+            span = span.UnsafelySkip(separator + 1))
+        {
+            SplitToKeyValuePair(span, separator, ref writer);
+            if (separator is -1)
+                break;
+        }
+    }
+    static void SplitToKeyValuePair<T>(scoped ReadOnlySpan<char> span, int separator, ref T writer)
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+    {
+        var slice = span.UnsafelyTake(separator is -1 ? span.Length : separator);
+        if (slice.IndexOfAny(';', '#') is not -1 and var comments)
+            slice = slice.UnsafelyTake(comments);
+        if (slice.IndexOf('=') is not (not -1 and var equals))
+            return;
+        foreach (var deserializer in KvpCache<T>.Deserializers)
+            ProcessKeyValuePair(deserializer, slice, equals, ref writer);
+    }
+    static void ProcessKeyValuePair<T>(
+        in KeyValuePair<string, KvpCache<T>.DeserializeWriter> deserializer,
+        scoped ReadOnlySpan<char> slice,
+        int equals,
+        ref T writer
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+    {
+        for (ReadOnlySpan<char> expected = deserializer.Key, key = slice.UnsafelyTake(equals).Trim();
+            key.IndexOfAny('-', '_') is var i && expected.StartsWith(i is -1 ? key : key.UnsafelyTake(i));
+            expected = expected.UnsafelySkip(i + 1), key = key.UnsafelySkip(i + 1))
+            if (i is -1 || i >= expected.Length)
+            {
+                deserializer.Value(slice.UnsafelySkip(equals + 1).Trim(), ref writer);
+                break;
+            }
+    }
+}
+#endif
+// SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 #if NET7_0_OR_GREATER
 /// <summary>Computes the Fast Fourier Transform.</summary>
@@ -9721,6 +9930,37 @@ public enum KeyMods : ushort
     public struct MatchAny;
     /// <summary>The type that indicates to match exactly one element.</summary>
     public struct MatchOne;
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="TSeparator">The type of separator for the left-hand side.</typeparam>
+    /// <typeparam name="TStrategy">The strategy for splitting for the left-hand side.</typeparam>
+    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting for the right-hand side.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparison">The <see cref="StringComparison"/> to compare the strings with.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool ConcatEqual<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        this scoped SplitSpan<char, TSeparator, TStrategy> left,
+        scoped SplitSpan<char, TOtherSeparator, TOtherStrategy> right,
+        StringComparison comparison
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (left.GetEnumerator() is var e && right.GetEnumerator() is var otherE && !e.MoveNext())
+            return !otherE.MoveNext();
+        if (!otherE.MoveNext())
+            return false;
+        ReadOnlySpan<char> reader = e.Current, otherReader = otherE.Current;
+        while (true)
+            if (EqualityMoveNext(ref e, ref otherE, ref reader, ref otherReader, comparison, out var ret))
+                return ret;
+    }
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -9924,6 +10164,78 @@ public enum KeyMods : ushort
     ) =>
         span.AsSpan().SplitOn(separator);
 #endif
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool EqualityMoveNext<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        scoped ref SplitSpan<char, TSeparator, TStrategy>.Enumerator that,
+        scoped ref SplitSpan<char, TOtherSeparator, TOtherStrategy>.Enumerator other,
+        scoped ref ReadOnlySpan<char> reader,
+        scoped ref ReadOnlySpan<char> otherReader,
+        StringComparison comparison,
+        out bool ret
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
+            return SameLength(ref that, ref other, ref reader, ref otherReader, comparison, out ret);
+        if (length < otherLength)
+        {
+            if (!reader.Equals(otherReader.UnsafelyTake(length), comparison) || !that.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+            reader = that.Current;
+            otherReader = otherReader.UnsafelySkip(length);
+            Unsafe.SkipInit(out ret);
+            return false;
+        }
+        if (!reader.UnsafelyTake(otherLength).Equals(otherReader, comparison) || !other.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+        reader = reader.UnsafelySkip(otherLength);
+        otherReader = other.Current;
+        Unsafe.SkipInit(out ret);
+        return false;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool SameLength<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        scoped ref SplitSpan<char, TSeparator, TStrategy>.Enumerator that,
+        scoped ref SplitSpan<char, TOtherSeparator, TOtherStrategy>.Enumerator other,
+        scoped ref ReadOnlySpan<char> reader,
+        scoped ref ReadOnlySpan<char> otherReader,
+        StringComparison comparison,
+        out bool ret
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (!reader.Equals(otherReader, comparison))
+        {
+            ret = false;
+            return true;
+        }
+        if (!that.MoveNext())
+        {
+            ret = !other.MoveNext();
+            return true;
+        }
+        if (!other.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+        reader = that.Current;
+        otherReader = other.Current;
+        Unsafe.SkipInit(out ret);
+        return false;
+    }
 /// <summary>Represents a split entry.</summary>
 /// <typeparam name="TBody">The type of element from the span.</typeparam>
 /// <typeparam name="TSeparator">The type of separator.</typeparam>
@@ -10103,8 +10415,8 @@ readonly
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -10116,9 +10428,7 @@ readonly
             return false;
         ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
         while (true)
-#pragma warning disable 9080
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
-#pragma warning restore 9080
                 return ret;
     }
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
@@ -10130,8 +10440,8 @@ readonly
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
         IEqualityComparer<TBody> comparer
     )
 #if !NET7_0_OR_GREATER
@@ -10144,9 +10454,7 @@ readonly
             return false;
         ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
         while (true)
-#pragma warning disable 9080
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, comparer, out var ret))
-#pragma warning restore 9080
                 return ret;
     }
     /// <inheritdoc />
@@ -11718,6 +12026,14 @@ public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : 
         /// <summary>Gets the separator.</summary>
         public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
+    /// <inheritdoc cref="SplitSpanFactory.ConcatEqual{TSeparator, TStrategy, TOtherSeparator, TOtherStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool ConcatEqual<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        this SplitMemory<char, TSeparator, TStrategy> left,
+        SplitMemory<char, TOtherSeparator, TOtherStrategy> right,
+        StringComparison comparison
+    ) =>
+        left.SplitSpan.ConcatEqual(right.SplitSpan, comparison);
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAny> SplitOnAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
@@ -16119,9 +16435,9 @@ readonly
         this T it,
         Predicate<T>? filter = null,
         Converter<T, object?>? map = null,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength,
+        int visitLength = DeconstructionCollection.DefaultVisitLength,
+        int stringLength = DeconstructionCollection.DefaultStringLength,
+        int recurseLength = DeconstructionCollection.DefaultRecurseLength,
         [CallerArgumentExpression(nameof(it))] string? expression = null,
         [CallerFilePath] string? path = null,
         [CallerMemberName] string? name = null,
@@ -16153,15 +16469,16 @@ readonly
     [return: NotNullIfNotNull(nameof(value))]
     public static object? ToDeconstructed(
         this object? value,
-        [NonNegativeValue] int visitLength = DeconstructionCollection.DefaultVisitLength,
-        [NonNegativeValue] int stringLength = DeconstructionCollection.DefaultStringLength,
-        [NonNegativeValue] int recurseLength = DeconstructionCollection.DefaultRecurseLength
+        int visitLength = DeconstructionCollection.DefaultVisitLength,
+        int stringLength = DeconstructionCollection.DefaultStringLength,
+        int recurseLength = DeconstructionCollection.DefaultRecurseLength
     )
     {
         if (value is DeconstructionCollection)
             return value;
-        if (stringLength <= 0)
-            return "";
+        visitLength = visitLength >= 0 ? visitLength : int.MaxValue;
+        stringLength = stringLength >= 0 ? stringLength : int.MaxValue;
+        recurseLength = recurseLength >= 0 ? recurseLength : int.MaxValue;
         HashSet<object?> seen = new(DeconstructionCollection.Comparer) { value };
         var assertion = false;
         var next = DeconstructionCollection.CollectNext(value, stringLength, ref visitLength, ref assertion, seen);
@@ -17176,6 +17493,35 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <inheritdoc cref="Mod(int, int)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static float Mod(this float number, float radix) => number % radix is var r && r < 0 ? r + radix : r;
+#endif
+// SPDX-License-Identifier: MPL-2.0
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+/// <summary>Methods to provide coercions to <see cref="Expression"/>.</summary>
+// ReSharper disable RedundantNameQualifier
+    /// <summary>Provides the verbose representation found in the debug view.</summary>
+    /// <param name="x">The expression to get the <see langword="string"/> representation of.</param>
+    /// <returns>The verbose representation of the parameter <paramref name="x"/>.</returns>
+    public static string? ToVerboseString(this Expression x) =>
+        typeof(System.Linq.Expressions.Expression)
+           .GetProperty("DebugView", BindingFlags.Instance | BindingFlags.NonPublic)
+          ?.GetGetMethod(true)
+          ?.Invoke(x, null) as string;
+    /// <summary>Creates the assignment of a field or property.</summary>
+    /// <param name="left">The left-hand side to mutate.</param>
+    /// <param name="member">The member to access and assign.</param>
+    /// <param name="right">The right-hand side containing the value to insert.</param>
+    /// <returns>The <see cref="BinaryExpression"/> representing <c>left.member = right</c>.</returns>
+    public static BinaryExpression AssignFieldOrProperty(this Expression left, MemberInfo member, Expression right) =>
+        System.Linq.Expressions.Expression.Assign(
+            member switch
+            {
+                PropertyInfo p => System.Linq.Expressions.Expression.Property(left, p),
+                FieldInfo f => System.Linq.Expressions.Expression.Field(left, f),
+                _ => throw Unreachable,
+            },
+            right
+        );
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
@@ -18836,9 +19182,9 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
-            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
-            ref ReadOnlySpan<TBody> reader,
-            ref ReadOnlySpan<TBody> otherReader,
+            scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            scoped ref ReadOnlySpan<TBody> reader,
+            scoped ref ReadOnlySpan<TBody> otherReader,
             out bool ret
         )
 #if !NET7_0_OR_GREATER
@@ -18867,9 +19213,9 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
-            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
-            ref ReadOnlySpan<TBody> reader,
-            ref ReadOnlySpan<TBody> otherReader,
+            scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            scoped ref ReadOnlySpan<TBody> reader,
+            scoped ref ReadOnlySpan<TBody> otherReader,
             IEqualityComparer<TBody> comparer,
             out bool ret
         )
@@ -18912,6 +19258,75 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
     public static T? GetCustomAttribute<T>(this Enum value)
         where T : Attribute =>
         value.GetType().GetMember($"{value}", BindingFlags.Static | BindingFlags.Public)[0].GetCustomAttribute<T>();
+#endif
+// SPDX-License-Identifier: MPL-2.0
+#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+// ReSharper disable once CheckNamespace
+/// <summary>Contains functions to create other functions that get or set fields and properties.</summary>
+    /// <summary>The function containing the value to set.</summary>
+    /// <typeparam name="T">The instance to mutate an inner value of.</typeparam>
+    /// <typeparam name="TValue">The value to insert.</typeparam>
+    public delegate void Setting<T, in TValue>(ref T obj, TValue value);
+    /// <summary>Creates the getter function for the field.</summary>
+    /// <param name="x">The field to generate the function for.</param>
+    /// <returns>
+    /// The function that get <paramref name="x"/>. The return type is <see cref="Converter{TInput, TOutput}"/>.
+    /// </returns>
+    public static Delegate Getter(this FieldInfo x)
+    {
+        DynamicMethod ret = new(x.Name, x.DeclaringType, [x.FieldType]);
+        var il = ret.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldfld, x);
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ret);
+        return ret.CreateDelegate(typeof(Converter<,>).MakeGenericType(x.DeclaringType!, x.FieldType));
+    }
+    /// <summary>Creates the setter function for the field.</summary>
+    /// <param name="x">The field to generate the function for.</param>
+    /// <returns>
+    /// The function that sets <paramref name="x"/>. The return type is <see cref="Setting{T, Value}"/>.
+    /// </returns>
+    public static Delegate Setter(this FieldInfo x)
+    {
+        DynamicMethod ret = new(x.Name, typeof(void), [x.DeclaringType!.MakeByRefType(), x.FieldType]);
+        var il = ret.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldarg_1);
+        il.Emit(OpCodes.Stfld, x);
+        il.Emit(OpCodes.Ret);
+        return ret.CreateDelegate(typeof(Setting<,>).MakeGenericType(x.DeclaringType!, x.FieldType));
+    }
+    /// <summary>Creates the getter function for the field.</summary>
+    /// <param name="x">The property to generate the function for.</param>
+    /// <returns>
+    /// The function that get <paramref name="x"/>. The return type is <see cref="Converter{TInput, TOutput}"/>.
+    /// </returns>
+    public static Delegate Getter(this PropertyInfo x)
+    {
+        DynamicMethod ret = new(x.Name, x.DeclaringType, [x.PropertyType]);
+        var il = ret.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Call, x.GetMethod!);
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ret);
+        return ret.CreateDelegate(typeof(Converter<,>).MakeGenericType(x.DeclaringType!, x.PropertyType));
+    }
+    /// <summary>Creates the setter function for the field.</summary>
+    /// <param name="x">The property to generate the function for.</param>
+    /// <returns>
+    /// The function that sets <paramref name="x"/>. The return type is <see cref="Setting{T, TValue}"/>.
+    /// </returns>
+    public static Delegate Setter(this PropertyInfo x)
+    {
+        DynamicMethod ret = new(x.Name, typeof(void), [x.DeclaringType!.MakeByRefType(), x.PropertyType]);
+        var il = ret.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldarg_1);
+        il.Emit(OpCodes.Call, x.SetMethod!);
+        il.Emit(OpCodes.Ret);
+        return ret.CreateDelegate(typeof(Setting<,>).MakeGenericType(x.DeclaringType!, x.PropertyType));
+    }
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #pragma warning disable GlobalUsingsAnalyzer
