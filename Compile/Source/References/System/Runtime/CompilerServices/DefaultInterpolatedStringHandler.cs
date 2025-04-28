@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable RedundantNameQualifier UseSymbolAlias
 #pragma warning disable IDE0064, IDE0251, MA0102, RCS1146, SA1214
+#if !NET6_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System.Runtime.CompilerServices;
 
@@ -736,3 +737,4 @@ ref struct DefaultInterpolatedStringHandler
             ArrayPool<char>.Shared.Return(toReturn);
     }
 }
+#endif
