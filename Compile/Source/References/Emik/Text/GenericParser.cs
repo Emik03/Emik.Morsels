@@ -16,25 +16,34 @@ static partial class GenericParser
     /// <param name="success">Whether the parsing was successful.</param>
     /// <returns>The parsed value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this string s, out bool success) => FindTryParseFor<T>.WithString(s, out success);
+    public static T? Parse<T>(this string s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true) ? (T)(object)s : FindTryParseFor<T>.WithString(s, out success);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this scoped ReadOnlySpan<byte> s) => Parse<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<byte> s, out bool success) =>
-        FindTryParseFor<T>.WithByteSpan(s, out success);
+    public static T? Parse<T>(this scoped ReadOnlySpan<byte> s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
+            ? (T)(object)Encoding.UTF8.GetString(s)
+#else
+            ? (T)(object)Encoding.UTF8.GetString(s.ToArray())
+#endif
+            : FindTryParseFor<T>.WithByteSpan(s, out success);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<char> s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this scoped ReadOnlySpan<char> s) => Parse<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this scoped in ReadOnlySpan<char> s, out bool success) =>
-        FindTryParseFor<T>.WithCharSpan(s, out success);
+    public static T? Parse<T>(this scoped ReadOnlySpan<char> s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true)
+            ? (T)(object)s.ToString()
+            : FindTryParseFor<T>.WithCharSpan(s, out success);
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -62,49 +71,49 @@ static partial class GenericParser
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : IUtf8SpanParsable<T> =>
         Into<T>(s, provider, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<byte> s, IFormatProvider? provider, out bool success)
         where T : IUtf8SpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s)
         where T : ISpanParsable<T> =>
         Into<T>(s, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : ISpanParsable<T> =>
         Into<T>(s, provider, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider, out bool success)
         where T : ISpanParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #endif
@@ -133,7 +142,7 @@ static partial class GenericParser
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T IntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
+    public static T IntoEnum<T>(this scoped ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : default;
 
@@ -142,7 +151,7 @@ static partial class GenericParser
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T? TryIntoEnum<T>(this scoped in ReadOnlySpan<char> s, bool ignoreCase = true)
+    public static T? TryIntoEnum<T>(this scoped ReadOnlySpan<char> s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : null;
 #endif
@@ -154,13 +163,13 @@ static partial class GenericParser
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this scoped in ReadOnlySpan<byte> s)
+    public static T? TryParse<T>(this scoped ReadOnlySpan<byte> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this scoped in ReadOnlySpan<char> s)
+    public static T? TryParse<T>(this scoped ReadOnlySpan<char> s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
 #if NET7_0_OR_GREATER
@@ -178,25 +187,25 @@ static partial class GenericParser
 #if NET8_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<byte> s)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<byte> s, IFormatProvider? provider)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<byte> s, IFormatProvider? provider)
         where T : struct, IUtf8SpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<char> s)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this scoped in ReadOnlySpan<char> s, IFormatProvider? provider)
+    public static T? TryInto<T>(this scoped ReadOnlySpan<char> s, IFormatProvider? provider)
         where T : struct, ISpanParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #endif
@@ -227,13 +236,13 @@ static partial class GenericParser
         delegate bool InEnumParser(string? s, bool ignoreCase, out T? result);
 
         [Pure]
-        delegate bool InNumberByteParser(ReadOnlySpan<byte> s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberByteParser(ReadOnlySpan<byte> s, NumberStyles style, CultureInfo info, out T? result);
 
         [Pure]
-        delegate bool InNumberCharParser(ReadOnlySpan<char> s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberCharParser(ReadOnlySpan<char> s, NumberStyles style, CultureInfo info, out T? result);
 
         [Pure]
-        delegate bool InNumberParser(string? s, CultureInfo info, NumberStyles style, out T? result);
+        delegate bool InNumberParser(string? s, NumberStyles style, CultureInfo info, out T? result);
 
         [Pure]
         delegate bool InParser(string? s, CultureInfo info, out T? result);
@@ -298,7 +307,7 @@ static partial class GenericParser
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ByteParseNumberInvoker(in ReadOnlySpan<byte> s, out bool b)
         {
-            b = s_byteParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
+            b = s_byteParseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
 
@@ -326,7 +335,7 @@ static partial class GenericParser
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? CharParseNumberInvoker(in ReadOnlySpan<char> s, out bool b)
         {
-            b = s_charParseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
+            b = s_charParseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
 
@@ -354,22 +363,20 @@ static partial class GenericParser
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
         static T? ParseNumberInvoker(in string? s, out bool b)
         {
-            b = s_parseNumber!(s, CultureInfo.InvariantCulture, NumberStyles.Any, out var result);
+            b = s_parseNumber!(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var result);
             return result;
         }
 
         [Pure]
         static TDelegate? Make<TDelegate>()
             where TDelegate : Delegate => // ReSharper disable once NullableWarningSuppressionIsUsed
-            typeof(TDelegate).GetMethod(nameof(Invoke))!.GetParameters() is var parameters &&
-            Array.ConvertAll(parameters, x => x.ParameterType) is var types &&
             typeof(T)
                .GetMethods(Flags)
                .Where(x => x.Name is nameof(int.TryParse))
                .Select(x => x.IsGenericMethodDefinition && x.GetGenericArguments() is { Length: 1 } ? TryCoerce(x) : x)
-               .FirstOrDefault(x => x.GetParameters().Select(x => x.ParameterType).SequenceEqual(types)) is { } method
-                ? Delegate.CreateDelegate(typeof(TDelegate), method) as TDelegate
-                : null;
+               .Select(x => Delegate.CreateDelegate(typeof(TDelegate), x, false))
+               .OfType<TDelegate>()
+               .FirstOrDefault();
 
         [MustUseReturnValue]
         static MethodInfo TryCoerce(MethodInfo x)
