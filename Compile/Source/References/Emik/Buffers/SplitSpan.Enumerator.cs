@@ -451,9 +451,9 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
-            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
-            ref ReadOnlySpan<TBody> reader,
-            ref ReadOnlySpan<TBody> otherReader,
+            scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            scoped ref ReadOnlySpan<TBody> reader,
+            scoped ref ReadOnlySpan<TBody> otherReader,
             out bool ret
         )
 #if !NET7_0_OR_GREATER
@@ -486,9 +486,9 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
-            ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
-            ref ReadOnlySpan<TBody> reader,
-            ref ReadOnlySpan<TBody> otherReader,
+            scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
+            scoped ref ReadOnlySpan<TBody> reader,
+            scoped ref ReadOnlySpan<TBody> otherReader,
             IEqualityComparer<TBody> comparer,
             out bool ret
         )

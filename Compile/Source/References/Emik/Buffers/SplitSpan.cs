@@ -25,6 +25,41 @@ static partial class SplitSpanFactory
     /// <summary>The type that indicates to match exactly one element.</summary>
     public struct MatchOne;
 
+    /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
+    /// <typeparam name="TSeparator">The type of separator for the left-hand side.</typeparam>
+    /// <typeparam name="TStrategy">The strategy for splitting for the left-hand side.</typeparam>
+    /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
+    /// <typeparam name="TOtherStrategy">The strategy for splitting for the right-hand side.</typeparam>
+    /// <param name="left">The left-hand side.</param>
+    /// <param name="right">The right-hand side.</param>
+    /// <param name="comparison">The <see cref="StringComparison"/> to compare the strings with.</param>
+    /// <returns>
+    /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
+    /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool ConcatEqual<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        this scoped SplitSpan<char, TSeparator, TStrategy> left,
+        scoped SplitSpan<char, TOtherSeparator, TOtherStrategy> right,
+        StringComparison comparison
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (left.GetEnumerator() is var e && right.GetEnumerator() is var otherE && !e.MoveNext())
+            return !otherE.MoveNext();
+
+        if (!otherE.MoveNext())
+            return false;
+
+        ReadOnlySpan<char> reader = e.Current, otherReader = otherE.Current;
+
+        while (true)
+            if (EqualityMoveNext(ref e, ref otherE, ref reader, ref otherReader, comparison, out var ret))
+                return ret;
+    }
+
     /// <summary>Splits a span by the specified separator.</summary>
     /// <typeparam name="T">The type of element from the span.</typeparam>
     /// <param name="span">The span to split.</param>
@@ -252,6 +287,87 @@ static partial class SplitSpanFactory
     ) =>
         span.AsSpan().SplitOn(separator);
 #endif
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool EqualityMoveNext<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        scoped ref SplitSpan<char, TSeparator, TStrategy>.Enumerator that,
+        scoped ref SplitSpan<char, TOtherSeparator, TOtherStrategy>.Enumerator other,
+        scoped ref ReadOnlySpan<char> reader,
+        scoped ref ReadOnlySpan<char> otherReader,
+        StringComparison comparison,
+        out bool ret
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (reader.Length is var length && otherReader.Length is var otherLength && length == otherLength)
+            return SameLength(ref that, ref other, ref reader, ref otherReader, comparison, out ret);
+
+        if (length < otherLength)
+        {
+            if (!reader.Equals(otherReader.UnsafelyTake(length), comparison) || !that.MoveNext())
+            {
+                ret = false;
+                return true;
+            }
+
+            reader = that.Current;
+            otherReader = otherReader.UnsafelySkip(length);
+            Unsafe.SkipInit(out ret);
+            return false;
+        }
+
+        if (!reader.UnsafelyTake(otherLength).Equals(otherReader, comparison) || !other.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+
+        reader = reader.UnsafelySkip(otherLength);
+        otherReader = other.Current;
+        Unsafe.SkipInit(out ret);
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    static bool SameLength<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        scoped ref SplitSpan<char, TSeparator, TStrategy>.Enumerator that,
+        scoped ref SplitSpan<char, TOtherSeparator, TOtherStrategy>.Enumerator other,
+        scoped ref ReadOnlySpan<char> reader,
+        scoped ref ReadOnlySpan<char> otherReader,
+        StringComparison comparison,
+        out bool ret
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TOtherSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+    {
+        if (!reader.Equals(otherReader, comparison))
+        {
+            ret = false;
+            return true;
+        }
+
+        if (!that.MoveNext())
+        {
+            ret = !other.MoveNext();
+            return true;
+        }
+
+        if (!other.MoveNext())
+        {
+            ret = false;
+            return true;
+        }
+
+        reader = that.Current;
+        otherReader = other.Current;
+        Unsafe.SkipInit(out ret);
+        return false;
+    }
 }
 
 /// <summary>Represents a split entry.</summary>
@@ -456,8 +572,8 @@ readonly
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other
     )
 #if !NET7_0_OR_GREATER
         where TOtherSeparator : IEquatable<TOtherSeparator>?
@@ -472,9 +588,7 @@ readonly
         ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
 
         while (true)
-#pragma warning disable 9080 // Dangerous!
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
-#pragma warning restore 9080
                 return ret;
     }
 
@@ -487,8 +601,8 @@ readonly
     /// The value <paramref langword="true"/> if both sequences are equal, otherwise; <paramref langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly unsafe bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
-        scoped SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
+    public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
+        SplitSpan<TBody, TOtherSeparator, TOtherStrategy> other,
         IEqualityComparer<TBody> comparer
     )
 #if !NET7_0_OR_GREATER
@@ -504,9 +618,7 @@ readonly
         ReadOnlySpan<TBody> reader = e.Current, otherReader = otherE.Current;
 
         while (true)
-#pragma warning disable 9080 // Dangerous!
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, comparer, out var ret))
-#pragma warning restore 9080
                 return ret;
     }
 

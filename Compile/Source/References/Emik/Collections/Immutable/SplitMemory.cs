@@ -31,6 +31,15 @@ static partial class SplitMemoryFactory
         public ReadOnlyMemory<TSeparator> Separator { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; }
     }
 
+    /// <inheritdoc cref="SplitSpanFactory.ConcatEqual{TSeparator, TStrategy, TOtherSeparator, TOtherStrategy}"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    public static bool ConcatEqual<TSeparator, TStrategy, TOtherSeparator, TOtherStrategy>(
+        this SplitMemory<char, TSeparator, TStrategy> left,
+        SplitMemory<char, TOtherSeparator, TOtherStrategy> right,
+        StringComparison comparison
+    ) =>
+        left.SplitSpan.ConcatEqual(right.SplitSpan, comparison);
+
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAny> SplitOnAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
