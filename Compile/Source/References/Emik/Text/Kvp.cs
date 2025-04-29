@@ -18,57 +18,103 @@ static class Kvp
         static readonly ImmutableArray<MemberInfo> s_members = MakeMembers();
 
         [Pure]
-        public static ImmutableArray<KeyValuePair<string, DeserializeWriter>> Deserializers { get; } =
+        public static ImmutableArray<(string Key, bool IsCollection, DeserializeWriter Writer)> Deserializers { get; } =
             MakeDeserializers();
 
         [Pure]
         public static SerializeWriter Serializer { get; } = MakeSerializer();
 
-        [MustUseReturnValue]
-        static bool IsAppendFormatted(MethodInfo x) =>
-            x.Name is nameof(DefaultInterpolatedStringHandler.AppendFormatted) &&
-            x.GetParameters() is [{ ParameterType.IsGenericMethodParameter: true }];
+        [Pure]
+        static bool IsAdd(MethodInfo x) =>
+            x.Name is nameof(IList.Add) && x.GetGenericArguments() is [] && x.GetParameters() is [_];
+
+        [Pure]
+        static bool IsCollection([NotNullWhen(true)] MethodInfo? adder, Type type) =>
+            adder is not null && type.IsAssignableTo(typeof(ICollection)) && type.GetConstructor([]) is not null;
 
         [MustUseReturnValue]
-        static ImmutableArray<KeyValuePair<string, DeserializeWriter>> MakeDeserializers()
+        static Expression Convert(Type t, Expression exReader, Expression exTemp)
+        {
+            // ReSharper disable once NullableWarningSuppressionIsUsed RedundantTypeArgumentsInsideNameof
+#pragma warning disable IDE0340
+            var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<char>.ToString), [])!;
+#pragma warning restore IDE0340
+            var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
+            var exReaderString = Expression.Call(exReader, spanToString);
+            var exNumberStyles = Expression.Constant(NumberStyles.Any);
+            var tru = Expression.Constant(true);
+
+            return 0 switch
+            {
+                _ when t == typeof(string) => Expression.Assign(exTemp, exReaderString),
+                _ when t.GetMethod(
+                    nameof(int.TryParse),
+                    [typeof(ReadOnlySpan<char>), typeof(NumberStyles), typeof(IFormatProvider), t.MakeByRefType()]
+                ) is { } x => Expression.Call(x, exReader, exNumberStyles, exIFormatProvider, exTemp),
+                _ when t.GetMethod(
+                    nameof(int.TryParse),
+                    [typeof(ReadOnlySpan<char>), typeof(IFormatProvider), t.MakeByRefType()]
+                ) is { } x => Expression.Call(x, exReader, exIFormatProvider, exTemp),
+                _ when t.GetMethod(nameof(int.TryParse), [typeof(ReadOnlySpan<char>), t.MakeByRefType()]) is
+                    { } x => Expression.Call(x, exReader, exTemp),
+                _ when t.GetMethod(
+                    nameof(int.TryParse),
+                    [typeof(string), typeof(NumberStyles), typeof(IFormatProvider), t.MakeByRefType()]
+                ) is { } x => Expression.Call(x, exReaderString, exNumberStyles, exIFormatProvider, exTemp),
+                _ when t.GetMethod(
+                    nameof(int.TryParse),
+                    [typeof(string), typeof(IFormatProvider), t.MakeByRefType()]
+                ) is { } x => Expression.Call(x, exReaderString, exIFormatProvider, exTemp),
+                _ when t.GetMethod(nameof(int.TryParse), [typeof(string), t.MakeByRefType()]) is { } x =>
+                    Expression.Call(x, exReaderString, exTemp),
+                _ when t.IsEnum => Expression.Call(typeof(Enum), nameof(Enum.TryParse), [t], exReader, tru, exTemp),
+                _ => Expression.Assign(exTemp, Expression.Default(t)),
+            };
+        }
+
+        [MustUseReturnValue]
+        static ImmutableArray<(string, bool, DeserializeWriter)> MakeDeserializers()
         {
             var members = s_members.Where(x => x is FieldInfo { IsInitOnly: false } or PropertyInfo { CanWrite: true })
                .ToIList();
 
-            var builder = ImmutableArray.CreateBuilder<KeyValuePair<string, DeserializeWriter>>(members.Count);
+            var builder = ImmutableArray.CreateBuilder<(string, bool, DeserializeWriter)>(members.Count);
 
             foreach (var member in members)
             {
-                var t = UnderlyingType(member);
-                // ReSharper disable once NullableWarningSuppressionIsUsed RedundantTypeArgumentsInsideNameof
-                var spanToString = typeof(ReadOnlySpan<char>).GetMethod(nameof(ReadOnlySpan<char>.ToString), [])!;
-                var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
+                var type = UnderlyingType(member);
+                var adder = type.GetMethods().FirstOrDefault(IsAdd);
+                var t = IsCollection(adder, type) ? adder.GetParameters()[0].ParameterType : type;
+                var isFlagEnum = type.IsEnum && type.GetCustomAttribute<FlagsAttribute>() is not null;
                 var exReader = Expression.Parameter(typeof(ReadOnlySpan<char>));
                 var exWriter = Expression.Parameter(typeof(T).MakeByRefType());
-                var exNumberStyles = Expression.Constant(NumberStyles.Any);
                 var exTemp = Expression.Variable(t);
+                var exCall = Convert(t, exReader, exTemp);
+                var fieldOrProperty = exWriter.FieldOrProperty(member);
 
-                var exCall = 0 switch
-                {
-                    _ when t == typeof(string) => Expression.Assign(exTemp, Expression.Call(exReader, spanToString)),
-                    _ when t.GetMethod(
-                        nameof(int.TryParse),
-                        [typeof(ReadOnlySpan<char>), typeof(NumberStyles), typeof(IFormatProvider), t.MakeByRefType()]
-                    ) is { } x => Expression.Call(x, exReader, exNumberStyles, exIFormatProvider, exTemp),
-                    _ when t.GetMethod(
-                        nameof(int.TryParse),
-                        [typeof(ReadOnlySpan<char>), typeof(IFormatProvider), t.MakeByRefType()]
-                    ) is { } x => Expression.Call(x, exReader, exIFormatProvider, exTemp),
-                    _ when t.GetMethod(nameof(int.TryParse), [typeof(ReadOnlySpan<char>), t.MakeByRefType()]) is
-                        { } x => Expression.Call(x, exReader, exTemp),
-                    _ => (Expression)Expression.Assign(exTemp, Expression.Default(t)),
-                };
+                Expression exUpdate = IsCollection(adder, type)
+                    ? Expression.IfThenElse(
+                        Expression.ReferenceEqual(fieldOrProperty, Expression.Constant(null)),
+                        Expression.Assign(fieldOrProperty, Expression.ListInit(Expression.New(type), exTemp)),
+                        Expression.Call(fieldOrProperty, nameof(IList.Add), [], exTemp)
+                    )
+                    : Expression.Assign(
+                        fieldOrProperty,
+                        isFlagEnum
+                            ? Expression.Convert(
+                                Expression.Or(
+                                    Expression.Convert(fieldOrProperty, type.GetEnumUnderlyingType()),
+                                    Expression.Convert(exTemp, type.GetEnumUnderlyingType())
+                                ),
+                                type
+                            )
+                            : exTemp
+                    );
 
-                var exAssign = exWriter.AssignFieldOrProperty(member, exTemp);
-                var exBlock = Expression.Block([exTemp], exCall, exAssign);
+                var exBlock = Expression.Block([exTemp], exCall, exUpdate);
                 var lambda = Expression.Lambda<DeserializeWriter>(exBlock, exReader, exWriter).Compile();
                 var key = member.Name.Trim().Replace("-", "").Replace("_", "");
-                builder.Add(new(key, lambda));
+                builder.Add((key, type.IsEnum || IsCollection(adder, type), lambda));
             }
 
             return builder.MoveToImmutable();
@@ -89,23 +135,48 @@ static class Kvp
             ];
         }
 
+        static string ToString(ICollection values)
+        {
+            if (values.Count is 0)
+                return "";
+
+            DefaultInterpolatedStringHandler dish = new((values.Count - 1) * 2, values.Count);
+            var enumerator = values.GetEnumerator();
+
+            try
+            {
+                if (enumerator.MoveNext())
+                    dish.AppendFormatted(enumerator.Current);
+                else
+                    return dish.ToStringAndClear();
+
+                while (enumerator.MoveNext())
+                {
+                    dish.AppendFormatted(", ");
+                    dish.AppendFormatted(enumerator.Current);
+                }
+
+                return dish.ToStringAndClear();
+            }
+            finally
+            {
+                (enumerator as IDisposable)?.Dispose();
+            }
+        }
+
         [MustUseReturnValue]
         static SerializeWriter MakeSerializer()
         {
-            const string Assignment = " = ", Separator = "\n";
+            const string AppendFormatted = nameof(AppendFormatted),
+                AppendLiteral = nameof(AppendLiteral),
+                Assignment = " = ",
+                Separator = "\n";
 
             [MustUseReturnValue]
             static int ConstantLength(MemberInfo m) => m.Name.Length + Assignment.Length + Separator.Length;
 
             var exReader = Expression.Parameter(typeof(T).MakeByRefType());
             var exWriter = Expression.Parameter(typeof(DefaultInterpolatedStringHandler).MakeByRefType());
-            var appendFormatted = typeof(DefaultInterpolatedStringHandler).GetMethods().Single(IsAppendFormatted);
-
-            var appendLiteral = typeof(DefaultInterpolatedStringHandler).GetMethod(
-                nameof(DefaultInterpolatedStringHandler.AppendLiteral),
-                [typeof(string)] // ReSharper disable once NullableWarningSuppressionIsUsed
-            )!;
-
             // ReSharper disable once NullableWarningSuppressionIsUsed
             var constructor = typeof(DefaultInterpolatedStringHandler).GetConstructor([typeof(int), typeof(int)])!;
             var members = s_members.Where(x => x is FieldInfo or PropertyInfo { CanRead: true }).ToIList();
@@ -118,17 +189,28 @@ static class Kvp
             foreach (var member in members)
             {
                 var str = Expression.Constant($"{member.Name}{Assignment}");
-                var exAssignment = Expression.Call(exWriter, appendLiteral, str);
+                var exAssignment = Expression.Call(exWriter, AppendLiteral, [], str);
                 exBlockArgs.Add(exAssignment);
 
                 var exMember = Expression.MakeMemberAccess(exReader, member);
                 var underlyingType = UnderlyingType(member);
-                var genericMethod = appendFormatted.MakeGenericMethod(underlyingType);
-                var exFormatted = Expression.Call(exWriter, genericMethod, exMember);
+
+                var isCollection = underlyingType != typeof(string) &&
+                    underlyingType.IsAssignableTo(typeof(ICollection));
+
+                var exFormatted = Expression.Call(
+                    exWriter,
+                    AppendFormatted,
+                    [isCollection ? typeof(string) : underlyingType],
+                    isCollection
+                        ? Expression.Call(((Converter<ICollection, string>)ToString).Method, exMember)
+                        : exMember
+                );
+
                 exBlockArgs.Add(exFormatted);
 
                 var separator = Expression.Constant(Separator);
-                var exSep = Expression.Call(exWriter, appendLiteral, separator);
+                var exSep = Expression.Call(exWriter, AppendLiteral, [], separator);
                 exBlockArgs.Add(exSep);
             }
 
@@ -216,7 +298,7 @@ static class Kvp
     }
 
     static void ProcessKeyValuePair<T>(
-        in KeyValuePair<string, KvpCache<T>.DeserializeWriter> deserializer,
+        in (string Key, bool, KvpCache<T>.DeserializeWriter) deserializer,
         scoped ReadOnlySpan<char> slice,
         int equals,
         ref T writer
@@ -230,9 +312,33 @@ static class Kvp
             expected = expected.UnsafelySkip(i + 1), key = key.UnsafelySkip(i + 1))
             if (i is -1 || i >= expected.Length)
             {
-                deserializer.Value(slice.UnsafelySkip(equals + 1).Trim(), ref writer);
-                break;
+                ProcessValue(deserializer, slice.UnsafelySkip(equals + 1), ref writer);
+                return;
             }
+    }
+
+    static void ProcessValue<T>(
+        (string, bool IsCollection, KvpCache<T>.DeserializeWriter Writer) valueTuple,
+        scoped ReadOnlySpan<char> slice,
+        ref T writer
+    )
+#if !NO_ALLOWS_REF_STRUCT
+        where T : allows ref struct
+#endif
+    {
+        if (!valueTuple.IsCollection)
+        {
+            valueTuple.Writer(slice.Trim(), ref writer);
+            return;
+        }
+
+        for (; slice.IndexOf(',') is var j; slice = slice.UnsafelySkip(j + 1))
+        {
+            valueTuple.Writer((j is -1 ? slice : slice.UnsafelyTake(j)).Trim(), ref writer);
+
+            if (j is -1)
+                return;
+        }
     }
 }
 #endif

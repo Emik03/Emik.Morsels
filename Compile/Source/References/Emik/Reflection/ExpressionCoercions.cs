@@ -16,20 +16,16 @@ static partial class ExpressionCoercions
           ?.GetGetMethod(true)
           ?.Invoke(x, null) as string;
 
-    /// <summary>Creates the assignment of a field or property.</summary>
-    /// <param name="left">The left-hand side to mutate.</param>
-    /// <param name="member">The member to access and assign.</param>
-    /// <param name="right">The right-hand side containing the value to insert.</param>
+    /// <summary>Gets the field or property.</summary>
+    /// <param name="expression">The expression to retrieve from.</param>
+    /// <param name="member">The member to access.</param>
     /// <returns>The <see cref="BinaryExpression"/> representing <c>left.member = right</c>.</returns>
-    public static BinaryExpression AssignFieldOrProperty(this Expression left, MemberInfo member, Expression right) =>
-        System.Linq.Expressions.Expression.Assign(
-            member switch
-            {
-                PropertyInfo p => System.Linq.Expressions.Expression.Property(left, p),
-                FieldInfo f => System.Linq.Expressions.Expression.Field(left, f),
-                _ => throw Unreachable,
-            },
-            right
-        );
+    public static MemberExpression FieldOrProperty(this Expression expression, MemberInfo member) =>
+        member switch
+        {
+            PropertyInfo p => System.Linq.Expressions.Expression.Property(expression, p),
+            FieldInfo f => System.Linq.Expressions.Expression.Field(expression, f),
+            _ => throw Unreachable,
+        };
 }
 #endif
