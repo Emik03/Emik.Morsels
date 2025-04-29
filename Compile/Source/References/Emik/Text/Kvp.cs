@@ -33,6 +33,55 @@ static class Kvp
             adder is not null && type.IsAssignableTo(typeof(ICollection)) && type.GetConstructor([]) is not null;
 
         [MustUseReturnValue]
+        static string? Description(MemberInfo m)
+        {
+            const string Comment = "# ";
+
+            if (m.GetCustomAttribute<DescriptionAttribute>()?.Description is not { } description)
+                return null;
+
+            var d = description.AsSpan();
+            StringBuilder sb = new(Comment.Length + d.Length + 1);
+
+            foreach (var range in d.SplitAny(Whitespaces.BreakingSearch.GetSpan()[0]))
+            {
+                var line = d[range];
+                sb.Append(line.IsEmpty ? "" : "# ").Append(line).AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+        static string ToString(ICollection values)
+        {
+            if (values.Count is 0)
+                return "";
+
+            DefaultInterpolatedStringHandler dish = new((values.Count - 1) * 2, values.Count);
+            var enumerator = values.GetEnumerator();
+
+            try
+            {
+                if (enumerator.MoveNext())
+                    dish.AppendFormatted(enumerator.Current);
+                else
+                    return dish.ToStringAndClear();
+
+                while (enumerator.MoveNext())
+                {
+                    dish.AppendFormatted(", ");
+                    dish.AppendFormatted(enumerator.Current);
+                }
+
+                return dish.ToStringAndClear();
+            }
+            finally
+            {
+                (enumerator as IDisposable)?.Dispose();
+            }
+        }
+
+        [MustUseReturnValue]
         static Expression Convert(Type t, Expression exReader, Expression exTemp)
         {
             // ReSharper disable once NullableWarningSuppressionIsUsed RedundantTypeArgumentsInsideNameof
@@ -135,35 +184,6 @@ static class Kvp
             ];
         }
 
-        static string ToString(ICollection values)
-        {
-            if (values.Count is 0)
-                return "";
-
-            DefaultInterpolatedStringHandler dish = new((values.Count - 1) * 2, values.Count);
-            var enumerator = values.GetEnumerator();
-
-            try
-            {
-                if (enumerator.MoveNext())
-                    dish.AppendFormatted(enumerator.Current);
-                else
-                    return dish.ToStringAndClear();
-
-                while (enumerator.MoveNext())
-                {
-                    dish.AppendFormatted(", ");
-                    dish.AppendFormatted(enumerator.Current);
-                }
-
-                return dish.ToStringAndClear();
-            }
-            finally
-            {
-                (enumerator as IDisposable)?.Dispose();
-            }
-        }
-
         [MustUseReturnValue]
         static SerializeWriter MakeSerializer()
         {
@@ -180,7 +200,7 @@ static class Kvp
             // ReSharper disable once NullableWarningSuppressionIsUsed
             var constructor = typeof(DefaultInterpolatedStringHandler).GetConstructor([typeof(int), typeof(int)])!;
             var members = s_members.Where(x => x is FieldInfo or PropertyInfo { CanRead: true }).ToIList();
-            var literalLength = members.Sum(ConstantLength);
+            var literalLength = members.Sum(ConstantLength) + members.Select(Description).Sum(x => x?.Length);
             var exLiteralLength = Expression.Constant(literalLength);
             var exFormattedLength = Expression.Constant(members.Count);
             var exNew = Expression.New(constructor, exLiteralLength, exFormattedLength);
@@ -188,10 +208,16 @@ static class Kvp
 
             foreach (var member in members)
             {
-                var str = Expression.Constant($"{member.Name}{Assignment}");
-                var exAssignment = Expression.Call(exWriter, AppendLiteral, [], str);
-                exBlockArgs.Add(exAssignment);
+                if (Description(member) is { } description)
+                {
+                    var exDescription = Expression.Constant(description);
+                    var exAppendDescription = Expression.Call(exWriter, AppendLiteral, [], exDescription);
+                    exBlockArgs.Add(exAppendDescription);
+                }
 
+                var exKey = Expression.Constant($"{member.Name}{Assignment}");
+                var exAppendKey = Expression.Call(exWriter, AppendLiteral, [], exKey);
+                exBlockArgs.Add(exAppendKey);
                 var exMember = Expression.MakeMemberAccess(exReader, member);
                 var underlyingType = UnderlyingType(member);
 
@@ -208,10 +234,9 @@ static class Kvp
                 );
 
                 exBlockArgs.Add(exFormatted);
-
                 var separator = Expression.Constant(Separator);
-                var exSep = Expression.Call(exWriter, AppendLiteral, [], separator);
-                exBlockArgs.Add(exSep);
+                var exAppendSeparator = Expression.Call(exWriter, AppendLiteral, [], separator);
+                exBlockArgs.Add(exAppendSeparator);
             }
 
             var exBlock = Expression.Block(exBlockArgs);
