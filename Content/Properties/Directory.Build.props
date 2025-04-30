@@ -177,7 +177,7 @@
         <PackageReference Update="Text.Analyzers" Version="3.11.0-beta1.24508.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all"/>
-        <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6495" PrivateAssets="all"/>
+        <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6581" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.13.1" PrivateAssets="all"/>
         <PackageReference Include="Dwaas.Param.Documentation.Analyzer" Version="1.0.6258.29691" PrivateAssets="all"/>
