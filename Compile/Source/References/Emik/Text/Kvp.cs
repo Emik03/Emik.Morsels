@@ -11,9 +11,9 @@ static class Kvp
         where T : allows ref struct
 #endif
     {
-        public delegate void SerializeWriter(in T reader, out DefaultInterpolatedStringHandler writer);
+        public delegate void SerializeWriter(scoped in T reader, out DefaultInterpolatedStringHandler writer);
 
-        public delegate void DeserializeWriter(scoped ReadOnlySpan<char> reader, ref T writer);
+        public delegate void DeserializeWriter(scoped ReadOnlySpan<char> reader, scoped ref T writer);
 
         static readonly ImmutableArray<MemberInfo> s_members = MakeMembers();
 
@@ -259,7 +259,7 @@ static class Kvp
     /// <param name="value">The object to serialize.</param>
     /// <returns>The serialized object.</returns>
     [Pure]
-    public static string Serialize<T>(in T value)
+    public static string Serialize<T>(scoped in T value)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
@@ -290,7 +290,7 @@ static class Kvp
     /// <param name="span">The string to deserialize.</param>
     /// <param name="writer">The object to write to.</param>
     /// <returns>The deserialized object.</returns>
-    public static void Deserialize<T>(scoped ReadOnlySpan<char> span, ref T writer)
+    public static void Deserialize<T>(scoped ReadOnlySpan<char> span, scoped ref T writer)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
@@ -311,7 +311,7 @@ static class Kvp
         where T : class =>
         Deserialize(span, ref writer);
 
-    static void ProcessLine<T>(scoped ReadOnlySpan<char> span, ref T writer)
+    static void ProcessLine<T>(scoped ReadOnlySpan<char> span, scoped ref T writer)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
