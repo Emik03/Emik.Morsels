@@ -299,19 +299,19 @@ static class Kvp
             span.IndexOfAny(Whitespaces.BreakingSearch.GetSpan()[0]) is var separator;
             span = span.UnsafelySkip(separator + 1))
         {
-            SplitToKeyValuePair(span.UnsafelyTake(separator is -1 ? span.Length : separator), ref writer);
+            ProcessLine(span.UnsafelyTake(separator is -1 ? span.Length : separator), ref writer);
 
             if (separator is -1)
                 break;
         }
     }
 
-    static void SplitToKeyValuePair<T>(scoped ReadOnlySpan<char> span, ref T writer)
+    static void ProcessLine<T>(scoped ReadOnlySpan<char> span, ref T writer)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
     {
-        static void ProcessKeyValuePair(
+        static void Match(
             in (string Key, bool IsCollection, KvpCache<T>.DeserializeWriter Writer) deserializer,
             scoped ReadOnlySpan<char> slice,
             int equals,
@@ -345,7 +345,7 @@ static class Kvp
             return;
 
         foreach (var deserializer in KvpCache<T>.Deserializers)
-            ProcessKeyValuePair(deserializer, span, equals, ref writer);
+            Match(deserializer, span, equals, ref writer);
     }
 }
 #endif

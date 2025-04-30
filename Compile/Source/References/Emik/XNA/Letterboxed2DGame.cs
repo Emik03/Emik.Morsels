@@ -108,7 +108,7 @@ public abstract partial class Letterboxed2DGame : Game
         Debug.Assert(Batch is not null);
         GraphicsDevice.SetRenderTarget(_target);
         GraphicsDevice.Clear(Background);
-        Batch.Begin();
+        Batch.Begin(blendState: BlendState.NonPremultiplied);
         return base.BeginDraw();
     }
 
