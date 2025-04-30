@@ -208,7 +208,8 @@ static partial class FastFourierTransform
 
             var length = re.Length;
 
-            do i ^= length >>= 1;
+            do
+                i ^= length >>= 1;
             while ((i & length) is 0);
         }
 
