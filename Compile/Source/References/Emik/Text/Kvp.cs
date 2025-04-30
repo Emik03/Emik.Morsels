@@ -162,7 +162,7 @@ static class Kvp
 
                 var exBlock = Expression.Block([exTemp], exCall, exUpdate);
                 var lambda = Expression.Lambda<DeserializeWriter>(exBlock, exReader, exWriter).Compile();
-                var key = member.Name.Trim().Replace("-", "").Replace("_", "");
+                var key = member.Name.Trim();
                 builder.Add((key, type.IsEnum || IsCollection(adder, type), lambda));
             }
 
@@ -180,7 +180,8 @@ static class Kvp
             [
                 ..fields.AsEnumerable<MemberInfo>()
                    .Concat(properties)
-                   .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase),
+                   .OrderBy(x => x.GetCustomAttribute<JsonPropertyOrderAttribute>()?.Order ?? 0)
+                   .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase),
             ];
         }
 
@@ -298,72 +299,53 @@ static class Kvp
             span.IndexOfAny(Whitespaces.BreakingSearch.GetSpan()[0]) is var separator;
             span = span.UnsafelySkip(separator + 1))
         {
-            SplitToKeyValuePair(span, separator, ref writer);
+            SplitToKeyValuePair(span.UnsafelyTake(separator is -1 ? span.Length : separator), ref writer);
 
             if (separator is -1)
                 break;
         }
     }
 
-    static void SplitToKeyValuePair<T>(scoped ReadOnlySpan<char> span, int separator, ref T writer)
+    static void SplitToKeyValuePair<T>(scoped ReadOnlySpan<char> span, ref T writer)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
     {
-        var slice = span.UnsafelyTake(separator is -1 ? span.Length : separator);
+        static void ProcessKeyValuePair(
+            in (string Key, bool IsCollection, KvpCache<T>.DeserializeWriter Writer) deserializer,
+            scoped ReadOnlySpan<char> slice,
+            int equals,
+            ref T writer
+        )
+        {
+            if (!slice.UnsafelyTake(equals).Trim().Equals(deserializer.Key, StringComparison.OrdinalIgnoreCase))
+                return;
 
-        if (slice.IndexOfAny(';', '#') is not -1 and var comments)
-            slice = slice.UnsafelyTake(comments);
+            slice = slice.UnsafelySkip(equals + 1);
 
-        if (slice.IndexOf('=') is not (not -1 and var equals))
+            if (!deserializer.IsCollection)
+            {
+                deserializer.Writer(slice.Trim(), ref writer);
+                return;
+            }
+
+            for (; slice.IndexOf(',') is var j; slice = slice.UnsafelySkip(j + 1))
+            {
+                deserializer.Writer((j is -1 ? slice : slice.UnsafelyTake(j)).Trim(), ref writer);
+
+                if (j is -1)
+                    return;
+            }
+        }
+
+        if (span.IndexOfAny(';', '#') is not -1 and var comments)
+            span = span.UnsafelyTake(comments);
+
+        if (span.IndexOf('=') is not (not -1 and var equals))
             return;
 
         foreach (var deserializer in KvpCache<T>.Deserializers)
-            ProcessKeyValuePair(deserializer, slice, equals, ref writer);
-    }
-
-    static void ProcessKeyValuePair<T>(
-        in (string Key, bool, KvpCache<T>.DeserializeWriter) deserializer,
-        scoped ReadOnlySpan<char> slice,
-        int equals,
-        ref T writer
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-    {
-        for (ReadOnlySpan<char> expected = deserializer.Key, key = slice.UnsafelyTake(equals).Trim();
-            key.IndexOfAny('-', '_') is var i && expected.StartsWith(i is -1 ? key : key.UnsafelyTake(i));
-            expected = expected.UnsafelySkip(i + 1), key = key.UnsafelySkip(i + 1))
-            if (i is -1 || i >= expected.Length)
-            {
-                ProcessValue(deserializer, slice.UnsafelySkip(equals + 1), ref writer);
-                return;
-            }
-    }
-
-    static void ProcessValue<T>(
-        (string, bool IsCollection, KvpCache<T>.DeserializeWriter Writer) valueTuple,
-        scoped ReadOnlySpan<char> slice,
-        ref T writer
-    )
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-    {
-        if (!valueTuple.IsCollection)
-        {
-            valueTuple.Writer(slice.Trim(), ref writer);
-            return;
-        }
-
-        for (; slice.IndexOf(',') is var j; slice = slice.UnsafelySkip(j + 1))
-        {
-            valueTuple.Writer((j is -1 ? slice : slice.UnsafelyTake(j)).Trim(), ref writer);
-
-            if (j is -1)
-                return;
-        }
+            ProcessKeyValuePair(deserializer, span, equals, ref writer);
     }
 }
 #endif

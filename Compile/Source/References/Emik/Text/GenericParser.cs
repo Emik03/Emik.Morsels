@@ -58,6 +58,7 @@ static partial class GenericParser
         Into<T>(s, provider, out _);
 
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
+    // ReSharper disable OutParameterValueIsAlwaysDiscarded.Global
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Into<T>(this string s, out bool success)
         where T : IParsable<T> =>
