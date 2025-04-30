@@ -306,6 +306,11 @@ static class Kvp
         }
     }
 
+    /// <inheritdoc cref="Deserialize{T}(System.ReadOnlySpan{char}, ref T)"/>
+    public static void Deserialize<T>(scoped ReadOnlySpan<char> span, T writer)
+        where T : class =>
+        Deserialize(span, ref writer);
+
     static void ProcessLine<T>(scoped ReadOnlySpan<char> span, ref T writer)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
