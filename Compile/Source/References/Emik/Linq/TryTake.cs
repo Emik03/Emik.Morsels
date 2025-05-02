@@ -44,7 +44,7 @@ static partial class TryTake
         switch (iterable)
         {
             case string str:
-                return str.Length is 0 ? fallback : Ret<T>.From(str[0]);
+                return str.Length is 0 ? fallback : (T)(object)str[0];
 #if NETCOREAPP || ROSLYN
             case ImmutableArray<T> array:
                 return array.IsDefaultOrEmpty ? fallback : array[0];
@@ -72,7 +72,7 @@ static partial class TryTake
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
         iterable switch
         {
-            string str => str is [.., var last] ? Ret<T>.From(last) : fallback,
+            string str => str is [.., var last] ? (T)(object)last : fallback,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => array is [.., var last] ? last : fallback,
 #endif
@@ -165,7 +165,7 @@ static partial class TryTake
 
         return iterable switch
         {
-            string str => index < str.Length ? Ret<T>.From(str[index]) : default,
+            string str => index < str.Length ? (T)(object)str[index] : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
 #endif
@@ -197,7 +197,7 @@ static partial class TryTake
 
         return iterable switch
         {
-            string str => index < str.Length ? Ret<T>.From(str[str.Length - index - 1]) : default,
+            string str => index < str.Length ? (T)(object)str[str.Length - index - 1] : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array =>
                 !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,

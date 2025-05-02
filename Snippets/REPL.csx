@@ -1468,11 +1468,7 @@ public
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The value to convert.</param>
         /// <returns>The result of the reinterpret cast.</returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#else
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#endif
         public static unsafe TTo From<TFrom>(TFrom source)
 #if !NO_ALLOWS_REF_STRUCT
             where TFrom : allows ref struct
@@ -1635,11 +1631,7 @@ public
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#endif
     public static nuint ToAddress<T>(this T? _)
         where T : class =>
         Ret<nuint>.From(_);
@@ -4075,7 +4067,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
         switch (iterable)
         {
             case string str:
-                return str.Length is 0 ? fallback : Ret<T>.From(str[0]);
+                return str.Length is 0 ? fallback : (T)(object)str[0];
 #if NETCOREAPP || ROSLYN
             case ImmutableArray<T> array:
                 return array.IsDefaultOrEmpty ? fallback : array[0];
@@ -4102,7 +4094,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     public static T LastOr<T>([InstantHandle] this IEnumerable<T> iterable, T fallback) =>
         iterable switch
         {
-            string str => str is [.., var last] ? Ret<T>.From(last) : fallback,
+            string str => str is [.., var last] ? (T)(object)last : fallback,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => array is [.., var last] ? last : fallback,
 #endif
@@ -4188,7 +4180,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             return default;
         return iterable switch
         {
-            string str => index < str.Length ? Ret<T>.From(str[index]) : default,
+            string str => index < str.Length ? (T)(object)str[index] : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array => !array.IsDefault && index < array.Length ? array[index] : default,
 #endif
@@ -4216,7 +4208,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
             return default;
         return iterable switch
         {
-            string str => index < str.Length ? Ret<T>.From(str[str.Length - index - 1]) : default,
+            string str => index < str.Length ? (T)(object)str[str.Length - index - 1] : default,
 #if NETCOREAPP || ROSLYN
             ImmutableArray<T> array =>
                 !array.IsDefault && index < array.Length ? array[array.Length - index - 1] : default,
@@ -10800,7 +10792,7 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Index Decrement(Index index) =>
         Unsafe.SizeOf<Index>() is sizeof(int) ?
-            Ret<Index>.From(Ret<int>.From(index) - 1) :
+            (Index)(object)((int)(object)index - 1) :
             index is { Value: 0, IsFromEnd: false } ? new(0, true) :
                 new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }

@@ -121,11 +121,7 @@ static partial class Span
         /// <typeparam name="TFrom">The type to convert from.</typeparam>
         /// <param name="source">The value to convert.</param>
         /// <returns>The result of the reinterpret cast.</returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#else
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#endif
         public static unsafe TTo From<TFrom>(TFrom source)
 #if !NO_ALLOWS_REF_STRUCT
             where TFrom : allows ref struct
@@ -304,11 +300,7 @@ static partial class Span
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
     /// <returns>The memory address of the reference object.</returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#endif
     public static nuint ToAddress<T>(this T? _)
         where T : class =>
         Ret<nuint>.From(_);
