@@ -54,6 +54,10 @@ public abstract partial class Letterboxed2DGame : Game
     [Pure]
     public Color Background { get; set; }
 
+    /// <summary>Gets the default blend state.</summary>
+    [Pure] // ReSharper disable once VirtualMemberNeverOverridden.Global
+    public virtual BlendState BatchBlendState => BlendState.NonPremultiplied;
+
     /// <summary>Gets the device manager that contains this instance.</summary>
     [Pure]
     public GraphicsDeviceManager GraphicsDeviceManager { get; }
@@ -108,7 +112,7 @@ public abstract partial class Letterboxed2DGame : Game
         Debug.Assert(Batch is not null);
         GraphicsDevice.SetRenderTarget(_target);
         GraphicsDevice.Clear(Background);
-        Batch.Begin(blendState: BlendState.NonPremultiplied);
+        Batch.Begin(blendState: BatchBlendState);
         return base.BeginDraw();
     }
 
