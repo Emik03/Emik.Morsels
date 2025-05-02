@@ -1457,34 +1457,6 @@ public
 #endif
         }
     }
-    /// <summary>Provides interpret methods.</summary>
-    /// <typeparam name="TTo">The type to convert to.</typeparam>
-    public static class Ret<TTo>
-#if !NO_ALLOWS_REF_STRUCT
-        where TTo : allows ref struct
-#endif
-    {
-        /// <summary>Performs a reinterpret cast from <typeparamref name="TFrom"/> to <see name="TTo"/>.</summary>
-        /// <typeparam name="TFrom">The type to convert from.</typeparam>
-        /// <param name="source">The value to convert.</param>
-        /// <returns>The result of the reinterpret cast.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe TTo From<TFrom>(TFrom source)
-#if !NO_ALLOWS_REF_STRUCT
-            where TFrom : allows ref struct
-#endif
-        {
-            System.Diagnostics.Debug.Assert(Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>(), "No out-of-bounds access.");
-#if CSHARPREPL
-            return Unsafe.As<TFrom, TTo>(ref source);
-#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-            InlineIL.IL.Emit.Ldarg_0();
-            return InlineIL.IL.Return<TTo>();
-#else
-            return *(TTo*)&source;
-#endif
-        }
-    }
     /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
     /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes
@@ -1507,11 +1479,7 @@ public
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
@@ -1584,11 +1552,7 @@ public
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#endif
     public static bool IsStack<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -1616,11 +1580,7 @@ public
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-#endif
     public static int InBytes<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -1633,8 +1593,17 @@ public
     /// <returns>The memory address of the reference object.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static nuint ToAddress<T>(this T? _)
-        where T : class =>
-        Ret<nuint>.From(_);
+        where T : class
+    {
+#if CSHARPREPL
+        return Unsafe.As<T?, nuint>(ref _);
+#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+        InlineIL.IL.Emit.Ldarg_0();
+        return InlineIL.IL.Return<nuint>();
+#else
+        return *(TTo*)&source;
+#endif
+    }
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>
     /// <param name="reference">A reference to data.</param>
@@ -5385,11 +5354,7 @@ public enum ControlFlow : byte
         /// <inheritdoc />
         [CollectionAccess(Read), Pure]
         public override string? ToString() => list.ToString();
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
-#else
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
-#endif
         int Find(T item)
         {
             var count = list.Count - 1;
@@ -13154,7 +13119,7 @@ readonly
             _ when typeof(TS) == typeof(SMin) => Comparer<T>.Default.Compare(l, r) < 0,
             _ => throw Unreachable,
         };
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
 #if !NET8_0_OR_GREATER
         where T : struct
@@ -13652,6 +13617,9 @@ public abstract partial class Letterboxed2DGame : Game
     /// <summary>Gets the background, shown in letterboxing.</summary>
     [Pure]
     public Color Background { get; set; }
+    /// <summary>Gets the default blend state.</summary>
+    [Pure]
+    public virtual BlendState BatchBlendState => BlendState.NonPremultiplied;
     /// <summary>Gets the device manager that contains this instance.</summary>
     [Pure]
     public GraphicsDeviceManager GraphicsDeviceManager { get; }
@@ -13697,7 +13665,7 @@ public abstract partial class Letterboxed2DGame : Game
         Debug.Assert(Batch is not null);
         GraphicsDevice.SetRenderTarget(_target);
         GraphicsDevice.Clear(Background);
-        Batch.Begin(blendState: BlendState.NonPremultiplied);
+        Batch.Begin(blendState: BatchBlendState);
         return base.BeginDraw();
     }
     /// <inheritdoc />
@@ -14739,7 +14707,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #endif
         =>
             span.Span.ReadOnly().Sum(converter);
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>
@@ -17358,7 +17326,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this int value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -17371,7 +17339,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this uint value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -17384,7 +17352,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this long value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -17397,7 +17365,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this ulong value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -17410,7 +17378,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nint value) =>
 #if NET7_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -17423,7 +17391,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nuint value) =>
 #if NET7_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -17431,7 +17399,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         (value & value - 1) is 0 && value > 0;
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
     /// <summary>Round the given integral value up to a power of 2.</summary>
     /// <remarks><para>
@@ -17445,7 +17413,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
     /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static uint RoundUpToPowerOf2(this uint value)
 #if NET6_0_OR_GREATER
         =>
@@ -17462,10 +17430,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     }
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this long value) => RoundUpToPowerOf2(unchecked((ulong)value));
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this ulong value)
 #if NET6_0_OR_GREATER
         =>
@@ -17483,10 +17451,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     }
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static nuint RoundUpToPowerOf2(this nint value) => RoundUpToPowerOf2(unchecked((nuint)value));
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static nuint RoundUpToPowerOf2(this nuint value) =>
 #if NET6_0_OR_GREATER
 #pragma warning disable IDE0004

@@ -93,11 +93,8 @@ static partial class Headless
         /// <inheritdoc />
         [CollectionAccess(Read), Pure] // ReSharper disable once ReturnTypeCanBeNotNullable
         public override string? ToString() => list.ToString();
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
+
         [MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
-#else
-        [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure, ValueRange(-1, int.MaxValue)]
-#endif
         int Find(T item)
         {
             var count = list.Count - 1;

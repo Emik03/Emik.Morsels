@@ -298,7 +298,7 @@ static partial class SpanSimdQueries
         =>
             span.Span.ReadOnly().Sum(converter);
 
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining)]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped ref T source, nuint elementOffset)
 #if NET8_0_OR_GREATER
         =>

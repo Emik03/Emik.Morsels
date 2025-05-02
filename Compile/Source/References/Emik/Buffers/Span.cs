@@ -110,38 +110,6 @@ static partial class Span
         }
     }
 
-    /// <summary>Provides interpret methods.</summary>
-    /// <typeparam name="TTo">The type to convert to.</typeparam>
-    public static class Ret<TTo>
-#if !NO_ALLOWS_REF_STRUCT
-        where TTo : allows ref struct
-#endif
-    {
-        /// <summary>Performs a reinterpret cast from <typeparamref name="TFrom"/> to <see name="TTo"/>.</summary>
-        /// <typeparam name="TFrom">The type to convert from.</typeparam>
-        /// <param name="source">The value to convert.</param>
-        /// <returns>The result of the reinterpret cast.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe TTo From<TFrom>(TFrom source)
-#if !NO_ALLOWS_REF_STRUCT
-            where TFrom : allows ref struct
-#endif
-        {
-            System.Diagnostics.Debug.Assert(Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>(), "No out-of-bounds access.");
-#if CSHARPREPL
-            return Unsafe.As<TFrom, TTo>(ref source);
-#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
-            // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
-            // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
-            // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
-            InlineIL.IL.Emit.Ldarg_0();
-            return InlineIL.IL.Return<TTo>();
-#else
-            return *(TTo*)&source;
-#endif
-        }
-    }
-
     /// <summary>The maximum size for stack allocations in bytes.</summary>
     /// <remarks><para>
     /// Stack allocating arrays is an incredibly powerful tool that gets rid of a lot of the overhead that comes
@@ -165,11 +133,7 @@ static partial class Span
     /// The resulting reference that contains the address of the parameter <paramref name="address"/>.
     /// </param>
     /// <param name="address">The number to set.</param>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public static unsafe void UnsafelySetNullishTo<T>(out T? reference, byte address)
         where T : class
     {
@@ -251,11 +215,7 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-#endif
     public static bool IsStack<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -284,11 +244,7 @@ static partial class Span
     /// <returns>
     /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
     /// </returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-#endif
     public static int InBytes<T>([NonNegativeValue] int length)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
@@ -302,8 +258,20 @@ static partial class Span
     /// <returns>The memory address of the reference object.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static nuint ToAddress<T>(this T? _)
-        where T : class =>
-        Ret<nuint>.From(_);
+        where T : class
+    {
+#if CSHARPREPL
+        return Unsafe.As<T?, nuint>(ref _);
+#elif NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+        // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
+        // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
+        // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+        InlineIL.IL.Emit.Ldarg_0();
+        return InlineIL.IL.Return<nuint>();
+#else
+        return *(TTo*)&source;
+#endif
+    }
 
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
     /// <typeparam name="T">The type of <paramref name="reference"/>.</typeparam>

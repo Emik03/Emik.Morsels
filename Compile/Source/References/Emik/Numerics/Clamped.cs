@@ -12,7 +12,7 @@ static partial class Clamped
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this int value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -25,7 +25,7 @@ static partial class Clamped
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this uint value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -38,7 +38,7 @@ static partial class Clamped
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this long value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -51,7 +51,7 @@ static partial class Clamped
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this ulong value) =>
 #if NET6_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -64,7 +64,7 @@ static partial class Clamped
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nint value) =>
 #if NET7_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -77,7 +77,7 @@ static partial class Clamped
     /// The value <see langword="true"/> if the parameter <paramref name="value"/>
     /// is a power of 2; otherwise, <see langword="false"/>.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static bool IsPow2(this nuint value) =>
 #if NET7_0_OR_GREATER
         BitOperations.IsPow2(value);
@@ -85,7 +85,7 @@ static partial class Clamped
         (value & value - 1) is 0 && value > 0;
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static uint RoundUpToPowerOf2(this int value) => RoundUpToPowerOf2(unchecked((uint)value));
 
     /// <summary>Round the given integral value up to a power of 2.</summary>
@@ -100,7 +100,7 @@ static partial class Clamped
     /// The smallest power of 2 which is greater than or equal to <paramref name="value"/>.
     /// If <paramref name="value"/> is 0 or the result overflows, returns 0.
     /// </returns>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static uint RoundUpToPowerOf2(this uint value)
 #if NET6_0_OR_GREATER
         =>
@@ -117,11 +117,11 @@ static partial class Clamped
     }
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this long value) => RoundUpToPowerOf2(unchecked((ulong)value));
 
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static ulong RoundUpToPowerOf2(this ulong value)
 #if NET6_0_OR_GREATER
         =>
@@ -139,11 +139,11 @@ static partial class Clamped
     }
 #endif
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static nuint RoundUpToPowerOf2(this nint value) => RoundUpToPowerOf2(unchecked((nuint)value));
 
     /// <inheritdoc cref="RoundUpToPowerOf2(uint)"/>
-    [CLSCompliant(false), Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [CLSCompliant(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     // ReSharper disable once RedundantUnsafeContext
     public static nuint RoundUpToPowerOf2(this nuint value) =>
 #if NET6_0_OR_GREATER

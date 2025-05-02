@@ -296,7 +296,7 @@ static partial class SpanSimdQueries
             _ => throw Unreachable,
         };
 
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static System.Numerics.Vector<T> LoadUnsafe<T>(scoped in T source)
 #if !NET8_0_OR_GREATER
         where T : struct

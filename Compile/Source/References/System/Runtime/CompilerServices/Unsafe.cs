@@ -13,11 +13,25 @@ static class Unsafe
         return (void*)*(nint*)&tr;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T As<T>(object? o) => Span.Ret<T>.From(o);
+    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once NullableWarningSuppressionIsUsed
+    public static T As<T>(object? o) => (T)o!;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static TTo As<TFrom, TTo>(ref readonly TFrom o) => Span.Ret<TTo>.From(o);
+    public static TTo As<TFrom, TTo>(ref readonly TFrom o)
+    {
+        // ReSharper disable RedundantNameQualifier
+        // ReSharper disable once UseSymbolAlias
+        System.Diagnostics.Debug.Assert(SizeOf<TFrom>() >= SizeOf<TTo>(), "No out-of-bounds access.");
+#if NET452_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP
+        // We have to resort to inline IL because Unsafe.As<T> has a constraint for classes,
+        // and Unsafe.As<TFrom, TTo> introduces a miniscule amount of overhead.
+        // Doing it like this reduces the IL size from 9 to 2 bytes, and the JIT assembly from 9 to 3 bytes.
+        InlineIL.IL.Emit.Ldarg_0();
+        return InlineIL.IL.Return<TTo>();
+#else
+        return *(TTo*)&source;
+#endif
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)] // ReSharper disable once NullableWarningSuppressionIsUsed
     public static void SkipInit<T>(out T value) => value = default!;
