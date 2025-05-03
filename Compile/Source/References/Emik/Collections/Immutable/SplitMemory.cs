@@ -37,8 +37,13 @@ static partial class SplitMemoryFactory
         this SplitMemory<char, TSeparator, TStrategy> left,
         SplitMemory<char, TOtherSeparator, TOtherStrategy> right,
         StringComparison comparison
-    ) =>
-        left.SplitSpan.ConcatEqual(right.SplitSpan, comparison);
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            left.SplitSpan.ConcatEqual(right.SplitSpan, comparison);
 
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

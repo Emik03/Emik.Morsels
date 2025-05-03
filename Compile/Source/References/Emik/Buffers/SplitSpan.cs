@@ -43,7 +43,7 @@ static partial class SplitSpanFactory
         StringComparison comparison
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>?
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {
@@ -298,7 +298,7 @@ static partial class SplitSpanFactory
         out bool ret
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>?
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {
@@ -341,7 +341,7 @@ static partial class SplitSpanFactory
         out bool ret
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>?
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {

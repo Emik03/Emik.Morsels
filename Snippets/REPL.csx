@@ -10007,7 +10007,7 @@ public enum KeyMods : ushort
         StringComparison comparison
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>?
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {
@@ -10233,7 +10233,7 @@ public enum KeyMods : ushort
         out bool ret
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>?
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {
@@ -10271,7 +10271,7 @@ public enum KeyMods : ushort
         out bool ret
     )
 #if !NET7_0_OR_GREATER
-        where TSeparator : IEquatable<TOtherSeparator>?
+        where TSeparator : IEquatable<TSeparator>?
         where TOtherSeparator : IEquatable<TOtherSeparator>?
 #endif
     {
@@ -12080,8 +12080,13 @@ public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : 
         this SplitMemory<char, TSeparator, TStrategy> left,
         SplitMemory<char, TOtherSeparator, TOtherStrategy> right,
         StringComparison comparison
-    ) =>
-        left.SplitSpan.ConcatEqual(right.SplitSpan, comparison);
+    )
+#if !NET7_0_OR_GREATER
+        where TSeparator : IEquatable<TSeparator>?
+        where TOtherSeparator : IEquatable<TOtherSeparator>?
+#endif
+        =>
+            left.SplitSpan.ConcatEqual(right.SplitSpan, comparison);
     /// <inheritdoc cref="SplitSpanFactory.SplitOnAny{T}(ReadOnlySpan{T}, ReadOnlySpan{T})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static SplitMemory<T, T, MatchAny> SplitOnAny<T>(this ReadOnlyMemory<T> span, ReadOnlyMemory<T> separator)
