@@ -51,10 +51,15 @@ if [ "$help" = 1 ]; then
 fi
 
 go() {
+    if [ ! -d "$DOTNET_ROOT/$1" ]; then
+        return
+    fi
+
     dirs="$(find "$DOTNET_ROOT/$1" -maxdepth 1 -type d -name "[0-9]*" -exec basename {} \; | sort -V)"
     upper="$(echo "$dirs" | wc -l)"
 
     i=1
+
     while [ "$i" -le "$upper" ]; do
         prev="$(echo "$dirs" | sed "${i}q;d")"
         next="$(echo "$dirs" | sed "$(("$i" + 1))q;d")"
