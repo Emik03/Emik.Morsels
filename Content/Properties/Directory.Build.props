@@ -166,8 +166,8 @@
         <PackageReference Include="GlobalUsingsAnalyzer" Version="1.4" PrivateAssets="all"/>
         <PackageReference Include="ReflectionAnalyzers" Version="0.3.1" PrivateAssets="all"/>
         <PackageReference Include="IDisposableAnalyzers" Version="4.0.8" PrivateAssets="all"/>
-        <PackageReference Include="Meziantou.Analyzer" Version="2.0.199" PrivateAssets="all"/>
-        <PackageReference Include="Collections.Analyzer" Version="0.2.11" PrivateAssets="all"/>
+        <PackageReference Include="Meziantou.Analyzer" Version="2.0.201" PrivateAssets="all"/>
+        <PackageReference Include="Collections.Analyzer" Version="0.2.12" PrivateAssets="all"/>
         <PackageReference Include="Roslynator.Analyzers" Version="4.13.1" PrivateAssets="all"/>
         <PackageReference Include="DotNetDoodle.Analyzers" Version="0.0.2" PrivateAssets="all"/>
         <PackageReference Include="Emik.Analyzers.Matches" Version="1.2.2" PrivateAssets="all"/>
