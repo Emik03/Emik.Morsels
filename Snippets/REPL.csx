@@ -203,7 +203,6 @@ using static System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityPermissionFlag;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 using Substring = System.ReadOnlyMemory<char>;
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
@@ -6938,122 +6937,59 @@ public sealed class Pinnable<T>
         readonly int _numButtons = numButtons;
         readonly Button* _buttons = buttons;
         readonly nint _colorScheme;
-    }
-    /// <summary>Displays a message box with an error icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowError(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, 0, buttons, 16);
-    /// <summary>Displays a message box with an error icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowError(
-        this string? title,
-        string? message,
-        nint window,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, window, buttons, 16);
-    /// <summary>Displays a message box with an informational icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowInfo(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, 0, buttons, 64);
-    /// <summary>Displays a message box with an informational icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowInfo(
-        this string? title,
-        string? message,
-        nint window,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, window, buttons, 64);
-    /// <summary>Displays a message box with a warning icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowWarn(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, 0, buttons, 32);
-    /// <summary>Displays a message box with a warning icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowWarn(
-        this string? title,
-        string? message,
-        nint window,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, window, buttons, 32);
-    /// <summary>Displays a message box.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <param name="flags">The flags for the message box.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    static unsafe int Show(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
-    {
-        [DllImport("sdl2", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Else(ref MessageBoxData messageBoxData, out int buttonId);
-        [DllImport("libSDL2-2.0.so.0", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Linux(ref MessageBoxData messageBoxData, out int buttonId);
-        [DllImport("libSDL2.dylib", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int OSX(ref MessageBoxData messageBoxData, out int buttonId);
-        [DllImport("SDL2.dll", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
-        const int Flags = 3;
-        var nonZeroLength = Math.Max(buttons.Length, 1);
-        using var _ = new Rented<Rented<byte>.Pinned>(nonZeroLength, out var pins);
-        using var __ = new Rented<MessageBoxData.Button>.Pinned(nonZeroLength, out var buttonDatas);
-        if (buttons.IsEmpty)
+        /// <summary>Displays a message box.</summary>
+        /// <param name="title">The title of the message box.</param>
+        /// <param name="message">The message to display.</param>
+        /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+        /// <param name="buttons">The buttons to display.</param>
+        /// <param name="flags">The flags for the message box.</param>
+        /// <returns>
+        /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+        /// </returns>
+        public static int Show(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
         {
-            pins[0] = new(3, out var bytes);
-            bytes[0] = (byte)'O';
-            bytes[1] = (byte)'K';
-            bytes[2] = (byte)'\0';
-            buttonDatas[0] = new(Flags, 0, bytes);
-        }
-        else
-            for (var i = 0; i < buttons.Length; i++)
-                fixed (char* chars = buttons[i])
+            const int Flags = 3;
+            static int One(string? title, string? message, nint window, uint flags)
+            {
+                var bytes = stackalloc byte[] { (byte)'O', (byte)'K', (byte)'\0' };
+                Button buttonData = new(Flags, 0, bytes);
+                return Show(new(flags, window, title, message, 1, &buttonData));
+            }
+            static int More(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
+            {
+                var buttonData = stackalloc Button[buttons.Length];
+                var handles = stackalloc GCHandle[buttons.Length];
+                for (var i = 0; i < buttons.Length; i++)
+                    fixed (char* chars = buttons[i])
+                    {
+                        int charLength = buttons[i].Length, byteLength = charLength * 4 + 1;
+                        var bytes = ArrayPool<byte>.Shared.Rent(byteLength);
+                        handles[i] = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        var ptr = (byte*)handles[i].AddrOfPinnedObject();
+                        bytes[Encoding.UTF8.GetBytes(chars, charLength, ptr, byteLength)] = 0;
+                        buttonData[i] = new(Flags, i, ptr);
+                    }
+                var ret = Show(new(flags, window, title, message, buttons.Length, buttonData));
+                for (var i = 0; i < buttons.Length; i++)
                 {
-                    int charLength = buttons[i].Length, byteLength = charLength * 4 + 1;
-                    pins[i] = new(byteLength, out var bytes);
-                    bytes[Encoding.UTF8.GetBytes(chars, charLength, bytes, byteLength)] = 0;
-                    buttonDatas[i] = new(Flags, i, bytes);
+                    ArrayPool<byte>.Shared.Return(Unsafe.As<byte[]>(handles[i].Target)!);
+                    handles[i].Free();
                 }
-        try
+                return ret;
+            }
+            return buttons.IsEmpty ? One(title, message, window, flags) : More(title, message, window, buttons, flags);
+        }
+        static int Show(MessageBoxData data)
         {
-            MessageBoxData data = new(flags, window, title, message, nonZeroLength, buttonDatas);
+            const string Entry = "SDL_ShowMessageBox";
+            [DllImport("SDL2.dll", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
+            [DllImport("libSDL2.dylib", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int OSX(ref MessageBoxData messageBoxData, out int buttonId);
+            [DllImport("libSDL2-2.0.so.0", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int Linux(ref MessageBoxData messageBoxData, out int buttonId);
+            [DllImport("sdl2", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int Else(ref MessageBoxData messageBoxData, out int buttonId);
 #if NET5_0_OR_GREATER
             return (OperatingSystem.IsWindows() ? Windows(ref data, out var buttonId) :
                 OperatingSystem.IsMacOS() ? OSX(ref data, out buttonId) :
@@ -7068,12 +7004,65 @@ public sealed class Pinnable<T>
                 ? buttonId
                 : -1;
         }
-        finally
-        {
-            foreach (var pin in pins)
-                pin.Dispose();
-        }
     }
+    /// <summary>Displays a message box with an error icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowError(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, 0, buttons, 16);
+    /// <summary>Displays a message box with an error icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int
+        ShowError(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, window, buttons, 16);
+    /// <summary>Displays a message box with an informational icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowInfo(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, 0, buttons, 64);
+    /// <summary>Displays a message box with an informational icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowInfo(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, window, buttons, 64);
+    /// <summary>Displays a message box with a warning icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowWarn(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, 0, buttons, 32);
+    /// <summary>Displays a message box with a warning icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowWarn(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, window, buttons, 32);
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantUsingDirective
 /// <summary>Extension methods to attempt to grab the length from enumerables.</summary>
@@ -11841,7 +11830,7 @@ public sealed class FrameRateCounter(Letterboxed2DGame game, SpriteFont font) : 
     /// <summary>Gets all the types currently loaded.</summary>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
-        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+        AppDomain.CurrentDomain.GetAssemblies().AsEnumerable().SelectMany(x => x.TryGetTypes());
     /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
     /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
     /// <param name="disposable">The disposable to dispose.</param>
@@ -12846,6 +12835,7 @@ readonly
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace EmptyNamespace
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+// ReSharper disable once RedundantUsingDirective
 /// <inheritdoc cref="SpanSimdQueries"/>
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantNameQualifier RedundantSuppressNullableWarningExpression UseSymbolAlias
     /// <inheritdoc cref="Enumerable.Max{T}(IEnumerable{T})"/>
@@ -16275,15 +16265,18 @@ readonly
         [NonNegativeValue] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
         [InstantHandle] Func<TItem, TItem, bool> comparer
-    )
-    {
-        if (leftLength is 0 || rightLength is 0)
-            return leftLength is 0 && rightLength is 0 ? 1 : 0;
-        if (leftLength is 1 && rightLength is 1)
-            return EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0;
-        using var _ = rightLength.Alloc(out Span<byte> span);
-        return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
-    }
+    ) =>
+        leftLength is 0 || rightLength is 0 ? leftLength is 0 && rightLength is 0 ? 1 : 0 :
+        leftLength is 1 && rightLength is 1 ? EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0 :
+        JaroAllocated(
+            rightLength <= MaxStackalloc ? stackalloc byte[rightLength] : new byte[rightLength],
+            left,
+            right,
+            leftLength,
+            rightLength,
+            indexer,
+            comparer
+        );
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
         scoped Span<byte> visited,
@@ -16774,7 +16767,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         public int Add(object? value) => ((IList)_list).Add(value);
         /// <inheritdoc />
         [Pure]
-        public override string ToString() => $"[{_list.Select(ToString).Conjoin()}]";
+        public override string ToString() => $"[{_list.AsEnumerable().Select(ToString).Conjoin()}]";
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
@@ -17038,7 +17031,9 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         /// <inheritdoc />
         [Pure]
         public override string ToString() =>
-            _list is [] ? "{ }" : $"{{ {_list.Select(x => $"{ToString(x.Key)}: {ToString(x.Value)}").Conjoin()} }}";
+            _list is []
+                ? "{ }"
+                : $"{{ {_list.AsEnumerable().Select(x => $"{ToString(x.Key)}: {ToString(x.Value)}").Conjoin()} }}";
         /// <inheritdoc />
         public override DeconstructionCollection Simplify()
         {
@@ -17639,122 +17634,6 @@ static class GamePadStateExtensions
         AsRef(state.Item4).IsButtonUp(buttons);
 }
 #endif
-// SPDX-License-Identifier: MPL-2.0
-// ReSharper disable once CheckNamespace
-#pragma warning disable 8500
-// ReSharper disable once RedundantNameQualifier
-/// <summary>Extension methods to allocate temporary buffers.</summary>
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="it">The length of the buffer.</param>
-    /// <param name="span">The temporary allocation.</param>
-    /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static Rented<T> Alloc<T>(this in int it, out Span<T> span)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-        =>
-            it switch
-            {
-                <= 0 when (span = default) is var _ => default,
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
-                _ when !IsReferenceOrContainsReferences<T>() &&
-                    IsStack<T>(it) &&
-                    (span = Stackalloc<T>(it)) is var _ => default,
-#endif
-                _ => new(it, out span),
-            };
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="it">The length of the buffer.</param>
-    /// <param name="ptr">The temporary allocation.</param>
-    /// <returns>The allocated buffer.</returns>
-#if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-#else
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-#endif
-    public static unsafe Rented<T>.Pinned Alloc<T>(this in int it, out T* ptr) =>
-        it switch
-        {
-            <= 0 when (ptr = null) is var _ => default,
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
-            _ when !IsReferenceOrContainsReferences<T>() &&
-                IsStack<T>(it) &&
-                (ptr = StackallocPtr<T>(it)) is var _ => default,
-#endif
-            _ => new(it, out ptr),
-        };
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe T* StackallocPtr<T>(int it)
-    {
-        var ptr = stackalloc byte[InBytes<T>(it)];
-        return (T*)ptr;
-    }
-#endif
-/// <summary>Represents the rented array.</summary>
-/// <typeparam name="T">The type of array to rent.</typeparam>
-[StructLayout(LayoutKind.Auto)]
-public partial struct Rented<T> : IDisposable
-{
-    /// <summary>Represents the pinned array.</summary>
-    [StructLayout(LayoutKind.Auto)]
-    public partial struct Pinned : IDisposable
-    {
-        GCHandle _handle;
-        Rented<T> _rented;
-        /// <summary>Initializes a new instance of the <see cref="Pinned"/> struct.</summary>
-        /// <param name="rented">The rented array.</param>
-        /// <param name="ptr">The pointer to the allocated memory.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe Pinned(Rented<T> rented, out T* ptr)
-        {
-            _rented = rented;
-            _handle = GCHandle.Alloc(rented._array, GCHandleType.Pinned);
-            ptr = (T*)_handle.AddrOfPinnedObject();
-        }
-        /// <summary>Initializes a new instance of the <see cref="Pinned"/> struct.</summary>
-        /// <param name="length">The length of the array to retrieve.</param>
-        /// <param name="ptr">The pointer to the allocated memory.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe Pinned(int length, out T* ptr)
-            : this(new Rented<T>(length), out ptr) { }
-        /// <inheritdoc />
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Dispose()
-        {
-            if (!_handle.IsAllocated)
-                return;
-            _handle.Free();
-            _handle = default;
-            _rented.Dispose();
-        }
-    }
-    T[]? _array;
-    /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
-    /// <param name="length">The length of the array to retrieve.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Rented(int length) => _array = ArrayPool<T>.Shared.Rent(length);
-    /// <summary>Initializes a new instance of the <see cref="Rent"/> struct. Rents the array.</summary>
-    /// <param name="length">The length of the array to retrieve.</param>
-    /// <param name="span">The resulting <see cref="Span{T}"/>.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Rented(int length, out Span<T> span) =>
-        span = (_array = ArrayPool<T>.Shared.Rent(length)).AsSpan().UnsafelyTake(length);
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
-    {
-        if (_array is null)
-            return;
-        ArrayPool<T>.Shared.Return(_array);
-        _array = null;
-    }
-}
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantNameQualifier UseSymbolAlias
 /// <summary>Provides methods to turn <see cref="Version"/> into a <see cref="string"/>.</summary>

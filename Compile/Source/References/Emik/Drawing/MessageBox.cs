@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 // ReSharper disable once CheckNamespace
-namespace Emik.Morsels;
-
+namespace Emik.Morsels; // ReSharper disable once RedundantUsingDirective
 using static PlatformID;
 
 static partial class MessageBox
@@ -38,135 +37,72 @@ static partial class MessageBox
         readonly Button* _buttons = buttons;
 
         readonly nint _colorScheme;
-    }
 
-    /// <summary>Displays a message box with an error icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowError(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, 0, buttons, 16);
-
-    /// <summary>Displays a message box with an error icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowError(
-        this string? title,
-        string? message,
-        nint window,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, window, buttons, 16);
-
-    /// <summary>Displays a message box with an informational icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowInfo(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, 0, buttons, 64);
-
-    /// <summary>Displays a message box with an informational icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowInfo(
-        this string? title,
-        string? message,
-        nint window,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, window, buttons, 64);
-
-    /// <summary>Displays a message box with a warning icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowWarn(this string? title, string? message, ReadOnlySpan<string> buttons = default) =>
-        Show(title, message, 0, buttons, 32);
-
-    /// <summary>Displays a message box with a warning icon.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    public static int ShowWarn(
-        this string? title,
-        string? message,
-        nint window,
-        ReadOnlySpan<string> buttons = default
-    ) =>
-        Show(title, message, window, buttons, 32);
-
-    /// <summary>Displays a message box.</summary>
-    /// <param name="title">The title of the message box.</param>
-    /// <param name="message">The message to display.</param>
-    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
-    /// <param name="buttons">The buttons to display.</param>
-    /// <param name="flags">The flags for the message box.</param>
-    /// <returns>
-    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
-    /// </returns>
-    static unsafe int Show(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
-    {
-        [DllImport("sdl2", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Else(ref MessageBoxData messageBoxData, out int buttonId);
-
-        [DllImport("libSDL2-2.0.so.0", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Linux(ref MessageBoxData messageBoxData, out int buttonId);
-
-        [DllImport("libSDL2.dylib", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int OSX(ref MessageBoxData messageBoxData, out int buttonId);
-
-        [DllImport("SDL2.dll", EntryPoint = "SDL_ShowMessageBox", CharSet = CharSet.Ansi, ExactSpelling = true)]
-        static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
-
-        const int Flags = 3;
-        var nonZeroLength = Math.Max(buttons.Length, 1);
-        using var _ = new Rented<Rented<byte>.Pinned>(nonZeroLength, out var pins);
-        using var __ = new Rented<MessageBoxData.Button>.Pinned(nonZeroLength, out var buttonDatas);
-
-        if (buttons.IsEmpty)
+        /// <summary>Displays a message box.</summary>
+        /// <param name="title">The title of the message box.</param>
+        /// <param name="message">The message to display.</param>
+        /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+        /// <param name="buttons">The buttons to display.</param>
+        /// <param name="flags">The flags for the message box.</param>
+        /// <returns>
+        /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+        /// </returns>
+        public static int Show(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
         {
-            pins[0] = new(3, out var bytes);
-            bytes[0] = (byte)'O';
-            bytes[1] = (byte)'K';
-            bytes[2] = (byte)'\0';
-            buttonDatas[0] = new(Flags, 0, bytes);
-        }
-        else
-            for (var i = 0; i < buttons.Length; i++)
-                fixed (char* chars = buttons[i])
+            const int Flags = 3;
+
+            static int One(string? title, string? message, nint window, uint flags)
+            {
+                var bytes = stackalloc byte[] { (byte)'O', (byte)'K', (byte)'\0' };
+                Button buttonData = new(Flags, 0, bytes);
+                return Show(new(flags, window, title, message, 1, &buttonData));
+            }
+
+            static int More(string? title, string? message, nint window, ReadOnlySpan<string> buttons, uint flags)
+            {
+                var buttonData = stackalloc Button[buttons.Length];
+                var handles = stackalloc GCHandle[buttons.Length];
+
+                for (var i = 0; i < buttons.Length; i++)
+                    fixed (char* chars = buttons[i])
+                    {
+                        int charLength = buttons[i].Length, byteLength = charLength * 4 + 1;
+                        var bytes = ArrayPool<byte>.Shared.Rent(byteLength);
+                        handles[i] = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                        var ptr = (byte*)handles[i].AddrOfPinnedObject();
+                        bytes[Encoding.UTF8.GetBytes(chars, charLength, ptr, byteLength)] = 0;
+                        buttonData[i] = new(Flags, i, ptr);
+                    }
+
+                var ret = Show(new(flags, window, title, message, buttons.Length, buttonData));
+
+                for (var i = 0; i < buttons.Length; i++) // ReSharper disable once NullableWarningSuppressionIsUsed
                 {
-                    int charLength = buttons[i].Length, byteLength = charLength * 4 + 1;
-                    pins[i] = new(byteLength, out var bytes);
-                    bytes[Encoding.UTF8.GetBytes(chars, charLength, bytes, byteLength)] = 0;
-                    buttonDatas[i] = new(Flags, i, bytes);
+                    ArrayPool<byte>.Shared.Return(Unsafe.As<byte[]>(handles[i].Target)!);
+                    handles[i].Free();
                 }
 
-        try
+                return ret;
+            }
+
+            return buttons.IsEmpty ? One(title, message, window, flags) : More(title, message, window, buttons, flags);
+        }
+
+        static int Show(MessageBoxData data)
         {
-            MessageBoxData data = new(flags, window, title, message, nonZeroLength, buttonDatas);
+            const string Entry = "SDL_ShowMessageBox";
+
+            [DllImport("SDL2.dll", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int Windows(ref MessageBoxData messageBoxData, out int buttonId);
+
+            [DllImport("libSDL2.dylib", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int OSX(ref MessageBoxData messageBoxData, out int buttonId);
+
+            [DllImport("libSDL2-2.0.so.0", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int Linux(ref MessageBoxData messageBoxData, out int buttonId);
+
+            [DllImport("sdl2", EntryPoint = Entry, CharSet = CharSet.Ansi, ExactSpelling = true)]
+            static extern int Else(ref MessageBoxData messageBoxData, out int buttonId);
 #if NET5_0_OR_GREATER
             return (OperatingSystem.IsWindows() ? Windows(ref data, out var buttonId) :
                 OperatingSystem.IsMacOS() ? OSX(ref data, out buttonId) :
@@ -183,10 +119,69 @@ static partial class MessageBox
                 ? buttonId
                 : -1;
         }
-        finally
-        {
-            foreach (var pin in pins)
-                pin.Dispose();
-        }
     }
+
+    /// <summary>Displays a message box with an error icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowError(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, 0, buttons, 16);
+
+    /// <summary>Displays a message box with an error icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int
+        ShowError(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, window, buttons, 16);
+
+    /// <summary>Displays a message box with an informational icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowInfo(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, 0, buttons, 64);
+
+    /// <summary>Displays a message box with an informational icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowInfo(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, window, buttons, 64);
+
+    /// <summary>Displays a message box with a warning icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowWarn(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, 0, buttons, 32);
+
+    /// <summary>Displays a message box with a warning icon.</summary>
+    /// <param name="title">The title of the message box.</param>
+    /// <param name="message">The message to display.</param>
+    /// <param name="window">The pointer to the SDL window. Can be <c>0</c>.</param>
+    /// <param name="buttons">The buttons to display.</param>
+    /// <returns>
+    /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
+    /// </returns>
+    public static int ShowWarn(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        MessageBoxData.Show(title, message, window, buttons, 32);
 }
