@@ -7012,7 +7012,14 @@ public sealed class Pinnable<T>
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowError(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+    public static int ShowError(
+        this string? title,
+        string? message,
+#if !CSHARPREPL
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, 0, buttons, 16);
     /// <summary>Displays a message box with an error icon.</summary>
     /// <param name="title">The title of the message box.</param>
@@ -7023,7 +7030,15 @@ public sealed class Pinnable<T>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
     public static int
-        ShowError(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        ShowError(
+            this string? title,
+            string? message,
+            nint window,
+#if !CSHARPREPL
+            params
+#endif
+                ReadOnlySpan<string> buttons
+        ) =>
         MessageBoxData.Show(title, message, window, buttons, 16);
     /// <summary>Displays a message box with an informational icon.</summary>
     /// <param name="title">The title of the message box.</param>
@@ -7032,7 +7047,14 @@ public sealed class Pinnable<T>
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowInfo(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+    public static int ShowInfo(
+        this string? title,
+        string? message,
+#if !CSHARPREPL
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, 0, buttons, 64);
     /// <summary>Displays a message box with an informational icon.</summary>
     /// <param name="title">The title of the message box.</param>
@@ -7042,7 +7064,15 @@ public sealed class Pinnable<T>
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowInfo(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+    public static int ShowInfo(
+        this string? title,
+        string? message,
+        nint window,
+#if !CSHARPREPL
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, window, buttons, 64);
     /// <summary>Displays a message box with a warning icon.</summary>
     /// <param name="title">The title of the message box.</param>
@@ -7051,7 +7081,14 @@ public sealed class Pinnable<T>
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowWarn(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+    public static int ShowWarn(
+        this string? title,
+        string? message,
+#if !CSHARPREPL
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, 0, buttons, 32);
     /// <summary>Displays a message box with a warning icon.</summary>
     /// <param name="title">The title of the message box.</param>
@@ -7061,7 +7098,15 @@ public sealed class Pinnable<T>
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowWarn(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+    public static int ShowWarn(
+        this string? title,
+        string? message,
+        nint window,
+#if !CSHARPREPL
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, window, buttons, 32);
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable CheckNamespace RedundantUsingDirective

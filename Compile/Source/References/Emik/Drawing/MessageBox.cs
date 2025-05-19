@@ -128,7 +128,14 @@ static partial class MessageBox
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowError(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+    public static int ShowError(
+        this string? title,
+        string? message,
+#if !CSHARPREPL // Remove this once CSharpRepl updates.
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, 0, buttons, 16);
 
     /// <summary>Displays a message box with an error icon.</summary>
@@ -140,7 +147,15 @@ static partial class MessageBox
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
     public static int
-        ShowError(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+        ShowError(
+            this string? title,
+            string? message,
+            nint window,
+#if !CSHARPREPL // Remove this once CSharpRepl updates.
+            params
+#endif
+                ReadOnlySpan<string> buttons
+        ) =>
         MessageBoxData.Show(title, message, window, buttons, 16);
 
     /// <summary>Displays a message box with an informational icon.</summary>
@@ -150,7 +165,14 @@ static partial class MessageBox
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowInfo(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+    public static int ShowInfo(
+        this string? title,
+        string? message,
+#if !CSHARPREPL // Remove this once CSharpRepl updates.
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, 0, buttons, 64);
 
     /// <summary>Displays a message box with an informational icon.</summary>
@@ -161,7 +183,15 @@ static partial class MessageBox
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowInfo(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+    public static int ShowInfo(
+        this string? title,
+        string? message,
+        nint window,
+#if !CSHARPREPL // Remove this once CSharpRepl updates.
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, window, buttons, 64);
 
     /// <summary>Displays a message box with a warning icon.</summary>
@@ -171,7 +201,14 @@ static partial class MessageBox
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowWarn(this string? title, string? message, params ReadOnlySpan<string> buttons) =>
+    public static int ShowWarn(
+        this string? title,
+        string? message,
+#if !CSHARPREPL // Remove this once CSharpRepl updates.
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, 0, buttons, 32);
 
     /// <summary>Displays a message box with a warning icon.</summary>
@@ -182,6 +219,14 @@ static partial class MessageBox
     /// <returns>
     /// The index within <paramref name="buttons"/> that was pressed, or <c>-1</c> if an error occurred.
     /// </returns>
-    public static int ShowWarn(this string? title, string? message, nint window, params ReadOnlySpan<string> buttons) =>
+    public static int ShowWarn(
+        this string? title,
+        string? message,
+        nint window,
+#if !CSHARPREPL // Remove this once CSharpRepl updates.
+        params
+#endif
+            ReadOnlySpan<string> buttons
+    ) =>
         MessageBoxData.Show(title, message, window, buttons, 32);
 }
