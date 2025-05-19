@@ -29,7 +29,6 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <EnablePreviewFeatures>false</EnablePreviewFeatures>
         <Features>$(Features);struct;flow-analysis</Features>
-        <DoNotMerge>^(?:(?!CommunityToolkit).)+$</DoNotMerge>
         <OptimizationPreference>speed</OptimizationPreference>
         <TransformOutOfDateOnly>false</TransformOutOfDateOnly>
         <CodeAnalysisForceOutput>true</CodeAnalysisForceOutput>
@@ -41,6 +40,7 @@
         <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <DoNotMerge>^(?:(?!(CommunityToolkit)|(ZLinq)).)+$</DoNotMerge>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
         <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
