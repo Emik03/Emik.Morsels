@@ -486,21 +486,7 @@ readonly
     /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories()
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
-
-        foreach (var next in this)
-            ret.Append(next);
-
-        return ret.View.ToArray();
-#else
-        List<ReadOnlyMemory<TBody>> ret = [];
-        ret.AddRange(this);
-        return [.. ret];
-#endif
-    }
+    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories() => [..this];
 
     /// <inheritdoc cref="ToArrayMemories(ReadOnlyMemory{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -508,18 +494,7 @@ readonly
     {
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
-        ret.Append(e.Current);
 
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-
-        return ret.View.ToArray();
-#else
         List<ReadOnlyMemory<TBody>> ret = [e.Current];
 
         while (e.MoveNext())
@@ -529,7 +504,6 @@ readonly
         }
 
         return [..ret];
-#endif
     }
 
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>

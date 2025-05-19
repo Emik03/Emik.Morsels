@@ -195,8 +195,6 @@ using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
 using static JetBrains.Annotations.CollectionAccessType;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
-using static System.Runtime.CompilerServices.RuntimeHelpers;
 using static JetBrains.Annotations.CollectionAccessType;
 using SecurityAction = System.Security.Permissions.SecurityAction;
 using static System.Security.Permissions.SecurityAction;
@@ -1328,15 +1326,10 @@ public
         [InstantHandle] Func<int, int, int>? selector = null
     )
     {
-        static T Fallback([InstantHandle] IEnumerable<T> iterable, [InstantHandle] Func<int, int, int> selector)
+        static T Fallback(IEnumerable<T> iterable, Func<int, int, int> selector)
         {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            using var list = iterable.ToPooledSmallList();
-            return list[selector(0, list.Length)];
-#else
-            var list = iterable.ToList();
+            IReadOnlyList<T> list = [..iterable];
             return list[selector(0, list.Count)];
-#endif
         }
         selector ??= s_rng;
         return iterable switch
@@ -1356,11 +1349,8 @@ public
     public static T PickRandom<T>(
         [InstantHandle] this scoped ReadOnlySpan<T> iterable,
         Func<int, int, int>? selector = null
-    )
-    {
-        selector ??= s_rng;
-        return iterable[selector(0, iterable.Length)];
-    }
+    ) =>
+        iterable[(selector ?? s_rng)(0, iterable.Length)];
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
@@ -8434,622 +8424,6 @@ readonly struct LightweightOverloadResolution(
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
-// ReSharper disable NullableWarningSuppressionIsUsed RedundantExtendsListEntry RedundantNameQualifier RedundantUnsafeContext UseSymbolAlias
-// ReSharper disable once CheckNamespace EmptyNamespace
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-// ReSharper disable RedundantNameQualifier RedundantUsingDirective
-/// <summary>Provides the method needed for collection expressions in <see cref="PooledSmallList{T}"/>.</summary>
-static class PooledSmallListBuilder
-{
-    /// <summary>Converts the buffer into an expandable buffer.</summary>
-    /// <typeparam name="T">The type of span.</typeparam>
-    /// <param name="span">The span.</param>
-    /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> From<T>(ReadOnlySpan<T> span) => default(PooledSmallList<T>).Append(span);
-}
-/// <summary>Inlines elements before falling back on the heap using <see cref="ArrayPool{T}"/>.</summary>
-/// <typeparam name="T">The type of the collection.</typeparam>
-[CollectionBuilder(typeof(PooledSmallListBuilder), nameof(PooledSmallListBuilder.From))]
-#if !NO_REF_STRUCTS
-public ref
-#endif
-    partial struct PooledSmallList<T>
-#if !NO_ALLOWS_REF_STRUCT
-    : IDisposable
-#endif
-#if UNMANAGED_SPAN
-    where T : unmanaged
-#endif
-{
-    const int Inlined = 0, UnmanagedHeap = 1, ArrayPool = 2;
-    [NonNegativeValue]
-    int _length;
-    Span<T> _view;
-    T[]? _rental;
-    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList() { }
-    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    /// <param name="capacity">
-    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
-    /// </param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList([NonNegativeValue] int capacity)
-    {
-        MakeRoom(capacity);
-        _length = 0;
-    }
-    /// <summary>Initializes a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    /// <param name="view">The view to hold as the initial value.</param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList(Span<T> view) => _view = view;
-    /// <inheritdoc cref="Span{T}.Empty"/>
-    public static PooledSmallList<T> Empty
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => default;
-    }
-    /// <inheritdoc cref="Span{T}.IsEmpty"/>
-    public readonly bool IsEmpty
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View.IsEmpty;
-    }
-    /// <summary>Gets a value indicating whether the elements are inlined.</summary>
-    [CLSCompliant(false)]
-    public readonly bool IsInlined
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MemberNotNullWhen(false, nameof(_rental), nameof(DangerouslyTransferOwnership)),
-         Pure]
-        get => _rental is null;
-    }
-    /// <summary>Gets a value indicating whether the elements are using the unmanaged heap.</summary>
-    [CLSCompliant(false)]
-    public readonly bool IsUnmanagedHeap
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining),
-         Pure]
-        get => _rental.ToAddress() is UnmanagedHeap;
-    }
-    /// <summary>Gets a value indicating whether the elements are inlined.</summary>
-    [CLSCompliant(false)]
-    public readonly bool IsArrayPool
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MemberNotNullWhen(true, nameof(_rental), nameof(DangerouslyTransferOwnership)),
-         Pure]
-        get => _rental.ToAddress() >= ArrayPool;
-    }
-    /// <inheritdoc cref="Span{T}.Length"/>
-    public int Length
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure] readonly get => _length;
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set
-        {
-            var newLength = Math.Max(value, 0);
-            var relativeLength = newLength - _length;
-            MakeRoom(relativeLength);
-            _length = newLength;
-        }
-    }
-    /// <summary>Gets and transfers responsibility of disposing the inner unmanaged array to the caller.</summary>
-    public nint DangerouslyTransferOwnershipUnmanaged
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MustUseReturnValue("Dispose unmanaged array with System.Runtime.InteropServices.Marshal.FreeHGlobal")]
-        get
-        {
-            if (!IsUnmanagedHeap)
-                return 0;
-            var pointer = UnmanagedHeapPointer;
-            _length = 0;
-            _view = default;
-            _rental = null;
-            return pointer;
-        }
-    }
-    /// <summary>Gets the buffer.</summary>
-    public readonly Span<T> View
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => _view[.._length];
-    }
-    /// <inheritdoc cref="ICollection{T}.Clear"/>
-    public PooledSmallList<T> Reset
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            _length = 0;
-            return this;
-        }
-    }
-    /// <summary>Gets the entire exposed view.</summary>
-    public PooledSmallList<T> Stretched
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            _length = _view.Length;
-            return this;
-        }
-    }
-    /// <summary>Gets the mutable reference to the <see cref="PooledSmallList{T}"/>.</summary>
-    public unsafe ref PooledSmallList<T> AsRef
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get
-        {
-#pragma warning disable 8500
-            fixed (PooledSmallList<T>* ptr = &this)
-#pragma warning restore 8500
-                return ref *ptr;
-        }
-    }
-    /// <summary>Gets the inner heap array, or a copy of the inlined array.</summary>
-    public readonly T[] ToArrayLazily
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => IsArrayPool ? _rental : _view.ToArray();
-    }
-    /// <summary>Gets and transfers responsibility of disposing the inner array to the caller.</summary>
-    public T[]? DangerouslyTransferOwnership
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining),
-         MustUseReturnValue("Dispose array with System.Memory.ArrayPool<T>.Shared.Return.")]
-        get
-        {
-            if (!IsArrayPool)
-                return null;
-            var rental = _rental;
-            _length = 0;
-            _view = default;
-            _rental = null;
-            return rental;
-        }
-    }
-    readonly unsafe nint UnmanagedHeapPointer
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        get => (nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(_view));
-    }
-    /// <inheritdoc cref="Span{T}.Slice(int, int)"/>
-    public readonly Span<T> this[[NonNegativeValue] int start, [NonNegativeValue] int length]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View.Slice(start, length);
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View.Slice(start, length));
-    }
-    /// <inheritdoc cref="Span{T}.this"/>
-    public readonly Span<T> this[Range range]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => View[range];
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] set => value.CopyTo(View[range]);
-    }
-    /// <inheritdoc cref="Span{T}.this"/>
-    public readonly ref T this[[NonNegativeValue] int index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
-    }
-    /// <inheritdoc cref="Span{T}.this"/>
-    public readonly ref T this[Index index]
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get => ref View[index];
-    }
-    /// <inheritdoc cref="Span{T}.op_Equality"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator ==(PooledSmallList<T> left, PooledSmallList<T> right) => left.View == right.View;
-    /// <inheritdoc cref="Span{T}.op_Inequality"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool operator !=(PooledSmallList<T> left, PooledSmallList<T> right) => !(left == right);
-    /// <summary>
-    /// Implicitly converts the parameter by creating the new instance of <see cref="PooledSmallList{T}"/>
-    /// by using the constructor <see cref="PooledSmallList{T}(int)"/>.
-    /// </summary>
-    /// <param name="capacity">The parameter to pass onto the constructor.</param>
-    /// <returns>
-    /// The new instance of <see cref="PooledSmallList{T}"/> by passing the parameter <paramref name="capacity"/>
-    /// to the constructor <see cref="PooledSmallList{T}(int)"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator PooledSmallList<T>(int capacity) => new(capacity);
-    /// <summary>Implicitly converts the buffer into an expandable buffer.</summary>
-    /// <param name="span">The span.</param>
-    /// <returns>The <see cref="PooledSmallList{T}"/> that encapsulates the parameter <paramref name="span"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static implicit operator PooledSmallList<T>(Span<T> span) => new(span);
-    /// <inheritdoc cref="AsSpan{TRef}"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> From<TRef>(ref TRef reference)
-        where TRef : struct =>
-        AsSpan(ref reference);
-    /// <summary>Reinterprets the reference as the continuous buffer of <typeparamref name="T"/>.</summary>
-    /// <typeparam name="TRef">The generic representing the continuous buffer of <typeparamref name="T"/>.</typeparam>
-    /// <param name="reference">The reference.</param>
-    /// <returns>The span.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static Span<T> AsSpan<TRef>(ref TRef reference)
-        where TRef : struct =>
-        Validate<TRef>.AsSpan(ref reference);
-    /// <inheritdoc cref="IDisposable.Dispose"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Dispose()
-    {
-        switch (_rental.ToAddress())
-        {
-            case Inlined: break;
-            case UnmanagedHeap:
-                Marshal.FreeHGlobal(DangerouslyTransferOwnershipUnmanaged);
-                break;
-            default:
-                ArrayPool<T>.Shared.Return(DangerouslyTransferOwnership!);
-                break;
-        }
-    }
-    /// <inheritdoc />
-    [DoesNotReturn, Obsolete("Will always throw", true)]
-    public readonly override bool Equals(object? obj) => throw Unreachable;
-    /// <inheritdoc />
-    [DoesNotReturn, Obsolete("Will always throw", true)]
-    public readonly override int GetHashCode() => throw Unreachable;
-    /// <inheritdoc cref="Span{T}.ToString"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly override string ToString() =>
-        typeof(T) == typeof(char) ? View.ToString() : View.ToArray().Conjoin();
-    /// <inheritdoc cref="ICollection{T}.Add"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Append(T item)
-    {
-        if (HasRoom(1))
-        {
-            _view[_length++] = item;
-            return this;
-        }
-        if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            _view.CopyTo(unmanaged);
-            unmanaged[_length++] = item;
-            Swap(unmanaged);
-            return this;
-        }
-        var replacement = ArrayPool<T>.Shared.Rent(length);
-        _view.CopyTo(replacement);
-        replacement[_length++] = item;
-        Swap(replacement);
-        return this;
-    }
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Append(scoped ReadOnlySpan<T> collection)
-    {
-        if (HasRoom(collection.Length))
-        {
-            collection.CopyTo(_view[_length..]);
-            _length += collection.Length;
-            return this;
-        }
-        if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            _view.CopyTo(unmanaged);
-            collection.CopyTo(unmanaged[_length..]);
-            _length += collection.Length;
-            Swap(unmanaged);
-            return this;
-        }
-        var replacement = ArrayPool<T>.Shared.Rent(length);
-        _view.CopyTo(replacement);
-        collection.CopyTo(replacement.AsSpan()[_length..]);
-        _length += collection.Length;
-        Swap(replacement);
-        return this;
-    }
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Append([InstantHandle] IEnumerable<T>? collection)
-    {
-        if (collection is null)
-            return this;
-        if (collection.TryGetNonEnumeratedCount(out var count))
-            MakeRoom(count);
-        foreach (var x in collection)
-            Append(x);
-        return this;
-    }
-    /// <inheritdoc cref="ICollection{T}.Add"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Prepend(T item)
-    {
-        if (HasRoom(1))
-        {
-            View.CopyTo(_view[1..]);
-            _length++;
-            _view[0] = item;
-            return this;
-        }
-        if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            _view.CopyTo(unmanaged[1..]);
-            unmanaged[0] = item;
-            _length++;
-            Swap(unmanaged);
-            return this;
-        }
-        var replacement = ArrayPool<T>.Shared.Rent(length);
-        _view.CopyTo(replacement.AsSpan()[1..]);
-        replacement[0] = item;
-        _length++;
-        Swap(replacement);
-        return this;
-    }
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Prepend(scoped ReadOnlySpan<T> collection)
-    {
-        if (HasRoom(collection.Length))
-        {
-            View.CopyTo(_view[collection.Length..]);
-            _length += collection.Length;
-            collection.CopyTo(_view);
-            return this;
-        }
-        if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            _view.CopyTo(unmanaged[collection.Length..]);
-            collection.CopyTo(unmanaged);
-            _length += collection.Length;
-            Swap(unmanaged);
-            return this;
-        }
-        var replacement = ArrayPool<T>.Shared.Rent(length);
-        _view.CopyTo(replacement.AsSpan()[collection.Length..]);
-        collection.CopyTo(replacement);
-        _length += collection.Length;
-        Swap(replacement);
-        return this;
-    }
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Prepend([InstantHandle] IEnumerable<T> collection) => Insert(0, collection);
-    /// <inheritdoc cref="IList{T}.Insert"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Insert([NonNegativeValue] int offset, T item)
-    {
-        if (HasRoom(1))
-        {
-            Copy(offset, item, _view);
-            return this;
-        }
-        if (CanAllocateInUnmanagedHeap(1, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            Copy(offset, item, unmanaged);
-            Swap(unmanaged);
-            return this;
-        }
-        var replacement = ArrayPool<T>.Shared.Rent(length);
-        Copy(offset, item, replacement);
-        Swap(replacement);
-        return this;
-    }
-    /// <inheritdoc cref="IList{T}.Insert"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Insert([NonNegativeValue] int index, scoped ReadOnlySpan<T> collection)
-    {
-        if (HasRoom(collection.Length))
-        {
-            Copy(index, collection, _view);
-            return this;
-        }
-        if (CanAllocateInUnmanagedHeap(collection.Length, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            Copy(index, collection, unmanaged);
-            Swap(unmanaged);
-            return this;
-        }
-        var replacement = ArrayPool<T>.Shared.Rent(length);
-        Copy(index, collection, replacement);
-        Swap(replacement);
-        return this;
-    }
-    /// <inheritdoc cref="List{T}.AddRange"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Insert([NonNegativeValue] int index, [InstantHandle] IEnumerable<T> collection)
-    {
-        if (collection.TryCount() is { } count)
-            MakeRoom(count);
-        using var e = collection.GetEnumerator();
-        for (var i = index; e.MoveNext(); i++)
-            Insert(i, e.Current);
-        return this;
-    }
-    /// <inheritdoc cref="IList{T}.RemoveAt"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> RemoveAt([NonNegativeValue] int index) => RemoveAt(index, 1);
-    /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified offset and length.</summary>
-    /// <param name="offset">The offset of the slice to remove.</param>
-    /// <param name="length">The length of the slice to remove.</param>
-    /// <returns>Itself.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> RemoveAt([NonNegativeValue] int offset, [NonNegativeValue] int length)
-    {
-        View[(offset + length)..].CopyTo(View[offset..]);
-        _length -= length;
-        return this;
-    }
-    /// <inheritdoc cref="IList{T}.RemoveAt"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> RemoveAt(Index index)
-    {
-        var offset = index.GetOffset(_length);
-        RemoveAt(offset, 1);
-        return this;
-    }
-    /// <summary>Removes the <see cref="PooledSmallList{T}"/> item at the specified range.</summary>
-    /// <param name="range">The range of the slice to remove.</param>
-    /// <returns>Itself.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> RemoveAt(Range range)
-    {
-        range.GetOffsetAndLength(_length, out var offset, out var length);
-        RemoveAt(offset, length);
-        return this;
-    }
-    /// <summary>Shrinks the collection.</summary>
-    /// <param name="amount">The amount of elements to shrink.</param>
-    /// <returns>Itself.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public PooledSmallList<T> Shrink([NonNegativeValue] int amount)
-    {
-        Length -= amount;
-        return this;
-    }
-    /// <inheritdoc cref="Span{T}.GetEnumerator"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly Span<T>.Enumerator GetEnumerator() => View.GetEnumerator();
-    /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
-    /// <param name="i">The index.</param>
-    /// <returns>The element, or default.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ref T Nth([NonNegativeValue] int i) =>
-        ref i >= 0 && i < _length ? ref _view[i] : ref Unsafe.NullRef<T>();
-    /// <summary>Gets the specific element, returning the default value when out-of-bounds.</summary>
-    /// <param name="i">The index.</param>
-    /// <returns>The element, or default.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ref T Nth(Index i) => ref Nth(i.GetOffset(_length));
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    static unsafe Span<T> Rent([NonNegativeValue] int length, [NonNegativeValue] int bytes) =>
-        new((void*)Marshal.AllocHGlobal(bytes), length);
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void Copy([NonNegativeValue] int offset, T insertion, scoped Span<T> destination)
-    {
-        switch (offset)
-        {
-            case 0:
-                View.CopyTo(destination[1..]);
-                break;
-            case var _ when offset == _length:
-                View.CopyTo(destination);
-                break;
-            default:
-                View[offset..].CopyTo(destination[(offset + 1)..]);
-                View[..offset].CopyTo(destination);
-                break;
-        }
-        destination[offset] = insertion;
-        _length++;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void Copy([NonNegativeValue] int offset, scoped ReadOnlySpan<T> insertion, scoped Span<T> destination)
-    {
-        switch (offset)
-        {
-            case 0:
-                View.CopyTo(destination[insertion.Length..]);
-                insertion.CopyTo(destination);
-                break;
-            case var _ when offset == _length:
-                insertion.CopyTo(destination[offset..]);
-                View.CopyTo(destination);
-                break;
-            default:
-                View[offset..].CopyTo(destination[(offset + insertion.Length)..]);
-                insertion.CopyTo(destination[offset..]);
-                View[..offset].CopyTo(destination);
-                break;
-        }
-        _length += insertion.Length;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void Swap(T[] replacement)
-    {
-        if (IsArrayPool)
-            ArrayPool<T>.Shared.Return(_rental);
-        _view = _rental = replacement;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    unsafe void Swap(Span<T> replacement)
-    {
-        if (IsUnmanagedHeap)
-            Marshal.FreeHGlobal((nint)Unsafe.AsPointer(ref MemoryMarshal.GetReference(_view)));
-        UnsafelySetNullishTo(out _rental, 1);
-        _view = replacement;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void MakeRoom([NonNegativeValue] int by)
-    {
-        if (HasRoom(by))
-            return;
-        if (CanAllocateInUnmanagedHeap(by, out var length, out var bytes))
-        {
-            var unmanaged = Rent(length, bytes);
-            View.CopyTo(unmanaged);
-            Swap(unmanaged);
-        }
-        else
-        {
-            var replacement = ArrayPool<T>.Shared.Rent(length);
-            View.CopyTo(replacement);
-            Swap(replacement);
-        }
-        _length += by;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool CanAllocateInUnmanagedHeap([NonNegativeValue] int by, out int length, out int bytes)
-    {
-        length = unchecked((int)((uint)(_view.Length + by)).RoundUpToPowerOf2());
-        if (IsReferenceOrContainsReferences<T>())
-        {
-            Unsafe.SkipInit(out bytes);
-            return false;
-        }
-        bytes = length * Unsafe.SizeOf<T>();
-        if (length >= 0 && bytes >= 0)
-            return true;
-        Marshal.FreeHGlobal(UnmanagedHeapPointer);
-        return false;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    readonly bool HasRoom(int by) => _length + by <= _view.Length;
-    /// <summary>Validator of generics representing the continuous buffer over the element type.</summary>
-    /// <typeparam name="TRef">The generic representing the continuous buffer over the element type.</typeparam>
-    public static class Validate<TRef>
-        where TRef : struct
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static Validate() => Go(typeof(TRef));
-        /// <summary>Gets the inlined length.</summary>
-        [NonNegativeValue]
-        public static int InlinedLength { [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] get; } =
-            Unsafe.SizeOf<TRef>() / Unsafe.SizeOf<T>();
-        /// <summary>Reinterprets the reference as the continuous buffer over the element type.</summary>
-        /// <param name="reference">The reference.</param>
-        /// <returns>The span.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-        public static unsafe Span<T> AsSpan(ref TRef reference) =>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-            MemoryMarshal.CreateSpan(ref Unsafe.As<TRef, T>(ref reference), InlinedLength);
-#else
-            new(Unsafe.AsPointer(ref Unsafe.As<TRef, T>(ref reference)), InlinedLength);
-#endif
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Go(Type type) =>
-            type
-               .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-               .Where(x => x.FieldType is var y && y != typeof(T) && (!y.IsValueType || y != x.DeclaringType && Go(y)))
-               .Select(Throw)
-               .Any();
-        [DoesNotReturn, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool Throw(FieldInfo _) =>
-            throw new TypeLoadException($"\"{typeof(TRef).Name}\" contains fields other than {typeof(T).Name}.");
-    }
-}
-#endif
-// SPDX-License-Identifier: MPL-2.0
 #if XNA
 #pragma warning disable 1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
@@ -9323,90 +8697,7 @@ public enum KeyMods : ushort
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable NullableWarningSuppressionIsUsed RedundantUnsafeContext
 // ReSharper disable once CheckNamespace
-#pragma warning disable 8631
-// ReSharper disable once RedundantNameQualifier
 /// <summary>Extension methods that act as factories for <see cref="SmallList{T}"/>.</summary>
-#if NETCOREAPP3_1_OR_GREATER
-    /// <inheritdoc cref="System.MemoryExtensions.Contains"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool Contains<T>(this scoped PooledSmallList<T> span, T item)
-        where T : IEquatable<T>? =>
-        span.View.Contains(item);
-#endif
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-    /// <summary>Removes the first occurence of a specific object from the <see cref="PooledSmallList{T}"/>.</summary>
-    /// <typeparam name="T">The type of item.</typeparam>
-    /// <param name="span">The <see cref="PooledSmallList{T}"/> to remove an element from.</param>
-    /// <param name="item">The item to remove from the <see cref="PooledSmallList{T}"/>.</param>
-    /// <returns>
-    /// Whether or not it found the parameter <paramref name="item"/> within the bounds of the
-    /// parameter <paramref name="span"/>, and substantially removed it from the collection.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool Remove<T>(this scoped PooledSmallList<T> span, T item)
-        where T : IEquatable<T>?
-    {
-        var i = span.IndexOf(item);
-        if (i is -1)
-            return false;
-        span.RemoveAt(i);
-        return true;
-    }
-    /// <inheritdoc cref="System.MemoryExtensions.IndexOf"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static int IndexOf<T>(this scoped PooledSmallList<T> span, T item)
-        where T : IEquatable<T>? =>
-        span.View.IndexOf(item);
-    /// <summary>Allocates the buffer on the stack or heap, and gives it to the caller.</summary>
-    /// <remarks><para>See <see cref="Span.MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
-    /// <typeparam name="T">The type of buffer.</typeparam>
-    /// <param name="it">The length of the buffer.</param>
-    /// <returns>The allocated buffer.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static PooledSmallList<T> Alloc<T>(this in int it)
-#if UNMANAGED_SPAN
-        where T : unmanaged
-#endif
-    {
-        return it switch
-        {
-            <= 0 => default,
-#if !CSHARPREPL
-            _ when !IsReferenceOrContainsReferences<T>() && IsStack<T>(it) => Stackalloc<T>(it),
-#endif
-            _ => it,
-        };
-    }
-    /// <summary>Creates a new instance of the <see cref="PooledSmallList{T}"/> struct.</summary>
-    /// <typeparam name="T">The type of the collection.</typeparam>
-    /// <param name="capacity">
-    /// The initial allocation, which puts it on the heap immediately but can save future resizing.
-    /// </param>
-    /// <returns>The created instance of <see cref="PooledSmallList{T}"/>.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static PooledSmallList<T> ToPooledSmallList<T>(this int capacity)
-#if UNMANAGED_SPAN
-    where T : unmanaged
-#endif
-        =>
-            new(capacity);
-    /// <inheritdoc cref="PooledSmallList{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static PooledSmallList<T> ToPooledSmallList<T>(this Span<T> span)
-#if UNMANAGED_SPAN
-    where T : unmanaged
-#endif
-        =>
-            new(span);
-    /// <inheritdoc cref="PooledSmallList{T}(Span{T})"/>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), MustDisposeResource, Pure]
-    public static PooledSmallList<T> ToPooledSmallList<T>(this IEnumerable<T>? enumerable)
-#if UNMANAGED_SPAN
-    where T : unmanaged
-#endif
-        =>
-            (enumerable?.TryCount() is { } count ? count.ToPooledSmallList<T>() : default).Append(enumerable);
-#endif
     /// <summary>Collects the enumerable; allocating the heaped list lazily.</summary>
     /// <typeparam name="T">The type of the <paramref name="iterable"/> and the <see langword="return"/>.</typeparam>
     /// <param name="iterable">The collection to turn into a <see cref="SmallList{T}"/>.</param>
@@ -10630,22 +9921,10 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string ToString(scoped ReadOnlySpan<TBody> divider)
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return "";
-        using var ret = 4.Alloc<TBody>();
-        ret.Append(e.Current);
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-        return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
-#else
         var e = GetEnumerator();
         if (!e.MoveNext())
             return "";
-        List<TBody> ret = [];
+        IList<TBody> ret = [];
         foreach (var next in e.Current)
             ret.Add(next);
         while (e.MoveNext())
@@ -10656,24 +9935,16 @@ readonly
                 ret.Add(next);
         }
         return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
-#endif
     }
     /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
     /// <returns>The <see cref="string"/> array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string[] ToStringArray()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<string>();
-        foreach (var next in this)
-            ret.Append(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-        return ret.View.ToArray();
-#else
-        List<string> ret = [];
+        IList<string> ret = [];
         foreach (var next in this)
             ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-        return [.. ret];
-#endif
+        return [..ret];
     }
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
     /// <typeparam name="TAccumulator">The type of the accumulator value.</typeparam>
@@ -10699,18 +9970,11 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<TBody>();
-        foreach (var next in this)
-            ret.Append(next);
-        return ret.View.ToArray();
-#else
-        List<TBody> ret = [];
+        IList<TBody> ret = [];
         foreach (var next in this)
             foreach (var element in next)
                 ret.Add(element);
-        return [.. ret];
-#endif
+        return [..ret];
     }
     /// <summary>Copies the values to a new flattened array.</summary>
     /// <param name="divider">The separator between each element.</param>
@@ -10718,21 +9982,9 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray(scoped ReadOnlySpan<TBody> divider)
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-        using var ret = 4.Alloc<TBody>();
-        ret.Append(e.Current);
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-        return ret.View.ToArray();
-#else
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return [];
-        List<TBody> ret = [];
+        IList<TBody> ret = [];
         foreach (var next in e.Current)
             ret.Add(next);
         while (e.MoveNext())
@@ -10742,25 +9994,17 @@ readonly
             foreach (var next in e.Current)
                 ret.Add(next);
         }
-        return [.. ret];
-#endif
+        return [..ret];
     }
     /// <summary>Copies the values to a new nested array.</summary>
     /// <returns>The nested array containing the copied values of this instance.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[][] ToArrays()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<TBody[]>();
-        foreach (var next in this)
-            ret.Append(next.ToArray());
-        return ret.View.ToArray();
-#else
-        List<TBody[]> ret = [];
+        IList<TBody[]> ret = [];
         foreach (var next in this)
             ret.Add(next.ToArray());
-        return [.. ret];
-#endif
+        return [..ret];
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static unsafe StringBuilder StringBuilderAccumulator(StringBuilder builder, scoped ReadOnlySpan<TBody> span)
@@ -12503,35 +11747,13 @@ readonly
     /// The <see cref="ReadOnlyMemory{T}"/> <see cref="Array"/> containing the copied values of this instance.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories()
-    {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
-        foreach (var next in this)
-            ret.Append(next);
-        return ret.View.ToArray();
-#else
-        List<ReadOnlyMemory<TBody>> ret = [];
-        ret.AddRange(this);
-        return [.. ret];
-#endif
-    }
+    public readonly ReadOnlyMemory<TBody>[] ToArrayMemories() => [..this];
     /// <inheritdoc cref="ToArrayMemories(ReadOnlyMemory{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly ReadOnlyMemory<TBody>[] ToArrayMemories(ReadOnlyMemory<TBody> divider)
     {
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<ReadOnlyMemory<TBody>>();
-        ret.Append(e.Current);
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-        return ret.View.ToArray();
-#else
         List<ReadOnlyMemory<TBody>> ret = [e.Current];
         while (e.MoveNext())
         {
@@ -12539,7 +11761,6 @@ readonly
             ret.Add(e.Current);
         }
         return [..ret];
-#endif
     }
     /// <inheritdoc cref="IEnumerable{T}.GetEnumerator"/>
     [MustDisposeResource(false), MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

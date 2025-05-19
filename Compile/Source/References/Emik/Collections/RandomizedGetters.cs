@@ -75,15 +75,10 @@ static partial class RandomizedGetters
         [InstantHandle] Func<int, int, int>? selector = null
     )
     {
-        static T Fallback([InstantHandle] IEnumerable<T> iterable, [InstantHandle] Func<int, int, int> selector)
+        static T Fallback(IEnumerable<T> iterable, Func<int, int, int> selector)
         {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-            using var list = iterable.ToPooledSmallList();
-            return list[selector(0, list.Length)];
-#else
-            var list = iterable.ToList();
+            IReadOnlyList<T> list = [..iterable];
             return list[selector(0, list.Count)];
-#endif
         }
 
         selector ??= s_rng;
@@ -107,10 +102,7 @@ static partial class RandomizedGetters
     public static T PickRandom<T>(
         [InstantHandle] this scoped ReadOnlySpan<T> iterable,
         Func<int, int, int>? selector = null
-    )
-    {
-        selector ??= s_rng;
-        return iterable[selector(0, iterable.Length)];
-    }
+    ) =>
+        iterable[(selector ?? s_rng)(0, iterable.Length)];
 }
 #endif

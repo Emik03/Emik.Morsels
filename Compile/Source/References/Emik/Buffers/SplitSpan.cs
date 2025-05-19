@@ -715,27 +715,12 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string ToString(scoped ReadOnlySpan<TBody> divider)
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return "";
-
-        using var ret = 4.Alloc<TBody>();
-        ret.Append(e.Current);
-
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-
-        return typeof(TBody) == typeof(char) ? ret.View.ToString() : ret.View.ToArray().Conjoin();
-#else
         var e = GetEnumerator();
 
         if (!e.MoveNext())
             return "";
 
-        List<TBody> ret = [];
+        IList<TBody> ret = [];
 
         foreach (var next in e.Current)
             ret.Add(next);
@@ -750,7 +735,6 @@ readonly
         }
 
         return ret.Conjoin(typeof(TBody) == typeof(char) ? "" : ", ");
-#endif
     }
 
     /// <summary>Copies the values to a new <see cref="string"/> array.</summary>
@@ -758,21 +742,12 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly string[] ToStringArray()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<string>();
-
-        foreach (var next in this)
-            ret.Append(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
-
-        return ret.View.ToArray();
-#else
-        List<string> ret = [];
+        IList<string> ret = [];
 
         foreach (var next in this)
             ret.Add(typeof(TBody) == typeof(char) ? next.ToString() : next.ToArray().Conjoin());
 
-        return [.. ret];
-#endif
+        return [..ret];
     }
 
     /// <summary>Gets the accumulated result of a set of callbacks where each element is passed in.</summary>
@@ -802,22 +777,13 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<TBody>();
-
-        foreach (var next in this)
-            ret.Append(next);
-
-        return ret.View.ToArray();
-#else
-        List<TBody> ret = [];
+        IList<TBody> ret = [];
 
         foreach (var next in this)
             foreach (var element in next)
                 ret.Add(element);
 
-        return [.. ret];
-#endif
+        return [..ret];
     }
 
     /// <summary>Copies the values to a new flattened array.</summary>
@@ -826,25 +792,10 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[] ToArray(scoped ReadOnlySpan<TBody> divider)
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
         if (GetEnumerator() is var e && !e.MoveNext())
             return [];
 
-        using var ret = 4.Alloc<TBody>();
-        ret.Append(e.Current);
-
-        while (e.MoveNext())
-        {
-            ret.Append(divider);
-            ret.Append(e.Current);
-        }
-
-        return ret.View.ToArray();
-#else
-        if (GetEnumerator() is var e && !e.MoveNext())
-            return [];
-
-        List<TBody> ret = [];
+        IList<TBody> ret = [];
 
         foreach (var next in e.Current)
             ret.Add(next);
@@ -858,8 +809,7 @@ readonly
                 ret.Add(next);
         }
 
-        return [.. ret];
-#endif
+        return [..ret];
     }
 
     /// <summary>Copies the values to a new nested array.</summary>
@@ -867,21 +817,12 @@ readonly
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly TBody[][] ToArrays()
     {
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-        using var ret = 4.Alloc<TBody[]>();
-
-        foreach (var next in this)
-            ret.Append(next.ToArray());
-
-        return ret.View.ToArray();
-#else
-        List<TBody[]> ret = [];
+        IList<TBody[]> ret = [];
 
         foreach (var next in this)
             ret.Add(next.ToArray());
 
-        return [.. ret];
-#endif
+        return [..ret];
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure] // ReSharper disable once RedundantUnsafeContext
