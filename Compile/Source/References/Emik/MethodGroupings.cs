@@ -64,7 +64,7 @@ static partial class MethodGroupings
     /// <summary>Gets all the types currently loaded.</summary>
     [Pure]
     public static IEnumerable<Type> AllTypes =>
-        AppDomain.CurrentDomain.GetAssemblies().SelectMany(x => x.TryGetTypes());
+        AppDomain.CurrentDomain.GetAssemblies().AsEnumerable().SelectMany(x => x.TryGetTypes());
 
     /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
     /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
