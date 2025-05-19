@@ -30,7 +30,6 @@
     </PropertyGroup>
     <!-- Properties for wawa projects. -->
     <PropertyGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
-        <NoTests>true</NoTests>
         <FileVersion>6.0</FileVersion>
         <Nullable>annotations</Nullable>
         <CopyrightSince>2022</CopyrightSince>
@@ -78,7 +77,6 @@
     </PropertyGroup>
     <!-- Properties for Roslyn analyzer projects. -->
     <PropertyGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Generated.Tests&quot;))">
-        <NoTests>true</NoTests>
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <DefineConstants>$(DefineConstants);ROSLYN</DefineConstants>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
