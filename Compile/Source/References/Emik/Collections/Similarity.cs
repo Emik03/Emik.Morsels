@@ -4,6 +4,8 @@
 namespace Emik.Morsels;
 #pragma warning disable 8500
 
+using static Span;
+
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
 static partial class Similarity
 {
@@ -701,17 +703,18 @@ static partial class Similarity
         [NonNegativeValue] int rightLength,
         [InstantHandle, RequireStaticDelegate(IsError = true)] Func<T, int, TItem> indexer,
         [InstantHandle] Func<TItem, TItem, bool> comparer
-    )
-    {
-        if (leftLength is 0 || rightLength is 0)
-            return leftLength is 0 && rightLength is 0 ? 1 : 0;
-
-        if (leftLength is 1 && rightLength is 1)
-            return EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0;
-
-        using var _ = rightLength.Alloc(out Span<byte> span);
-        return JaroAllocated(span, left, right, leftLength, rightLength, indexer, comparer);
-    }
+    ) =>
+        leftLength is 0 || rightLength is 0 ? leftLength is 0 && rightLength is 0 ? 1 : 0 :
+        leftLength is 1 && rightLength is 1 ? EqualsAt(left, right, 0, 0, comparer, indexer) ? 1 : 0 :
+        JaroAllocated(
+            rightLength <= MaxStackalloc ? stackalloc byte[rightLength] : new byte[rightLength],
+            left,
+            right,
+            leftLength,
+            rightLength,
+            indexer,
+            comparer
+        );
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), MustUseReturnValue, NonNegativeValue]
     static int Next<T, TItem>(
