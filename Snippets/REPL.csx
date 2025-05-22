@@ -5410,11 +5410,16 @@ static class Kvp
                 return null;
             var d = description.AsSpan();
             StringBuilder sb = new(Comment.Length + d.Length + 1);
+#if NET9_0_OR_GREATER
             foreach (var range in d.SplitAny(BreakingSearch.GetSpan()[0]))
             {
                 var line = d[range];
                 sb.Append(line.IsEmpty ? "" : "# ").Append(line).AppendLine();
             }
+#else
+            foreach (var line in d.SplitOn(BreakingSearch.GetSpan()[0]))
+                sb.Append(line.IsEmpty ? "" : "# ").Append(line).AppendLine();
+#endif
             return sb.ToString();
         }
         static string ToString(ICollection values)

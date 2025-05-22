@@ -42,13 +42,16 @@ static class Kvp
 
             var d = description.AsSpan();
             StringBuilder sb = new(Comment.Length + d.Length + 1);
-
+#if NET9_0_OR_GREATER
             foreach (var range in d.SplitAny(Whitespaces.BreakingSearch.GetSpan()[0]))
             {
                 var line = d[range];
                 sb.Append(line.IsEmpty ? "" : "# ").Append(line).AppendLine();
             }
-
+#else
+            foreach (var line in d.SplitOn(Whitespaces.BreakingSearch.GetSpan()[0]))
+                sb.Append(line.IsEmpty ? "" : "# ").Append(line).AppendLine();
+#endif
             return sb.ToString();
         }
 
