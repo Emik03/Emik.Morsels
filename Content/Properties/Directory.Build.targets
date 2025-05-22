@@ -137,6 +137,14 @@
         <Reference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
         <Reference Condition="'$(UseUnityCoreModule)' == 'true'" Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
     </ItemGroup>
+    <!-- Rain World references. -->
+    <ItemGroup Condition="'$(IsRainWorld)' == 'true'">
+        <Reference Include="BepInEx" HintPath="$(RainWorld)/BepInEx/core/BepInEx.dll" Private="false"/>
+        <Reference Include="UnityEngine" HintPath="$(RainWorld)/RainWorld_Data/Managed/UnityEngine.dll" Private="false"/>
+        <Reference Include="HOOKS-Assembly-CSharp" HintPath="$(RainWorld)/BepInEx/plugins/HOOKS-Assembly-CSharp.dll" Private="false"/>
+        <Reference Include="PUBLIC-Assembly-CSharp" HintPath="$(RainWorld)/BepInEx/utils/PUBLIC-Assembly-CSharp.dll" Private="false"/>
+        <Reference Condition="'$(UseUnityCoreModule)' == 'true'" Include="UnityEngine.CoreModule" HintPath="$(RainWorld)/RainWorld_Data/Managed/UnityEngine.CoreModule.dll" Private="false"/>
+    </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
@@ -171,7 +179,7 @@
         <Compile Include="$(Morsels)/Compile/Source/References/System/Diagnostics/Attributes.cs" Link="Source/References/System/Diagnostics/Attributes.cs"/>
     </ItemGroup>
     <!-- Remove the template if all necessary item groups are filled. -->
-    <ItemGroup Condition="'$(Morsels)' != '' and ('$(IsCeleste)' != 'true' or '$(Celeste)') != '' and ('$(IsKtane)' != 'true' or '$(Unity)' != '')">
+    <ItemGroup Condition="'$(Morsels)' != '' and ('$(IsCeleste)' != 'true' or '$(Celeste)' != '') and ('$(IsKtane)' != 'true' or '$(Ktane)' != '') and ('$(IsUnity)' != 'true' or '$(Unity)' != '') and ('$(IsRainWorld)' != 'true' or '$(RainWorld)' != '') and ('$(IsHollowKnight)' != 'true' or '$(HollowKnight)' != '')">
         <Content Remove="$(Morsels)/Content/Properties/Directory.Build.local.props.template"/>
         <AdditionalFiles Remove="$(Morsels)/Content/Properties/Directory.Build.local.props.template"/>
     </ItemGroup>
@@ -226,8 +234,10 @@
     <!-- We only need to validate the properties that are being used. -->
     <Target Name="ValidateLocalProperties" BeforeTargets="PreBuildEvent">
         <Error Condition="'$(Morsels)' == ''" Text="Emik.Morsels link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Emik.Morsels should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
-        <Error Condition="'$(IsKtane)' == 'true' and '$(Unity)' == ''" Text="Unity link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Unity should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsUnity)' == 'true' and '$(Unity)' == ''" Text="Unity link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Unity should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
         <Error Condition="'$(IsCeleste)' == 'true' and '$(Celeste)' == ''" Text="Celeste link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Celeste should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsRainWorld)' == 'true' and '$(IsRainWorld)' == ''" Text="Rain World link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Rain World should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
+        <Error Condition="'$(IsHollowKnight)' == 'true' and '$(HollowKnight)' == ''" Text="Hollow Knight link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Hollow Knight should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
         <Error Condition="'$(IsKtane)' == 'true' and '$(Ktane)' == ''" Text="Keep Talking and Nobody Explodes link missing. Copy the template Emik.Morsels.local.props.template and rename it to Emik.Morsels.local.props and fill each tag with the respective directories on your local system. The folder to Keep Talking and Nobody Explodes should be specified by having an Emik.Morsels.local.props file within or above the directories of this project." HelpLink="https://github.com/Emik03/Emik.Morsels#usage"/>
     </Target>
 </Project>

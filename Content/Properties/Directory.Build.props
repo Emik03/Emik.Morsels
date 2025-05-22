@@ -97,15 +97,19 @@
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Celeste/')">$(HOME)/.steam/steam/steamapps/common/Celeste/</Celeste>
         <Unity Condition="$(Unity) == '' and Exists('/Applications/Unity/Hub/Editor/')">$([System.IO.Directory]::GetDirectories('/Applications/Unity/Hub/Editor/')[0])</Unity>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Celeste/')">$(HOME)/.local/share/Steam/steamapps/common/Celeste/</Celeste>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Rain World/')">$(HOME)/.steam/steam/steamapps/common/Rain World/</RainWorld>
         <Celeste Condition="$(Celeste) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Celeste\')">C:\Program Files (x86)\Steam\steamapps\common\Celeste\</Celeste>
         <AndroidSdkDirectory Condition="Exists('$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/')">$(HOME)/Library/Developer/Xamarin/android-sdk-macosx/</AndroidSdkDirectory>
         <Unity Condition="$(Unity) == '' and Exists('C:\Program Files\Unity\Hub\Editor\')">$([System.IO.Directory]::GetDirectories('C:\Program Files\Unity\Hub\Editor\')[0])</Unity>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Rain World/')">$(HOME)/.local/share/Steam/steamapps/common/Rain World/</RainWorld>
         <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Hollow Knight/')">$(HOME)/.steam/steam/steamapps/common/Hollow Knight/</HollowKnight>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Rain World\')">C:\Program Files (x86)\Steam\steamapps\common\Rain World\</RainWorld>
         <Unity Condition="$(Unity) == '' and $([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*').Length) != 0">$([System.IO.Directory]::GetDirectories('$(HOME)', 'Unity-*')[0])</Unity>
         <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight/')">$(HOME)/.local/share/Steam/steamapps/common/Hollow Knight/</HollowKnight>
         <Celeste Condition="$(Celeste) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Celeste/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Celeste/</Celeste>
         <HollowKnight Condition="$(HollowKnight) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\</HollowKnight>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.steam/steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
+        <RainWorld Condition="$(RainWorld) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Rain World/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Rain World/</RainWorld>
         <Ktane Condition="$(Ktane) == '' and Exists('$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/')">$(HOME)/.local/share/Steam/steamapps/common/Keep Talking and Nobody Explodes/</Ktane>
         <Ktane Condition="$(Ktane) == '' and Exists('C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\')">C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody Explodes\</Ktane>
         <HollowKnight Condition="$(HollowKnight) == '' and Exists('$(HOME)/Library/Application Support/Steam/steamapps/common/Hollow Knight/')">$(HOME)/Library/Application Support/Steam/steamapps/common/Hollow Knight/</HollowKnight>

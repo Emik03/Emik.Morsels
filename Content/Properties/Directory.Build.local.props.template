@@ -48,6 +48,20 @@
         -->
         <CelesteLegacy></CelesteLegacy>
         <!--
+        Specifies the location of the game Rain World, for use in referencing the internal code.
+        Required only for projects that use $(IsRainWorld).
+
+        These are the default locations of the game depending on your operating system.
+
+        Windows : C:\Program Files (x86)\Steam\steamapps\common\Rain World\
+        Mac     : ~/Library/Application Support/Steam/steamapps/common/Rain World/
+        Linux   : ~/.steam/steam/steamapps/common/Rain World/
+        SteamOS : ~/.local/share/Steam/steamapps/common/Rain World/
+
+        If your game is elsewhere, specify the path below in the property, otherwise leave it blank.
+        -->
+        <RainWorld></RainWorld>
+        <!--
         Specifies the location of the Emik.Morsels repository, for use in referencing itself, such as static files.
         Required or optional, depending on environment. The path can be inferred if Directory.Build.props can be found.
         -->
