@@ -206,23 +206,6 @@ static partial class Span
         where T : IEquatable<T>? =>
         span.Span.SequenceEqual(other.Span);
 
-    /// <summary>Determines if a given length and type should be stack-allocated.</summary>
-    /// <remarks><para>
-    /// See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.
-    /// </para></remarks>
-    /// <typeparam name="T">The type of array.</typeparam>
-    /// <param name="length">The amount of items.</param>
-    /// <returns>
-    /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static bool IsStack<T>([NonNegativeValue] int length)
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-        =>
-            InBytes<T>(length) <= MaxStackalloc;
-
     /// <summary>Reads the raw memory of the object.</summary>
     /// <typeparam name="T">The type of value to read.</typeparam>
     /// <param name="value">The value to read.</param>
@@ -238,20 +221,6 @@ static partial class Span
 #else
             new Span<byte>(&value, Unsafe.SizeOf<T>()).ToArray();
 #endif
-    /// <summary>Gets the byte length needed to allocate the current length, used in <see cref="IsStack{T}"/>.</summary>
-    /// <typeparam name="T">The type of array.</typeparam>
-    /// <param name="length">The amount of items.</param>
-    /// <returns>
-    /// The value <see langword="true"/>, if it should be stack-allocated, otherwise <see langword="false"/>.
-    /// </returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining), NonNegativeValue, Pure]
-    public static int InBytes<T>([NonNegativeValue] int length)
-#if !NO_ALLOWS_REF_STRUCT
-        where T : allows ref struct
-#endif
-        =>
-            length * Unsafe.SizeOf<T>();
-
     /// <summary>Returns the memory address of a given reference object.</summary>
     /// <remarks><para>The value is not pinned; do not read values from this location.</para></remarks>
     /// <param name="_">The reference <see cref="object"/> for which to get the address.</param>
@@ -334,33 +303,13 @@ static partial class Span
         where TFrom : struct
         where TTo : struct =>
         MemoryMarshal.Cast<TFrom, TTo>(Ref(ref reference));
-#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY && !CSHARPREPL
-    /// <summary>Creates the stack allocation of the type.</summary>
-    /// <typeparam name="T">The type of the resulting <see cref="Span{T}"/>.</typeparam>
-    /// <param name="length">The length of the stack-allocation. This value is unchecked.</param>
-    /// <returns>The resulting <see cref="Span{T}"/> pointing to the created stack allocation.</returns>
-    [Inline, MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe Span<T> Stackalloc<T>([NonNegativeValue] in int length)
-    {
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        System.Diagnostics.Debug.Assert(length is >= 0 and <= MaxStackalloc, "Length is within bounds");
-        System.Diagnostics.Debug.Assert(IsReferenceOrContainsReferences<T>(), "Contains references");
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER
-        Span<byte> span = stackalloc byte[InBytes<T>(length)];
-        return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(span)), length);
-#else
-        var ptr = stackalloc byte[InBytes<T>(length)];
-        return new(ptr, length);
-#endif
-    }
-#endif
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
     /// <summary>Reinterprets the given read-only reference as a mutable reference.</summary>
     /// <typeparam name="T">The underlying type of the reference.</typeparam>
     /// <param name="source">The read-only reference to reinterpret.</param>
     /// <returns>A mutable reference to a value of type <typeparamref name="T"/>.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static unsafe ref T AsRef<T>(in T source)
+    public static ref T AsRef<T>(in T source)
 #if !NO_ALLOWS_REF_STRUCT
         where T : allows ref struct
 #endif
