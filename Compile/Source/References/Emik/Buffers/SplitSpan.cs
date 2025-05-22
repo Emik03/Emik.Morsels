@@ -591,7 +591,7 @@ readonly
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
                 return ret;
     }
-
+#if !NETFRAMEWORK
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
@@ -621,7 +621,7 @@ readonly
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, comparer, out var ret))
                 return ret;
     }
-
+#endif
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
     public readonly override bool Equals(object? obj) => false;

@@ -400,7 +400,7 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
-
+#if !NETFRAMEWORK
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
@@ -412,7 +412,7 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan, comparer);
-
+#endif
     /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals(object? obj) =>
@@ -434,7 +434,7 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
-
+#if !NETFRAMEWORK
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
@@ -446,7 +446,7 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan, comparer);
-
+#endif
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int Count()

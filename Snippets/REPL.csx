@@ -9820,6 +9820,7 @@ readonly
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
                 return ret;
     }
+#if !NETFRAMEWORK
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
@@ -9846,6 +9847,7 @@ readonly
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, comparer, out var ret))
                 return ret;
     }
+#endif
     /// <inheritdoc />
     [MethodImpl(MethodImplOptions.AggressiveInlining), Obsolete("Always returns false", true), Pure]
     public readonly override bool Equals(object? obj) => false;
@@ -11682,6 +11684,7 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
+#if !NETFRAMEWORK
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
@@ -11693,6 +11696,7 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan, comparer);
+#endif
     /// <inheritdoc cref="object.Equals(object)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly override bool Equals(object? obj) =>
@@ -11712,6 +11716,7 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
+#if !NETFRAMEWORK
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
@@ -11723,6 +11728,7 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan, comparer);
+#endif
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.Count"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly int Count()
