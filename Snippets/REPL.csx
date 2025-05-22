@@ -9875,6 +9875,7 @@ readonly
                 return false;
         return !eOther.MoveNext();
     }
+#if !NETFRAMEWORK
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
@@ -9899,6 +9900,7 @@ readonly
                 return false;
         return !eOther.MoveNext();
     }
+#endif
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
@@ -18157,6 +18159,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
+#if !NETFRAMEWORK
         /// <summary>
         /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
         /// </summary>
@@ -18209,6 +18212,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
+#endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
             scoped ReadOnlySpan<TBody> sep,
@@ -18413,6 +18417,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
+#if !NETFRAMEWORK
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
             scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
@@ -18445,6 +18450,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
+#endif
     }
 }
 // SPDX-License-Identifier: MPL-2.0

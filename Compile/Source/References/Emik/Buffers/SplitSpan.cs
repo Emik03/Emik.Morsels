@@ -655,7 +655,7 @@ readonly
 
         return !eOther.MoveNext();
     }
-
+#if !NETFRAMEWORK
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
@@ -682,7 +682,7 @@ readonly
 
         return !eOther.MoveNext();
     }
-
+#endif
     /// <summary>Computes the length.</summary>
     /// <returns>The length.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]

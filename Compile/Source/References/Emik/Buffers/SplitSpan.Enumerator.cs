@@ -200,7 +200,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
-
+#if !NETFRAMEWORK
         /// <summary>
         /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
         /// </summary>
@@ -257,7 +257,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
-
+#endif
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool MoveNextAll(
             scoped ReadOnlySpan<TBody> sep,
@@ -483,7 +483,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
-
+#if !NETFRAMEWORK
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
             scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
@@ -519,5 +519,6 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
+#endif
     }
 }

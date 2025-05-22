@@ -9,6 +9,7 @@ extern alias unity;
 #if NETFRAMEWORK
 extern alias ms;
 #endif
+global using Action = System.Action;
 global using Attribute = System.Attribute;
 global using DisallowNullAttribute = System.Diagnostics.CodeAnalysis.DisallowNullAttribute;
 global using FieldInfo = System.Reflection.FieldInfo;
