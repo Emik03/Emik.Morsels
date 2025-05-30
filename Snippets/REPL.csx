@@ -12619,7 +12619,9 @@ public abstract partial class Letterboxed2DGame : Game
         IsMouseVisible = true;
         IsFixedTimeStep = false;
         Window.AllowUserResizing = true;
+#if !ANDROID
         Window.KeyDown += CheckForBorderlessOrFullScreenBind;
+#endif
         GraphicsDevice.BlendState = BlendState.NonPremultiplied;
     }
     /// <summary>Determines whether the game is being played in a desktop environment.</summary>
@@ -12713,6 +12715,7 @@ public abstract partial class Letterboxed2DGame : Game
         WhitePixel = new(GraphicsDevice, 1, 1);
         WhitePixel.SetData([Color.White]);
     }
+#if !ANDROID
     /// <summary>Invoked when a keyboard button is pressed.</summary>
     /// <param name="_">The sender, ignored.</param>
     /// <param name="e">The event arguments containing the key that was pressed.</param>
@@ -12729,6 +12732,7 @@ public abstract partial class Letterboxed2DGame : Game
                 break;
         }
     }
+#endif
 }
 #endif
 // SPDX-License-Identifier: MPL-2.0
