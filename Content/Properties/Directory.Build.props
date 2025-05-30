@@ -84,7 +84,8 @@
             NX0001;NX0002;NX0003;
             RCS1001;RCS1003;RCS1080;RCS1084;RCS1085;RCS1123;RCS1163;RCS1169;RCS1194;RCS1213;RCS1233;RCS1242;RCS1247;RCS1259;RCS1263;
             RS1035;
-            UEA0006
+            UEA0006;
+            XA0101
         </NoWarn>
     </PropertyGroup>
     <!-- Fallback paths. -->
