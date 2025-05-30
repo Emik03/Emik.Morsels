@@ -16,7 +16,6 @@ global using FieldInfo = System.Reflection.FieldInfo;
 global using MemberInfo = System.Reflection.MemberInfo;
 global using Version = System.Version;
 #if ANDROID
-global using Action = System.Action;
 global using Array = System.Array;
 global using Console = System.Console;
 global using Directory = System.IO.Directory;

@@ -10890,19 +10890,6 @@ public sealed class FrameRateCounter(Game game, SpriteFont font, SpriteBatch bat
     [Pure]
     public static IEnumerable<Type> AllTypes =>
         AppDomain.CurrentDomain.GetAssemblies().AsEnumerable().SelectMany(x => x.TryGetTypes());
-    /// <summary>Disposes of the <paramref name="disposable"/> and sets it to <see langword="default"/>.</summary>
-    /// <typeparam name="T">The type of <paramref name="disposable"/>.</typeparam>
-    /// <param name="disposable">The disposable to dispose.</param>
-    public static void DisposeOf<T>([HandlesResourceDisposal] ref T? disposable)
-#if NET9_0_OR_GREATER
-        where T : IDisposable, allows ref struct
-#else
-        where T : IDisposable
-#endif
-    {
-        disposable?.Dispose();
-        disposable = default;
-    }
     /// <summary>Invokes a method.</summary>
     /// <param name="del">The method to invoke.</param>
     public static void Invoke([InstantHandle] Action del) => del();
