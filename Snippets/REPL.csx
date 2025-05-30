@@ -1361,6 +1361,7 @@ public
 #if NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
                 typeof(TFrom) == typeof(TTo);
 #else
+#pragma warning disable MA0169
                 typeof(TFrom) == typeof(TTo) ||
                 Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>() &&
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
@@ -1373,6 +1374,7 @@ public
                 while (second.IsValueType && second.GetFields() is [{ FieldType: var next }])
                     second = next;
                 return first == second;
+#pragma warning restore MA0169
             }
 #endif
         }
@@ -1542,7 +1544,10 @@ public
         InlineIL.IL.Emit.Ldarg_0();
         return InlineIL.IL.Return<nuint>();
 #else
-        return *(TTo*)&source;
+        unsafe
+        {
+            return *(nuint*)&_;
+        }
 #endif
     }
     /// <summary>Creates a new <see cref="ReadOnlySpan{T}"/> of length 1 around the specified reference.</summary>
@@ -9557,7 +9562,7 @@ readonly
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
                 return ret;
     }
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
@@ -9614,7 +9619,7 @@ readonly
                 return false;
         return !eOther.MoveNext();
     }
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>
@@ -11440,7 +11445,7 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
@@ -11472,7 +11477,7 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(
@@ -15997,8 +16002,18 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var copy = visit;
             dictionary = new(str);
             var type = value.GetType();
+#if !NETFRAMEWORK || NET45_OR_GREATER
             var fields = type.GetRuntimeFields().ToArray();
             var properties = type.GetRuntimeProperties().ToArray();
+#else
+            const BindingFlags Bindings = BindingFlags.Instance |
+                BindingFlags.Static |
+                BindingFlags.Public |
+                BindingFlags.NonPublic |
+                BindingFlags.FlattenHierarchy;
+            var fields = type.GetFields(Bindings);
+            var properties = type.GetProperties(Bindings);
+#endif
             foreach (var next in fields)
             {
                 if (next.IsStatic)
@@ -16095,8 +16110,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         static string Name(MemberInfo next, FieldInfo[] fields, PropertyInfo[] properties)
         {
             static string QualifyTypeName(MemberInfo next) => $"{next.DeclaringType?.Name}.{next.Name}";
+#pragma warning disable MA0169
             if (next.DeclaringType == next.ReflectedType)
                 return next.Name;
+#pragma warning restore MA0169
             foreach (var x in fields)
                 if (x != next && x.Name == next.Name)
                     return QualifyTypeName(next);
@@ -17921,7 +17938,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
         /// <summary>
         /// Checks if two sequences of type <see name="TBody"/> are equal while iterating through the next element.
         /// </summary>
@@ -18179,7 +18196,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
             Unsafe.SkipInit(out ret);
             return false;
         }
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool SameLength<TOtherSeparator, TOtherStrategy>(
             scoped ref SplitSpan<TBody, TOtherSeparator, TOtherStrategy>.Enumerator other,
@@ -18230,7 +18247,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         value.GetType().GetMember($"{value}", BindingFlags.Static | BindingFlags.Public)[0].GetCustomAttribute<T>();
 #endif
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
 // ReSharper disable once CheckNamespace
 /// <summary>Contains functions to create other functions that get or set fields and properties.</summary>
     /// <summary>The function containing the value to set.</summary>
@@ -18277,7 +18294,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         DynamicMethod ret = new(x.Name, x.DeclaringType, [x.PropertyType]);
         var il = ret.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
-        il.Emit(OpCodes.Call, x.GetMethod!);
+        il.Emit(OpCodes.Call, x.GetGetMethod(true)!);
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Ret);
         return ret.CreateDelegate(typeof(Converter<,>).MakeGenericType(x.DeclaringType!, x.PropertyType));
@@ -18293,7 +18310,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
         var il = ret.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Ldarg_1);
-        il.Emit(OpCodes.Call, x.SetMethod!);
+        il.Emit(OpCodes.Call, x.GetSetMethod(true)!);
         il.Emit(OpCodes.Ret);
         return ret.CreateDelegate(typeof(Setting<,>).MakeGenericType(x.DeclaringType!, x.PropertyType));
     }

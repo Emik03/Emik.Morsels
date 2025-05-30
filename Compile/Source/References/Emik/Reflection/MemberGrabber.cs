@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
+#if !NETSTANDARD || NETSTANDARD2_1_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
@@ -54,7 +54,7 @@ static partial class MemberGrabber
         DynamicMethod ret = new(x.Name, x.DeclaringType, [x.PropertyType]);
         var il = ret.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
-        il.Emit(OpCodes.Call, x.GetMethod!);
+        il.Emit(OpCodes.Call, x.GetGetMethod(true)!);
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Ret);
         return ret.CreateDelegate(typeof(Converter<,>).MakeGenericType(x.DeclaringType!, x.PropertyType));
@@ -71,7 +71,7 @@ static partial class MemberGrabber
         var il = ret.GetILGenerator();
         il.Emit(OpCodes.Ldarg_0);
         il.Emit(OpCodes.Ldarg_1);
-        il.Emit(OpCodes.Call, x.SetMethod!);
+        il.Emit(OpCodes.Call, x.GetSetMethod(true)!);
         il.Emit(OpCodes.Ret);
         return ret.CreateDelegate(typeof(Setting<,>).MakeGenericType(x.DeclaringType!, x.PropertyType));
     }

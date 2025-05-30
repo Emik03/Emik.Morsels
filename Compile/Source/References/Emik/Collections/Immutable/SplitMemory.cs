@@ -400,7 +400,7 @@ readonly
 #endif
         =>
             SplitSpan.ConcatEqual(other.SplitSpan);
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.ConcatEqual{TOtherSeparator,TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool ConcatEqual<TOtherSeparator, TOtherStrategy>(
@@ -434,7 +434,7 @@ readonly
 #endif
         =>
             SplitSpan.SequenceEqual(other.SplitSpan);
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}.SequenceEqual{TOtherSeparator, TOtherStrategy}(SplitSpan{TBody, TOtherSeparator, TOtherStrategy}, IEqualityComparer{TBody})"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public readonly bool SequenceEqual<TOtherSeparator, TOtherStrategy>(

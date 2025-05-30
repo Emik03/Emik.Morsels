@@ -29,7 +29,10 @@ static class Unsafe
         InlineIL.IL.Emit.Ldarg_0();
         return InlineIL.IL.Return<TTo>();
 #else
-        return *(TTo*)&source;
+        unsafe
+        {
+            return *(TTo*)&o;
+        }
 #endif
     }
 

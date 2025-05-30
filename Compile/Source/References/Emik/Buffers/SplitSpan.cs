@@ -591,7 +591,7 @@ readonly
             if (e.EqualityMoveNext(ref otherE, ref reader, ref otherReader, out var ret))
                 return ret;
     }
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <summary>Determines whether both splits are eventually equal when concatenating all slices.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the other side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting for the other side.</typeparam>
@@ -655,7 +655,7 @@ readonly
 
         return !eOther.MoveNext();
     }
-#if !NETFRAMEWORK
+#if NET6_0_OR_GREATER
     /// <summary>Determines whether both splits are equal.</summary>
     /// <typeparam name="TOtherSeparator">The type of separator for the right-hand side.</typeparam>
     /// <typeparam name="TOtherStrategy">The strategy for splitting elements for the right-hand side.</typeparam>

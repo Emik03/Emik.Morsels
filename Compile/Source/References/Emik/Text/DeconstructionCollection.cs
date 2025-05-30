@@ -557,9 +557,19 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
             var copy = visit;
             dictionary = new(str);
             var type = value.GetType();
+#if !NETFRAMEWORK || NET45_OR_GREATER
             var fields = type.GetRuntimeFields().ToArray();
             var properties = type.GetRuntimeProperties().ToArray();
+#else
+            const BindingFlags Bindings = BindingFlags.Instance |
+                BindingFlags.Static |
+                BindingFlags.Public |
+                BindingFlags.NonPublic |
+                BindingFlags.FlattenHierarchy;
 
+            var fields = type.GetFields(Bindings);
+            var properties = type.GetProperties(Bindings);
+#endif
             // ReSharper disable once LoopCanBePartlyConvertedToQuery
             foreach (var next in fields)
             {
@@ -687,9 +697,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 
             // We aren't looking at a member from a base type,
             // so we can leave it unqualified, similar to how the 'new' keyword works.
+#pragma warning disable MA0169
             if (next.DeclaringType == next.ReflectedType)
                 return next.Name;
-
+#pragma warning restore MA0169
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var x in fields)
                 if (x != next && x.Name == next.Name)
@@ -912,7 +923,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     /// <param name="value">The value to simplify.</param>
     /// <returns>The simplified value.</returns>
     [Pure]
-    [return: NotNullIfNotNull(nameof(value))]
+    [return: NotNullIfNotNull(nameof(value))] // ReSharper disable once ReturnTypeCanBeNotNullable
     protected object? SimplifyObject(object? value) =>
         value switch
         {

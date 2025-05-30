@@ -32,6 +32,7 @@ static partial class Span
 #if NETSTANDARD && !NETSTANDARD2_0_OR_GREATER
                 typeof(TFrom) == typeof(TTo);
 #else
+#pragma warning disable MA0169
                 typeof(TFrom) == typeof(TTo) ||
                 Unsafe.SizeOf<TFrom>() >= Unsafe.SizeOf<TTo>() &&
                 (IsReinterpretable(typeof(TFrom), typeof(TTo)) ||
@@ -47,6 +48,7 @@ static partial class Span
                     second = next;
 
                 return first == second;
+#pragma warning restore MA0169
             }
 #endif
         }
@@ -238,7 +240,10 @@ static partial class Span
         InlineIL.IL.Emit.Ldarg_0();
         return InlineIL.IL.Return<nuint>();
 #else
-        return *(TTo*)&source;
+        unsafe
+        {
+            return *(nuint*)&_;
+        }
 #endif
     }
 
