@@ -2917,7 +2917,7 @@ public
             IEventSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IMethodSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IPropertySymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
-            _ => ImmutableArray<ISymbol>.Empty,
+            _ => [],
         };
     /// <summary>Gets the underlying type symbol of another symbol.</summary>
     /// <param name="symbol">The symbol to get the underlying type from.</param>
@@ -4054,8 +4054,7 @@ public sealed partial class OnceMemoryManager<T>(T value) : MemoryManager<T>
     /// <param name="array">The array to potentially return.</param>
     /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
     [Pure]
-    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
-        array.IsDefault ? ImmutableArray<T>.Empty : array;
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
 #endif
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>

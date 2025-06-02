@@ -531,7 +531,7 @@ static partial class IncludedSyntaxNodeRegistrant
             IEventSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IMethodSymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
             IPropertySymbol x => x.ExplicitInterfaceImplementations.As<ISymbol>(),
-            _ => ImmutableArray<ISymbol>.Empty,
+            _ => [],
         };
 
     /// <summary>Gets the underlying type symbol of another symbol.</summary>

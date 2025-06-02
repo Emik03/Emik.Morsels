@@ -3,8 +3,6 @@
 // ReSharper disable CheckNamespace ConditionIsAlwaysTrueOrFalse RedundantNameQualifier ReturnTypeCanBeEnumerable.Global UseIndexFromEndExpression
 namespace Emik.Morsels;
 
-using static Span;
-
 /// <summary>Extension methods to attempt to grab ranges from enumerables.</summary>
 static partial class TryTake
 {
@@ -140,8 +138,7 @@ static partial class TryTake
     /// <param name="array">The array to potentially return.</param>
     /// <returns>The parameter <paramref name="array"/>, or <see cref="ImmutableArray{T}.Empty"/>.</returns>
     [Pure]
-    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) =>
-        array.IsDefault ? ImmutableArray<T>.Empty : array;
+    public static ImmutableArray<T> OrEmpty<T>(this ImmutableArray<T> array) => array.IsDefault ? [] : array;
 #endif
     /// <summary>Gets a specific character from a string.</summary>
     /// <param name="str">The string to get the character from.</param>
