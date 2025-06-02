@@ -7968,7 +7968,7 @@ readonly
 /// <remarks><para>
 /// This implementation is based on a modified version of
 /// <a href="https://github.com/dotnet/roslyn/blob/main/src/Features/CSharp/Portable/SignatureHelp/LightweightOverloadResolution.cs">
-/// Microsoft.CodeAnalysis.CSharp.SignatureHelp.LightweightOverloadResolution
+/// <c>Microsoft.CodeAnalysis.CSharp.SignatureHelp.LightweightOverloadResolution</c>
 /// </a>.
 /// </para></remarks>
 readonly struct LightweightOverloadResolution(
@@ -7999,8 +7999,11 @@ readonly struct LightweightOverloadResolution(
     /// <returns>The index of the parameter if the method is compatible, <c>-1</c> otherwise.</returns>
     public int FindParameterIndexIfCompatibleMethod(IMethodSymbol method) =>
         TryFindParameterIndexIfCompatibleMethod(method) is (not null, var parameterIndex) ? parameterIndex : -1;
+    /// <summary>Determines whether the expression is empty.</summary>
+    /// <param name="expression">The expression to check.</param>
+    /// <returns>Whether the parameter <paramref name="expression"/> is empty.</returns>
     static bool IsEmptyArgument(SyntaxNode expression) => expression.Span.IsEmpty;
-    /// <summary> Deals with a partial invocation and finds the respective overload.</summary>
+    /// <summary>Deals with a partial invocation and finds the respective overload.</summary>
     /// <param name="methodGroup">The different overloads.</param>
     /// <returns>The overload to use.</returns>
     Overload GuessCurrentSymbolAndParameter(ImmutableArray<IMethodSymbol> methodGroup)
@@ -8016,16 +8019,19 @@ readonly struct LightweightOverloadResolution(
         return Overload.None;
     }
     /// <summary>
-    /// Simulates overload resolution with the arguments provided so far and determines if you might be calling this overload.
-    /// Returns true if an overload is acceptable. In that case, we output the parameter that should be highlighted given the cursor's
-    /// position in the partial invocation.
+    /// Simulates overload resolution with the arguments provided so far
+    /// and determines if you might be calling this overload.
     /// </summary>
+    /// <returns>
+    /// Returns true if an overload is acceptable. In that case, we output the parameter that
+    /// should be highlighted given the cursor's position in the partial invocation.
+    /// </returns>
     Overload TryFindParameterIndexIfCompatibleMethod(IMethodSymbol method)
     {
-        using var argumentToParameterMap = PooledSmallList<int>.Empty;
-        for (var i = 0; i < arguments.Count; i++)
-            argumentToParameterMap.Append(-1);
-        if (!TryPrepareArgumentToParameterMap(method, ref argumentToParameterMap.AsRef))
+        var argumentToParameterMap =
+            arguments.Count <= 256 ? stackalloc int[arguments.Count] : new int[arguments.Count];
+        argumentToParameterMap.Fill(-1);
+        if (!TryPrepareArgumentToParameterMap(method, argumentToParameterMap))
             return Overload.None;
         var parameters = method.Parameters;
         for (var argumentIndex = 0; argumentIndex < arguments.Count; argumentIndex++)
@@ -8035,8 +8041,9 @@ readonly struct LightweightOverloadResolution(
                 continue;
             var parameter = parameters[parameterIndex];
             var argument = arguments[argumentIndex];
-            if (!IsCompatibleArgument(argument, parameter))
-                return Overload.None;
+            if (IsCompatibleArgument(argument, parameter))
+                continue;
+            return Overload.None;
         }
         var argumentIndexToSave = GetArgumentIndex();
         var foundParameterIndex = -1;
@@ -8044,7 +8051,7 @@ readonly struct LightweightOverloadResolution(
         {
             foundParameterIndex = argumentToParameterMap[argumentIndexToSave];
             if (foundParameterIndex < 0)
-                foundParameterIndex = FirstUnspecifiedParameter(ref argumentToParameterMap.AsRef);
+                foundParameterIndex = FirstUnspecifiedParameter(argumentToParameterMap);
         }
         System.Diagnostics.Debug.Assert(
             foundParameterIndex < parameters.Length,
@@ -8061,7 +8068,7 @@ readonly struct LightweightOverloadResolution(
     bool IsCompatibleArgument(ArgumentSyntax argument, IParameterSymbol parameter)
     {
         var parameterRefKind = parameter.RefKind;
-        if (parameterRefKind == RefKind.None)
+        if (parameterRefKind is RefKind.None)
         {
             if (IsEmptyArgument(argument.Expression))
                 return true;
@@ -8075,16 +8082,15 @@ readonly struct LightweightOverloadResolution(
         var argumentRefKind = argument.GetRefKind();
         if (parameterRefKind == argumentRefKind)
             return true;
-        return parameterRefKind == RefKind.In && argumentRefKind == RefKind.None;
+        return parameterRefKind is RefKind.In && argumentRefKind is RefKind.None;
     }
     /// <summary>Highlights the first unspecified parameter.</summary>
     /// <param name="argumentToParameterMap">The input map.</param>
     /// <returns>The index of the first unspecified parameter.</returns>
-    int FirstUnspecifiedParameter(ref PooledSmallList<int> argumentToParameterMap)
+    int FirstUnspecifiedParameter(Span<int> argumentToParameterMap)
     {
-        using var specified = PooledSmallList<bool>.Empty;
-        for (var i = 0; i < arguments.Count; i++)
-            specified.Append(false);
+        var specified = arguments.Count <= 1024 ? stackalloc bool[arguments.Count] : new bool[arguments.Count];
+        specified.Clear();
         for (var i = 0; i < arguments.Count; i++)
         {
             var parameterIndex = argumentToParameterMap[i];
@@ -8101,7 +8107,7 @@ readonly struct LightweightOverloadResolution(
     /// <param name="argumentToParameterMap">The output map.</param>
     /// <returns>Whether or not the method could be prepared.</returns>
 #pragma warning disable MA0051
-    bool TryPrepareArgumentToParameterMap(IMethodSymbol method, ref PooledSmallList<int> argumentToParameterMap)
+    bool TryPrepareArgumentToParameterMap(IMethodSymbol method, Span<int> argumentToParameterMap)
 #pragma warning restore MA0051
     {
         System.Diagnostics.Debug.Assert(
@@ -8127,23 +8133,23 @@ readonly struct LightweightOverloadResolution(
                     return false;
                 if (namedParameterIndex != currentParameterIndex)
                     seenOutOfPositionArgument = true;
-                AddArgumentToParameterMapping(argumentIndex, namedParameterIndex, ref argumentToParameterMap);
+                AddArgumentToParameterMapping(argumentIndex, namedParameterIndex, argumentToParameterMap);
             }
             else if (IsEmptyArgument(argument.Expression))
             {
                 if (!seenOutOfPositionArgument)
-                    AddArgumentToParameterMapping(argumentIndex, currentParameterIndex, ref argumentToParameterMap);
+                    AddArgumentToParameterMapping(argumentIndex, currentParameterIndex, argumentToParameterMap);
             }
             else if (seenOutOfPositionArgument)
                 return false;
             else
-                AddArgumentToParameterMapping(argumentIndex, currentParameterIndex, ref argumentToParameterMap);
+                AddArgumentToParameterMapping(argumentIndex, currentParameterIndex, argumentToParameterMap);
         }
         return true;
         void AddArgumentToParameterMapping(
             int argumentIndex,
             int parameterIndex,
-            ref PooledSmallList<int> argumentToParameterMap
+            Span<int> argumentToParameterMap
         )
         {
             System.Diagnostics.Debug.Assert(parameterIndex >= 0, "parameterIndex >= 0");
