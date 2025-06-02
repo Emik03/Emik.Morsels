@@ -162,13 +162,13 @@
         <ProjectReference Include="../*.csproj" PrivateAssets="all"/>
         <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
         <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25107-01" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit" Version="2.9.3" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5" PrivateAssets="all"/>
         <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.console" Version="2.9.3" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.0.2" PrivateAssets="all"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.1" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
