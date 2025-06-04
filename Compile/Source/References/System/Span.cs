@@ -18,7 +18,7 @@ readonly
 #if !NO_REF_STRUCTS
     ref
 #endif
-    partial struct Span<T>
+    struct Span<T>
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -471,7 +471,7 @@ readonly
 #if !NO_REF_STRUCTS
         ref
 #endif
-        partial struct Enumerator
+        struct Enumerator
     {
         readonly Span<T> _span;
 
@@ -528,7 +528,7 @@ readonly
 #if !NO_REF_STRUCTS
     ref
 #endif
-    partial struct ReadOnlySpan<T>
+    struct ReadOnlySpan<T>
 #if UNMANAGED_SPAN
     where T : unmanaged
 #endif
@@ -893,7 +893,7 @@ readonly
 #if !NO_REF_STRUCTS
         ref
 #endif
-        partial struct Enumerator
+        struct Enumerator
     {
         readonly ReadOnlySpan<T> _span;
 
