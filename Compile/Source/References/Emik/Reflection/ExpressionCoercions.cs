@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
 
-/// <summary>Methods to provide coercions to <see cref="Expression"/>.</summary>
+/// <summary>Methods to provide coercions to <see cref="System.Linq.Expressions.Expression"/>.</summary>
 // ReSharper disable RedundantNameQualifier
 static partial class ExpressionCoercions
 {

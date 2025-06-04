@@ -16596,7 +16596,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD || NETSTANDARD2_0_OR_GREATER
 // ReSharper disable once CheckNamespace
-/// <summary>Methods to provide coercions to <see cref="Expression"/>.</summary>
+/// <summary>Methods to provide coercions to <see cref="System.Linq.Expressions.Expression"/>.</summary>
 // ReSharper disable RedundantNameQualifier
     /// <summary>Provides the verbose representation found in the debug view.</summary>
     /// <param name="x">The expression to get the <see langword="string"/> representation of.</param>
