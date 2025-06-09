@@ -827,6 +827,10 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         {
             case not null when value.GetType().GetCustomAttributes().Any(IsChoiceAttribute): return value.ToString();
             case nint or nuint or null or DictionaryEntry or DeconstructionCollection or IConvertible: return value;
+#if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
+            case Memory<char> m: return m.ToString();
+            case ReadOnlyMemory<char> m: return m.ToString();
+#endif
             case Type x: return x.ToString();
             case Pointer x: return ToHexString(x);
             case Version x: return x.ToShortString();
