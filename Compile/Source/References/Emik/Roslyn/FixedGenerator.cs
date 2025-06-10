@@ -52,7 +52,7 @@ public abstract class FixedGenerator(
         {
             var (name, text) = this;
 
-            return ($"{typeof(AttributeGenerator).Namespace}/{typeof(AttributeGenerator)}/{name}",
+            return ($"{typeof(FixedGenerator).Namespace}/{typeof(FixedGenerator)}/{name}",
                 SourceText.From(text, Encoding.UTF8));
         }
     }
