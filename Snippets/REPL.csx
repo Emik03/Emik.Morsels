@@ -16816,7 +16816,7 @@ public abstract class FixedGenerator(
         get
         {
             var (name, text) = this;
-            return ($"{typeof(FixedGenerator).Namespace}/{typeof(FixedGenerator)}/{name}",
+            return ($"{GetType().Namespace}/{GetType()}/{name}",
                 SourceText.From(text, Encoding.UTF8));
         }
     }
