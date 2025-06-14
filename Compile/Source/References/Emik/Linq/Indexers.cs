@@ -34,7 +34,7 @@ static partial class Indexers
         (range.Start.IsFromEnd ? -range.Start.Value : range.Start.Value) is var start &&
         (range.End.IsFromEnd ? -range.End.Value : range.End.Value) is var end &&
         start == end ? [] :
-        start < end ? Enumerable.Range(start, end - start) :
+        start < end ? Enumerable.Range(start - (!range.Start.IsFromEnd && range.End.IsFromEnd ? 1 : 0), end - start) :
         Enumerable.Repeat(start, start - end).Select((x, i) => x - i - 1);
 
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
