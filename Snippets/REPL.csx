@@ -3610,7 +3610,7 @@ readonly
         (range.End.IsFromEnd ? -range.End.Value : range.End.Value) is var end &&
         start == end ? [] :
         start < end ? Enumerable.Range(start, end - start) :
-        Enumerable.Repeat(start, start - end).Select((x, i) => x - i);
+        Enumerable.Repeat(start, start - end).Select((x, i) => x - i - 1);
     /// <summary>Separates the head from the tail of an <see cref="IEnumerable{T}"/>.</summary>
     /// <remarks><para>
     /// The tail is not guaranteed to be able to be enumerated over multiple times.
