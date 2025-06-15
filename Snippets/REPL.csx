@@ -17554,6 +17554,14 @@ readonly
     /// <returns>A <see cref="string"/> built from concatenating <paramref name="chars"/>.</returns>
     [Pure]
     public static string Concat([InstantHandle] this IEnumerable<char> chars) => string.Concat(chars);
+    /// <summary>Concatenates an enumeration of <see cref="string"/> into a <see cref="string"/>.</summary>
+    /// <remarks><para>
+    /// This method is more efficient than using <see cref="Conjoin{T}(IEnumerable{T}, string)"/> for empty separators.
+    /// </para></remarks>
+    /// <param name="strings">The enumeration of strings.</param>
+    /// <returns>A <see cref="string"/> built from concatenating <paramref name="strings"/>.</returns>
+    [Pure]
+    public static string Concat([InstantHandle] this IEnumerable<string> strings) => string.Concat(strings);
 #endif
     /// <summary>Joins a set of values into one long <see cref="string"/>.</summary>
     /// <remarks><para>
