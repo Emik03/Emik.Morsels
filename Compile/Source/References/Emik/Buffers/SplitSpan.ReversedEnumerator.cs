@@ -313,7 +313,7 @@ partial struct SplitSpan<TBody, TSeparator, TStrategy>
                     break;
             }
 
-            if (body.IndexOf(single) is not -1 and var length)
+            if (body.LastIndexOf(single) is not -1 and var length)
             {
                 current = body.UnsafelySkip(length + 1);
                 body = body.UnsafelyTake(length);
