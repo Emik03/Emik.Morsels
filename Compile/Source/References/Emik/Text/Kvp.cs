@@ -177,7 +177,7 @@ static class Kvp
         {
             const BindingFlags Flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy;
             var fields = typeof(T).GetFields(Flags);
-            var properties = typeof(T).GetProperties(Flags);
+            var properties = typeof(T).GetProperties(Flags).Where(x => x.GetIndexParameters() is []);
 
             return
             [
