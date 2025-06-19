@@ -4,7 +4,7 @@
 namespace Emik.Morsels;
 
 /// <summary>ImGui renderer for use with MonoGame.</summary>
-// ReSharper disable CognitiveComplexity
+[CLSCompliant(false)] // ReSharper disable CognitiveComplexity
 public sealed class ImGuiRenderer(Game game) : IDisposable
 {
     const float WheelDelta = 120;
