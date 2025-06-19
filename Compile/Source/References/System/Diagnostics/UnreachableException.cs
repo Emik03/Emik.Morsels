@@ -7,7 +7,7 @@ namespace System.Diagnostics;
 #if !(NETSTANDARD && !NETSTANDARD2_0_OR_GREATER)
 [Serializable]
 #endif
-sealed partial class UnreachableException : Exception
+sealed class UnreachableException : Exception
 {
     const string Arg = "The program executed an instruction that was thought to be unreachable.";
 
