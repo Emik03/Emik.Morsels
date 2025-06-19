@@ -7,6 +7,7 @@ global using static Emik.Morsels.Undergo;
 namespace Emik.Morsels;
 
 /// <summary>Provides methods to wrap delegates around try-catch blocks.</summary>
+// ReSharper disable OutParameterValueIsAlwaysDiscarded.Global
 static partial class Undergo
 {
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
