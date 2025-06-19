@@ -10,7 +10,7 @@ public abstract partial class Letterboxed2DGame : Game
     /// <summary>Gets the target to draw to.</summary>
     RenderTarget2D? _target;
 
-    /// <summary>Initializes a new instances of the <see cref="Letterboxed2DGame"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Letterboxed2DGame"/> class.</summary>
     /// <param name="width">The width of the world.</param>
     /// <param name="height">The height of the world.</param>
     /// <param name="scale">The scale relative to the native resolution to open the window to.</param>

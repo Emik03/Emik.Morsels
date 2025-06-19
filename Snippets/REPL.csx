@@ -12607,7 +12607,7 @@ public abstract partial class Letterboxed2DGame : Game
 {
     /// <summary>Gets the target to draw to.</summary>
     RenderTarget2D? _target;
-    /// <summary>Initializes a new instances of the <see cref="Letterboxed2DGame"/> class.</summary>
+    /// <summary>Initializes a new instance of the <see cref="Letterboxed2DGame"/> class.</summary>
     /// <param name="width">The width of the world.</param>
     /// <param name="height">The height of the world.</param>
     /// <param name="scale">The scale relative to the native resolution to open the window to.</param>
@@ -12744,7 +12744,7 @@ public abstract partial class Letterboxed2DGame : Game
 #if IMGUI && XNA
 // ReSharper disable once CheckNamespace
 /// <summary>ImGui renderer for use with MonoGame.</summary>
-// ReSharper disable CognitiveComplexity
+[CLSCompliant(false)]
 public sealed class ImGuiRenderer(Game game) : IDisposable
 {
     const float WheelDelta = 120;
@@ -18641,6 +18641,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 #pragma warning restore GlobalUsingsAnalyzer
 // ReSharper disable once CheckNamespace
 /// <summary>Provides methods to wrap delegates around try-catch blocks.</summary>
+// ReSharper disable OutParameterValueIsAlwaysDiscarded.Global
     /// <summary>Attempts to execute the <paramref name="action"/>.</summary>
     /// <param name="action">The action to execute.</param>
     /// <param name="err">
