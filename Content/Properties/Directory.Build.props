@@ -141,7 +141,11 @@
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     </PropertyGroup>
     <!-- Sets the icon of the package, if it exists. -->
-    <PropertyGroup Condition="Exists('Images/icon.png')">
+    <PropertyGroup Condition="Exists('Images/icon.svg') and $(PackageIcon) == ''">
+        <PackageIcon>icon.svg</PackageIcon>
+    </PropertyGroup>
+    <!-- Sets the icon of the package, if it exists. -->
+    <PropertyGroup Condition="Exists('Images/icon.png') and $(PackageIcon) == ''">
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
     <!-- Set .globalconfig to the proper tag. If it exists above, it is likely symlinked to it and we don't do anything. -->
@@ -181,9 +185,9 @@
         <PackageReference Include="Collections.Analyzer" Version="0.2.12.1" PrivateAssets="all"/>
         <PackageReference Include="Jubjubnest.Style.DotNet" Version="0.1.54" PrivateAssets="all"/>
         <PackageReference Include="Scifa.CheckedExceptions" Version="1.0.14" PrivateAssets="all"/>
+        <PackageReference Include="Text.Analyzers" Version="5.0.0-1.25277.114" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Tattoo" Version="2.0.7" PrivateAssets="all"/>
-        <PackageReference Update="Text.Analyzers" Version="3.11.0-beta1.24508.2" PrivateAssets="all"/>
-        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.6" PrivateAssets="all"/>
+        <PackageReference Include="Emik.SourceGenerators.Choices" Version="1.4.7" PrivateAssets="all"/>
         <PackageReference Include="Emik.SourceGenerators.Implicit" Version="1.0.8" PrivateAssets="all"/>
         <PackageReference Include="Nullable.Extended.Analyzer" Version="1.15.6581" PrivateAssets="all"/>
         <PackageReference Include="RoslynAnalyzersDotNet" Version="1.0.6281.37723" PrivateAssets="all"/>
