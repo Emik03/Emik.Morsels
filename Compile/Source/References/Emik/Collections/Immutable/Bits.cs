@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable 8500, IDE0251, MA0102
+#pragma warning disable CS8500, IDE0251, MA0102
 namespace Emik.Morsels;
 
 using static CollectionAccessType;

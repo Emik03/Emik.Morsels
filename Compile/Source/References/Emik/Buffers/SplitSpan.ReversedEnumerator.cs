@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 
 namespace Emik.Morsels;
-#pragma warning disable 8631, IDE0032
+#pragma warning disable CS8631, IDE0032
 using static Span;
 using static SplitSpanFactory;
 

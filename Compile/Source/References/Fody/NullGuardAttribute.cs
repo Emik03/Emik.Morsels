@@ -1,5 +1,5 @@
 ﻿// SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 9113, GlobalUsingsAnalyzer
+#pragma warning disable CS9113, GlobalUsingsAnalyzer
 // ReSharper disable ClassNeverInstantiated.Global RedundantUsingDirective.Global
 #if !NET452_OR_GREATER && !NETSTANDARD1_4_OR_GREATER && !NETCOREAPP
 global using NullGuardAttribute = NullGuard.NullGuardAttribute;

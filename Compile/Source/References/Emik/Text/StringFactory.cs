@@ -252,7 +252,7 @@ static partial class StringFactory
 #else
         where T : unmanaged
 #endif
-#pragma warning disable 8500
+#pragma warning disable CS8500
     {
         var p = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
         p[0] = '0';
@@ -270,7 +270,7 @@ static partial class StringFactory
 
         return new(p, 0, Unsafe.SizeOf<T>() * 2 + 2);
     }
-#pragma warning restore 8500
+#pragma warning restore CS8500
 #endif
 #if NET6_0_OR_GREATER
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>

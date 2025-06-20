@@ -2,7 +2,7 @@
 #if !NET8_0_OR_GREATER
 // ReSharper disable once CheckNamespace
 namespace System;
-#pragma warning disable 8500
+#pragma warning disable CS8500
 /// <summary>The backport of Shuffle methods for <see cref="Random"/>.</summary>
 static partial class RandomShuffle
 {

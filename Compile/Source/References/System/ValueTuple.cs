@@ -8,7 +8,7 @@
 // and creatively reworked.
 //
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
-#pragma warning disable 8604, CA2208, DOC100, DOC202, MA0015, MA0051, MA0097
+#pragma warning disable CS8604, CA2208, DOC100, DOC202, MA0015, MA0051, MA0097
 namespace System
 {
 #if NETFRAMEWORK || NETSTANDARD && !NETSTANDARD2_1_OR_GREATER || NETCOREAPP && !NETCOREAPP2_0_OR_GREATER

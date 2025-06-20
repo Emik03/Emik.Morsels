@@ -3,7 +3,7 @@
 // ReSharper disable CheckNamespace EmptyNamespace StructCanBeMadeReadOnly SuggestBaseTypeForParameterInConstructor
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 8500
+#pragma warning disable CS8500
 using static Span;
 
 [DebuggerDisplay("{ToString(),raw}"), DebuggerTypeProxy(typeof(MemoryDebugView<>)), StructLayout(LayoutKind.Sequential)]

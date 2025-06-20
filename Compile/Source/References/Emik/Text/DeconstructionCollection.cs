@@ -3,7 +3,7 @@
 namespace Emik.Morsels;
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable 9107
+#pragma warning disable CS9107
 static partial class DeconstructionCollectionExtensions
 {
     [return: NotNullIfNotNull(nameof(it))]

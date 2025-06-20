@@ -2,7 +2,7 @@
 
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
 namespace Emik.Morsels;
-#pragma warning disable 8631, IDE0032, RCS1158
+#pragma warning disable CS8631, IDE0032, RCS1158
 using static Span;
 using static SplitSpanFactory;
 #if NET8_0_OR_GREATER
@@ -832,7 +832,7 @@ readonly
             builder.Append(To<char>.From(span));
 #else
     {
-#pragma warning disable 8500
+#pragma warning disable CS8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         fixed (TBody* pin = span)
         {
@@ -847,7 +847,7 @@ readonly
         fixed (TBody* ptr = span)
             return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
-#pragma warning restore 8500
+#pragma warning restore CS8500
     }
 #endif
     /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>

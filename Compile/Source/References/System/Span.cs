@@ -4,7 +4,7 @@
 
 namespace System;
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
-#pragma warning disable 8500
+#pragma warning disable CS8500
 using Emik.Morsels; // ReSharper disable once RedundantNameQualifier
 using static Runtime.CompilerServices.RuntimeHelpers;
 
@@ -230,7 +230,7 @@ readonly
     /// It does not remove items from the <see cref="Span{T}"/>.
     /// </para></remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#pragma warning disable 8604, CA1855
+#pragma warning disable CS8604, CA1855
     public unsafe void Clear()
     {
         if (Length is 0)
@@ -256,7 +256,7 @@ readonly
                 else
                     SpanHelpers.ClearPointerSizedWithoutReferences((byte*)this.Align(ptr), byteLength);
     }
-#pragma warning restore 8604, CA1855
+#pragma warning restore CS8604, CA1855
     /// <summary>Copies the contents of this <see cref="Span{T}"/> into a destination <see cref="Span{T}"/>.</summary>
     /// <param name="destination">The destination <see cref="Span{T}"/> object.</param>
     /// <exception cref="ArgumentException">

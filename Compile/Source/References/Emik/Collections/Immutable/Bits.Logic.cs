@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-#pragma warning disable 8500, IDE0004, MA0051
+#pragma warning disable CS8500, IDE0004, MA0051
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
 namespace Emik.Morsels;
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 #if XNA // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 1591, SA1602
+#pragma warning disable CS1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [CLSCompliant(false), Flags]
 enum KeyMods : ushort

@@ -3,7 +3,7 @@
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
-#pragma warning disable 8500, 8631, RCS1175
+#pragma warning disable CS8500, CS8631, RCS1175
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 using static System.Runtime.CompilerServices.RuntimeHelpers;
 

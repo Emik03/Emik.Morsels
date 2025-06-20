@@ -2,7 +2,7 @@
 #if !NET8_0_OR_GREATER
 // ReSharper disable CheckNamespace RedundantUnsafeContext
 namespace System;
-#pragma warning disable 8500
+#pragma warning disable CS8500
 /// <summary>The backport of GetItems methods for <see cref="Random"/>.</summary>
 static partial class RandomGetItems
 {

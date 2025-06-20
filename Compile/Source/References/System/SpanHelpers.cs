@@ -5,7 +5,7 @@ namespace System;
 using Emik.Morsels;
 
 // ReSharper disable CognitiveComplexity InconsistentNaming UnusedMember.Local
-#pragma warning disable 8500, 8602, MA0051
+#pragma warning disable CS8500, CS8602, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
@@ -14,9 +14,9 @@ static partial class SpanHelpers
     {
         public static readonly bool IsReferenceOrContainsReferences = IsReferenceOrContainsReferencesCore(typeof(T));
 
-        public static readonly T[] EmptyArray = [];
-
         public static readonly nint ArrayAdjustment = MeasureArrayAdjustment();
+
+        public static readonly T[] EmptyArray = [];
 
         static nint MeasureArrayAdjustment()
         {

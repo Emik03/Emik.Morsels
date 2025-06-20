@@ -351,9 +351,9 @@ namespace System.Runtime.CompilerServices
     /// <param name="line">The line number to the intercepted location.</param>
     /// <param name="character">The character number to the intercepted location.</param>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-#pragma warning disable 9113
+#pragma warning disable CS9113
     sealed class InterceptsLocationAttribute(string filePath, int line, int character) : Attribute;
-#pragma warning restore 9113
+#pragma warning restore CS9113
 #if !NET8_0_OR_GREATER
     /// <summary>
     /// Initialize the attribute to refer to the <paramref name="methodName"/>

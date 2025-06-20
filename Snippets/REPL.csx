@@ -1336,7 +1336,7 @@ public
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent RedundantUnsafeContext UseSymbolAlias
 // ReSharper disable once CheckNamespace
-#pragma warning disable 8500, 8631, RCS1175
+#pragma warning disable CS8500, CS8631, RCS1175
 // ReSharper disable RedundantNameQualifier RedundantUsingDirective
 /// <summary>Defines methods for spans.</summary>
 /// <remarks><para>See <see cref="MaxStackalloc"/> for details about stack- and heap-allocation.</para></remarks>
@@ -3199,7 +3199,7 @@ public
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable 8500, IDE0251, MA0102
+#pragma warning disable CS8500, IDE0251, MA0102
 /// <summary>Extension methods that act as factories for <see cref="Bits{T}"/>.</summary>
     /// <summary>Creates the <see cref="Bits{T}"/> from the item.</summary>
     /// <typeparam name="T">The type of item.</typeparam>
@@ -5836,7 +5836,7 @@ static class Kvp
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly RedundantReadonlyModifier
-#pragma warning disable 8500, IDE0251, MA0102
+#pragma warning disable CS8500, IDE0251, MA0102
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
 public
@@ -6864,7 +6864,7 @@ public sealed class Pinnable<T>
         };
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-#pragma warning disable 8500, IDE0004, MA0051
+#pragma warning disable CS8500, IDE0004, MA0051
 // ReSharper disable BadPreprocessorIndent CheckNamespace CognitiveComplexity RedundantCast StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
@@ -8177,7 +8177,7 @@ readonly struct LightweightOverloadResolution(
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if XNA
-#pragma warning disable 1591, SA1602
+#pragma warning disable CS1591, SA1602
 /// <summary>Contains the set of all key modifiers.</summary>
 [CLSCompliant(false), Flags]
 public enum KeyMods : ushort
@@ -9054,7 +9054,7 @@ public enum KeyMods : ushort
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable 8631, IDE0032, RCS1158
+#pragma warning disable CS8631, IDE0032, RCS1158
 #if NET8_0_OR_GREATER
 // -
 #else
@@ -9769,7 +9769,7 @@ readonly
             builder.Append(To<char>.From(span));
 #else
     {
-#pragma warning disable 8500
+#pragma warning disable CS8500
 #if NETFRAMEWORK && !NET46_OR_GREATER || NETSTANDARD && !NETSTANDARD1_3_OR_GREATER
         fixed (TBody* pin = span)
         {
@@ -9782,7 +9782,7 @@ readonly
         fixed (TBody* ptr = span)
             return builder.Append((char*)span.Align(ptr), span.Length);
 #endif
-#pragma warning restore 8500
+#pragma warning restore CS8500
     }
 #endif
     /// <summary>Decrements the index. If already <c>0</c>, flips the "from end" boolean.</summary>
@@ -11096,7 +11096,7 @@ public sealed class FrameRateCounter(Game game, SpriteFont font, SpriteBatch bat
     }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable 8631, IDE0032
+#pragma warning disable CS8631, IDE0032
 #if NET8_0_OR_GREATER
 // -
 #else
@@ -13132,9 +13132,9 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
     /// <returns>A filtered <see cref="IEnumerable{T}"/> with strictly non-null values.</returns>
     [LinqTunnel, Pure]
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable) =>
-#pragma warning disable 8619
+#pragma warning disable CS8619
         iterable?.Where(x => x is not null) ?? [];
-#pragma warning restore 8619
+#pragma warning restore CS8619
     /// <summary>Filters an <see cref="IEnumerable{T}"/> to only non-null values.</summary>
     /// <typeparam name="T">The type of value to filter.</typeparam>
     /// <param name="iterable">The <see cref="IEnumerable{T}"/> to filter.</param>
@@ -13142,9 +13142,9 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
     [LinqTunnel, Pure]
     public static IEnumerable<T> Filter<T>([NoEnumeration] this IEnumerable<T?>? iterable)
         where T : struct =>
-#pragma warning disable 8629
+#pragma warning disable CS8629
         iterable?.Where(x => x.HasValue).Select(x => x.Value) ?? [];
-#pragma warning restore 8629
+#pragma warning restore CS8629
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable once CheckNamespace
@@ -13470,7 +13470,7 @@ readonly
 }
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable 8631, IDE0032
+#pragma warning disable CS8631, IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {
@@ -14148,7 +14148,7 @@ public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable UnusedMember.Local
 // ReSharper disable once CheckNamespace
-#pragma warning disable 8619
+#pragma warning disable CS8619
 /// <summary>Extension methods for improving nullability awareness for enumerables.</summary>
     /// <summary>Annotates <c>ItemCanBeNullAttribute</c>.</summary>
     /// <typeparam name="T">The type of item to adjust nullability.</typeparam>
@@ -14819,7 +14819,7 @@ public ref partial struct ImmutableArrayBuilder<T>
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-#pragma warning disable 8500, IDE0004
+#pragma warning disable CS8500, IDE0004
 // ReSharper disable BadPreprocessorIndent CheckNamespace RedundantUnsafeContext RedundantCast StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
@@ -14964,7 +14964,7 @@ readonly
 // SPDX-License-Identifier: MPL-2.0
 #if !NETSTANDARD1_0
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
-#pragma warning disable 8500
+#pragma warning disable CS8500
 /// <summary>Provides methods for determining similarity between two sequences.</summary>
     const StringComparison DefaultCharComparer = StringComparison.Ordinal;
     /// <summary>Calculates the Jaro similarity between two strings.</summary>
@@ -15827,7 +15827,7 @@ readonly
 // ReSharper disable CheckNamespace EmptyNamespace InvalidXmlDocComment RedundantCallerArgumentExpressionDefaultValue RedundantNameQualifier SuggestBaseTypeForParameter UseSymbolAlias
 #if NET35_OR_GREATER || NETSTANDARD2_0_OR_GREATER || NETCOREAPP2_0_OR_GREATER
 /// <summary>Contains methods for deconstructing objects.</summary>
-#pragma warning disable 9107
+#pragma warning disable CS9107
     [return: NotNullIfNotNull(nameof(it))]
     public static T Debug<T>(
         this T it,
@@ -17493,7 +17493,7 @@ public abstract class FixedGenerator(
 #endif
 // SPDX-License-Identifier: MPL-2.0
 #if (NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) && !NO_SYSTEM_MEMORY
-#pragma warning disable 8500
+#pragma warning disable CS8500
 // ReSharper disable BadPreprocessorIndent CheckNamespace StructCanBeMadeReadOnly
 /// <inheritdoc cref="Bits{T}"/>
 #if CSHARPREPL
@@ -17944,7 +17944,7 @@ readonly
 #else
         where T : unmanaged
 #endif
-#pragma warning disable 8500
+#pragma warning disable CS8500
     {
         var p = stackalloc char[Unsafe.SizeOf<T>() * 2 + 2];
         p[0] = '0';
@@ -17960,7 +17960,7 @@ readonly
             }
         return new(p, 0, Unsafe.SizeOf<T>() * 2 + 2);
     }
-#pragma warning restore 8500
+#pragma warning restore CS8500
 #endif
 #if NET6_0_OR_GREATER
     /// <summary>Appends an enumeration onto the <see cref="DefaultInterpolatedStringHandler"/>.</summary>
@@ -18085,7 +18085,7 @@ readonly
 #endif
 // SPDX-License-Identifier: MPL-2.0
 // ReSharper disable BadPreprocessorIndent CheckNamespace ConvertToAutoPropertyWhenPossible InvertIf RedundantNameQualifier RedundantReadonlyModifier RedundantUsingDirective StructCanBeMadeReadOnly UseSymbolAlias
-#pragma warning disable 8631, IDE0032
+#pragma warning disable CS8631, IDE0032
 /// <inheritdoc cref="SplitSpan{TBody, TSeparator, TStrategy}"/>
 public partial struct SplitSpan<TBody, TSeparator, TStrategy>
 {

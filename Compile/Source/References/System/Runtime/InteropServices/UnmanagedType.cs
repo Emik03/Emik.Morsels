@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
-#pragma warning disable 1591
+#pragma warning disable CS1591
 // ReSharper disable CommentTypo IdentifierTypo InconsistentNaming StringLiteralTypo
 // ReSharper disable once CheckNamespace EmptyNamespace
 namespace System.Runtime.InteropServices;

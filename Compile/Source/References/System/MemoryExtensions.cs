@@ -2,7 +2,7 @@
 
 // ReSharper disable CheckNamespace ConvertToConstant.Local EmptyNamespace WrongIndentSize
 namespace System;
-#pragma warning disable 8500, RCS1118
+#pragma warning disable CS8500, RCS1118
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 using static Span;
 

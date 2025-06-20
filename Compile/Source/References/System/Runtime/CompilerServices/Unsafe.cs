@@ -5,7 +5,7 @@ namespace System.Runtime.CompilerServices;
 
 static class Unsafe
 {
-#pragma warning disable 8500
+#pragma warning disable CS8500
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe void* AsPointer<T>(ref T value)
     {
@@ -41,7 +41,7 @@ static class Unsafe
 
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static unsafe int SizeOf<T>() => sizeof(T);
-#pragma warning restore 8500
+#pragma warning restore CS8500
 }
 #elif !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
 using static InlineIL.IL;
