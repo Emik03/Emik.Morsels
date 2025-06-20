@@ -4,13 +4,13 @@ namespace System;
 
 using Emik.Morsels;
 
-// ReSharper disable CognitiveComplexity InconsistentNaming
+// ReSharper disable CognitiveComplexity InconsistentNaming UnusedMember.Local
 #pragma warning disable 8500, 8602, MA0051
 /// <summary>Unsafe functions to determine equality of buffers.</summary>
 static partial class SpanHelpers
 {
     // ReSharper disable once RedundantUnsafeContext
-    public static unsafe partial class PerTypeValues<T>
+    static unsafe partial class PerTypeValues<T>
     {
         public static readonly bool IsReferenceOrContainsReferences = IsReferenceOrContainsReferencesCore(typeof(T));
 
@@ -1851,35 +1851,35 @@ static partial class SpanHelpers
 
         while ((zero = intPtr + 8).LessThanEqual(pointerSizeLength))
         {
-            *ip = default;
-            ip[1] = default;
-            ip[2] = default;
-            ip[3] = default;
-            ip[4] = default;
-            ip[5] = default;
-            ip[6] = default;
-            ip[7] = default;
+            *ip = 0;
+            ip[1] = 0;
+            ip[2] = 0;
+            ip[3] = 0;
+            ip[4] = 0;
+            ip[5] = 0;
+            ip[6] = 0;
+            ip[7] = 0;
             intPtr = zero;
         }
 
         if ((zero = intPtr + 4).LessThanEqual(pointerSizeLength))
         {
-            *ip = default;
-            ip[1] = default;
-            ip[2] = default;
-            ip[3] = default;
+            *ip = 0;
+            ip[1] = 0;
+            ip[2] = 0;
+            ip[3] = 0;
             intPtr = zero;
         }
 
         if ((zero = intPtr + 2).LessThanEqual(pointerSizeLength))
         {
-            *ip = default;
-            ip[1] = default;
+            *ip = 0;
+            ip[1] = 0;
             intPtr = zero;
         }
 
         if ((intPtr + 1).LessThanEqual(pointerSizeLength))
-            ip[intPtr] = default;
+            ip[intPtr] = 0;
     }
 
     static bool IsReferenceOrContainsReferencesCore(Type type) =>
