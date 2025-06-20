@@ -141,11 +141,11 @@
         <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     </PropertyGroup>
     <!-- Sets the icon of the package, if it exists. -->
-    <PropertyGroup Condition="Exists('Images/icon.svg') and $(PackageIcon) == ''">
+    <PropertyGroup Condition="Exists('Images/icon.svg')">
         <PackageIcon>icon.svg</PackageIcon>
     </PropertyGroup>
     <!-- Sets the icon of the package, if it exists. -->
-    <PropertyGroup Condition="Exists('Images/icon.png') and $(PackageIcon) == ''">
+    <PropertyGroup Condition="Exists('Images/icon.png')">
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
     <!-- Set .globalconfig to the proper tag. If it exists above, it is likely symlinked to it and we don't do anything. -->
