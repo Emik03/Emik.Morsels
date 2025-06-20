@@ -37,6 +37,8 @@ The following block contains officially maintained projects that implement [Emik
 [![Emik.Analyzers.Matches](https://img.shields.io/github/last-commit/Emik03/Emik.Analyzers.Matches?style=for-the-badge&logo=GitHub&label=Emik.Analyzers.Matches&color=ffb86c)](https://github.com/Emik03/Emik.Analyzers.Matches)
 [![Emik.Kebnekaise.Gramophones](https://img.shields.io/github/last-commit/Emik03/Emik.Kebnekaise.Gramophones?style=for-the-badge&logo=GitHub&label=Emik.Kebnekaise.Gramophones&color=f1fa8c)](https://github.com/Emik03/Emik.Kebnekaise.Gramophones)
 [![Emik.Kebnekaise.Pistons](https://img.shields.io/github/last-commit/Emik03/Emik.Kebnekaise.Pistons?style=for-the-badge&logo=GitHub&label=Emik.Kebnekaise.Pistons&color=ffb86c)](https://github.com/Emik03/Emik.Kebnekaise.Pistons)
+[![Emik.Manual](https://img.shields.io/github/last-commit/Emik03/Emik.Manual?style=for-the-badge&logo=GitHub&label=Emik.Manual&color=f1fa8c)](https://github.com/Emik03/Emik.Manual)
+[![Emik.Manual.Examples](https://img.shields.io/github/last-commit/Emik03/Emik.Manual.Examples?style=for-the-badge&logo=GitHub&label=Emik.Manual.Examples&color=ffb86c)](https://github.com/Emik03/Emik.Manual.Examples)
 [![Emik.Morsels.ProjectTemplates](https://img.shields.io/github/last-commit/Emik03/Emik.Morsels.ProjectTemplates?style=for-the-badge&logo=GitHub&label=Emik.Morsels.ProjectTemplates&color=f1fa8c)](https://github.com/Emik03/Emik.Morsels.ProjectTemplates)
 [![Emik.Numerics.Fractions](https://img.shields.io/github/last-commit/Emik03/Emik.Numerics.Fractions?style=for-the-badge&logo=GitHub&label=Emik.Numerics.Fractions&color=ffb86c)](https://github.com/Emik03/Emik.Numerics.Fractions)
 [![Emik.Results](https://img.shields.io/github/last-commit/Emik03/Emik.Results?style=for-the-badge&logo=GitHub&label=Emik.Results&color=f1fa8c)](https://github.com/Emik03/Emik.Results)
@@ -47,8 +49,9 @@ The following block contains officially maintained projects that implement [Emik
 [![Emik.SourceGenerators.Tattoo](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.Tattoo?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.Tattoo&color=ffb86c)](https://github.com/Emik03/Emik.SourceGenerators.Tattoo)
 [![Emik.SourceGenerators.TheSquareHole](https://img.shields.io/github/last-commit/Emik03/Emik.SourceGenerators.TheSquareHole?style=for-the-badge&logo=GitHub&label=Emik.SourceGenerators.TheSquareHole&color=f1fa8c)](https://github.com/Emik03/Emik.SourceGenerators.TheSquareHole)
 [![Emik.Unions](https://img.shields.io/github/last-commit/Emik03/Emik.Unions?style=for-the-badge&logo=GitHub&label=Emik.Unions&color=ffb86c)](https://github.com/Emik03/Emik.Unions)
-[![ScreenShakeService](https://img.shields.io/github/last-commit/Emik03/ScreenShakeService?style=for-the-badge&logo=GitHub&label=ScreenShakeService&color=f1fa8c)](https://github.com/Emik03/ScreenShakeService)
-[![wawa](https://img.shields.io/github/last-commit/Emik03/wawa?style=for-the-badge&logo=GitHub&label=wawa&color=ffb86c)](https://github.com/Emik03/wawa)
+[![Remote](https://img.shields.io/github/last-commit/Emik03/Remote?style=for-the-badge&logo=GitHub&label=Remote&color=f1fa8c)](https://github.com/Emik03/Remote)
+[![ScreenShakeService](https://img.shields.io/github/last-commit/Emik03/ScreenShakeService?style=for-the-badge&logo=GitHub&label=ScreenShakeService&color=ffb86c)](https://github.com/Emik03/ScreenShakeService)
+[![wawa](https://img.shields.io/github/last-commit/Emik03/wawa?style=for-the-badge&logo=GitHub&label=wawa&color=f1fa8c)](https://github.com/Emik03/wawa)
 
 ## Tree Shaking
 
