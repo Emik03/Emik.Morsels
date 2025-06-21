@@ -12747,8 +12747,17 @@ public abstract partial class Letterboxed2DGame : Game
 [CLSCompliant(false)]
 public sealed class ImGuiRenderer(Game game) : IDisposable
 {
+    delegate (bool Return, string NewInput) TextInput(
+        ReadOnlySpan<char> label,
+        ReadOnlySpan<char> hint,
+        string input,
+        uint maxLength,
+        System.Numerics.Vector2 size,
+        ImGuiInputTextFlags flags
+    );
     const float WheelDelta = 120;
     static readonly ImmutableArray<Keys> s_keys = ImmutableCollectionsMarshal.AsImmutableArray(Enum.GetValues<Keys>());
+    static readonly List<(ReadOnlyMemory<char> Label, string Input)> s_queued = [];
     static readonly VertexDeclaration s_declaration = new(
         Unsafe.SizeOf<ImDrawVert>(),
         new VertexElement(0, VertexElementFormat.Vector2, VertexElementUsage.Position, 0),
@@ -12777,6 +12786,123 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
     public bool IsDisposed { get; private set; }
     /// <summary>Gets the context.</summary>
     public nint Context => _m.Context;
+    /// <summary>Shows the keyboard display for mobile. Does nothing on desktop builds.</summary>
+    /// <param name="title">The title.</param>
+    /// <param name="description">The description.</param>
+    /// <param name="defaultText">The default text.</param>
+    /// <param name="usePasswordMode">Whether to hide the characters.</param>
+    public static void AddKeyboardInputToIO(
+        string title,
+        string description,
+        string defaultText = "",
+        bool usePasswordMode = false
+    )
+    {
+        async Task Show()
+        {
+            var input = await KeyboardInput.Show(title, description, defaultText, usePasswordMode);
+            var io = ImGui.GetIO();
+            foreach (var c in input.AsSpan())
+                if (c is not '\t')
+                    io.AddInputCharacter(c);
+        }
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
+#pragma warning disable MA0134
+            Task.Run(Show);
+#pragma warning restore MA0134
+    }
+    /// <inheritdoc cref="InputText(ReadOnlyMemory{char}, ref string, uint, ImGuiInputTextFlags)"/>
+    public static bool InputText(
+        string label,
+        ref string input,
+        uint maxLength,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) =>
+        InputText(label.AsMemory(), ref input, maxLength, flags);
+    /// <summary>
+    /// Drop-in replacement for <see cref="ImGui.InputText(string, ref string, uint, ImGuiInputTextFlags)"/>
+    /// that allows mobile devices to enter text fields explicitly.
+    /// </summary>
+    /// <param name="label">The label of the input text.</param>
+    /// <param name="input">The current value of the input text.</param>
+    /// <param name="maxLength">The maximum length for the parameter <paramref name="maxLength"/>.</param>
+    /// <param name="flags">The flags of the input text.</param>
+    public static bool InputText(
+        ReadOnlyMemory<char> label,
+        ref string input,
+        uint maxLength,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) =>
+        Text(
+            label,
+            "",
+            ref input,
+            maxLength,
+            default,
+            flags,
+            static (label, _, input, maxLength, _, flags) =>
+                (ImGui.InputText(label, ref input, maxLength, flags), input)
+        );
+    /// <inheritdoc cref="InputText(ReadOnlyMemory{char}, ref string, uint, ImGuiInputTextFlags)"/>
+    public static bool InputTextMultiline(
+        string label,
+        ReadOnlySpan<char> hint,
+        ref string input,
+        uint maxLength,
+        System.Numerics.Vector2 size,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) =>
+        InputTextMultiline(label.AsMemory(), hint, ref input, maxLength, size, flags);
+    /// <inheritdoc cref="InputText(ReadOnlyMemory{char}, ref string, uint, ImGuiInputTextFlags)"/>
+    public static bool InputTextMultiline(
+        ReadOnlyMemory<char> label,
+        ReadOnlySpan<char> hint,
+        ref string input,
+        uint maxLength,
+        System.Numerics.Vector2 size,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) =>
+        OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()
+            ? Text(
+                label,
+                hint,
+                ref input,
+                maxLength,
+                size,
+                flags,
+                static (label, _, input, maxLength, size, flags) =>
+                    (ImGui.InputTextMultiline(label, ref input, maxLength, size, flags), input)
+            )
+            : ImGui.InputTextMultiline(label.Span, ref input, maxLength, size, flags);
+    /// <inheritdoc cref="InputText(ReadOnlyMemory{char}, ref string, uint, ImGuiInputTextFlags)"/>
+    public static bool InputTextWithHint(
+        string label,
+        ReadOnlySpan<char> hint,
+        ref string input,
+        uint maxLength,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) =>
+        InputTextWithHint(label.AsMemory(), hint, ref input, maxLength, flags);
+    /// <inheritdoc cref="InputText(ReadOnlyMemory{char}, ref string, uint, ImGuiInputTextFlags)"/>
+    public static bool InputTextWithHint(
+        ReadOnlyMemory<char> label,
+        ReadOnlySpan<char> hint,
+        ref string input,
+        uint maxLength,
+        ImGuiInputTextFlags flags = ImGuiInputTextFlags.None
+    ) =>
+        OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()
+            ? Text(
+                label,
+                hint,
+                ref input,
+                maxLength,
+                default,
+                flags,
+                static (label, hint, input, maxLength, _, flags) =>
+                    (ImGui.InputTextWithHint(label, hint, ref input, maxLength, flags), input)
+            )
+            : ImGui.InputTextWithHint(label.Span, hint, ref input, maxLength, flags);
     /// <summary>
     /// Creates a pointer to a texture, which can be passed through ImGui calls such a
     /// <see cref="ImGui.Image(System.IntPtr, System.Numerics.Vector2)" />.
@@ -12891,17 +13017,57 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
             _ => ImGuiKey.None,
         }) is not ImGuiKey.None ||
         key is Keys.None;
+    static bool Text(
+        ReadOnlyMemory<char> label,
+        ReadOnlySpan<char> hint,
+        ref string input,
+        uint maxLength,
+        System.Numerics.Vector2 size,
+        ImGuiInputTextFlags flags,
+        [RequireStaticDelegate(IsError = true)] TextInput textInput
+    )
+    {
+        var copy = input;
+        async Task Show()
+        {
+            var display = label.SplitOn('#').First;
+            var result = await KeyboardInput.Show(
+                display.ToString(),
+                $"Enter a value for {display}.",
+                copy,
+                flags.Has(ImGuiInputTextFlags.Password)
+            );
+            s_queued.Add((label, result));
+        }
+        var labelSpan = label.Span;
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
+            for (var i = s_queued.Count - 1; i >= 0; i--)
+                if (s_queued[i] is var (queuedLabel, queuedInput) &&
+                    labelSpan.Equals(queuedLabel.Span, StringComparison.Ordinal))
+                {
+                    input = queuedInput.Length > maxLength ? queuedInput[..(int)maxLength] : queuedInput;
+                    s_queued.RemoveAt(i);
+                }
+        (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
+        if ((OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret)
+#pragma warning disable MA0134
+            Task.Run(Show);
+#pragma warning restore MA0134
+        return ret;
+    }
     static Game SetupInput(Game game, out nint context)
     {
         ArgumentNullException.ThrowIfNull(game);
         context = ImGui.CreateContext();
         ImGui.SetCurrentContext(context);
+#if !ANDROID
         var io = ImGui.GetIO();
         game.Window.TextInput += (_, a) =>
         {
             if (a.Character is not '\t' and var c)
                 io.AddInputCharacter(c);
         };
+#endif
         return game;
     }
     void RenderCommandLists(ImDrawDataPtr drawData)
@@ -13017,7 +13183,15 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
         var io = ImGui.GetIO();
         var mouse = Mouse.GetState();
         var keyboard = Keyboard.GetState();
-        io.AddMousePosEvent(mouse.X, mouse.Y);
+        var touches = TouchPanel.GetState();
+        if (touches.Count is not 0)
+            foreach (var touch in touches)
+            {
+                io.AddMousePosEvent(touch.Position.X, touch.Position.Y);
+                io.AddMouseButtonEvent(0, touch.State is TouchLocationState.Pressed);
+            }
+        else
+            io.AddMousePosEvent(mouse.X, mouse.Y);
         io.AddMouseButtonEvent(0, mouse.LeftButton is ButtonState.Pressed);
         io.AddMouseButtonEvent(1, mouse.RightButton is ButtonState.Pressed);
         io.AddMouseButtonEvent(2, mouse.MiddleButton is ButtonState.Pressed);
