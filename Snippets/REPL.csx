@@ -12936,10 +12936,10 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
         if (IsDisposed)
             return;
         IsDisposed = true;
-        ImGui.DestroyContext(_m.Context);
         _effect?.Dispose();
         _indexBuffer?.Dispose();
         _vertexBuffer?.Dispose();
+        ImGui.DestroyContext(Context);
         (_effect, _indexBuffer, _vertexBuffer) = (null, null, null);
     }
     /// <summary>
@@ -13057,10 +13057,10 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
     }
     static Game SetupInput(Game game, out nint context)
     {
-        ArgumentNullException.ThrowIfNull(game);
+        Debug.Assert(game is not null);
         context = ImGui.CreateContext();
         ImGui.SetCurrentContext(context);
-#if !ANDROID
+#if !ANDROID && !IOS
         var io = ImGui.GetIO();
         game.Window.TextInput += (_, a) =>
         {
