@@ -102,9 +102,9 @@
         <EditorConfigFiles Remove="$(AssemblyName).Generated.Tests/**"/>
         <PackageReference Condition="$(AssemblyName.EndsWith(&quot;.Fody&quot;))" Include="FodyHelpers" Version="6.9.1"/>
         <Compile Condition="(!$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;))) or $(AssemblyName.EndsWith(&quot;.Tests&quot;))" Remove="$(Morsels)/Compile/**/Roslyn/**"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.4" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.4" PrivateAssets="all"/>
-        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.HighPerformance" Version="8.4" PrivateAssets="all"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Common" Version="8.4" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.Diagnostics" Version="8.4" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(MSBuildProjectExtension)' != '.fsproj' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants)', '(?:^|;)NO_SYSTEM_MEMORY(?:;|$)'))" Include="CommunityToolkit.HighPerformance" Version="8.4" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
         <PackageReference Condition="!$(DefineConstants.Contains('NO_SYSTEM_MEMORY')) and !$(AssemblyName.Contains(&quot;Analyzer&quot;)) and !$(AssemblyName.Contains(&quot;SourceGenerator&quot;)) and '$(TargetFramework)' != 'netstandard2.1' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netstandard2.0')) and !$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1'))" Include="System.Memory" Version="4.6.3" PrivateAssets="all"/>
     </ItemGroup>
     <!-- Celeste references. -->
@@ -129,11 +129,11 @@
     </ItemGroup>
     <!-- Keep Talking and Nobody Explodes references, specifying paths to self-made dependencies to support System.Type.op_Equality. -->
     <ItemGroup Condition="'$(IsKtane)' == 'true'">
-        <PackageReference Include="UnityEngineAnalyzer" Version="1.0" PrivateAssets="all"/>
         <Reference Include="KMFramework" HintPath="$(Ktane)/ktane_Data/Managed/KMFramework.dll" Private="false"/>
         <Reference Include="UnityEditor" HintPath="$(Unity)/Editor/Data/Managed/UnityEditor.dll" Private="false"/>
         <Reference Include="UnityEngine" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine.dll" Private="false"/>
         <Reference Include="Newtonsoft.Json" HintPath="$(Ktane)/ktane_Data/Managed/Newtonsoft.Json.dll" Private="false"/>
+        <PackageReference Include="UnityEngineAnalyzer" Version="1.0" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
         <Reference Condition="'$(MSBuildProjectExtension)' != '.fsproj'" Include="Assembly-CSharp" HintPath="$(Ktane)/ktane_Data/Managed/Assembly-CSharp.dll" Private="false"/>
         <Reference Condition="'$(UseUnityCoreModule)' == 'true'" Include="UnityEngine.CoreModule" Private="false" HintPath="$(Unity)/Editor/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll"/>
     </ItemGroup>
@@ -147,28 +147,28 @@
     </ItemGroup>
     <!-- Roslyn analyzer references. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and !$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all"/>
-        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.1" PrivateAssets="all"/>
         <None Include="$(OutputPath)/$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <PackageReference Include="Gu.Analyzers" Version="2.0.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Include="Gu.Roslyn.Extensions.Source" Version="0.17.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
     </ItemGroup>
     <!-- Reference roslyn analyzer from above onto tests. -->
     <ItemGroup Condition="($(AssemblyName.Contains(&quot;Analyzer&quot;)) or $(AssemblyName.Contains(&quot;SourceGenerator&quot;))) and $(AssemblyName.EndsWith(&quot;.Tests&quot;))">
-        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
-        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all"/>
+        <ProjectReference Include="../*.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <ProjectReference Include="../*.fsproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
     </ItemGroup>
     <!-- References for Unit Test projects. Unit Tests are auto-generated; do not use most polyfills. -->
     <ItemGroup Condition="$(AssemblyName.EndsWith(&quot;.Tests&quot;))">
         <PackageReference Remove="GlobalUsingsAnalyzer"/>
-        <ProjectReference Include="../*.csproj" PrivateAssets="all"/>
-        <ProjectReference Include="../*.fsproj" PrivateAssets="all"/>
-        <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="all"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit" Version="2.9.3" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.console" Version="2.9.3" PrivateAssets="all"/>
-        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.1.1" PrivateAssets="all"/>
+        <ProjectReference Include="../*.csproj" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <ProjectReference Include="../*.fsproj" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Include="coverlet.collector" Version="6.0.4" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit" Version="4.0.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit" Version="2.9.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit.Analyzers" Version="3.10" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' == 'true'" Include="NUnit3TestAdapter" Version="4.5" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.console" Version="2.9.3" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
+        <PackageReference Condition="'$(UseNUnit)' != 'true'" Include="xunit.runner.visualstudio" Version="3.1.1" PrivateAssets="all" IncludeAssets="compile" ExcludeAssets="runtime"/>
     </ItemGroup>
     <!-- Item groups for wawa projects. -->
     <ItemGroup Condition="$(AssemblyName.StartsWith(&quot;wawa.&quot;))">
