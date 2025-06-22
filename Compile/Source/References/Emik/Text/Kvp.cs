@@ -11,6 +11,7 @@ static class Kvp
         where T : allows ref struct
 #endif
     {
+        // ReSharper disable once MemberCanBePrivate.Local
         public delegate void SerializeWriter(scoped in T reader, out DefaultInterpolatedStringHandler writer);
 
         public delegate void DeserializeWriter(scoped ReadOnlySpan<char> reader, scoped ref T writer);
@@ -60,7 +61,8 @@ static class Kvp
             if (values.Count is 0)
                 return "";
 
-            DefaultInterpolatedStringHandler dish = new((values.Count - 1) * 2, values.Count);
+            var literalLength = (values.Count - 1) * 2;
+            DefaultInterpolatedStringHandler dish = new(literalLength, values.Count, CultureInfo.InvariantCulture);
             var enumerator = values.GetEnumerator();
 
             try
@@ -201,13 +203,15 @@ static class Kvp
 
             var exReader = Expression.Parameter(typeof(T).MakeByRefType());
             var exWriter = Expression.Parameter(typeof(DefaultInterpolatedStringHandler).MakeByRefType());
+            Type[] args = [typeof(int), typeof(int), typeof(IFormatProvider)];
             // ReSharper disable once NullableWarningSuppressionIsUsed
-            var constructor = typeof(DefaultInterpolatedStringHandler).GetConstructor([typeof(int), typeof(int)])!;
+            var constructor = typeof(DefaultInterpolatedStringHandler).GetConstructor(args)!;
             var members = s_members.Where(x => x is FieldInfo or PropertyInfo { CanRead: true }).ToIList();
             var literalLength = members.Sum(ConstantLength) + members.Select(Description).Sum(x => x?.Length);
             var exLiteralLength = Expression.Constant(literalLength);
             var exFormattedLength = Expression.Constant(members.Count);
-            var exNew = Expression.New(constructor, exLiteralLength, exFormattedLength);
+            var exIFormatProvider = Expression.Constant(CultureInfo.InvariantCulture);
+            var exNew = Expression.New(constructor, exLiteralLength, exFormattedLength, exIFormatProvider);
             List<Expression> exBlockArgs = [Expression.Assign(exWriter, exNew)];
 
             foreach (var member in members)
