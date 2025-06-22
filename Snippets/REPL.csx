@@ -12744,8 +12744,10 @@ public abstract partial class Letterboxed2DGame : Game
 #if IMGUI && XNA
 // ReSharper disable once CheckNamespace
 /// <summary>ImGui renderer for use with MonoGame.</summary>
+/// <param name="game">The game to use as reference.</param>
+/// <param name="shared">Whether the <see cref="Context"/> is shared between instances of this type.</param>
 [CLSCompliant(false)]
-public sealed class ImGuiRenderer(Game game) : IDisposable
+public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
 {
     delegate (bool Return, string NewInput) TextInput(
         ReadOnlySpan<char> label,
@@ -12764,8 +12766,9 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
         new VertexElement(8, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
         new VertexElement(16, VertexElementFormat.Color, VertexElementUsage.Color, 0)
     );
+    static nint s_sharedContext;
     readonly Dictionary<nint, Texture2D> _loadedTextures = [];
-    readonly (Game Game, nint Context) _m = (SetupInput(game, out var context), context);
+    readonly (Game Game, bool Shared, nint Context) _m = (game, shared, SetupInput(game, shared));
     readonly GraphicsDevice _graphicsDevice = game.GraphicsDevice;
     readonly RasterizerState _rasterizerState = new()
     {
@@ -12939,7 +12942,8 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
         _effect?.Dispose();
         _indexBuffer?.Dispose();
         _vertexBuffer?.Dispose();
-        ImGui.DestroyContext(Context);
+        if (!_m.Shared)
+            ImGui.DestroyContext(_m.Context);
         (_effect, _indexBuffer, _vertexBuffer) = (null, null, null);
     }
     /// <summary>
@@ -13055,11 +13059,15 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
 #pragma warning restore MA0134
         return ret;
     }
-    static Game SetupInput(Game game, out nint context)
+    static nint SetupInput(Game game, bool shared)
     {
         Debug.Assert(game is not null);
-        context = ImGui.CreateContext();
+        if (shared && s_sharedContext is not 0)
+            return s_sharedContext;
+        var context = ImGui.CreateContext();
         ImGui.SetCurrentContext(context);
+        if (shared && s_sharedContext is 0)
+            s_sharedContext = context;
 #if !ANDROID && !IOS
         var io = ImGui.GetIO();
         game.Window.TextInput += (_, a) =>
@@ -13068,7 +13076,7 @@ public sealed class ImGuiRenderer(Game game) : IDisposable
                 io.AddInputCharacter(c);
         };
 #endif
-        return game;
+        return context;
     }
     void RenderCommandLists(ImDrawDataPtr drawData)
     {

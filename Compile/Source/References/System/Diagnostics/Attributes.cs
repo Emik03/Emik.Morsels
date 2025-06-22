@@ -352,7 +352,14 @@ namespace System.Runtime.CompilerServices
     /// <param name="character">The character number to the intercepted location.</param>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 #pragma warning disable CS9113
-    sealed class InterceptsLocationAttribute(string filePath, int line, int character) : Attribute;
+    sealed class InterceptsLocationAttribute : Attribute
+    {
+        [UsedImplicitly]
+        public InterceptsLocationAttribute(int version, string data) { }
+
+        [UsedImplicitly]
+        public InterceptsLocationAttribute(string filePath, int line, int character) { }
+    }
 #pragma warning restore CS9113
 #if !NET8_0_OR_GREATER
     /// <summary>
