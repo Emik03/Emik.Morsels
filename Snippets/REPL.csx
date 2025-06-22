@@ -188,15 +188,17 @@ using Substring = System.ReadOnlyMemory<char>;
 /// <summary>Provides extension methods to convert representations of text into destination types.</summary>
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this string s) => Parse<T>(s, out _);
+    public static T? Parse<T>(this string? s) => Parse<T>(s, out _);
     /// <summary>Parses the <see cref="string"/> into a <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The type to parse into.</typeparam>
     /// <param name="s">The buffer source.</param>
     /// <param name="success">Whether the parsing was successful.</param>
     /// <returns>The parsed value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Parse<T>(this string s, out bool success) =>
-        typeof(string) == typeof(T) && (success = true) ? (T)(object)s : FindTryParseFor<T>.WithString(s, out success);
+    public static T? Parse<T>(this string? s, out bool success) =>
+        typeof(string) == typeof(T) && (success = true)
+            ? (T?)(object?)s
+            : FindTryParseFor<T>.WithString(s, out success);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     public static T? Parse<T>(this scoped ReadOnlySpan<byte> s) => Parse<T>(s, out _);
@@ -222,22 +224,22 @@ using Substring = System.ReadOnlyMemory<char>;
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this string s)
+    public static T? Into<T>(this string? s)
         where T : IParsable<T> =>
         Into<T>(s, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this string s, IFormatProvider? provider)
+    public static T? Into<T>(this string? s, IFormatProvider? provider)
         where T : IParsable<T> =>
         Into<T>(s, provider, out _);
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this string s, out bool success)
+    public static T? Into<T>(this string? s, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, CultureInfo.InvariantCulture, out var result)) ? result : default;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? Into<T>(this string s, IFormatProvider? provider, out bool success)
+    public static T? Into<T>(this string? s, IFormatProvider? provider, out bool success)
         where T : IParsable<T> =>
         (success = T.TryParse(s, provider, out var result)) ? result : default;
 #if NET8_0_OR_GREATER
@@ -289,7 +291,7 @@ using Substring = System.ReadOnlyMemory<char>;
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T IntoEnum<T>(this string s, bool ignoreCase = true)
+    public static T IntoEnum<T>(this string? s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : default;
     /// <summary>Parses the <see cref="string"/> into the <typeparamref name="T"/>.</summary>
@@ -297,7 +299,7 @@ using Substring = System.ReadOnlyMemory<char>;
     /// <param name="s">The buffer source.</param>
     /// <param name="ignoreCase">Whether to ignore case.</param>
     /// <returns>The parsed value.</returns>
-    public static T? TryIntoEnum<T>(this string s, bool ignoreCase = true)
+    public static T? TryIntoEnum<T>(this string? s, bool ignoreCase = true)
         where T : struct =>
         Enum.TryParse(s, ignoreCase, out T result) ? result : null;
 #endif
@@ -321,7 +323,7 @@ using Substring = System.ReadOnlyMemory<char>;
 #endif
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryParse<T>(this string s)
+    public static T? TryParse<T>(this string? s)
         where T : struct =>
         Parse<T>(s, out var success) is var value && success ? value : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
@@ -337,12 +339,12 @@ using Substring = System.ReadOnlyMemory<char>;
 #if NET7_0_OR_GREATER
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this string s)
+    public static T? TryInto<T>(this string? s)
         where T : struct, IParsable<T> =>
         T.TryParse(s, CultureInfo.InvariantCulture, out var result) ? result : null;
     /// <inheritdoc cref="Parse{T}(string, out bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
-    public static T? TryInto<T>(this string s, IFormatProvider? provider)
+    public static T? TryInto<T>(this string? s, IFormatProvider? provider)
         where T : struct, IParsable<T> =>
         T.TryParse(s, provider, out var result) ? result : null;
 #if NET8_0_OR_GREATER
