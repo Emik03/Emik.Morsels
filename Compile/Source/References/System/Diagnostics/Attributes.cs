@@ -347,16 +347,20 @@ namespace System.Diagnostics.CodeAnalysis
 namespace System.Runtime.CompilerServices
 {
     /// <summary>Indicates that a location is intercepted by this method.</summary>
-    /// <param name="filePath">The file path to the intercepted location.</param>
-    /// <param name="line">The line number to the intercepted location.</param>
-    /// <param name="character">The character number to the intercepted location.</param>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 #pragma warning disable CS9113
     sealed class InterceptsLocationAttribute : Attribute
     {
+        /// <summary>Initializes a new instance of the <see cref="InterceptsLocationAttribute"/> class.</summary>
+        /// <param name="version">The version number of the encoding data.</param>
+        /// <param name="data">The opaque data string.</param>
         [UsedImplicitly]
         public InterceptsLocationAttribute(int version, string data) { }
 
+        /// <summary>Initializes a new instance of the <see cref="InterceptsLocationAttribute"/> class.</summary>
+        /// <param name="filePath">The file path to the intercepted location.</param>
+        /// <param name="line">The line number to the intercepted location.</param>
+        /// <param name="character">The character number to the intercepted location.</param>
         [UsedImplicitly]
         public InterceptsLocationAttribute(string filePath, int line, int character) { }
     }
