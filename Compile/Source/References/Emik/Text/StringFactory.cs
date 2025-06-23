@@ -235,6 +235,19 @@ static partial class StringFactory
             _ => $"{sign}{ticks / 10.0}µs",
         };
     }
+
+    /// <summary>Converts the <see cref="Version"/> to its concise <see cref="string"/> representation.</summary>
+    /// <param name="version">The <see cref="Version"/> to convert.</param>
+    /// <returns>The <see cref="string"/> representation of <paramref name="version"/>.</returns>
+    public static string ToConciseString(this Version version) =>
+        version switch
+        {
+            // ReSharper disable once UsePositionalDeconstructionPattern
+            { Minor: <= 0, Build: <= 0, Revision: <= 0 } => $"v{version.Major}",
+            { Build: <= 0, Revision: <= 0 } => $"v{version.Major}.{version.Minor}",
+            { Revision: <= 0 } => $"v{version.Major}.{version.Minor}.{version.Build}",
+            _ => $"v{version.Major}.{version.Minor}.{version.Build}.{version.Revision}"
+        };
 #if !(NET45_OR_GREATER || NETSTANDARD1_1_OR_GREATER || NETCOREAPP2_1_OR_GREATER) || NO_SYSTEM_MEMORY
     /// <summary>Converts the value to a hex <see cref="string"/>.</summary>
     /// <remarks><para>The implementation is based on
