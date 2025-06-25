@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MPL-2.0
 #if IMGUI && XNA
+// ReSharper disable RedundantNameQualifier
 // ReSharper disable once CheckNamespace
 namespace Emik.Morsels;
+
+using Buffer = System.Buffer;
+using Matrix = Microsoft.Xna.Framework.Matrix;
 
 /// <summary>ImGui renderer for use with MonoGame.</summary>
 /// <param name="game">The game to use as reference.</param>
@@ -30,7 +34,9 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         new VertexElement(8, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
         new VertexElement(16, VertexElementFormat.Color, VertexElementUsage.Color, 0)
     );
-
+#if TEXTCOPY
+    static nint s_clipboard;
+#endif
     static nint s_sharedContext;
 
     readonly Dictionary<nint, Texture2D> _loadedTextures = [];
@@ -228,7 +234,9 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
     {
         if (IsDisposed)
             return;
-
+#if TEXTCOPY
+        FreeClipboard();
+#endif
         IsDisposed = true;
         _effect?.Dispose();
         _indexBuffer?.Dispose();
@@ -247,13 +255,9 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
     public unsafe void RebuildFontAtlas()
     {
         var io = ImGui.GetIO();
-        io.ConfigErrorRecovery = true;
-        io.ConfigErrorRecoveryEnableAssert = false;
-        io.ConfigErrorRecoveryEnableTooltip = true;
-        io.ConfigErrorRecoveryEnableDebugLog = false;
         io.Fonts.GetTexDataAsRGBA32(out byte* pixelData, out var width, out var height, out var bytesPerPixel);
         Texture2D tex2d = new(_graphicsDevice, width, height, false, SurfaceFormat.Color);
-        tex2d.SetData(new ReadOnlySpan<byte>(pixelData, width * height * bytesPerPixel).ToArray());
+        tex2d.SetData([..new ReadOnlySpan<byte>(pixelData, width * height * bytesPerPixel)]);
 
         if (_fontTextureId is { } id)
             UnbindTexture(id);
@@ -262,6 +266,49 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         _fontTextureId = bind;
         io.Fonts.SetTexID(bind);
         io.Fonts.ClearTexData();
+    }
+#if TEXTCOPY
+    /// <summary>Sets up the clipboard.</summary>
+    static unsafe void SetupClipboard()
+    {
+        static nint Get(nint _)
+        {
+            FreeClipboard();
+            return s_clipboard = Marshal.StringToHGlobalAnsi(ClipboardService.GetText());
+        }
+
+        static void Set(nint _, sbyte* text)
+        {
+            FreeClipboard();
+            ClipboardService.SetText(new(text));
+        }
+
+        var platformIo = ImGui.GetPlatformIO();
+        platformIo.Platform_GetClipboardTextFn = (nint)(delegate*<nint, nint>)&Get;
+        platformIo.Platform_SetClipboardTextFn = (nint)(delegate*<nint, sbyte*, void>)&Set;
+    }
+
+    /// <summary>Frees the last recorded clipboard.</summary>
+    static void FreeClipboard()
+    {
+        if (s_clipboard is 0)
+            return;
+
+        Marshal.FreeHGlobal(s_clipboard);
+        s_clipboard = 0;
+    }
+#endif
+    /// <summary>Sets up the IO.</summary>
+    static void SetupIO()
+    {
+#if TEXTCOPY
+        SetupClipboard();
+#endif
+        var io = ImGui.GetIO();
+        io.ConfigErrorRecovery = true;
+        io.ConfigErrorRecoveryEnableAssert = false;
+        io.ConfigErrorRecoveryEnableTooltip = true;
+        io.ConfigErrorRecoveryEnableDebugLog = false;
     }
 
     /// <summary>
@@ -366,7 +413,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         return ret;
     }
 
-    static nint SetupInput(Game game, bool shared)
+    static nint SetupInput([UsedImplicitly] Game game, bool shared)
     {
         Debug.Assert(game is not null);
 
@@ -375,6 +422,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
 
         var context = ImGui.CreateContext();
         ImGui.SetCurrentContext(context);
+        SetupIO();
 
         if (shared && s_sharedContext is 0)
             s_sharedContext = context;
@@ -398,9 +446,9 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         for (int n = 0, idxOffset = 0, vtxOffset = 0;
             n < drawData.CmdListsCount && drawData.CmdLists[n] is var cmdList;
             n++, idxOffset += cmdList.IdxBuffer.Size, vtxOffset += cmdList.VtxBuffer.Size)
-            for (var cmdi = 0; cmdi < cmdList.CmdBuffer.Size; cmdi++)
+            for (var cmdI = 0; cmdI < cmdList.CmdBuffer.Size; cmdI++)
             {
-                if (cmdList.CmdBuffer[cmdi] is not { ElemCount: not 0 } drawCmd)
+                if (cmdList.CmdBuffer[cmdI] is not { ElemCount: not 0 } drawCmd)
                     continue;
 
                 if (!_loadedTextures.TryGetValue(drawCmd.TextureId, out var value))
