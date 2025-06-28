@@ -5,7 +5,6 @@
 namespace Emik.Morsels;
 
 using Buffer = System.Buffer;
-using Matrix = Microsoft.Xna.Framework.Matrix;
 
 /// <summary>ImGui renderer for use with MonoGame.</summary>
 /// <param name="game">The game to use as reference.</param>
@@ -610,9 +609,12 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
     {
         _effect ??= new(_graphicsDevice);
         var io = ImGui.GetIO();
-        _effect.World = Matrix.Identity;
-        _effect.View = Matrix.Identity;
-        _effect.Projection = Matrix.CreateOrthographicOffCenter(0, io.DisplaySize.X, io.DisplaySize.Y, 0, -1, 1);
+        _effect.World = Microsoft.Xna.Framework.Matrix.Identity;
+        _effect.View = Microsoft.Xna.Framework.Matrix.Identity;
+
+        _effect.Projection =
+            Microsoft.Xna.Framework.Matrix.CreateOrthographicOffCenter(0, io.DisplaySize.X, io.DisplaySize.Y, 0, -1, 1);
+
         _effect.TextureEnabled = true;
         _effect.Texture = texture;
         _effect.VertexColorEnabled = true;
