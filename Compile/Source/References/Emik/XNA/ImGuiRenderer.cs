@@ -623,8 +623,8 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
                 io.AddKeyEvent(imGuiKey, keyboard.IsKeyDown(key));
 
         io.DisplaySize = new(
-            _graphicsDevice.PresentationParameters.BackBufferWidth,
-            _graphicsDevice.PresentationParameters.BackBufferHeight
+            _graphicsDevice.PresentationParameters.BackBufferWidth.Min(0),
+            _graphicsDevice.PresentationParameters.BackBufferHeight.Min(0)
         );
 
         io.DisplayFramebufferScale = new(1, 1);
