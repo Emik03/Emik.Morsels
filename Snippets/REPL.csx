@@ -13286,8 +13286,8 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
             if (TryMapKeys(key, out var imGuiKey))
                 io.AddKeyEvent(imGuiKey, keyboard.IsKeyDown(key));
         io.DisplaySize = new(
-            _graphicsDevice.PresentationParameters.BackBufferWidth.Min(0),
-            _graphicsDevice.PresentationParameters.BackBufferHeight.Min(0)
+            _graphicsDevice.PresentationParameters.BackBufferWidth.Max(0),
+            _graphicsDevice.PresentationParameters.BackBufferHeight.Max(0)
         );
         io.DisplayFramebufferScale = new(1, 1);
     }
