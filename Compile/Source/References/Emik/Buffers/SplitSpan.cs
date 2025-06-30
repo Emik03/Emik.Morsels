@@ -855,8 +855,10 @@ readonly
     /// <returns>The decremented index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Index Decrement(Index index) =>
+#if NET8_0_OR_GREATER
         Unsafe.SizeOf<Index>() is sizeof(int) ?
-            (Index)(object)((int)(object)index - 1) : // Branchless (assumes bit layout)
+            Unsafe.BitCast<int, Index>(Unsafe.BitCast<Index, int>(index) - 1) : // Branchless (assumes bit layout)
+#endif // ReSharper disable BadIndent MissingLinebreak RedundantLinebreak
             index is { Value: 0, IsFromEnd: false } ? new(0, true) :
                 new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }

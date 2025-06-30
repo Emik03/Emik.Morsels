@@ -9796,8 +9796,10 @@ readonly
     /// <returns>The decremented index.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining), Pure]
     static Index Decrement(Index index) =>
+#if NET8_0_OR_GREATER
         Unsafe.SizeOf<Index>() is sizeof(int) ?
-            (Index)(object)((int)(object)index - 1) :
+            Unsafe.BitCast<int, Index>(Unsafe.BitCast<Index, int>(index) - 1) :
+#endif
             index is { Value: 0, IsFromEnd: false } ? new(0, true) :
                 new(index.IsFromEnd ? index.Value + 1 : index.Value - 1, index.IsFromEnd);
 }
@@ -12821,8 +12823,28 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         }
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
 #pragma warning disable MA0134
-            Task.Run(Show);
+            _ = Task.Run(Show);
 #pragma warning restore MA0134
+    }
+    /// <inheritdoc cref="BeginTabItem(ReadOnlySpan{char}, ref bool, ImGuiTabItemFlags)"/>
+    public static bool BeginTabItem(string label, ref bool p_open, ImGuiTabItemFlags flags) =>
+        BeginTabItem(label.AsSpan(), ref p_open, flags);
+    /// <inheritdoc cref="ImGui.BeginTabItem(string, ref bool, ImGuiTabItemFlags)"/>
+    /// <remarks><para>
+    /// The original binding doesn't work when <paramref name="p_open"/> is null reference.
+    /// However, it being a null ref has significance to imgui, as it means
+    /// the item is always shown and the selection is managed by imgui itself.
+    /// So, we fix this ourselves and wait till it gets fixed upstream.
+    /// </para></remarks>
+    public static unsafe bool BeginTabItem(ReadOnlySpan<char> label, ref bool p_open, ImGuiTabItemFlags flags)
+    {
+        var nativeLabel = Encoding.UTF8.GetByteCount(label) + 1 is var length && length <= Span.MaxStackalloc
+            ? stackalloc byte[length]
+            : new byte[length];
+        nativeLabel[Encoding.UTF8.GetBytes(label, nativeLabel)] = 0;
+        fixed (byte* nativeLabelPtr = nativeLabel)
+        fixed (bool* open = &p_open)
+            return ImGuiNative.igBeginTabItem(nativeLabelPtr, (byte*)open, flags) is not 0;
     }
     /// <inheritdoc cref="InputText(ReadOnlyMemory{char}, ref string, uint, ImGuiInputTextFlags)"/>
     public static bool InputText(
@@ -13103,7 +13125,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
         if ((OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret)
 #pragma warning disable MA0134
-            Task.Run(Show);
+            _ = Task.Run(Show);
 #pragma warning restore MA0134
         return ret;
     }
