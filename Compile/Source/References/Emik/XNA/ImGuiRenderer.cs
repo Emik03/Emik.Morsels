@@ -84,7 +84,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         bool usePasswordMode = false
     )
     {
-        async Task Show()
+        async Task ShowAsync()
         {
             var input = await KeyboardInput.Show(title, description, defaultText, usePasswordMode);
             var io = ImGui.GetIO();
@@ -96,7 +96,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
 
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
 #pragma warning disable MA0134
-            _ = Task.Run(Show);
+            _ = Task.Run(ShowAsync);
 #pragma warning restore MA0134
     }
 
@@ -404,7 +404,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
     {
         var copy = input;
 
-        async Task Show()
+        async Task ShowAsync()
         {
             var display = label.SplitOn('#').First;
 
@@ -433,7 +433,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
 
         if ((OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret)
 #pragma warning disable MA0134
-            _ = Task.Run(Show);
+            _ = Task.Run(ShowAsync);
 #pragma warning restore MA0134
         return ret;
     }
