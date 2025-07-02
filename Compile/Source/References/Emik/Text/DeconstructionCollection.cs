@@ -753,7 +753,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
     }
 
     /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
-    public const int DefaultVisitLength = 80, DefaultStringLength = 400, DefaultRecurseLength = 20;
+    public const int DefaultVisitLength = 500, DefaultStringLength = 5000, DefaultRecurseLength = 50;
 
     /// <summary>Gets the comparer used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     [Pure]

@@ -12813,7 +12813,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         bool usePasswordMode = false
     )
     {
-        async Task Show()
+        async Task ShowAsync()
         {
             var input = await KeyboardInput.Show(title, description, defaultText, usePasswordMode);
             var io = ImGui.GetIO();
@@ -12823,7 +12823,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         }
         if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOS())
 #pragma warning disable MA0134
-            _ = Task.Run(Show);
+            _ = Task.Run(ShowAsync);
 #pragma warning restore MA0134
     }
     /// <inheritdoc cref="BeginTabItem(ReadOnlySpan{char}, ref bool, ImGuiTabItemFlags)"/>
@@ -13102,7 +13102,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
     )
     {
         var copy = input;
-        async Task Show()
+        async Task ShowAsync()
         {
             var display = label.SplitOn('#').First;
             var result = await KeyboardInput.Show(
@@ -13125,7 +13125,7 @@ public sealed class ImGuiRenderer(Game game, bool shared = false) : IDisposable
         (var ret, input) = textInput(labelSpan, hint, input, maxLength, size, flags);
         if ((OperatingSystem.IsAndroid() || OperatingSystem.IsIOS()) && ret)
 #pragma warning disable MA0134
-            _ = Task.Run(Show);
+            _ = Task.Run(ShowAsync);
 #pragma warning restore MA0134
         return ret;
     }
@@ -16718,7 +16718,7 @@ abstract partial class DeconstructionCollection([NonNegativeValue] int str) : IC
         }
     }
     /// <summary>The defaults used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
-    public const int DefaultVisitLength = 80, DefaultStringLength = 400, DefaultRecurseLength = 20;
+    public const int DefaultVisitLength = 500, DefaultStringLength = 5000, DefaultRecurseLength = 50;
     /// <summary>Gets the comparer used in <see cref="DeconstructionCollectionExtensions.ToDeconstructed"/>.</summary>
     [Pure]
     public static IEqualityComparer<object?> Comparer { get; } = new DeconstructionComparer();
