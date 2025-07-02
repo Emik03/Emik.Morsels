@@ -91,7 +91,7 @@ namespace System.Diagnostics.CodeAnalysis
     sealed partial class NotNullWhenAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NotNullWhenAttribute"/>
+        /// Initializes a new instance of the <see cref="CodeAnalysis.NotNullWhenAttribute"/>
         /// class with the specified return value condition.
         /// </summary>
         /// <param name="returnValue">
