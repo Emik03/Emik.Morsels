@@ -2,6 +2,7 @@
 #pragma warning disable GlobalUsingsAnalyzer
 // ReSharper disable CheckNamespace
 #if !NET452_OR_GREATER && !NETSTANDARD1_4_OR_GREATER && !NETCOREAPP
+// ReSharper disable once RedundantUsingDirective.Global
 global using AllowNullAttribute = NullGuard.AllowNullAttribute;
 
 namespace NullGuard;
